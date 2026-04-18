@@ -28,27 +28,27 @@ ROOM_OPTIONS = [
     "Wohnzimmer",
     "Schlafzimmer",
     "Kinderzimmer",
-    "Kueche",
+    "Küche",
     "Bad",
     "WC",
     "Arbeitszimmer",
-    "Gaestezimmer",
+    "Gästezimmer",
     "Keller",
     "Dachboden",
 ]
 
 HEAT_GENERATOR_OPTIONS = [
     "Gaskessel",
-    "Oelkessel",
-    "Waermepumpe",
+    "Ölkessel",
+    "Wärmepumpe",
     "Holzofen",
     "Pellets",
     "Solarthermie",
 ]
 
 HEAT_TRANSFER_OPTIONS = [
-    "Heizkoerper",
-    "Fussbodenheizung",
+    "Heizkörper",
+    "Fußbodenheizung",
     "Deckenheizung",
     "Wandheizung",
 ]
@@ -57,7 +57,7 @@ MEASUREMENT_CATEGORIES = [
     {
         "id": "heizung",
         "label": "Heizung",
-        "copy": "Messung folgt spaeter",
+        "copy": "Messung folgt später",
         "planned": 2,
         "available": 0,
         "accent": "#F06A4A",
@@ -73,7 +73,7 @@ MEASUREMENT_CATEGORIES = [
     {
         "id": "strom",
         "label": "Strom",
-        "copy": "Messung folgt spaeter",
+        "copy": "Messung folgt später",
         "planned": 2,
         "available": 0,
         "accent": "#F0C631",
@@ -81,7 +81,7 @@ MEASUREMENT_CATEGORIES = [
     {
         "id": "wasser",
         "label": "Wasser",
-        "copy": "Messung folgt spaeter",
+        "copy": "Messung folgt später",
         "planned": 2,
         "available": 0,
         "accent": "#3E8FCA",
@@ -108,6 +108,16 @@ def default_measurements() -> dict:
             "attempts": [],
         }
     }
+
+
+DISPLAY_NORMALIZATION = {
+    "Kueche": "Küche",
+    "Gaestezimmer": "Gästezimmer",
+    "Oelkessel": "Ölkessel",
+    "Waermepumpe": "Wärmepumpe",
+    "Heizkoerper": "Heizkörper",
+    "Fussbodenheizung": "Fußbodenheizung",
+}
 
 
 def default_user_record() -> dict:
@@ -187,12 +197,17 @@ def merged_user_record(raw: dict | None) -> dict:
                 "building_year": int(questionnaire.get("building_year", merged_questionnaire["building_year"])),
                 "property_type": questionnaire.get("property_type", merged_questionnaire["property_type"]),
                 "sqm": int(questionnaire.get("sqm", merged_questionnaire["sqm"])),
-                "rooms": list(questionnaire.get("rooms", merged_questionnaire["rooms"])),
+                "rooms": [
+                    DISPLAY_NORMALIZATION.get(value, value)
+                    for value in list(questionnaire.get("rooms", merged_questionnaire["rooms"]))
+                ],
                 "heat_generators": list(
-                    questionnaire.get("heat_generators", merged_questionnaire["heat_generators"])
+                    DISPLAY_NORMALIZATION.get(value, value)
+                    for value in questionnaire.get("heat_generators", merged_questionnaire["heat_generators"])
                 ),
                 "heat_distribution": list(
-                    questionnaire.get("heat_distribution", merged_questionnaire["heat_distribution"])
+                    DISPLAY_NORMALIZATION.get(value, value)
+                    for value in questionnaire.get("heat_distribution", merged_questionnaire["heat_distribution"])
                 ),
                 "household_size": int(
                     questionnaire.get("household_size", merged_questionnaire["household_size"])
@@ -386,7 +401,7 @@ def reset_test_session() -> None:
     persist_current_user()
     st.session_state["active_tab"] = "fragebogen"
     st.session_state["active_measurement"] = None
-    set_flash("success", "Die Testdaten wurden zurueckgesetzt.")
+    set_flash("success", "Die Testdaten wurden zurückgesetzt.")
     replace_query_params(navigation_params(tab="fragebogen"))
     st.rerun()
 
@@ -450,7 +465,7 @@ def heat_cost_factor(generators: list[str]) -> float:
         return 1.0
 
     factor = 1.0
-    if "Waermepumpe" in generators:
+    if "Wärmepumpe" in generators or "Waermepumpe" in generators:
         factor *= 0.75
     if "Solarthermie" in generators:
         factor *= 0.82
@@ -492,7 +507,7 @@ def evaluate_shower_test(volume_liters: float, time_seconds: float) -> dict:
                 "Dadurch steigt das Sparpotenzial direkt mit."
             ),
             "actions": [
-                "Pruefe einen Sparduschkopf oder den Mengenregler.",
+                "Prüfe einen Sparduschkopf oder den Mengenregler.",
                 "Miss nach der Anpassung noch einmal neu.",
             ],
             "flow_lpm": flow_lpm,
@@ -506,11 +521,11 @@ def evaluate_shower_test(volume_liters: float, time_seconds: float) -> dict:
             "headline": "Der Duschkopftest liegt im guten Bereich.",
             "summary": (
                 "Deine aktuelle Durchflussmenge passt gut. "
-                "Hier besteht ueber den Duschkopf gerade kein akuter Handlungsbedarf."
+                "Hier besteht über den Duschkopf gerade kein akuter Handlungsbedarf."
             ),
             "actions": [
-                "Behalte den Wert als Referenz fuer spaetere Vergleichsmessungen.",
-                "Du kannst als Naechstes weitere Warmwasser-Tests freischalten, sobald sie verfuegbar sind.",
+                "Behalte den Wert als Referenz für spätere Vergleichsmessungen.",
+                "Du kannst als Nächstes weitere Warmwasser-Tests freischalten, sobald sie verfügbar sind.",
             ],
             "flow_lpm": flow_lpm,
         }
@@ -519,14 +534,14 @@ def evaluate_shower_test(volume_liters: float, time_seconds: float) -> dict:
         "status": "low",
         "tone": "soft",
         "pill": "Durchfluss eher niedrig",
-        "headline": "Pruefe Komfort, Verkalkung und Leckagen.",
+        "headline": "Prüfe Komfort, Verkalkung und Leckagen.",
         "summary": (
             "Der Duschkopf liefert eher wenig Wasser. Das spart zwar schon, "
             "kann aber auf Verkalkungen oder einen sehr schwachen Strahl hindeuten."
         ),
         "actions": [
-            "Wenn sich der Strahl zu schwach anfuehlt, Durchfluss leicht erhoehen.",
-            "Duschkopf auf Verkalkung oder Leckagen pruefen und danach erneut messen.",
+            "Wenn sich der Strahl zu schwach anfühlt, Durchfluss leicht erhöhen.",
+            "Duschkopf auf Verkalkung oder Leckagen prüfen und danach erneut messen.",
         ],
         "flow_lpm": flow_lpm,
     }
@@ -553,46 +568,51 @@ def logo_svg(size: int = 88) -> str:
     """
 
 
+def html_fragment(markup: str) -> str:
+    return "\n".join(line.lstrip() for line in dedent(markup).strip().splitlines())
+
+
 def progress_bar_html(title: str, current: int, total: int, meta: str) -> str:
     total = max(total, 1)
     ratio = min(max(current / total, 0.0), 1.0)
     percent = int(round(ratio * 100))
-    return f"""
-    <div class="progress-shell">
-        <div class="progress-head">
-            <span>{esc(title)}</span>
-            <strong>{percent}%</strong>
+    return html_fragment(
+        f"""
+        <div class="progress-shell">
+            <div class="progress-head">
+                <span>{esc(title)}</span>
+                <strong>{percent}%</strong>
+            </div>
+            <div class="progress-track">
+                <span class="progress-fill" style="width:{percent}%"></span>
+            </div>
+            <div class="progress-meta">{current}/{total} abgeschlossen - {esc(meta)}</div>
         </div>
-        <div class="progress-track">
-            <span class="progress-fill" style="width:{percent}%"></span>
-        </div>
-        <div class="progress-meta">{current}/{total} abgeschlossen - {esc(meta)}</div>
-    </div>
-    """
+        """
+    )
 
 
 def metric_grid_html(metrics: list[tuple[str, str]]) -> str:
     blocks = []
     for label, value in metrics:
         blocks.append(
-            f"""
-            <div class="metric-card">
-                <div class="metric-value">{esc(value)}</div>
-                <div class="metric-label">{esc(label)}</div>
-            </div>
-            """
+            html_fragment(
+                f"""
+                <div class="metric-card">
+                    <div class="metric-value">{esc(value)}</div>
+                    <div class="metric-label">{esc(label)}</div>
+                </div>
+                """
+            )
         )
-    return f'<div class="metric-grid">{"".join(blocks)}</div>'
+    return html_fragment(f'<div class="metric-grid">{"".join(blocks)}</div>')
 
 
 def chips_html(values: list[str]) -> str:
     if not values:
         return ""
-    return f"""
-    <div class="chip-row">
-        {''.join(f'<span class="chip">{esc(value)}</span>' for value in values)}
-    </div>
-    """
+    chips = "".join(f'<span class="chip">{esc(value)}</span>' for value in values)
+    return html_fragment(f'<div class="chip-row">{chips}</div>')
 
 
 def measurement_tiles_html(user_data: dict) -> str:
@@ -611,61 +631,107 @@ def measurement_tiles_html(user_data: dict) -> str:
         )
         disabled_class = "" if is_active else " disabled"
         done_class = " done" if completed else ""
+        tile_count = f"{completed}/{max(category['available'], 1)}" if is_active else f"0/{category['planned']}"
 
         tiles.append(
-            f"""
-            <{tile_tag} class="measure-tile{disabled_class}{done_class}"{href_attr} style="--tile-accent:{category['accent']};">
-                <span class="tile-strip"></span>
-                <span class="tile-meta">{category['available']} von {category['planned']} Tests aktiv</span>
-                <strong class="tile-title">{esc(category['label'])}</strong>
-                <span class="tile-copy">{esc(category['copy'])}</span>
-                <span class="tile-progress">{completed}/{max(category['available'], 1)} abgeschlossen</span>
-            </{tile_tag}>
-            """
+            html_fragment(
+                f"""
+                <{tile_tag} class="measure-tile{disabled_class}{done_class}"{href_attr} style="--tile-accent:{category['accent']};">
+                    <span class="tile-swatch">
+                        <span class="tile-swatch-main"></span>
+                        <span class="tile-swatch-side"></span>
+                    </span>
+                    <span class="tile-bottom">
+                        <strong class="tile-title">{esc(category['label'])}</strong>
+                        <span class="tile-progress">{tile_count}</span>
+                        <span class="tile-copy">{esc(category['copy'])}</span>
+                    </span>
+                </{tile_tag}>
+                """
+            )
         )
 
-    return f'<div class="tiles-grid">{"".join(tiles)}</div>'
+    return html_fragment(f'<div class="tiles-grid">{ "".join(tiles) }</div>')
+
+
+def media_placeholder_html(label: str, copy: str) -> str:
+    return html_fragment(
+        f"""
+        <div class="media-placeholder">
+            <div class="media-graphic">
+                <span class="media-circle"></span>
+                <span class="media-line short"></span>
+                <span class="media-line"></span>
+                <span class="media-line tiny"></span>
+            </div>
+            <div class="media-copy">
+                <strong>{esc(label)}</strong>
+                <span>{esc(copy)}</span>
+            </div>
+        </div>
+        """
+    )
 
 
 def warmwater_result_card(attempt: dict) -> str:
     evaluation = attempt["evaluation"]
     savings = attempt["estimated_savings_eur"]
     savings_text = (
-        f"Bis zu {format_euro(savings)} pro Jahr moeglich"
+        f"Bis zu {format_euro(savings)} pro Jahr möglich"
         if savings > 0
-        else "Aktuell nur geringes Zusatzpotenzial ueber den Duschkopf"
+        else "Aktuell nur geringes Zusatzpotenzial über den Duschkopf"
     )
     action_lines = "".join(
         f'<div class="action-line">{esc(action)}</div>' for action in evaluation.get("actions", [])
     )
     measured_on = attempt.get("measured_at", "heute")
 
-    return f"""
-    <div class="result-card">
-        <span class="status-pill {esc(evaluation['tone'])}">{esc(evaluation['pill'])}</span>
-        <h3 class="result-title">{esc(evaluation['headline'])}</h3>
-        <p class="result-copy">{esc(evaluation['summary'])}</p>
-        {metric_grid_html([
+    metrics_html = metric_grid_html(
+        [
             ("Durchfluss", f"{attempt['flow_lpm']} L/min"),
             ("Sparpotenzial", savings_text),
-        ])}
-        <div class="recommend-list">{action_lines}</div>
-        <div class="ghost-note">Letzte Messung gespeichert am {esc(measured_on)}</div>
-    </div>
-    """
+        ]
+    )
+    placeholder_html = media_placeholder_html(
+        "Platzhalter für Piktogramm",
+        "Hier kann später eine Illustration, ein Icon oder ein Vorher-Nachher-Hinweis erscheinen.",
+    )
+
+    return html_fragment(
+        f"""
+        <div class="result-card">
+            <span class="status-pill {esc(evaluation['tone'])}">{esc(evaluation['pill'])}</span>
+            <h3 class="result-title">{esc(evaluation['headline'])}</h3>
+            <p class="result-copy">{esc(evaluation['summary'])}</p>
+            <div class="result-layout">
+                <div class="result-main">
+                    {metrics_html}
+                    <div class="recommend-list">{action_lines}</div>
+                </div>
+                <div class="result-side">
+                    {placeholder_html}
+                </div>
+            </div>
+            <div class="ghost-note">Letzte Messung gespeichert am {esc(measured_on)}</div>
+        </div>
+        """
+    )
 
 
 def empty_state_html(title: str, copy: str, href: str | None = None, label: str | None = None) -> str:
     cta = ""
     if href and label:
         cta = f'<a class="inline-link button-link" href="{href}">{esc(label)}</a>'
-    return f"""
-    <div class="empty-state">
-        <h3>{esc(title)}</h3>
-        <p>{esc(copy)}</p>
-        {cta}
-    </div>
-    """
+    return html_fragment(
+        f"""
+        <div class="empty-state">
+            <h3>{esc(title)}</h3>
+            <p>{esc(copy)}</p>
+            {media_placeholder_html("Platzhalter", "Hier kann später eine Report-Grafik oder ein Piktogramm erscheinen.")}
+            {cta}
+        </div>
+        """
+    )
 
 
 def inject_styles() -> None:
@@ -746,7 +812,7 @@ def inject_styles() -> None:
                 }
 
                 .welcome-panel {
-                    padding: 1.25rem;
+                    padding: 1.25rem 1.25rem 0.95rem;
                     border-radius: 28px;
                     background:
                         radial-gradient(circle at top right, rgba(118, 189, 29, 0.14), transparent 34%),
@@ -958,39 +1024,79 @@ def inject_styles() -> None:
                 .tiles-grid {
                     display: grid;
                     grid-template-columns: repeat(2, minmax(0, 1fr));
-                    gap: 0.8rem;
-                    margin-top: 1rem;
+                    gap: 1rem;
+                    margin-top: 1.15rem;
                 }
 
                 .measure-tile {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 0.36rem;
-                    min-height: 9rem;
-                    padding: 0.9rem;
-                    border-radius: 22px;
-                    border: 1px solid var(--line);
+                    display: grid;
+                    gap: 0.7rem;
+                    padding: 0;
+                    border-radius: 26px;
+                    border: none;
                     background: var(--surface);
                     text-decoration: none;
                     color: inherit;
-                    box-shadow: 0 16px 34px rgba(36, 76, 15, 0.05);
+                    overflow: hidden;
+                    box-shadow: 0 18px 34px rgba(36, 76, 15, 0.08);
                     transition: transform 0.18s ease, box-shadow 0.18s ease;
                 }
 
                 .measure-tile.disabled {
-                    opacity: 0.72;
+                    opacity: 0.78;
                 }
 
                 .measure-tile.done {
-                    border-color: rgba(118, 189, 29, 0.28);
-                    background: linear-gradient(180deg, rgba(248, 252, 242, 1), rgba(235, 246, 220, 0.82));
+                    box-shadow: 0 20px 38px rgba(78, 146, 0, 0.14);
                 }
 
-                .tile-strip {
+                .tile-swatch {
+                    position: relative;
                     width: 100%;
-                    height: 0.55rem;
-                    border-radius: 999px;
-                    background: var(--tile-accent);
+                    aspect-ratio: 1 / 0.9;
+                    background: color-mix(in srgb, var(--tile-accent) 82%, white);
+                }
+
+                .tile-swatch-main,
+                .tile-swatch-side {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                }
+
+                .tile-swatch-main {
+                    left: 0;
+                    right: 28%;
+                    background: color-mix(in srgb, var(--tile-accent) 86%, white);
+                }
+
+                .tile-swatch-side {
+                    right: 0;
+                    width: 28%;
+                    background: color-mix(in srgb, var(--tile-accent) 58%, white);
+                }
+
+                .tile-bottom {
+                    display: grid;
+                    gap: 0.18rem;
+                    padding: 0 0.25rem 0.25rem;
+                    text-align: center;
+                }
+
+                .tile-title {
+                    font-size: 0.9rem;
+                    font-weight: 800;
+                }
+
+                .tile-progress {
+                    font-size: 0.72rem;
+                    font-weight: 800;
+                    color: #17310F;
+                }
+
+                .tile-copy {
+                    font-size: 0.74rem;
+                    line-height: 1.35;
                 }
 
                 .status-pill {
@@ -1026,12 +1132,87 @@ def inject_styles() -> None:
                     margin-top: 1rem;
                 }
 
+                .result-layout {
+                    display: grid;
+                    grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.95fr);
+                    gap: 0.85rem;
+                    align-items: start;
+                    margin-top: 1rem;
+                }
+
+                .result-main,
+                .result-side {
+                    min-width: 0;
+                }
+
                 .action-line {
                     padding: 0.72rem 0.84rem;
                     border-radius: 16px;
                     background: var(--surface-soft);
                     color: #28411f;
                     line-height: 1.5;
+                }
+
+                .media-placeholder {
+                    display: grid;
+                    gap: 0.9rem;
+                    min-height: 100%;
+                    padding: 0.95rem;
+                    border-radius: 20px;
+                    border: 1px dashed rgba(22, 48, 18, 0.18);
+                    background: linear-gradient(180deg, rgba(248, 252, 242, 0.98), rgba(241, 248, 231, 0.9));
+                }
+
+                .media-graphic {
+                    display: grid;
+                    gap: 0.5rem;
+                    align-content: center;
+                    min-height: 8.4rem;
+                    padding: 1rem;
+                    border-radius: 18px;
+                    background:
+                        radial-gradient(circle at top left, rgba(118, 189, 29, 0.16), transparent 34%),
+                        linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 251, 236, 0.88));
+                }
+
+                .media-circle {
+                    width: 3.1rem;
+                    height: 3.1rem;
+                    border-radius: 999px;
+                    background: rgba(118, 189, 29, 0.18);
+                    border: 1px solid rgba(78, 146, 0, 0.14);
+                }
+
+                .media-line {
+                    display: block;
+                    width: 100%;
+                    height: 0.55rem;
+                    border-radius: 999px;
+                    background: rgba(118, 189, 29, 0.18);
+                }
+
+                .media-line.short {
+                    width: 74%;
+                }
+
+                .media-line.tiny {
+                    width: 48%;
+                }
+
+                .media-copy {
+                    display: grid;
+                    gap: 0.24rem;
+                }
+
+                .media-copy strong {
+                    font-size: 0.84rem;
+                    color: #17310F;
+                }
+
+                .media-copy span {
+                    font-size: 0.8rem;
+                    line-height: 1.45;
+                    color: var(--muted);
                 }
 
                 .test-steps {
@@ -1101,6 +1282,13 @@ def inject_styles() -> None:
                 .welcome-note {
                     margin: 0.55rem 0 0;
                     font-size: 0.85rem;
+                    color: var(--muted);
+                }
+
+                .intro-inline {
+                    margin: 0.2rem 0 0.85rem;
+                    font-size: 0.92rem;
+                    line-height: 1.55;
                     color: var(--muted);
                 }
 
@@ -1192,6 +1380,10 @@ def inject_styles() -> None:
                     .screen-title {
                         font-size: 1.9rem;
                     }
+
+                    .result-layout {
+                        grid-template-columns: 1fr;
+                    }
                 }
             </style>
             """
@@ -1202,7 +1394,7 @@ def inject_styles() -> None:
 
 def render_welcome_screen() -> None:
     st.markdown(
-        dedent(
+        html_fragment(
             f"""
         <section class="hero-panel welcome-panel">
             <div class="welcome-logo">{logo_svg(88)}</div>
@@ -1223,12 +1415,7 @@ def render_welcome_screen() -> None:
     )
 
     st.markdown(
-        dedent(
-            """
-        <div class="panel-head">Direkt starten</div>
-        <p class="welcome-note">Wenn du magst, gib nur deinen Namen an. Danach landest du sofort im ersten Testprototyp.</p>
-        """
-        ),
+        '<p class="intro-inline">Wenn du magst, gib nur deinen Namen an. Danach landest du direkt im Prototyp und kannst unten zwischen Fragebogen, Messungen und Report wechseln.</p>',
         unsafe_allow_html=True,
     )
 
@@ -1248,7 +1435,7 @@ def render_welcome_screen() -> None:
 
 def render_energycheck_header(identity: dict, questionnaire: dict, test_mode: bool = False) -> None:
     st.markdown(
-        dedent(
+        html_fragment(
             f"""
         <div class="topbar">
             <div class="topbar-logo">{logo_svg(54)}</div>
@@ -1266,25 +1453,12 @@ def render_energycheck_header(identity: dict, questionnaire: dict, test_mode: bo
         unsafe_allow_html=True,
     )
 
-    st.markdown(
-        """
-        <div class="section-panel">
-            <div class="panel-head">Erste Demo</div>
-            <p class="screen-copy">
-                Diese Version ist bewusst einfach: unten zwischen Fragebogen, Messungen
-                und Report wechseln, Werte eintragen und den Duschkopftest direkt testen.
-            </p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
     left, right = st.columns(2)
     with left:
         if st.button("Zum Duschkopftest", type="primary", use_container_width=True):
             open_test_measurement()
     with right:
-        if st.button("Name aendern", use_container_width=True):
+        if st.button("Name ändern", use_container_width=True):
             logout_current_user()
 
     reset_left, reset_right = st.columns(2)
@@ -1305,35 +1479,35 @@ def render_questionnaire_tab(user_data: dict) -> None:
     st.markdown(
         """
         <div class="panel-head">Fragebogen</div>
-        <h2 class="screen-title">Grunddaten fuer bessere Empfehlungen</h2>
+        <h2 class="screen-title">Grunddaten für bessere Empfehlungen</h2>
         <p class="screen-copy">
-            Je genauer diese Angaben sind, desto glaubwuerdiger werden spaetere
-            Hinweise, Fortschritte und die Einschaetzung in Euro.
+            Je genauer diese Angaben sind, desto glaubwürdiger werden spätere
+            Hinweise, Fortschritte und die Einschätzung in Euro.
         </p>
         """,
         unsafe_allow_html=True,
     )
 
     st.markdown(
-        progress_bar_html("Profilstaerke", filled, total, "Basis fuer spaetere Hinweise und Einsparwerte"),
+        progress_bar_html("Profilstärke", filled, total, "Basis für spätere Hinweise und Einsparwerte"),
         unsafe_allow_html=True,
     )
 
     with st.form("questionnaire-form"):
         building_year = st.slider(
-            "Baujahr des Gebaeudes",
+            "Baujahr des Gebäudes",
             min_value=1850,
             max_value=2026,
             value=int(questionnaire["building_year"]),
         )
         property_type = st.radio(
-            "Welcher Gebaeudeteil wird betrachtet?",
+            "Welcher Gebäudeteil wird betrachtet?",
             options=["Wohnung", "Haus"],
             horizontal=True,
             index=0 if questionnaire["property_type"] == "Wohnung" else 1,
         )
         sqm = st.number_input(
-            "Wie gross ist die Flaeche in m2?",
+            "Wie groß ist die Fläche in m2?",
             min_value=15,
             max_value=1000,
             value=int(questionnaire["sqm"]),
@@ -1345,12 +1519,12 @@ def render_questionnaire_tab(user_data: dict) -> None:
             default=questionnaire["rooms"],
         )
         heat_generators = st.multiselect(
-            "Welche Waermeerzeuger sind vorhanden?",
+            "Welche Wärmeerzeuger sind vorhanden?",
             options=HEAT_GENERATOR_OPTIONS,
             default=questionnaire["heat_generators"],
         )
         heat_distribution = st.multiselect(
-            "Wie wird die Waerme uebertragen?",
+            "Wie wird die Wärme übertragen?",
             options=HEAT_TRANSFER_OPTIONS,
             default=questionnaire["heat_distribution"],
         )
@@ -1386,10 +1560,10 @@ def render_measurements_overview(user_data: dict) -> None:
     st.markdown(
         """
         <div class="panel-head">Messungen</div>
-        <h2 class="screen-title">Kacheln fuer deine ersten Gewerke</h2>
+        <h2 class="screen-title">Kacheln für deine ersten Gewerke</h2>
         <p class="screen-copy">
-            Jede Kachel steht fuer ein Gewerk. Warmwasser ist bereits klickbar und
-            fuehrt direkt zum Duschkopftest. Die anderen Kacheln bleiben vorerst Platzhalter.
+            Jede Kachel steht für ein Gewerk. Warmwasser führt direkt zum Duschkopftest,
+            die anderen Felder bleiben im Prototyp vorerst Platzhalter.
         </p>
         """,
         unsafe_allow_html=True,
@@ -1426,7 +1600,7 @@ def render_warmwater_detail(user_data: dict) -> None:
     latest_attempt = latest_warmwater_attempt(user_data)
 
     st.markdown(
-        f'<a class="inline-link" href="{build_href(tab="messungen")}">Zurueck zur Messungsuebersicht</a>',
+        f'<a class="inline-link" href="{build_href(tab="messungen")}">Zurück zur Messungsübersicht</a>',
         unsafe_allow_html=True,
     )
 
@@ -1435,7 +1609,7 @@ def render_warmwater_detail(user_data: dict) -> None:
         <div class="panel-head">Warmwasser</div>
         <h2 class="screen-title">Duschkopftest</h2>
         <p class="screen-copy">
-            Der Test soll schnell gehen: Eimer fuellen, Zeit stoppen, Werte eintragen.
+            Der Test soll schnell gehen: Eimer füllen, Zeit stoppen, Werte eintragen.
             Danach bekommst du sofort eine Einordnung und ein erstes Sparpotenzial.
         </p>
         """,
@@ -1450,9 +1624,9 @@ def render_warmwater_detail(user_data: dict) -> None:
     st.markdown(
         """
         <div class="test-steps">
-            <span class="step-chip">1. Markiere etwa 5 Liter an einem Eimer oder Messbehaelter.</span>
-            <span class="step-chip">2. Stelle den Duschkopf auf deine uebliche Stellung und stoppe die Zeit bis zur Markierung.</span>
-            <span class="step-chip">3. Trage Fuellmenge und Zeit ein. Bei Auffaelligkeiten misst du nach der Anpassung einfach erneut.</span>
+            <span class="step-chip">1. Markiere etwa 5 Liter an einem Eimer oder Messbehälter.</span>
+            <span class="step-chip">2. Stelle den Duschkopf auf deine übliche Stellung und stoppe die Zeit bis zur Markierung.</span>
+            <span class="step-chip">3. Trage Füllmenge und Zeit ein. Bei Auffälligkeiten misst du nach der Anpassung einfach erneut.</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1461,13 +1635,13 @@ def render_warmwater_detail(user_data: dict) -> None:
     filled, total_fields = questionnaire_completion(questionnaire)
     if filled < total_fields:
         st.info(
-            "Du kannst den Test schon starten. Die Einschaetzung in Euro wird noch genauer, "
-            "sobald dein Fragebogen vollstaendig ist."
+            "Du kannst den Test schon starten. Die Einschätzung in Euro wird noch genauer, "
+            "sobald dein Fragebogen vollständig ist."
         )
 
     with st.form("warmwater-form"):
         volume_liters = st.number_input(
-            "Fuellmenge in Litern",
+            "Füllmenge in Litern",
             min_value=1.0,
             max_value=12.0,
             value=float(latest_attempt["volume_liters"]) if latest_attempt else TARGET_BUCKET_LITERS,
@@ -1508,7 +1682,7 @@ def render_warmwater_detail(user_data: dict) -> None:
         st.markdown(
             empty_state_html(
                 "Noch keine Messung gespeichert",
-                "Sobald du den ersten Duschkopftest eintraegst, erscheint hier direkt die Einordnung.",
+                "Sobald du den ersten Duschkopftest einträgst, erscheint hier direkt die Einordnung.",
             ),
             unsafe_allow_html=True,
         )
@@ -1533,7 +1707,7 @@ def render_results_tab(user_data: dict) -> None:
         <div class="panel-head">Report</div>
         <h2 class="screen-title">Deine ersten Hinweise auf einen Blick</h2>
         <p class="screen-copy">
-            Hier laufen Profil, Messung und moegliches Sparpotenzial zusammen.
+            Hier laufen Profil, Messung und mögliches Sparpotenzial zusammen.
             So wirkt die App nicht wie ein Datenformular, sondern wie ein klarer Begleiter.
         </p>
         """,
@@ -1560,9 +1734,9 @@ def render_results_tab(user_data: dict) -> None:
     st.markdown(
         metric_grid_html(
             [
-                ("Profilstaerke", f"{filled}/{total_fields} Angaben"),
+                ("Profilstärke", f"{filled}/{total_fields} Angaben"),
                 ("Aktive Tests", f"{completed_tests}/{total_tests} abgeschlossen"),
-                ("Moegliche Einsparung", savings_value),
+                ("Mögliche Einsparung", savings_value),
                 ("Letzter Warmwasserwert", f"{latest_attempt['flow_lpm']} L/min"),
             ]
         ),
@@ -1572,18 +1746,26 @@ def render_results_tab(user_data: dict) -> None:
     st.markdown(warmwater_result_card(latest_attempt), unsafe_allow_html=True)
 
     st.markdown(
-        dedent(
+        html_fragment(
             f"""
         <div class="section-panel">
-            <div class="panel-head">Grundlage der Einschaetzung</div>
+            <div class="panel-head">Grundlage der Einschätzung</div>
             <p class="screen-copy">
-                Die Euro-Schaetzung kombiniert deinen letzten Warmwasserwert mit Haushalt,
-                Gebaeudetyp und Heizsystem aus dem Fragebogen. Sie ist bewusst als erste,
-                leicht verstaendliche Orientierung gedacht.
+                Die Euro-Schätzung kombiniert deinen letzten Warmwasserwert mit Haushalt,
+                Gebäudetyp und Heizsystem aus dem Fragebogen. Sie ist bewusst als erste,
+                leicht verständliche Orientierung gedacht.
             </p>
             {chips_html(summary_chips(questionnaire))}
         </div>
         """
+        ),
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        media_placeholder_html(
+            "Platzhalter für Report-Visual",
+            "Hier kann später ein Piktogramm, eine kleine Grafik oder eine Vergleichsansicht für den Report erscheinen.",
         ),
         unsafe_allow_html=True,
     )
