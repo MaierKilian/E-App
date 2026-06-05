@@ -110,7 +110,7 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
         <div className="min-w-0">
           <p className="text-sm text-muted">{t('home.greeting')}</p>
           <h1 className="text-xl font-bold text-foreground truncate">
-            {data.profileName.trim() || t('home.profileNameFallback')}
+            {(data.profileName ?? '').trim() || t('home.profileNameFallback')}
           </h1>
           <p className="mt-1 text-xs text-muted">
             {t('home.completenessLabel', { value: completeness })}

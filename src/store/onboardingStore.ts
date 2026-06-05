@@ -56,6 +56,18 @@ export const useOnboardingStore = create<OnboardingState>()(
         set((state) => ({ data: { ...state.data, completed: false }, currentStep: 0 })),
       reset: () => set({ data: defaultData, currentStep: -1 }),
     }),
-    { name: 'eapp-onboarding' },
+    {
+      name: 'eapp-onboarding',
+      // Gespeicherte Daten mit den aktuellen Defaults zusammenführen, damit nach
+      // einem Update neu hinzugekommene Felder nie fehlen (sonst Laufzeitfehler).
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<OnboardingState>
+        return {
+          ...current,
+          ...p,
+          data: { ...current.data, ...(p.data ?? {}) },
+        }
+      },
+    },
   ),
 )

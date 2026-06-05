@@ -47,7 +47,7 @@ export function estimateAnnualCo2Kg(kwh: number): number {
  */
 export function profileCompleteness(data: OnboardingData): number {
   const checks: boolean[] = [
-    data.profileName.trim().length > 0,
+    (data.profileName ?? '').trim().length > 0,
     data.personsCount > 0,
     data.livingArea > 0,
     data.buildingYear > 0,
@@ -62,7 +62,7 @@ export function profileCompleteness(data: OnboardingData): number {
     data.ventilationType !== 'unknown',
     data.energyCostRange !== 'unknown',
     data.lastRenovationYear !== 'unknown',
-    data.postalCode.trim().length > 0,
+    (data.postalCode ?? '').trim().length > 0,
   ]
 
   const filled = checks.filter(Boolean).length
