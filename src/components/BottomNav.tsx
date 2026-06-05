@@ -7,7 +7,7 @@ export function BottomNav() {
   const { t } = useTranslation()
 
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border bg-surface/90 backdrop-blur pb-[env(safe-area-inset-bottom)]">
+    <nav className="glass-bar md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border/60 pb-[env(safe-area-inset-bottom)]">
       <div className="grid grid-cols-5">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon

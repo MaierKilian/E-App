@@ -4,7 +4,7 @@
     "tagline": "Home energy analysis – easy to do yourself."
   },
   "nav": {
-    "onboarding": "Setup",
+    "onboarding": "Home",
     "measurements": "Measurements",
     "monitoring": "Monitoring",
     "reports": "Reports",
@@ -57,7 +57,8 @@
         "Heating",
         "Devices",
         "Review"
-      ]
+      ],
+      "progress": "Step {{current}} of {{total}}"
     },
     "completed": {
       "title": "Setup complete",

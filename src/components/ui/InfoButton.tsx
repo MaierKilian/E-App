@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useTranslation } from 'react-i18next'
 import { Info } from 'lucide-react'
 
@@ -7,29 +8,80 @@ interface InfoButtonProps {
   title?: string
 }
 
+interface PopoverPos {
+  top: number
+  left: number
+  width: number
+}
+
+const MARGIN = 16 // Mindestabstand zum Viewport-Rand (entspricht 1rem)
+
 /**
  * Kleiner Info-Button mit Popover.
- * Öffnet bei Klick einen kurzen Erklärtext und schließt bei Klick außerhalb.
+ * Öffnet bei Klick einen kurzen Erklärtext und schließt bei Klick außerhalb
+ * oder mit Escape. Das Popover wird per Portal als fixed-Element gerendert und
+ * am Viewport geklemmt, damit es nie über den Bildschirmrand hinausläuft
+ * (kein horizontaler Überlauf / kein Auszoomen in mobilem Safari).
  */
 export function InfoButton({ text, title }: InfoButtonProps) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
+  const [pos, setPos] = useState<PopoverPos | null>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
+
+  function updatePosition() {
+    const button = buttonRef.current
+    if (!button) return
+    const rect = button.getBoundingClientRect()
+    const vw = document.documentElement.clientWidth
+    const width = Math.min(256, vw - MARGIN * 2) // max-width: min(16rem, 100vw - 2rem)
+    // rechtsbündig am Button ausrichten, dann am Viewport klemmen
+    let left = rect.right - width
+    left = Math.max(MARGIN, Math.min(left, vw - width - MARGIN))
+    const top = rect.bottom + 8
+    setPos({ top, left, width })
+  }
+
+  useLayoutEffect(() => {
+    if (!open) return
+    updatePosition()
+  }, [open])
 
   useEffect(() => {
     if (!open) return
-    function handleClick(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        setOpen(false)
-      }
+
+    function handlePointer(event: MouseEvent | TouchEvent) {
+      const target = event.target as Node
+      if (buttonRef.current?.contains(target)) return
+      if (popoverRef.current?.contains(target)) return
+      setOpen(false)
     }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    function handleKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    function handleReflow() {
+      updatePosition()
+    }
+
+    document.addEventListener('mousedown', handlePointer)
+    document.addEventListener('touchstart', handlePointer)
+    document.addEventListener('keydown', handleKey)
+    window.addEventListener('resize', handleReflow)
+    window.addEventListener('scroll', handleReflow, true)
+    return () => {
+      document.removeEventListener('mousedown', handlePointer)
+      document.removeEventListener('touchstart', handlePointer)
+      document.removeEventListener('keydown', handleKey)
+      window.removeEventListener('resize', handleReflow)
+      window.removeEventListener('scroll', handleReflow, true)
+    }
   }, [open])
 
   return (
-    <div className="relative inline-flex" ref={ref}>
+    <>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-label={t('common.info')}
@@ -39,12 +91,20 @@ export function InfoButton({ text, title }: InfoButtonProps) {
         <Info className="w-4 h-4" />
       </button>
 
-      {open && (
-        <div className="absolute z-30 top-7 left-0 w-64 rounded-xl border border-border bg-surface p-3 shadow-lg text-sm text-foreground">
-          {title && <p className="font-semibold mb-1">{title}</p>}
-          <p className="text-muted">{text}</p>
-        </div>
-      )}
-    </div>
+      {open &&
+        pos &&
+        createPortal(
+          <div
+            ref={popoverRef}
+            role="tooltip"
+            className="glass fixed z-50 rounded-2xl p-3 text-sm text-foreground animate-step-in"
+            style={{ top: pos.top, left: pos.left, width: pos.width }}
+          >
+            {title && <p className="font-semibold mb-1">{title}</p>}
+            <p className="text-muted">{text}</p>
+          </div>,
+          document.body,
+        )}
+    </>
   )
 }

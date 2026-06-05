@@ -83,6 +83,31 @@ function DetailedStepContent({ step, data, onChange }: Omit<StepContentProps, 'm
   }
 }
 
+function StepBody({ mode, step, data, onChange }: StepContentProps) {
+  return mode === 'quick' ? (
+    <QuickStepContent step={step} data={data} onChange={onChange} />
+  ) : (
+    <DetailedStepContent step={step} data={data} onChange={onChange} />
+  )
+}
+
+/**
+ * Fest fixierte Aktionsleiste am unteren Bildschirmrand (Glass-Stil).
+ * Liegt oberhalb der mobilen BottomNav und enthält Zurück / Weiter bzw. Speichern.
+ */
+function ActionBar({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="glass-bar fixed inset-x-0 z-30 border-t border-border/60 bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]">
+      <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">{children}</div>
+    </div>
+  )
+}
+
+const PRIMARY_BTN =
+  'flex items-center justify-center gap-1 px-5 py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]'
+const SECONDARY_BTN =
+  'flex items-center justify-center gap-1 px-5 py-3 rounded-2xl border border-border bg-surface/70 text-foreground text-sm font-medium transition-[transform,colors] hover:bg-surface-2 active:scale-[0.97]'
+
 function CompletedSummary({
   data,
   onEdit,
@@ -107,7 +132,7 @@ function CompletedSummary({
       <button
         type="button"
         onClick={onEdit}
-        className="w-full py-3 rounded-xl border border-primary text-primary font-medium text-sm hover:bg-primary/10 transition-colors"
+        className="w-full py-3 rounded-2xl border border-primary text-primary font-medium text-sm hover:bg-primary/10 transition-colors"
       >
         {t('onboarding.completed.editButton')}
       </button>
@@ -126,6 +151,8 @@ export function OnboardingPage() {
 
   const totalSteps = mode === 'quick' ? QUICK_TOTAL : DETAILED_TOTAL
   const isLastStep = !isOnModeSelection && currentStep === totalSteps - 1
+  // Der Review-Schritt bringt eigene Karten mit – kein zusätzlicher Card-Rahmen.
+  const isReviewStep = isLastStep
 
   if (data.completed) {
     return (
@@ -162,78 +189,63 @@ export function OnboardingPage() {
     navigate('/measurements')
   }
 
+  // Mode-Auswahl: eigener Screen mit eigener Aktionsleiste.
   if (isOnModeSelection) {
     return (
-      <div className="space-y-5">
-        <Card>
-          <h2 className="text-base font-semibold text-foreground mb-4">
+      <div className="pb-24">
+        <div key="mode" className="animate-step-in">
+          <h2 className="text-lg font-semibold text-foreground mb-1">
             {t('onboarding.step0.title')}
           </h2>
+          <p className="text-sm text-muted mb-5">{t('onboarding.step0.subtitle')}</p>
           <Step0Mode data={data} onChange={updateData} />
-        </Card>
+        </div>
 
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={handleNext}
-            className="flex items-center gap-1 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity active:scale-95 transition-transform"
-          >
+        <ActionBar>
+          <button type="button" onClick={handleNext} className={`${PRIMARY_BTN} w-full`}>
             {t('common.next')}
             <ChevronRight className="w-4 h-4" />
           </button>
-        </div>
+        </ActionBar>
       </div>
     )
   }
 
   return (
-    <div className="space-y-5">
+    <div className="pb-24">
       <StepIndicator
         currentStep={currentStep}
         totalSteps={totalSteps}
-        mode={mode}
+        title={getStepTitle(currentStep, mode, t)}
       />
 
-      <Card>
-        <h2 className="text-base font-semibold text-foreground mb-4">
-          {t('common.step')} {currentStep + 1} – {getStepTitle(currentStep, mode, t)}
-        </h2>
-        {mode === 'quick' ? (
-          <QuickStepContent step={currentStep} data={data} onChange={updateData} />
+      <div key={`${mode}-${currentStep}`} className="animate-step-in mt-5">
+        {isReviewStep ? (
+          <StepBody mode={mode} step={currentStep} data={data} onChange={updateData} />
         ) : (
-          <DetailedStepContent step={currentStep} data={data} onChange={updateData} />
+          <Card>
+            <StepBody mode={mode} step={currentStep} data={data} onChange={updateData} />
+          </Card>
         )}
-      </Card>
+      </div>
 
-      <div className="flex justify-between gap-3">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex items-center gap-1 px-5 py-2.5 rounded-xl border border-border bg-surface text-foreground text-sm font-medium hover:bg-surface-2 transition-colors active:scale-95 transition-transform"
-        >
+      <ActionBar>
+        <button type="button" onClick={handleBack} className={SECONDARY_BTN}>
           <ChevronLeft className="w-4 h-4" />
           {t('common.back')}
         </button>
 
         {isLastStep ? (
-          <button
-            type="button"
-            onClick={handleSave}
-            className="flex items-center gap-1 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity active:scale-95 transition-transform"
-          >
+          <button type="button" onClick={handleSave} className={`${PRIMARY_BTN} flex-1`}>
             {t('common.save')}
           </button>
         ) : (
-          <button
-            type="button"
-            onClick={handleNext}
-            className="flex items-center gap-1 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity active:scale-95 transition-transform"
-          >
+          <button type="button" onClick={handleNext} className={`${PRIMARY_BTN} flex-1`}>
             {t('common.next')}
             <ChevronRight className="w-4 h-4" />
           </button>
         )}
-      </div>
+      </ActionBar>
     </div>
   )
 }

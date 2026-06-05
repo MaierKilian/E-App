@@ -49,37 +49,45 @@ export function Step3Rooms({ data, onChange }: Props) {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <p className="text-sm text-muted">{t('onboarding.step3.subtitle')}</p>
-      {ALL_ROOM_TYPES.map((type) => {
-        const selected = isSelected(type)
-        return (
-          <div
-            key={type}
-            className={`flex items-center justify-between gap-3 rounded-xl border px-4 py-3 transition-colors ${
-              selected
-                ? 'border-primary bg-primary/10'
-                : 'border-border bg-surface'
-            }`}
-          >
-            <button
-              type="button"
-              onClick={() => toggleRoom(type)}
-              className="flex-1 text-left text-sm font-medium text-foreground"
+      <div className="grid grid-cols-2 gap-2.5">
+        {ALL_ROOM_TYPES.map((type) => {
+          const selected = isSelected(type)
+          return (
+            <div
+              key={type}
+              className={`rounded-2xl border px-3 py-2.5 transition-colors active:scale-[0.98] ${
+                selected
+                  ? 'border-primary bg-primary/10'
+                  : 'border-border bg-surface/70'
+              }`}
             >
-              {t(`onboarding.step3.roomTypes.${type}`)}
-            </button>
-            {selected && (
-              <Stepper
-                value={getCount(type)}
-                min={1}
-                max={10}
-                onChange={(v) => setCount(type, v)}
-              />
-            )}
-          </div>
-        )
-      })}
+              <button
+                type="button"
+                onClick={() => toggleRoom(type)}
+                aria-pressed={selected}
+                className={`block w-full text-left text-sm font-medium leading-tight ${
+                  selected ? 'text-primary' : 'text-foreground'
+                }`}
+              >
+                {t(`onboarding.step3.roomTypes.${type}`)}
+              </button>
+              {selected && (
+                <div className="mt-2 flex justify-center">
+                  <Stepper
+                    value={getCount(type)}
+                    min={1}
+                    max={10}
+                    size="sm"
+                    onChange={(v) => setCount(type, v)}
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }

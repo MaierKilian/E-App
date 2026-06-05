@@ -10,7 +10,7 @@ export function Header() {
   const { t } = useTranslation()
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-surface/80 backdrop-blur">
+    <header className="glass-bar sticky top-0 z-20 border-b border-border/60">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
         <div className="flex items-center gap-2 font-semibold">
           <span className="grid place-items-center w-8 h-8 rounded-lg bg-primary text-primary-foreground">

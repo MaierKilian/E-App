@@ -4,7 +4,7 @@
     "tagline": "Energieanalyse für deinen Haushalt – einfach selbst gemacht."
   },
   "nav": {
-    "onboarding": "Einrichtung",
+    "onboarding": "Zuhause",
     "measurements": "Messungen",
     "monitoring": "Monitoring",
     "reports": "Berichte",
@@ -91,7 +91,8 @@
         "Heizung",
         "Geräte",
         "Prüfen"
-      ]
+      ],
+      "progress": "Schritt {{current}} von {{total}}"
     },
     "completed": {
       "title": "Einrichtung abgeschlossen",

@@ -8,7 +8,8 @@ import { BottomNav } from '@/components/BottomNav'
  */
 export function Layout() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col">
+    <div className="min-h-[100dvh] text-foreground flex flex-col">
+      <div className="app-backdrop" aria-hidden="true" />
       <Header />
       <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-6 pb-28 md:pb-10">
         <Outlet />
