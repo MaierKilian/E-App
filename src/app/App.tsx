@@ -3,6 +3,7 @@ import { Layout } from './Layout'
 import { useApplyTheme } from './useApplyTheme'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { MeasurementsPage } from '@/features/measurements/MeasurementsPage'
+import { MeasurementRunner } from '@/features/measurements/MeasurementRunner'
 import { MonitoringPage } from '@/features/monitoring/MonitoringPage'
 import { ReportsPage } from '@/features/reports/ReportsPage'
 import { EducationPage } from '@/features/education/EducationPage'
@@ -17,6 +18,7 @@ export function App() {
           <Route index element={<Navigate to="/onboarding" replace />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/measurements" element={<MeasurementsPage />} />
+          <Route path="/measurements/:id" element={<MeasurementRunner />} />
           <Route path="/monitoring" element={<MonitoringPage />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/education" element={<EducationPage />} />

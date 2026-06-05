@@ -84,7 +84,95 @@
         "name": "Energiekosten-Messgerät",
         "benefit": "Stromfresser im Haushalt einfach aufspüren.",
         "price": "ab 17,99 €"
+      },
+      "eco_showerhead": {
+        "name": "Sparduschkopf",
+        "benefit": "Bis zu 50 % weniger Warmwasser bei vollem Duschkomfort.",
+        "price": "ab 29,99 €"
       }
+    }
+  },
+  "measurements": {
+    "page": {
+      "title": "Messungen",
+      "subtitle": "Einfache, geführte Checks für dein Zuhause."
+    },
+    "status": {
+      "done": "erledigt",
+      "soon": "bald",
+      "available": "verfügbar"
+    },
+    "difficultyLabel": "Schwierigkeit",
+    "ratings": {
+      "good": "sparsam",
+      "medium": "mittel",
+      "high": "hoch"
+    },
+    "common": {
+      "start": "Los geht's",
+      "evaluate": "Auswerten",
+      "save": "Speichern & fertig",
+      "again": "Erneut messen",
+      "back": "Messungen",
+      "progress": "{{current}} / {{total}}",
+      "phaseIntro": "Erklärung",
+      "phaseRun": "Durchführung",
+      "phaseResult": "Ergebnis"
+    },
+    "showerhead": {
+      "title": "Duschkopf-Test",
+      "short": "Miss den Wasserdurchfluss deiner Dusche und entdecke Sparpotenzial.",
+      "intro": {
+        "lead": "Mit einem Messbecher und einer Uhr findest du in einer Minute heraus, wie viel Wasser deine Dusche pro Minute verbraucht.",
+        "needsTitle": "Das brauchst du",
+        "needs": [
+          "Ein Gefäß mit bekanntem Volumen (z. B. Messbecher oder 1-Liter-Flasche)",
+          "Eine Uhr oder Stoppuhr (z. B. am Smartphone)"
+        ],
+        "stepsTitle": "So geht's",
+        "steps": [
+          "Stelle die Dusche auf deine übliche Temperatur und Stärke ein.",
+          "Halte das leere Gefäß unter den Duschkopf und stoppe gleichzeitig die Zeit.",
+          "Stoppe, sobald das Gefäß voll ist, und merke dir Liter und Sekunden.",
+          "Trage beide Werte im nächsten Schritt ein."
+        ]
+      },
+      "run": {
+        "litersLabel": "Gemessene Liter",
+        "litersUnit": "L",
+        "litersInfo": "Das Volumen deines Gefäßes. Eine normale Wasserflasche fasst meist 1 Liter.",
+        "secondsLabel": "Gemessene Zeit",
+        "secondsUnit": "s",
+        "secondsInfo": "Die Zeit in Sekunden, bis das Gefäß voll war. Je länger gemessen, desto genauer."
+      },
+      "result": {
+        "flowUnit": "L/min",
+        "costLabel": "Geschätzte Warmwasserkosten",
+        "perYear": "{{value}} €/Jahr",
+        "savingLabel": "Ersparnis ≈ {{value}}",
+        "affiliateNote": "Ein Sparduschkopf senkt den Verbrauch ohne Komfortverlust:",
+        "summary": {
+          "good": "Sehr sparsam – dein Duschkopf verbraucht wenig Wasser.",
+          "medium": "Im mittleren Bereich. Mit einem Sparduschkopf lässt sich noch Wasser und Energie sparen.",
+          "high": "Hoher Verbrauch. Ein Sparduschkopf kann deutlich Wasser und Warmwasserkosten senken."
+        },
+        "tip": {
+          "medium": "Ein Sparduschkopf (~8 L/min) reduziert den Warmwasserbedarf spürbar.",
+          "high": "Ein Sparduschkopf (~8 L/min) senkt den Warmwasserbedarf deutlich – schnelle Amortisation."
+        }
+      }
+    },
+    "fridge": {
+      "title": "Kühlschrank-Check",
+      "short": "Prüfe die Temperatur und den Energieverbrauch deines Kühlschranks."
+    },
+    "standby": {
+      "title": "Standby-Verbrauch",
+      "short": "Spüre heimliche Stromfresser im Standby-Betrieb auf."
+    },
+    "room_temperature": {
+      "title": "Raumtemperatur",
+      "short": "Miss die Raumtemperatur und finde dein Sparpotenzial beim Heizen."
     }
   },
   "monitoring": {

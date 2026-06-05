@@ -84,7 +84,95 @@
         "name": "Energy Cost Meter",
         "benefit": "Easily track down power hogs in your home.",
         "price": "from €17.99"
+      },
+      "eco_showerhead": {
+        "name": "Water-Saving Showerhead",
+        "benefit": "Up to 50% less hot water with full shower comfort.",
+        "price": "from €29.99"
       }
+    }
+  },
+  "measurements": {
+    "page": {
+      "title": "Measurements",
+      "subtitle": "Simple, guided checks for your home."
+    },
+    "status": {
+      "done": "done",
+      "soon": "soon",
+      "available": "available"
+    },
+    "difficultyLabel": "Difficulty",
+    "ratings": {
+      "good": "efficient",
+      "medium": "medium",
+      "high": "high"
+    },
+    "common": {
+      "start": "Let's go",
+      "evaluate": "Evaluate",
+      "save": "Save & done",
+      "again": "Measure again",
+      "back": "Measurements",
+      "progress": "{{current}} / {{total}}",
+      "phaseIntro": "Explanation",
+      "phaseRun": "Measurement",
+      "phaseResult": "Result"
+    },
+    "showerhead": {
+      "title": "Showerhead Test",
+      "short": "Measure your shower's water flow and uncover savings potential.",
+      "intro": {
+        "lead": "With a measuring jug and a clock you can find out in a minute how much water your shower uses per minute.",
+        "needsTitle": "What you need",
+        "needs": [
+          "A container of known volume (e.g. measuring jug or 1-litre bottle)",
+          "A clock or stopwatch (e.g. on your smartphone)"
+        ],
+        "stepsTitle": "How it works",
+        "steps": [
+          "Set the shower to your usual temperature and strength.",
+          "Hold the empty container under the showerhead and start the timer at the same time.",
+          "Stop as soon as the container is full and note the litres and seconds.",
+          "Enter both values in the next step."
+        ]
+      },
+      "run": {
+        "litersLabel": "Measured litres",
+        "litersUnit": "L",
+        "litersInfo": "The volume of your container. A normal water bottle usually holds 1 litre.",
+        "secondsLabel": "Measured time",
+        "secondsUnit": "s",
+        "secondsInfo": "The time in seconds until the container was full. The longer you measure, the more accurate."
+      },
+      "result": {
+        "flowUnit": "L/min",
+        "costLabel": "Estimated hot water cost",
+        "perYear": "€{{value}}/year",
+        "savingLabel": "Savings ≈ {{value}}",
+        "affiliateNote": "A water-saving showerhead cuts usage without losing comfort:",
+        "summary": {
+          "good": "Very efficient – your showerhead uses little water.",
+          "medium": "In the medium range. A water-saving showerhead could still save water and energy.",
+          "high": "High usage. A water-saving showerhead can significantly cut water and hot water costs."
+        },
+        "tip": {
+          "medium": "A water-saving showerhead (~8 L/min) noticeably reduces hot water demand.",
+          "high": "A water-saving showerhead (~8 L/min) clearly lowers hot water demand – pays off quickly."
+        }
+      }
+    },
+    "fridge": {
+      "title": "Fridge Check",
+      "short": "Check the temperature and energy use of your fridge."
+    },
+    "standby": {
+      "title": "Standby Consumption",
+      "short": "Track down hidden power drains in standby mode."
+    },
+    "room_temperature": {
+      "title": "Room Temperature",
+      "short": "Measure room temperature and find your heating savings potential."
     }
   },
   "onboarding": {

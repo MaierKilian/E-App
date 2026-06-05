@@ -82,3 +82,17 @@ export const AFFILIATE_PRODUCTS: Partial<Record<InstrumentType, AffiliateProduct
 export function getAffiliateProducts(type: InstrumentType): AffiliateProduct[] {
   return AFFILIATE_PRODUCTS[type] ?? []
 }
+
+/**
+ * Zusätzliche Produkte, die nicht an ein Onboarding-Messgerät gebunden sind,
+ * sondern als Empfehlung zu einem Mess-Ergebnis erscheinen (z. B. Sparduschkopf
+ * beim Duschkopf-Test). Platzhalter wie oben – später nur die URL setzen.
+ */
+export const SHOWERHEAD_PRODUCT: AffiliateProduct = {
+  id: 'eco_showerhead',
+  nameKey: 'affiliate.products.eco_showerhead.name',
+  benefitKey: 'affiliate.products.eco_showerhead.benefit',
+  priceKey: 'affiliate.products.eco_showerhead.price',
+  rating: 4.5,
+  url: '#',
+}
