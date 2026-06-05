@@ -32,6 +32,9 @@ export function MeasurementRunner() {
   const mod = getMeasurementModule(id)
 
   const [phase, setPhase] = useState<RunnerPhase>('intro')
+  // Höchste bereits erreichte Phase – steuert, welche Segmente rückwärts
+  // anklickbar sind (man darf nur zu schon erreichten Phasen zurückspringen).
+  const [maxReached, setMaxReached] = useState(0)
   const [outcome, setOutcome] = useState<RunOutcome | null>(null)
 
   // Unbekannte oder (noch) nicht verfügbare Messung → zurück zur Übersicht.
@@ -42,9 +45,15 @@ export function MeasurementRunner() {
   const { Intro, Run, Result } = mod
   const phaseIndex = PHASES.indexOf(phase)
 
+  function goToPhase(next: RunnerPhase) {
+    const nextIndex = PHASES.indexOf(next)
+    setMaxReached((prev) => Math.max(prev, nextIndex))
+    setPhase(next)
+  }
+
   function handleEvaluate(next: RunOutcome) {
     setOutcome(next)
-    setPhase('result')
+    goToPhase('result')
   }
 
   function handleSave(result: MeasurementResult) {
@@ -66,22 +75,39 @@ export function MeasurementRunner() {
 
         <h1 className="mt-3 text-2xl font-bold">{t(`measurements.${id}.title`)}</h1>
 
-        {/* Phasen-Segmente: Info · Messen · Ergebnis (aktuelle hervorgehoben) */}
+        {/* Phasen-Segmente: Info · Messen · Ergebnis. Bereits erreichte
+            vorherige Segmente dienen als Rück-Navigation (nur zurück). */}
         <div className="glass mt-3 flex gap-1 rounded-2xl p-1">
           {PHASES.map((p, i) => {
             const active = i === phaseIndex
             const passed = i < phaseIndex
+            // Nur zu einem schon erreichten, früheren Segment darf gesprungen
+            // werden – nicht nach vorne.
+            const canGoBack = i < phaseIndex && i <= maxReached
+            const baseClass = `flex-1 rounded-xl px-2 py-1.5 text-center text-xs font-semibold transition-colors ${
+              active
+                ? 'bg-primary text-primary-foreground'
+                : passed
+                  ? 'text-primary'
+                  : 'text-muted'
+            }`
+            if (canGoBack) {
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => goToPhase(p)}
+                  className={`${baseClass} focus-ring transition-transform active:scale-[0.97] hover:text-foreground`}
+                >
+                  {t(PHASE_LABEL[p])}
+                </button>
+              )
+            }
             return (
               <div
                 key={p}
                 aria-current={active ? 'step' : undefined}
-                className={`flex-1 rounded-xl px-2 py-1.5 text-center text-xs font-semibold transition-colors ${
-                  active
-                    ? 'bg-primary text-primary-foreground'
-                    : passed
-                      ? 'text-primary'
-                      : 'text-muted'
-                }`}
+                className={baseClass}
               >
                 {t(PHASE_LABEL[p])}
               </div>
@@ -95,7 +121,7 @@ export function MeasurementRunner() {
           <Intro />
           <button
             type="button"
-            onClick={() => setPhase('run')}
+            onClick={() => goToPhase('run')}
             className="flex w-full items-center justify-center gap-1 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]"
           >
             {t([`measurements.${id}.intro.start`, 'measurements.common.start'])}
@@ -118,7 +144,7 @@ export function MeasurementRunner() {
             </button>
             <button
               type="button"
-              onClick={() => setPhase('run')}
+              onClick={() => goToPhase('run')}
               className="flex flex-1 items-center justify-center gap-1 rounded-2xl border border-border bg-surface/70 px-5 py-3 text-sm font-medium text-foreground transition-[transform,colors] hover:bg-surface-2 active:scale-[0.97]"
             >
               {t('measurements.common.again')}

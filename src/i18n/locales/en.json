@@ -109,6 +109,7 @@
     },
     "difficultyLabel": "Difficulty",
     "minutesUnit": "min",
+    "affiliateLink": "View {{name}}",
     "ratings": {
       "good": "efficient",
       "medium": "medium",
@@ -137,7 +138,10 @@
     "allDone": "Great – you've completed all available measurements.",
     "byRoom": {
       "noRooms": "You haven't selected any rooms yet.",
-      "selectRooms": "Select rooms"
+      "selectRooms": "Select rooms",
+      "nothingToMeasure": "Nothing to measure",
+      "markNothing": "Nothing to measure",
+      "undo": "Undo"
     },
     "stopwatch": {
       "start": "Start",
@@ -229,6 +233,8 @@
       },
       "run": {
         "deviceLabel": "Device {{index}}",
+        "deviceName": "Label (optional)",
+        "deviceNamePlaceholder": "e.g. TV bedroom",
         "remove": "Remove",
         "addDevice": "Add device",
         "wattsLabel": "Standby power",
@@ -237,6 +243,12 @@
       },
       "result": {
         "unit": "W",
+        "kwhUnit": "kWh/year",
+        "costPerYear": "€/year",
+        "costPerMonth": "≈ {{value}} €/month",
+        "miniPower": "Standby power",
+        "miniConsumption": "Consumption",
+        "estimated": "estimated",
         "costLabel": "Electricity cost",
         "perYear": "≈ {{value}} €/year",
         "breakdownTitle": "Breakdown",

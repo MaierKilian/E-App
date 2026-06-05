@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { DoorOpen } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
+import { useMeasurementsStore } from '@/store/measurementsStore'
+import type { RoomType } from '@/types'
 import { MEASUREMENT_CATALOG, appliesToRoom } from '../catalog'
 import type { MeasurementResult } from '../types'
 import { GroupTileGrid, type TileGroup } from './GroupTileGrid'
@@ -19,6 +21,8 @@ export function ByRoomView({ results }: ViewProps) {
   const navigate = useNavigate()
   const editProfile = useOnboardingStore((s) => s.editProfile)
   const rooms = useOnboardingStore((s) => s.data.rooms)
+  const skippedRooms = useMeasurementsStore((s) => s.skippedRooms)
+  const toggleSkippedRoom = useMeasurementsStore((s) => s.toggleSkippedRoom)
 
   if (rooms.length === 0) {
     return (
@@ -50,5 +54,10 @@ export function ByRoomView({ results }: ViewProps) {
     }))
     .filter((g) => g.items.length > 0)
 
-  return <GroupTileGrid groups={groups} results={results} />
+  const skip = {
+    skipped: new Set<string>(skippedRooms),
+    onToggle: (key: string) => toggleSkippedRoom(key as RoomType),
+  }
+
+  return <GroupTileGrid groups={groups} results={results} skip={skip} />
 }

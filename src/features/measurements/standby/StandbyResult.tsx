@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { AffiliateRow } from '@/components/AffiliateCard'
+import { AffiliateLink } from '@/components/AffiliateLink'
 import { SMART_PLUG_PRODUCT } from '@/features/onboarding/affiliateProducts'
 import { RatingBadge } from '../RatingBadge'
 import { RATING_COLOR } from '../rating'
@@ -16,6 +16,16 @@ function useNumberFormat() {
     }).format(value)
 }
 
+/** Kleine Kennzahl-Kachel (Label oben, Wert unten). */
+function MiniTile({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="glass flex flex-col items-center gap-1 rounded-2xl p-3 text-center">
+      <span className="text-[11px] text-muted">{label}</span>
+      <span className="text-sm font-semibold tabular-nums text-foreground">{value}</span>
+    </div>
+  )
+}
+
 /** Knapper Tipp-Chip. */
 function Chip({ label }: { label: string }) {
   return (
@@ -26,17 +36,21 @@ function Chip({ label }: { label: string }) {
 }
 
 /**
- * Ergebnis-Phase des Standby-Checks: großer Gesamt-Watt-Wert mit subtiler
- * Bewertungs-Tönung, Jahreskosten, Geräte-Aufschlüsselung (größter Verbraucher
- * zuerst), Tipp-Chips und bei medium/high eine Smart-Plug-Empfehlung.
+ * Ergebnis-Phase des Standby-Checks. Hauptzahl sind die Jahreskosten in €
+ * (darunter dezent die Monatskosten), zwei Mini-Kacheln zeigen Standby-Leistung
+ * (W) und Jahresverbrauch (kWh). Die Bewertung bleibt leistungsbasiert. Ist der
+ * Strompreis nur der Default, werden die Kosten als Schätzung gekennzeichnet.
  */
 export function StandbyResult({ result }: ResultProps) {
   const { t } = useTranslation()
   const fmt = useNumberFormat()
 
-  const totalW = result.primaryValue
-  const annualCost = result.details?.annualCost ?? 0
+  const annualCost = result.details?.annualCost ?? result.primaryValue ?? 0
+  const monthlyCost = annualCost / 12
+  const totalW = result.details?.totalWatts ?? 0
+  const annualKwh = result.details?.annualKwh ?? 0
   const avoidable = result.details?.avoidableCost ?? 0
+  const isEstimated = (result.details?.tariffCustom ?? 0) === 0
   const isGood = result.rating === 'good'
 
   const devices = decodeDevices(result.details).sort((a, b) => b.watts - a.watts)
@@ -55,25 +69,37 @@ export function StandbyResult({ result }: ResultProps) {
         <div className="relative flex flex-col items-center gap-2 py-1 text-center">
           <div className="flex items-baseline gap-1.5">
             <span className="text-5xl font-bold tabular-nums text-foreground">
-              {fmt(totalW, 1)}
+              {fmt(annualCost)}
             </span>
             <span className="text-lg font-medium text-muted">
-              {t('measurements.standby.result.unit')}
+              {t('measurements.standby.result.costPerYear')}
             </span>
           </div>
+          <p className="text-sm text-muted">
+            {t('measurements.standby.result.costPerMonth', { value: fmt(monthlyCost) })}
+          </p>
           <RatingBadge rating={result.rating} />
           <p className="mt-1 text-sm text-muted">
             {t(`measurements.standby.result.summary.${result.rating}`)}
           </p>
+          {isEstimated && (
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
+              {t('measurements.standby.result.estimated')}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Jahreskosten */}
-      <div className="glass flex items-center justify-between gap-3 rounded-3xl p-4">
-        <span className="text-sm text-muted">{t('measurements.standby.result.costLabel')}</span>
-        <span className="text-lg font-bold tabular-nums text-foreground">
-          {t('measurements.standby.result.perYear', { value: fmt(annualCost) })}
-        </span>
+      {/* Mini-Kacheln: Standby-Leistung & Jahresverbrauch */}
+      <div className="grid grid-cols-2 gap-2">
+        <MiniTile
+          label={t('measurements.standby.result.miniPower')}
+          value={`${fmt(totalW, 1)} ${t('measurements.standby.result.unit')}`}
+        />
+        <MiniTile
+          label={t('measurements.standby.result.miniConsumption')}
+          value={`${fmt(annualKwh)} ${t('measurements.standby.result.kwhUnit')}`}
+        />
       </div>
 
       {/* Geräte-Aufschlüsselung (Stromfresser zuerst) */}
@@ -128,7 +154,7 @@ export function StandbyResult({ result }: ResultProps) {
             </p>
           )}
           <p className="text-sm text-muted">{t('measurements.standby.result.affiliateNote')}</p>
-          <AffiliateRow products={[SMART_PLUG_PRODUCT]} />
+          <AffiliateLink product={SMART_PLUG_PRODUCT} />
         </div>
       )}
     </div>

@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown, ChevronRight, Check } from 'lucide-react'
+import { ChevronDown, ChevronRight, Check, Ban, RotateCcw } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { MeasurementMeta } from '../catalog'
 import type { MeasurementResult } from '../types'
@@ -14,9 +14,19 @@ export interface TileGroup {
   items: MeasurementMeta[]
 }
 
+/** Optionale „nichts zu messen"-Funktion (nur Raum-Ansicht). */
+export interface SkipConfig {
+  /** Keys der aktuell als übersprungen markierten Gruppen. */
+  skipped: Set<string>
+  /** Schaltet den Skip-Status einer Gruppe um. */
+  onToggle: (key: string) => void
+}
+
 interface Props {
   groups: TileGroup[]
   results: Partial<Record<string, MeasurementResult>>
+  /** Wenn gesetzt, erhalten Gruppen eine dezente „Nichts zu messen"-Option. */
+  skip?: SkipConfig
 }
 
 /** Kleine, horizontal scrollbare Messungs-Kachel innerhalb einer aufgeklappten Gruppe. */
@@ -88,40 +98,73 @@ function MiniCard({ meta, result }: { meta: MeasurementMeta; result?: Measuremen
  * Kachel-Grid für Gewerke-/Raum-Ansicht: 2-spaltige Gruppen-Kacheln; beim Antippen
  * klappt darunter eine horizontal scrollbare Reihe der einzelnen Mess-Kacheln auf.
  */
-export function GroupTileGrid({ groups, results }: Props) {
+export function GroupTileGrid({ groups, results, skip }: Props) {
+  const { t } = useTranslation()
   const [active, setActive] = useState<string | null>(null)
 
   return (
     <div className="grid grid-cols-2 gap-3">
       {groups.map((group) => {
         const done = group.items.filter((m) => results[m.id]).length
-        const isActive = active === group.key
+        const isSkipped = skip?.skipped.has(group.key) ?? false
+        const isActive = active === group.key && !isSkipped
         const Icon = group.icon
         return (
           <Fragment key={group.key}>
-            <button
-              type="button"
-              onClick={() => setActive(isActive ? null : group.key)}
-              aria-expanded={isActive}
-              className={`glass flex flex-col gap-3 rounded-3xl p-4 text-left transition-[transform] active:scale-[0.99] ${
-                isActive ? 'ring-2 ring-primary/60' : ''
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary">
-                  <Icon className="h-5 w-5" />
-                </span>
-                <ChevronDown
-                  className={`h-4 w-4 text-muted transition-transform ${isActive ? 'rotate-180' : ''}`}
-                />
-              </div>
-              <div>
-                <p className="font-semibold leading-tight text-foreground">{group.label}</p>
-                <p className="mt-0.5 text-sm tabular-nums text-muted">
-                  {done}/{group.items.length}
-                </p>
-              </div>
-            </button>
+            <div className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => !isSkipped && setActive(isActive ? null : group.key)}
+                aria-expanded={isActive}
+                disabled={isSkipped}
+                className={`glass flex flex-1 flex-col gap-3 rounded-3xl p-4 text-left transition-[transform,opacity] active:scale-[0.99] ${
+                  isActive ? 'ring-2 ring-primary/60' : ''
+                } ${isSkipped ? 'opacity-50' : ''}`}
+              >
+                <div className="flex items-center justify-between">
+                  <span
+                    className={`grid h-11 w-11 place-items-center rounded-2xl ${
+                      isSkipped ? 'bg-surface-2 text-muted' : 'bg-primary/10 text-primary'
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  {!isSkipped && (
+                    <ChevronDown
+                      className={`h-4 w-4 text-muted transition-transform ${isActive ? 'rotate-180' : ''}`}
+                    />
+                  )}
+                </div>
+                <div>
+                  <p className="font-semibold leading-tight text-foreground">{group.label}</p>
+                  <p className="mt-0.5 text-sm tabular-nums text-muted">
+                    {isSkipped
+                      ? t('measurements.byRoom.nothingToMeasure')
+                      : `${done}/${group.items.length}`}
+                  </p>
+                </div>
+              </button>
+
+              {skip && (
+                <button
+                  type="button"
+                  onClick={() => skip.onToggle(group.key)}
+                  className="focus-ring inline-flex items-center justify-center gap-1 self-center rounded-full px-2 py-1 text-[11px] font-medium text-muted transition-colors hover:text-foreground"
+                >
+                  {isSkipped ? (
+                    <>
+                      <RotateCcw className="h-3 w-3" />
+                      {t('measurements.byRoom.undo')}
+                    </>
+                  ) : (
+                    <>
+                      <Ban className="h-3 w-3" />
+                      {t('measurements.byRoom.markNothing')}
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
 
             {isActive && (
               <div className="col-span-2">

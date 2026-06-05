@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Plug, Power, PencilLine, Wifi } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { AffiliateRow } from '@/components/AffiliateCard'
+import { AffiliateLink } from '@/components/AffiliateLink'
 import { getAffiliateProducts } from '@/features/onboarding/affiliateProducts'
 
 const STEP_ICONS: LucideIcon[] = [Plug, Power, PencilLine]
@@ -14,7 +14,7 @@ const STEP_ICONS: LucideIcon[] = [Plug, Power, PencilLine]
 export function StandbyIntro() {
   const { t } = useTranslation()
   const steps = t('measurements.standby.intro.steps', { returnObjects: true }) as string[]
-  const products = getAffiliateProducts('power_meter')
+  const product = getAffiliateProducts('power_meter')[0]
 
   return (
     <div className="space-y-4">
@@ -47,12 +47,7 @@ export function StandbyIntro() {
         </ol>
       </div>
 
-      {products.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-sm text-muted">{t('measurements.standby.intro.affiliateNote')}</p>
-          <AffiliateRow products={products} />
-        </div>
-      )}
+      {product && <AffiliateLink product={product} />}
 
       {/* Platzhalter-Teaser: künftig smartes Messgerät koppeln (noch deaktiviert). */}
       <button

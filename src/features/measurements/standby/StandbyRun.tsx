@@ -22,6 +22,8 @@ const WATTS_MAX = 200
 
 interface DeviceEntry extends StandbyDevice {
   id: number
+  /** Optionale, frei wählbare Bezeichnung (z. B. „Fernseher Schlafzimmer"). */
+  name: string
 }
 
 /** Robuste, NaN-sichere Watt-Eingabe in 0,5er-Schritten. */
@@ -32,7 +34,7 @@ function clampWatts(value: number): number {
 
 let nextId = 1
 function makeEntry(): DeviceEntry {
-  return { id: nextId++, type: 'tv', watts: 0 }
+  return { id: nextId++, type: 'tv', watts: 0, name: '' }
 }
 
 /**
@@ -55,6 +57,7 @@ function encodeDevices(devices: StandbyDevice[]): Record<string, number> {
 export function StandbyRun({ onEvaluate }: RunProps) {
   const { t, i18n } = useTranslation()
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
+  const tariffIsCustom = useTariffStore((s) => s.isCustom)
 
   const [entries, setEntries] = useState<DeviceEntry[]>(() => [makeEntry()])
 
@@ -97,14 +100,18 @@ export function StandbyRun({ onEvaluate }: RunProps) {
       result: {
         id: 'standby',
         rating: calc.rating,
-        primaryValue: calc.totalWatts,
-        unit: 'W',
+        // Hauptwert sind die Jahreskosten in € (Übersicht/Kachel zeigen Kosten);
+        // die Bewertung bleibt jedoch leistungsbasiert (siehe rateStandby).
+        primaryValue: calc.annualCost,
+        unit: '€/Jahr',
         completedAt: new Date().toISOString(),
         details: {
           totalWatts: calc.totalWatts,
           annualKwh: calc.annualKwh,
           annualCost: calc.annualCost,
           avoidableCost: calc.avoidableCost,
+          // 1 = Tarif vom Nutzer gesetzt, 0 = Default (Kosten sind eine Schätzung).
+          tariffCustom: tariffIsCustom ? 1 : 0,
           // Geräte-Aufschlüsselung als `dev{index}_{type}` → Watt, damit die
           // Ergebnis-Ansicht die einzelnen Verbraucher anzeigen kann.
           ...encodeDevices(calc.devices),
@@ -119,7 +126,8 @@ export function StandbyRun({ onEvaluate }: RunProps) {
         <div key={entry.id} className="glass rounded-3xl p-4">
           <div className="mb-3 flex items-center justify-between gap-2">
             <span className="text-sm font-semibold text-foreground">
-              {t('measurements.standby.run.deviceLabel', { index: index + 1 })}
+              {entry.name.trim() ||
+                t('measurements.standby.run.deviceLabel', { index: index + 1 })}
             </span>
             <button
               type="button"
@@ -131,6 +139,16 @@ export function StandbyRun({ onEvaluate }: RunProps) {
               <X className="h-4 w-4" />
             </button>
           </div>
+
+          <input
+            type="text"
+            value={entry.name}
+            onChange={(e) => updateEntry(entry.id, { name: e.target.value })}
+            placeholder={t('measurements.standby.run.deviceNamePlaceholder')}
+            aria-label={t('measurements.standby.run.deviceName')}
+            maxLength={40}
+            className="focus-ring mb-3 w-full rounded-xl border border-border bg-surface/70 px-3 py-2 text-sm text-foreground placeholder:text-muted"
+          />
 
           <div className="flex flex-wrap gap-2">
             {DEVICE_TYPES.map((type) => (

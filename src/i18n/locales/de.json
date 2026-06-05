@@ -109,6 +109,7 @@
     },
     "difficultyLabel": "Schwierigkeit",
     "minutesUnit": "Min.",
+    "affiliateLink": "{{name}} ansehen",
     "ratings": {
       "good": "sparsam",
       "medium": "mittel",
@@ -137,7 +138,10 @@
     "allDone": "Stark – du hast alle verfügbaren Messungen erledigt.",
     "byRoom": {
       "noRooms": "Du hast noch keine Zimmer ausgewählt.",
-      "selectRooms": "Zimmer auswählen"
+      "selectRooms": "Zimmer auswählen",
+      "nothingToMeasure": "Nichts zu messen",
+      "markNothing": "Nichts zu messen",
+      "undo": "Rückgängig"
     },
     "stopwatch": {
       "start": "Start",
@@ -229,6 +233,8 @@
       },
       "run": {
         "deviceLabel": "Gerät {{index}}",
+        "deviceName": "Bezeichnung (optional)",
+        "deviceNamePlaceholder": "z. B. Fernseher Schlafzimmer",
         "remove": "Entfernen",
         "addDevice": "Gerät hinzufügen",
         "wattsLabel": "Standby-Leistung",
@@ -237,6 +243,12 @@
       },
       "result": {
         "unit": "W",
+        "kwhUnit": "kWh/Jahr",
+        "costPerYear": "€/Jahr",
+        "costPerMonth": "≈ {{value}} €/Monat",
+        "miniPower": "Standby-Leistung",
+        "miniConsumption": "Verbrauch",
+        "estimated": "geschätzt",
         "costLabel": "Stromkosten",
         "perYear": "≈ {{value}} €/Jahr",
         "breakdownTitle": "Aufschlüsselung",

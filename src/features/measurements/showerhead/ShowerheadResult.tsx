@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { AffiliateRow } from '@/components/AffiliateCard'
+import { AffiliateLink } from '@/components/AffiliateLink'
 import { SHOWERHEAD_PRODUCT } from '@/features/onboarding/affiliateProducts'
 import { RatingBadge } from '../RatingBadge'
 import { RATING_COLOR } from '../rating'
@@ -107,7 +107,7 @@ export function ShowerheadResult({ result }: ResultProps) {
             </p>
           )}
           <p className="text-sm text-muted">{t('measurements.showerhead.result.affiliateNote')}</p>
-          <AffiliateRow products={[SHOWERHEAD_PRODUCT]} />
+          <AffiliateLink product={SHOWERHEAD_PRODUCT} />
         </div>
       )}
     </div>

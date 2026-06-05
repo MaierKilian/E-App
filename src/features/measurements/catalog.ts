@@ -54,7 +54,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     available: true,
     category: 'electricity',
     estimatedMinutes: 12,
-    rooms: ['living_room', 'office', 'bureau'],
+    allRooms: true,
   },
   {
     id: 'fridge',
