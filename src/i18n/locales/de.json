@@ -28,7 +28,49 @@
     "next": "Weiter",
     "save": "Speichern",
     "edit": "Bearbeiten",
-    "step": "Schritt"
+    "step": "Schritt",
+    "info": "Info",
+    "close": "Schließen"
+  },
+  "info": {
+    "buildingYear": "Das Baujahr verrät den typischen Dämmstandard und hilft, den Energiebedarf besser einzuschätzen.",
+    "windowAge": "Ältere Fenster haben oft höhere Wärmeverluste – das Alter hilft bei der Einschätzung.",
+    "ventilation": "WRG steht für Wärmerückgewinnung: Die Lüftung nutzt die Wärme der Abluft, um Frischluft vorzuwärmen.",
+    "insulation": "Eine grobe Selbsteinschätzung genügt – du musst nichts genau messen."
+  },
+  "monitoring": {
+    "tariff": {
+      "title": "Strompreis",
+      "currentTariff": "Aktueller Strompreis",
+      "prompt": {
+        "title": "Kennst du deinen Strompreis?",
+        "text": "Mit deinem Strompreis kann die App echte Euro-Beträge statt nur kWh berechnen."
+      },
+      "workPrice": "Arbeitspreis",
+      "basePrice": "Grundpreis",
+      "workPriceUnit": "ct/kWh",
+      "basePriceUnit": "€/Monat",
+      "workPriceInfo": "Preis pro verbrauchter Kilowattstunde Strom.",
+      "basePriceInfo": "Feste monatliche Grundgebühr unabhängig vom Verbrauch.",
+      "cardInfo": "Der Strompreis dient dazu, deinen Verbrauch in echte Euro-Beträge umzurechnen.",
+      "whereToFind": {
+        "title": "Wo finde ich meinen Strompreis?",
+        "text": "Auf deiner letzten Stromrechnung oder im Liefervertrag. Der Arbeitspreis steht in ct/kWh, der Grundpreis in €/Monat."
+      },
+      "save": "Speichern",
+      "skip": "Überspringen",
+      "skipHint": "Wir rechnen dann mit Durchschnittswerten.",
+      "custom": "Eigene Werte",
+      "average": "Durchschnitt",
+      "edit": "Bearbeiten",
+      "soonTitle": "Bald verfügbar",
+      "soonPoints": [
+        "Zählerstände für Strom, Wasser, Gas und Pellets erfassen",
+        "Verbrauch als übersichtliches Diagramm",
+        "Erinnerungen für das regelmäßige Ablesen",
+        "Trends und Auffälligkeiten erkennen"
+      ]
+    }
   },
   "onboarding": {
     "stepIndicator": {

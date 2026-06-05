@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { SelectChip } from '@/components/ui/SelectChip'
+import { InfoButton } from '@/components/ui/InfoButton'
 import type { OnboardingData, HeatTransferType, VentilationType, InsulationState } from '@/types'
 
 interface Props {
@@ -64,8 +65,9 @@ export function Step5HeatTransfer({ data, onChange }: Props) {
       </div>
 
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           {t('onboarding.step5.ventilationType')}
+          <InfoButton text={t('info.ventilation')} />
         </label>
         <div className="flex flex-wrap gap-2">
           {VENTILATION_TYPES.map((type) => (
@@ -80,8 +82,9 @@ export function Step5HeatTransfer({ data, onChange }: Props) {
       </div>
 
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           {t('onboarding.step5.insulationState')}
+          <InfoButton text={t('info.insulation')} />
         </label>
         <div className="flex flex-wrap gap-2">
           {INSULATION_STATES.map((state) => (

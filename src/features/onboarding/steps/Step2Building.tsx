@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Slider } from '@/components/ui/Slider'
 import { Stepper } from '@/components/ui/Stepper'
 import { SelectChip } from '@/components/ui/SelectChip'
+import { InfoButton } from '@/components/ui/InfoButton'
 import type { OnboardingData, BuildingType, WindowAge } from '@/types'
 
 interface Props {
@@ -19,8 +20,9 @@ export function Step2Building({ data, onChange, detailed = false }: Props) {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-foreground">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           {t('onboarding.step2.buildingYear')}
+          <InfoButton text={t('info.buildingYear')} />
         </label>
         <Slider
           value={data.buildingYear}
@@ -73,8 +75,9 @@ export function Step2Building({ data, onChange, detailed = false }: Props) {
           </div>
 
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               {t('onboarding.step2.windowAge')}
+              <InfoButton text={t('info.windowAge')} />
             </label>
             <div className="flex flex-wrap gap-2">
               {WINDOW_AGES.map((age) => (

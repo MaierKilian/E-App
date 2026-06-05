@@ -28,7 +28,15 @@
     "next": "Next",
     "save": "Save",
     "edit": "Edit",
-    "step": "Step"
+    "step": "Step",
+    "info": "Info",
+    "close": "Close"
+  },
+  "info": {
+    "buildingYear": "The year of construction reveals the typical insulation standard and helps estimate the energy demand.",
+    "windowAge": "Older windows often have higher heat losses – the age helps with the assessment.",
+    "ventilation": "HRV stands for heat recovery: the ventilation uses the warmth of the exhaust air to pre-heat fresh air.",
+    "insulation": "A rough self-assessment is enough – you don't need to measure anything precisely."
   },
   "onboarding": {
     "stepIndicator": {
@@ -270,6 +278,40 @@
         "goals": "Goals",
         "occupancyStatus": "Status"
       }
+    }
+  },
+  "monitoring": {
+    "tariff": {
+      "title": "Electricity price",
+      "currentTariff": "Current electricity price",
+      "prompt": {
+        "title": "Do you know your electricity price?",
+        "text": "With your electricity price the app can calculate real euro amounts instead of just kWh."
+      },
+      "workPrice": "Unit price",
+      "basePrice": "Base price",
+      "workPriceUnit": "ct/kWh",
+      "basePriceUnit": "€/month",
+      "workPriceInfo": "Price per kilowatt-hour of electricity consumed.",
+      "basePriceInfo": "Fixed monthly base fee independent of consumption.",
+      "cardInfo": "The electricity price is used to convert your consumption into real euro amounts.",
+      "whereToFind": {
+        "title": "Where do I find my electricity price?",
+        "text": "On your last electricity bill or in your supply contract. The unit price is given in ct/kWh, the base price in €/month."
+      },
+      "save": "Save",
+      "skip": "Skip",
+      "skipHint": "We'll then calculate with average values.",
+      "custom": "Custom values",
+      "average": "Average",
+      "edit": "Edit",
+      "soonTitle": "Coming soon",
+      "soonPoints": [
+        "Enter meter readings for electricity, water, gas and pellets",
+        "Consumption shown as a clear chart",
+        "Reminders for regular readings",
+        "Spot trends and anomalies"
+      ]
     }
   },
   "pages": {
