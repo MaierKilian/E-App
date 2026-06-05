@@ -104,6 +104,7 @@
     "step5": {
       "title": "Heat Transfer",
       "subtitle": "Select the heat transfer type for each room.",
+      "noRooms": "No rooms selected. Please go back to step 3.",
       "radiator": "Radiator",
       "underfloor": "Underfloor heating"
     },

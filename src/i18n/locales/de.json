@@ -104,6 +104,7 @@
     "step5": {
       "title": "Wärmeübertragung",
       "subtitle": "Wähle für jeden Raum den Wärmeüberträger.",
+      "noRooms": "Keine Zimmer ausgewählt. Bitte gehe zurück zu Schritt 3.",
       "radiator": "Heizkörper",
       "underfloor": "Fußbodenheizung"
     },
