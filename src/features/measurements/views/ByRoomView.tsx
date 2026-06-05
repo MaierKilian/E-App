@@ -4,15 +4,15 @@ import { DoorOpen } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { MEASUREMENT_CATALOG, appliesToRoom } from '../catalog'
 import type { MeasurementResult } from '../types'
-import { MeasurementRow } from '../MeasurementRow'
+import { GroupTileGrid, type TileGroup } from './GroupTileGrid'
 
 interface ViewProps {
   results: Partial<Record<string, MeasurementResult>>
 }
 
 /**
- * Raumweise Ansicht: iteriert über die im Onboarding gewählten Räume und zeigt
- * je Raum die anwendbaren Messungen. Ohne Räume ein Hinweis mit Auswahl-Button.
+ * Raumweise Ansicht als Kachel-Grid: je Raum eine Kachel; Tippen klappt die
+ * anwendbaren Messungen horizontal scrollbar auf. Ohne Räume ein Hinweis.
  */
 export function ByRoomView({ results }: ViewProps) {
   const { t } = useTranslation()
@@ -41,24 +41,14 @@ export function ByRoomView({ results }: ViewProps) {
     )
   }
 
-  return (
-    <div className="space-y-6">
-      {rooms.map((room) => {
-        const items = MEASUREMENT_CATALOG.filter((m) => appliesToRoom(m, room.type))
-        if (items.length === 0) return null
-        return (
-          <div key={room.type} className="space-y-3">
-            <h2 className="px-1 font-semibold text-foreground">
-              {t(`onboarding.step3.roomTypes.${room.type}`)}
-            </h2>
-            <div className="space-y-2">
-              {items.map((meta) => (
-                <MeasurementRow key={meta.id} meta={meta} result={results[meta.id]} />
-              ))}
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
+  const groups: TileGroup[] = rooms
+    .map((room) => ({
+      key: room.type,
+      label: t(`onboarding.step3.roomTypes.${room.type}`),
+      icon: DoorOpen,
+      items: MEASUREMENT_CATALOG.filter((m) => appliesToRoom(m, room.type)),
+    }))
+    .filter((g) => g.items.length > 0)
+
+  return <GroupTileGrid groups={groups} results={results} />
 }

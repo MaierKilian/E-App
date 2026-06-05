@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { AffiliateRow } from '@/components/AffiliateCard'
 import { SHOWERHEAD_PRODUCT } from '@/features/onboarding/affiliateProducts'
 import { RatingBadge } from '../RatingBadge'
+import { RATING_COLOR } from '../rating'
 import type { ResultProps } from '../runnerTypes'
 
 /** Formatiert eine Zahl in der aktuellen Sprache. */
@@ -50,8 +51,13 @@ export function ShowerheadResult({ result }: ResultProps) {
 
   return (
     <div className="space-y-4">
-      <div className="glass rounded-3xl p-5">
-        <div className="flex flex-col items-center gap-2 py-1 text-center">
+      <div className="glass relative overflow-hidden rounded-3xl p-5">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{ backgroundColor: `color-mix(in srgb, ${RATING_COLOR[result.rating]} 7%, transparent)` }}
+        />
+        <div className="relative flex flex-col items-center gap-2 py-1 text-center">
           <div className="flex items-baseline gap-1.5">
             <span className="text-5xl font-bold tabular-nums text-foreground">{fmt(flow, 1)}</span>
             <span className="text-lg font-medium text-muted">

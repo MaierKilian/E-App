@@ -1,26 +1,23 @@
 import { useTranslation } from 'react-i18next'
 import type { MeasurementRating } from './types'
+import { RATING_COLOR } from './rating'
 
 interface RatingBadgeProps {
   rating: MeasurementRating
 }
 
-/**
- * Dezenter Bewertungs-Badge in Theme-Token-Farben.
- * good  → Primary-Akzent (sparsam)
- * medium→ gedämpft (muted)
- * high  → kräftigerer Primary-Border als Warnhinweis (ohne feste Farben).
- */
+/** Dezenter Bewertungs-Badge in semantischer Farbe (good/medium/high). */
 export function RatingBadge({ rating }: RatingBadgeProps) {
   const { t } = useTranslation()
-  const styles: Record<MeasurementRating, string> = {
-    good: 'bg-primary/15 text-primary border border-primary/30',
-    medium: 'bg-surface-2 text-muted border border-border',
-    high: 'bg-primary/10 text-foreground border border-primary',
-  }
+  const color = RATING_COLOR[rating]
   return (
     <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${styles[rating]}`}
+      className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
+      style={{
+        color,
+        backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)`,
+        border: `1px solid color-mix(in srgb, ${color} 32%, transparent)`,
+      }}
     >
       {t(`measurements.ratings.${rating}`)}
     </span>

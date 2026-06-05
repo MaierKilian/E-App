@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Check } from 'lucide-react'
 import type { MeasurementMeta } from './catalog'
 import type { MeasurementResult } from './types'
+import { RATING_COLOR } from './rating'
 
 /** Kleiner Schwierigkeits-Indikator als 1–3 Punkte. */
 function Difficulty({ level }: { level: 1 | 2 | 3 }) {
@@ -41,13 +42,6 @@ export function MeasurementRow({ meta, result }: RowProps) {
       maximumFractionDigits: 1,
     }).format(result.primaryValue)} ${t('measurements.showerhead.result.flowUnit')}`
 
-  const ratingClass =
-    result?.rating === 'good'
-      ? 'text-primary'
-      : result?.rating === 'high'
-        ? 'text-foreground'
-        : 'text-muted'
-
   const metaLine = `${t(`measurements.categories.${meta.category}`)} · ${meta.estimatedMinutes} ${t('measurements.minutesUnit')}`
 
   const content = (
@@ -76,7 +70,12 @@ export function MeasurementRow({ meta, result }: RowProps) {
               <Check className="h-3.5 w-3.5" />
               {t('measurements.status.done')}
             </span>
-            <span className={`text-sm font-semibold tabular-nums ${ratingClass}`}>{valueText}</span>
+            <span
+              className="text-sm font-semibold tabular-nums"
+              style={{ color: result ? RATING_COLOR[result.rating] : undefined }}
+            >
+              {valueText}
+            </span>
           </>
         ) : clickable ? (
           <ChevronRight className="h-5 w-5 text-muted" />

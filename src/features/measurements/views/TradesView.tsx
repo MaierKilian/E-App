@@ -1,8 +1,10 @@
 import { useTranslation } from 'react-i18next'
+import { Flame, Droplet, Zap, Waves } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { MEASUREMENT_CATALOG } from '../catalog'
 import type { MeasurementCategory } from '../catalog'
 import type { MeasurementResult } from '../types'
-import { MeasurementRow } from '../MeasurementRow'
+import { GroupTileGrid, type TileGroup } from './GroupTileGrid'
 
 interface ViewProps {
   results: Partial<Record<string, MeasurementResult>>
@@ -10,37 +12,23 @@ interface ViewProps {
 
 const CATEGORY_ORDER: MeasurementCategory[] = ['heating', 'hot_water', 'electricity', 'water']
 
-/** Gewerke-Ansicht: Messungen nach Kategorie gruppiert mit erledigt/gesamt. */
+const CATEGORY_ICON: Record<MeasurementCategory, LucideIcon> = {
+  heating: Flame,
+  hot_water: Droplet,
+  electricity: Zap,
+  water: Waves,
+}
+
+/** Gewerke-Ansicht als Kachel-Grid; Tippen klappt die Messungen horizontal scrollbar auf. */
 export function TradesView({ results }: ViewProps) {
   const { t } = useTranslation()
 
-  const groups = CATEGORY_ORDER.map((category) => ({
-    category,
+  const groups: TileGroup[] = CATEGORY_ORDER.map((category) => ({
+    key: category,
+    label: t(`measurements.categories.${category}`),
+    icon: CATEGORY_ICON[category],
     items: MEASUREMENT_CATALOG.filter((m) => m.category === category),
   })).filter((g) => g.items.length > 0)
 
-  return (
-    <div className="space-y-6">
-      {groups.map(({ category, items }) => {
-        const done = items.filter((m) => results[m.id]).length
-        return (
-          <div key={category} className="space-y-3">
-            <div className="flex items-center justify-between gap-3 px-1">
-              <h2 className="font-semibold text-foreground">
-                {t(`measurements.categories.${category}`)}
-              </h2>
-              <span className="text-sm font-semibold tabular-nums text-muted">
-                {done}/{items.length}
-              </span>
-            </div>
-            <div className="space-y-2">
-              {items.map((meta) => (
-                <MeasurementRow key={meta.id} meta={meta} result={results[meta.id]} />
-              ))}
-            </div>
-          </div>
-        )
-      })}
-    </div>
-  )
+  return <GroupTileGrid groups={groups} results={results} />
 }
