@@ -103,10 +103,41 @@
       "available": "available"
     },
     "difficultyLabel": "Difficulty",
+    "minutesUnit": "min",
     "ratings": {
       "good": "efficient",
       "medium": "medium",
       "high": "high"
+    },
+    "views": {
+      "recommended": "Recommended",
+      "trades": "Trades",
+      "byRoom": "By room"
+    },
+    "categories": {
+      "heating": "Heating",
+      "hot_water": "Hot water",
+      "electricity": "Electricity",
+      "water": "Water"
+    },
+    "profile": {
+      "title": "Your measurement profile",
+      "progress": "{{done}}/{{total}}"
+    },
+    "next": {
+      "badge": "Up next",
+      "start": "Start measurement"
+    },
+    "more": "Further steps",
+    "allDone": "Great – you've completed all available measurements.",
+    "byRoom": {
+      "noRooms": "You haven't selected any rooms yet.",
+      "selectRooms": "Select rooms"
+    },
+    "stopwatch": {
+      "start": "Start",
+      "stop": "Stop",
+      "reset": "Reset"
     },
     "common": {
       "start": "Let's go",
@@ -115,46 +146,55 @@
       "again": "Measure again",
       "back": "Measurements",
       "progress": "{{current}} / {{total}}",
-      "phaseIntro": "Explanation",
-      "phaseRun": "Measurement",
+      "phaseIntro": "Info",
+      "phaseRun": "Measure",
       "phaseResult": "Result"
     },
     "showerhead": {
       "title": "Showerhead Test",
       "short": "Measure your shower's water flow and uncover savings potential.",
       "intro": {
-        "lead": "With a measuring jug and a clock you can find out in a minute how much water your shower uses per minute.",
-        "needsTitle": "What you need",
-        "needs": [
-          "A container of known volume (e.g. measuring jug or 1-litre bottle)",
-          "A clock or stopwatch (e.g. on your smartphone)"
-        ],
         "stepsTitle": "How it works",
         "steps": [
-          "Set the shower to your usual temperature and strength.",
-          "Hold the empty container under the showerhead and start the timer at the same time.",
-          "Stop as soon as the container is full and note the litres and seconds.",
-          "Enter both values in the next step."
-        ]
+          "Mark 5 L",
+          "Let water run & time it",
+          "Enter the values"
+        ],
+        "start": "Start test"
       },
       "run": {
-        "litersLabel": "Measured litres",
+        "litersLabel": "Fill volume",
         "litersUnit": "L",
-        "litersInfo": "The volume of your container. A normal water bottle usually holds 1 litre.",
-        "secondsLabel": "Measured time",
+        "litersStandard": "Standard 5 L",
+        "litersInfo": "The volume of your container. Standard is 5 litres.",
+        "stopwatchLabel": "Stopwatch",
+        "secondsLabel": "Time",
         "secondsUnit": "s",
-        "secondsInfo": "The time in seconds until the container was full. The longer you measure, the more accurate."
+        "secondsManual": "Manual (s)",
+        "secondsPlaceholder": "e.g. 30",
+        "secondsInfo": "The time in seconds until the container was full."
       },
       "result": {
         "flowUnit": "L/min",
-        "costLabel": "Estimated hot water cost",
         "perYear": "€{{value}}/year",
         "savingLabel": "Savings ≈ {{value}}",
         "affiliateNote": "A water-saving showerhead cuts usage without losing comfort:",
+        "mini": {
+          "liters": "Fill volume",
+          "seconds": "Time",
+          "reference": "Reference"
+        },
+        "referenceValue": "approx. 7–9 L/min",
+        "saveName": "Measurement 1",
         "summary": {
           "good": "Very efficient – your showerhead uses little water.",
-          "medium": "In the medium range. A water-saving showerhead could still save water and energy.",
-          "high": "High usage. A water-saving showerhead can significantly cut water and hot water costs."
+          "medium": "Medium usage – there's still savings potential.",
+          "high": "High usage – a water-saving insert pays off."
+        },
+        "chips": {
+          "good": "Keep it up",
+          "saver": "Check a saving insert",
+          "time": "Shower shorter"
         },
         "tip": {
           "medium": "A water-saving showerhead (~8 L/min) noticeably reduces hot water demand.",

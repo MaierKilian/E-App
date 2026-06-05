@@ -103,10 +103,41 @@
       "available": "verfügbar"
     },
     "difficultyLabel": "Schwierigkeit",
+    "minutesUnit": "Min.",
     "ratings": {
       "good": "sparsam",
       "medium": "mittel",
       "high": "hoch"
+    },
+    "views": {
+      "recommended": "Empfohlen",
+      "trades": "Gewerke",
+      "byRoom": "Raumweise"
+    },
+    "categories": {
+      "heating": "Heizung",
+      "hot_water": "Warmwasser",
+      "electricity": "Strom",
+      "water": "Wasser"
+    },
+    "profile": {
+      "title": "Dein Messprofil",
+      "progress": "{{done}}/{{total}}"
+    },
+    "next": {
+      "badge": "Als Nächstes",
+      "start": "Messung starten"
+    },
+    "more": "Weitere Schritte",
+    "allDone": "Stark – du hast alle verfügbaren Messungen erledigt.",
+    "byRoom": {
+      "noRooms": "Du hast noch keine Zimmer ausgewählt.",
+      "selectRooms": "Zimmer auswählen"
+    },
+    "stopwatch": {
+      "start": "Start",
+      "stop": "Stopp",
+      "reset": "Zurücksetzen"
     },
     "common": {
       "start": "Los geht's",
@@ -115,46 +146,55 @@
       "again": "Erneut messen",
       "back": "Messungen",
       "progress": "{{current}} / {{total}}",
-      "phaseIntro": "Erklärung",
-      "phaseRun": "Durchführung",
+      "phaseIntro": "Info",
+      "phaseRun": "Messen",
       "phaseResult": "Ergebnis"
     },
     "showerhead": {
       "title": "Duschkopf-Test",
       "short": "Miss den Wasserdurchfluss deiner Dusche und entdecke Sparpotenzial.",
       "intro": {
-        "lead": "Mit einem Messbecher und einer Uhr findest du in einer Minute heraus, wie viel Wasser deine Dusche pro Minute verbraucht.",
-        "needsTitle": "Das brauchst du",
-        "needs": [
-          "Ein Gefäß mit bekanntem Volumen (z. B. Messbecher oder 1-Liter-Flasche)",
-          "Eine Uhr oder Stoppuhr (z. B. am Smartphone)"
-        ],
-        "stepsTitle": "So geht's",
+        "stepsTitle": "So funktioniert's",
         "steps": [
-          "Stelle die Dusche auf deine übliche Temperatur und Stärke ein.",
-          "Halte das leere Gefäß unter den Duschkopf und stoppe gleichzeitig die Zeit.",
-          "Stoppe, sobald das Gefäß voll ist, und merke dir Liter und Sekunden.",
-          "Trage beide Werte im nächsten Schritt ein."
-        ]
+          "5 L markieren",
+          "Wasser laufen lassen & Zeit stoppen",
+          "Werte eingeben"
+        ],
+        "start": "Test starten"
       },
       "run": {
-        "litersLabel": "Gemessene Liter",
+        "litersLabel": "Füllmenge",
         "litersUnit": "L",
-        "litersInfo": "Das Volumen deines Gefäßes. Eine normale Wasserflasche fasst meist 1 Liter.",
-        "secondsLabel": "Gemessene Zeit",
+        "litersStandard": "Standard 5 L",
+        "litersInfo": "Das Volumen deines Gefäßes. Standard sind 5 Liter.",
+        "stopwatchLabel": "Stoppuhr",
+        "secondsLabel": "Zeit",
         "secondsUnit": "s",
-        "secondsInfo": "Die Zeit in Sekunden, bis das Gefäß voll war. Je länger gemessen, desto genauer."
+        "secondsManual": "Manuell (s)",
+        "secondsPlaceholder": "z. B. 30",
+        "secondsInfo": "Die Zeit in Sekunden, bis das Gefäß voll war."
       },
       "result": {
         "flowUnit": "L/min",
-        "costLabel": "Geschätzte Warmwasserkosten",
         "perYear": "{{value}} €/Jahr",
         "savingLabel": "Ersparnis ≈ {{value}}",
         "affiliateNote": "Ein Sparduschkopf senkt den Verbrauch ohne Komfortverlust:",
+        "mini": {
+          "liters": "Füllmenge",
+          "seconds": "Zeit",
+          "reference": "Richtwert"
+        },
+        "referenceValue": "ca. 7–9 L/min",
+        "saveName": "Messung 1",
         "summary": {
           "good": "Sehr sparsam – dein Duschkopf verbraucht wenig Wasser.",
-          "medium": "Im mittleren Bereich. Mit einem Sparduschkopf lässt sich noch Wasser und Energie sparen.",
-          "high": "Hoher Verbrauch. Ein Sparduschkopf kann deutlich Wasser und Warmwasserkosten senken."
+          "medium": "Mittlerer Verbrauch – hier ist noch Sparpotenzial.",
+          "high": "Hoher Verbrauch – ein Sparaufsatz lohnt sich."
+        },
+        "chips": {
+          "good": "Weiter so",
+          "saver": "Sparaufsatz prüfen",
+          "time": "Kürzer duschen"
         },
         "tip": {
           "medium": "Ein Sparduschkopf (~8 L/min) reduziert den Warmwasserbedarf spürbar.",

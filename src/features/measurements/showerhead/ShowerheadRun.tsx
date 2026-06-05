@@ -1,27 +1,40 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Card } from '@/components/ui/Card'
-import { InfoButton } from '@/components/ui/InfoButton'
-import { Stepper } from '@/components/ui/Stepper'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore } from '@/store/tariffStore'
+import { Stopwatch } from '@/components/ui/Stopwatch'
 import { calcShowerhead } from './showerhead'
 import type { RunProps } from '../runnerTypes'
 
+const DEFAULT_LITERS = 5
+
 /**
- * Durchführungs-Phase des Duschkopf-Tests: Eingabe von Litern (0,5er-Schritte)
- * und Sekunden. Robuste Zahleneingabe inkl. Division-durch-0-Schutz: Bei
- * seconds <= 0 wird nicht ausgewertet, sondern ein Hinweis gezeigt.
+ * Minimale Durchführungs-Phase: Füllmenge fein justieren, Zeit per Stoppuhr oder
+ * manuell. Stoppuhr und manuelle Eingabe teilen denselben Sekundenwert.
  */
 export function ShowerheadRun({ onEvaluate }: RunProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const persons = useOnboardingStore((s) => s.data.personsCount)
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
 
-  const [liters, setLiters] = useState(1)
-  const [seconds, setSeconds] = useState(10)
+  const [liters, setLiters] = useState(DEFAULT_LITERS)
+  const [seconds, setSeconds] = useState(0)
 
   const canEvaluate = liters > 0 && seconds > 0
+
+  const fmtLiters = new Intl.NumberFormat(i18n.language, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  }).format(liters)
+
+  function adjustLiters(delta: number) {
+    setLiters((v) => Math.max(0.1, Math.min(50, Math.round((v + delta) * 10) / 10)))
+  }
+
+  function handleManualSeconds(raw: string) {
+    const value = Number(raw.replace(',', '.'))
+    setSeconds(Number.isFinite(value) && value > 0 ? value : 0)
+  }
 
   function handleEvaluate() {
     if (!canEvaluate) return
@@ -39,39 +52,82 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
 
   return (
     <div className="space-y-4">
-      <Card>
+      {/* Füllmenge */}
+      <div className="glass rounded-3xl p-5">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="font-medium">{t('measurements.showerhead.run.litersLabel')}</span>
-            <InfoButton text={t('measurements.showerhead.run.litersInfo')} />
-          </div>
-          <Stepper
-            value={liters}
-            min={0.5}
-            max={20}
-            step={0.5}
-            onChange={setLiters}
-            unit={t('measurements.showerhead.run.litersUnit')}
-          />
+          <span className="font-medium text-foreground">
+            {t('measurements.showerhead.run.litersLabel')}
+          </span>
+          <span className="text-xs text-muted">{t('measurements.showerhead.run.litersStandard')}</span>
         </div>
-      </Card>
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => adjustLiters(-1)}
+            className="focus-ring glass h-10 w-10 rounded-2xl text-lg font-bold text-foreground transition-transform active:scale-90"
+            aria-label="-1"
+          >
+            −1
+          </button>
+          <button
+            type="button"
+            onClick={() => adjustLiters(-0.1)}
+            className="focus-ring glass h-10 w-12 rounded-2xl text-sm font-bold text-foreground transition-transform active:scale-90"
+            aria-label="-0.1"
+          >
+            −0,1
+          </button>
+          <div className="flex min-w-24 items-baseline justify-center gap-1 px-2">
+            <span className="text-3xl font-bold tabular-nums text-foreground">{fmtLiters}</span>
+            <span className="text-sm text-muted">{t('measurements.showerhead.run.litersUnit')}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => adjustLiters(0.1)}
+            className="focus-ring glass h-10 w-12 rounded-2xl text-sm font-bold text-foreground transition-transform active:scale-90"
+            aria-label="+0.1"
+          >
+            +0,1
+          </button>
+          <button
+            type="button"
+            onClick={() => adjustLiters(1)}
+            className="focus-ring glass h-10 w-10 rounded-2xl text-lg font-bold text-foreground transition-transform active:scale-90"
+            aria-label="+1"
+          >
+            +1
+          </button>
+        </div>
+      </div>
 
-      <Card>
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="font-medium">{t('measurements.showerhead.run.secondsLabel')}</span>
-            <InfoButton text={t('measurements.showerhead.run.secondsInfo')} />
-          </div>
-          <Stepper
-            value={seconds}
-            min={1}
-            max={120}
-            step={1}
-            onChange={setSeconds}
-            unit={t('measurements.showerhead.run.secondsUnit')}
+      {/* Stoppuhr */}
+      <div className="space-y-2">
+        <p className="px-1 text-sm font-medium text-muted">
+          {t('measurements.showerhead.run.stopwatchLabel')}
+        </p>
+        <Stopwatch onChange={setSeconds} />
+      </div>
+
+      {/* Manuelle Sekundeneingabe */}
+      <div className="glass flex items-center justify-between gap-3 rounded-3xl p-4">
+        <label htmlFor="manual-seconds" className="font-medium text-foreground">
+          {t('measurements.showerhead.run.secondsManual')}
+        </label>
+        <div className="flex items-center gap-1.5">
+          <input
+            id="manual-seconds"
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={0.1}
+            value={seconds > 0 ? seconds : ''}
+            onChange={(e) => handleManualSeconds(e.target.value)}
+            placeholder={t('measurements.showerhead.run.secondsPlaceholder')}
+            className="focus-ring w-24 rounded-xl border border-border bg-surface/70 px-3 py-2 text-right font-semibold tabular-nums text-foreground"
           />
+          <span className="text-sm text-muted">{t('measurements.showerhead.run.secondsUnit')}</span>
         </div>
-      </Card>
+      </div>
 
       <button
         type="button"

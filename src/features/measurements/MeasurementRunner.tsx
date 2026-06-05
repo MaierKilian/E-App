@@ -10,6 +10,12 @@ import type { MeasurementResult } from './types'
 
 const PHASES: RunnerPhase[] = ['intro', 'run', 'result']
 
+const PHASE_LABEL: Record<RunnerPhase, string> = {
+  intro: 'measurements.common.phaseIntro',
+  run: 'measurements.common.phaseRun',
+  result: 'measurements.common.phaseResult',
+}
+
 /**
  * Generischer, geführter Mess-Ablauf (Intro → Run → Result).
  * Liest die Messung aus `:id`; ist sie unbekannt oder nicht verfügbar, geht es
@@ -58,23 +64,29 @@ export function MeasurementRunner() {
           {t('nav.measurements')}
         </button>
 
-        <div className="mt-3 flex items-start justify-between gap-3">
-          <h1 className="text-2xl font-bold">{t(`measurements.${id}.title`)}</h1>
-          <span className="shrink-0 pt-1.5 text-xs font-medium text-muted tabular-nums">
-            {t('measurements.common.progress', { current: phaseIndex + 1, total: PHASES.length })}
-          </span>
-        </div>
+        <h1 className="mt-3 text-2xl font-bold">{t(`measurements.${id}.title`)}</h1>
 
-        {/* Dezenter Fortschritt 1–3 */}
-        <div className="mt-2 flex gap-1.5">
-          {PHASES.map((p, i) => (
-            <span
-              key={p}
-              className={`h-1 flex-1 rounded-full transition-colors ${
-                i <= phaseIndex ? 'bg-primary' : 'bg-surface-2'
-              }`}
-            />
-          ))}
+        {/* Phasen-Segmente: Info · Messen · Ergebnis (aktuelle hervorgehoben) */}
+        <div className="glass mt-3 flex gap-1 rounded-2xl p-1">
+          {PHASES.map((p, i) => {
+            const active = i === phaseIndex
+            const passed = i < phaseIndex
+            return (
+              <div
+                key={p}
+                aria-current={active ? 'step' : undefined}
+                className={`flex-1 rounded-xl px-2 py-1.5 text-center text-xs font-semibold transition-colors ${
+                  active
+                    ? 'bg-primary text-primary-foreground'
+                    : passed
+                      ? 'text-primary'
+                      : 'text-muted'
+                }`}
+              >
+                {t(PHASE_LABEL[p])}
+              </div>
+            )
+          })}
         </div>
       </div>
 
@@ -86,7 +98,7 @@ export function MeasurementRunner() {
             onClick={() => setPhase('run')}
             className="flex w-full items-center justify-center gap-1 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]"
           >
-            {t('measurements.common.start')}
+            {t([`measurements.${id}.intro.start`, 'measurements.common.start'])}
           </button>
         </>
       )}
