@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { StepIndicator } from './StepIndicator'
+import { ProfileHub, GA_INDEX } from './ProfileHub'
+import { StepBuildingAutomation } from './steps/StepBuildingAutomation'
 import { Step0Mode } from './steps/Step0Mode'
 import { Step1Profile } from './steps/Step1Profile'
 import { Step2Building } from './steps/Step2Building'
@@ -51,6 +53,13 @@ function getStepTitle(step: number, mode: 'quick' | 'detailed', t: (key: string)
   return t(keys[step] ?? keys[0])
 }
 
+/** Titel eines Abschnitts im Bearbeitungsmodus (Detailed-Sektionen + GA). */
+function getSectionTitle(index: number, t: (key: string) => string): string {
+  if (index === GA_INDEX) return t('onboarding.ga.title')
+  // Index entspricht den Detailed-Schritten (0..7); 8 = Review wird nicht editiert.
+  return getStepTitle(index, 'detailed', t)
+}
+
 interface StepContentProps {
   step: number
   mode: 'quick' | 'detailed'
@@ -84,6 +93,27 @@ function DetailedStepContent({ step, data, onChange }: Omit<StepContentProps, 'm
   }
 }
 
+/**
+ * Inhalt eines einzelnen Abschnitts im Bearbeitungsmodus.
+ * Nutzt die Detailed-Komponenten (Index 0..7) bzw. den GA-Fragebogen (GA_INDEX).
+ */
+function EditSectionBody({
+  index,
+  data,
+  onChange,
+  onGoToRooms,
+}: {
+  index: number
+  data: OnboardingData
+  onChange: (partial: Partial<OnboardingData>) => void
+  onGoToRooms: () => void
+}) {
+  if (index === GA_INDEX) {
+    return <StepBuildingAutomation data={data} onChange={onChange} onGoToRooms={onGoToRooms} />
+  }
+  return <DetailedStepContent step={index} data={data} onChange={onChange} />
+}
+
 function StepBody({ mode, step, data, onChange }: StepContentProps) {
   return mode === 'quick' ? (
     <QuickStepContent step={step} data={data} onChange={onChange} />
@@ -112,7 +142,8 @@ const SECONDARY_BTN =
 export function OnboardingPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { data, currentStep, setStep, updateData, complete, editProfile } = useOnboardingStore()
+  const { data, currentStep, flowMode, setStep, updateData, complete, editProfile } =
+    useOnboardingStore()
 
   // Step -1 = mode selection (Step0Mode), steps >= 0 = actual flow steps
   const isOnModeSelection = currentStep === -1
@@ -125,6 +156,55 @@ export function OnboardingPage() {
 
   if (data.completed) {
     return <HomeDashboard data={data} onEdit={editProfile} />
+  }
+
+  // Bearbeitungsmodus: Profil-Hub (currentStep -2) bzw. einzelner Abschnitt (>= 0).
+  if (flowMode === 'edit') {
+    if (currentStep === -2) {
+      return (
+        <div className="pb-24">
+          <ProfileHub data={data} onOpenSection={setStep} onDone={complete} />
+        </div>
+      )
+    }
+
+    return (
+      <div className="pb-24">
+        <button
+          type="button"
+          onClick={() => setStep(-2)}
+          className="focus-ring inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="w-4 h-4" />
+          {t('onboarding.hub.backToOverview')}
+        </button>
+
+        <h2 className="mt-3 text-lg font-semibold text-foreground">
+          {getSectionTitle(currentStep, t)}
+        </h2>
+
+        <div key={`edit-${currentStep}`} className="animate-step-in mt-5">
+          <Card>
+            <EditSectionBody
+              index={currentStep}
+              data={data}
+              onChange={updateData}
+              onGoToRooms={() => setStep(2)}
+            />
+          </Card>
+        </div>
+
+        <ActionBar>
+          <button
+            type="button"
+            onClick={() => setStep(-2)}
+            className={`${PRIMARY_BTN} w-full`}
+          >
+            {t('onboarding.hub.done')}
+          </button>
+        </ActionBar>
+      </div>
+    )
   }
 
   function handleBack() {

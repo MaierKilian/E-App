@@ -116,6 +116,47 @@ export interface InstrumentEntry {
   modelTypes?: string[]
 }
 
+// --- Gebäudeautomation (Smart Home / GA) ---
+
+export type GaEcosystem =
+  | 'homematic_ip'
+  | 'zigbee'
+  | 'hue'
+  | 'alexa'
+  | 'google_home'
+  | 'homekit'
+  | 'matter'
+  | 'ikea'
+  | 'none'
+
+export type GaUseCase = 'energy' | 'comfort' | 'security' | 'shading' | 'presence'
+
+export type GaBudget = 'under_200' | '200_500' | '500_1500' | 'over_1500' | 'unknown'
+
+export type GaInstall = 'diy' | 'professional' | 'unknown'
+
+export type GaDevice =
+  | 'lights'
+  | 'switches'
+  | 'sockets'
+  | 'blinds'
+  | 'thermostats'
+  | 'sensors'
+
+export interface GaRoomEntry {
+  roomType: RoomType
+  devices: GaDevice[]
+}
+
+export interface BuildingAutomationData {
+  ecosystems: GaEcosystem[]
+  hasHub: 'yes' | 'no' | 'unknown'
+  useCases: GaUseCase[]
+  budget: GaBudget
+  install: GaInstall
+  rooms: GaRoomEntry[]
+}
+
 export interface OnboardingData {
   profileName: string
   personsCount: number
@@ -143,4 +184,5 @@ export interface OnboardingData {
   energyCostRange: EnergyCostRange
   lastRenovationYear: RenovationYear
   renovationItems: RenovationItem[]
+  buildingAutomation: BuildingAutomationData
 }

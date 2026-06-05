@@ -29,11 +29,28 @@ const defaultData: OnboardingData = {
   energyCostRange: 'unknown',
   lastRenovationYear: 'unknown',
   renovationItems: [],
+  buildingAutomation: {
+    ecosystems: [],
+    hasHub: 'unknown',
+    useCases: [],
+    budget: 'unknown',
+    install: 'unknown',
+    rooms: [],
+  },
 }
+
+/**
+ * Steuert, wie der Onboarding-Bildschirm gerendert wird:
+ * - 'linear': klassischer Erst-Flow (Modusauswahl + Schritte nacheinander).
+ * - 'edit':   Bearbeitungsmodus mit Profil-Hub (currentStep -2) und gezieltem
+ *             Anspringen einzelner Abschnitte.
+ */
+type FlowMode = 'linear' | 'edit'
 
 interface OnboardingState {
   data: OnboardingData
   currentStep: number
+  flowMode: FlowMode
   setStep: (step: number) => void
   updateData: (partial: Partial<OnboardingData>) => void
   complete: () => void
@@ -46,15 +63,17 @@ export const useOnboardingStore = create<OnboardingState>()(
     (set) => ({
       data: defaultData,
       currentStep: -1,
+      flowMode: 'linear',
       setStep: (step) => set({ currentStep: step }),
       updateData: (partial) =>
         set((state) => ({ data: { ...state.data, ...partial } })),
       complete: () =>
-        set((state) => ({ data: { ...state.data, completed: true } })),
-      // Öffnet den Fragebogen erneut bei Schritt 1, ohne vorhandene Antworten zu verlieren.
+        set((state) => ({ data: { ...state.data, completed: true }, flowMode: 'linear' })),
+      // Öffnet den Profil-Hub (Übersicht) im Bearbeitungsmodus, ohne vorhandene
+      // Antworten zu verlieren. currentStep -2 = Hub.
       editProfile: () =>
-        set((state) => ({ data: { ...state.data, completed: false }, currentStep: 0 })),
-      reset: () => set({ data: defaultData, currentStep: -1 }),
+        set((state) => ({ data: { ...state.data, completed: false }, flowMode: 'edit', currentStep: -2 })),
+      reset: () => set({ data: defaultData, currentStep: -1, flowMode: 'linear' }),
     }),
     {
       name: 'eapp-onboarding',

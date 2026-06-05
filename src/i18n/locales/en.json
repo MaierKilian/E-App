@@ -349,6 +349,73 @@
         "goals": "Goals",
         "occupancyStatus": "Status"
       }
+    },
+    "hub": {
+      "title": "Profile overview",
+      "subtitle": "Pick a section to complete or change your details.",
+      "sectionOpen": "{{count}} open",
+      "sectionComplete": "complete",
+      "gaTitle": "Building automation",
+      "gaNew": "New",
+      "backToOverview": "Overview",
+      "done": "Done"
+    },
+    "ga": {
+      "title": "Building automation",
+      "subtitle": "Plan your smart home – all fields are optional.",
+      "ecosystem": "Existing / desired platform",
+      "ecosystemOptions": {
+        "homematic_ip": "Homematic IP",
+        "zigbee": "Zigbee",
+        "hue": "Philips Hue",
+        "alexa": "Amazon Alexa",
+        "google_home": "Google Home",
+        "homekit": "Apple HomeKit",
+        "matter": "Matter",
+        "ikea": "IKEA",
+        "none": "None"
+      },
+      "hub": "Do you have a smart home hub?",
+      "hubOptions": {
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "Don't know"
+      },
+      "useCases": "Goals",
+      "useCaseOptions": {
+        "energy": "Save energy",
+        "comfort": "Comfort",
+        "security": "Security",
+        "shading": "Shading",
+        "presence": "Presence"
+      },
+      "budget": "Budget",
+      "budgetOptions": {
+        "under_200": "Under €200",
+        "200_500": "€200–500",
+        "500_1500": "€500–1,500",
+        "over_1500": "Over €1,500",
+        "unknown": "Don't know"
+      },
+      "install": "Installation",
+      "installOptions": {
+        "diy": "Yourself (DIY)",
+        "professional": "Professional",
+        "unknown": "Don't know"
+      },
+      "devices": "Device types",
+      "deviceOptions": {
+        "lights": "Lights",
+        "switches": "Switches",
+        "sockets": "Sockets",
+        "blinds": "Blinds",
+        "thermostats": "Thermostats",
+        "sensors": "Sensors"
+      },
+      "roomsTitle": "Make rooms smart",
+      "noRooms": "You haven't selected any rooms yet. Add your rooms first.",
+      "selectRoomsCta": "Select rooms first",
+      "recommendationNote": "Based on these details we'll later show you matching product recommendations."
     }
   },
   "monitoring": {
