@@ -23,7 +23,142 @@
   },
   "common": {
     "comingSoon": "In Arbeit",
-    "plannedFeatures": "Das ist hier geplant"
+    "plannedFeatures": "Das ist hier geplant",
+    "back": "Zurück",
+    "next": "Weiter",
+    "save": "Speichern",
+    "edit": "Bearbeiten",
+    "step": "Schritt"
+  },
+  "onboarding": {
+    "stepIndicator": {
+      "steps": [
+        "Profil",
+        "Gebäude",
+        "Zimmer",
+        "Heizung",
+        "Wärme",
+        "Geräte",
+        "Standort",
+        "Prüfen"
+      ]
+    },
+    "completed": {
+      "title": "Einrichtung abgeschlossen",
+      "subtitle": "Dein Haushaltsprofil ist gespeichert.",
+      "editButton": "Bearbeiten"
+    },
+    "step1": {
+      "title": "Wohnprofil",
+      "profileName": "Profilname",
+      "profileNamePlaceholder": "z. B. Wohnung Berlin",
+      "persons": "Personen im Haushalt",
+      "rooms": "Anzahl der Zimmer"
+    },
+    "step2": {
+      "title": "Basisdaten",
+      "buildingYear": "Baujahr des Gebäudes",
+      "buildingType": "Gebäudeteil",
+      "apartment": "Wohnung",
+      "house": "Haus",
+      "livingArea": "Wohnfläche (m²)"
+    },
+    "step3": {
+      "title": "Zimmer",
+      "subtitle": "Wähle deine Zimmertypen aus und passe die Anzahl an.",
+      "roomTypes": {
+        "living_room": "Wohnzimmer",
+        "bedroom": "Schlafzimmer",
+        "children_room": "Kinderzimmer",
+        "kitchen": "Küche",
+        "bathroom": "Bad",
+        "toilet": "WC",
+        "guest_toilet": "Gäste-WC",
+        "hallway": "Flur",
+        "office": "Arbeitszimmer",
+        "bureau": "Büro",
+        "staircase": "Treppenhaus",
+        "basement": "Keller"
+      }
+    },
+    "step4": {
+      "title": "Heizsystem",
+      "heatGenerators": "Wärmeerzeuger (Mehrfachauswahl)",
+      "hotWater": "Warmwasserbereitung",
+      "generators": {
+        "gas_boiler": "Gaskessel",
+        "oil_boiler": "Ölkessel",
+        "heat_pump": "Wärmepumpe",
+        "wood_stove": "Holzofen",
+        "pellets": "Pellets",
+        "solar_thermal": "Solarthermie",
+        "unknown": "Nicht bekannt"
+      },
+      "hotWaterOptions": {
+        "same_as_heating": "Wie Heizung",
+        "separate_system": "Separates System",
+        "partially_combined": "Teilweise kombiniert",
+        "unknown": "Nicht bekannt"
+      }
+    },
+    "step5": {
+      "title": "Wärmeübertragung",
+      "subtitle": "Wähle für jeden Raum den Wärmeüberträger.",
+      "radiator": "Heizkörper",
+      "underfloor": "Fußbodenheizung"
+    },
+    "step6": {
+      "title": "Messinstrumente",
+      "subtitle": "Welche Messgeräte sind vorhanden?",
+      "instruments": {
+        "temperature_sensor": "Temperatursensor",
+        "distance_meter": "Abstandsmessgerät",
+        "co2_sensor": "CO₂-Sensor",
+        "humidity_sensor": "Luftfeuchte",
+        "power_meter": "Strommessgerät",
+        "none": "Keines",
+        "unknown": "Nicht bekannt"
+      },
+      "temperatureSubTypes": {
+        "contact": "Kontaktfühler",
+        "room": "Raumtemperatur",
+        "infrared": "Infrarot"
+      },
+      "temperatureSubLabel": "Sensor-Typ"
+    },
+    "step7": {
+      "title": "Standort",
+      "subtitle": "Wie soll der Standort ermittelt werden?",
+      "manual": "Manuell",
+      "automatic": "Automatisch",
+      "skip": "Auslassen",
+      "selected": "Ausgewählt",
+      "none": "keine"
+    },
+    "step8": {
+      "title": "Prüfen & Speichern",
+      "subtitle": "Überprüfe deine Angaben und speichere das Profil.",
+      "sections": {
+        "profile": "Wohnprofil",
+        "building": "Gebäude",
+        "rooms": "Zimmer",
+        "heating": "Heizsystem",
+        "heatTransfer": "Wärmeübertragung",
+        "instruments": "Messinstrumente",
+        "location": "Standort"
+      },
+      "labels": {
+        "profileName": "Profilname",
+        "persons": "Personen",
+        "roomsCount": "Zimmeranzahl",
+        "buildingYear": "Baujahr",
+        "buildingType": "Gebäudeteil",
+        "livingArea": "Wohnfläche",
+        "heatGenerators": "Wärmeerzeuger",
+        "hotWater": "Warmwasser",
+        "locationMode": "Standortmodus"
+      }
+    }
   },
   "pages": {
     "onboarding": {

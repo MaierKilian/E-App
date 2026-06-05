@@ -23,7 +23,142 @@
   },
   "common": {
     "comingSoon": "In progress",
-    "plannedFeatures": "Planned for this area"
+    "plannedFeatures": "Planned for this area",
+    "back": "Back",
+    "next": "Next",
+    "save": "Save",
+    "edit": "Edit",
+    "step": "Step"
+  },
+  "onboarding": {
+    "stepIndicator": {
+      "steps": [
+        "Profile",
+        "Building",
+        "Rooms",
+        "Heating",
+        "Heat",
+        "Devices",
+        "Location",
+        "Review"
+      ]
+    },
+    "completed": {
+      "title": "Setup complete",
+      "subtitle": "Your household profile has been saved.",
+      "editButton": "Edit"
+    },
+    "step1": {
+      "title": "Home Profile",
+      "profileName": "Profile name",
+      "profileNamePlaceholder": "e.g. Apartment Berlin",
+      "persons": "Number of people in household",
+      "rooms": "Number of rooms"
+    },
+    "step2": {
+      "title": "Basic Data",
+      "buildingYear": "Year of construction",
+      "buildingType": "Building type",
+      "apartment": "Apartment",
+      "house": "House",
+      "livingArea": "Living area (m²)"
+    },
+    "step3": {
+      "title": "Rooms",
+      "subtitle": "Select your room types and adjust the count.",
+      "roomTypes": {
+        "living_room": "Living Room",
+        "bedroom": "Bedroom",
+        "children_room": "Children's Room",
+        "kitchen": "Kitchen",
+        "bathroom": "Bathroom",
+        "toilet": "Toilet",
+        "guest_toilet": "Guest Toilet",
+        "hallway": "Hallway",
+        "office": "Home Office",
+        "bureau": "Office",
+        "staircase": "Staircase",
+        "basement": "Basement"
+      }
+    },
+    "step4": {
+      "title": "Heating System",
+      "heatGenerators": "Heat generators (multiple selection)",
+      "hotWater": "Hot water preparation",
+      "generators": {
+        "gas_boiler": "Gas Boiler",
+        "oil_boiler": "Oil Boiler",
+        "heat_pump": "Heat Pump",
+        "wood_stove": "Wood Stove",
+        "pellets": "Pellets",
+        "solar_thermal": "Solar Thermal",
+        "unknown": "Unknown"
+      },
+      "hotWaterOptions": {
+        "same_as_heating": "Same as heating",
+        "separate_system": "Separate system",
+        "partially_combined": "Partially combined",
+        "unknown": "Unknown"
+      }
+    },
+    "step5": {
+      "title": "Heat Transfer",
+      "subtitle": "Select the heat transfer type for each room.",
+      "radiator": "Radiator",
+      "underfloor": "Underfloor heating"
+    },
+    "step6": {
+      "title": "Measuring Instruments",
+      "subtitle": "Which measuring devices are available?",
+      "instruments": {
+        "temperature_sensor": "Temperature sensor",
+        "distance_meter": "Distance meter",
+        "co2_sensor": "CO₂ sensor",
+        "humidity_sensor": "Humidity sensor",
+        "power_meter": "Power meter",
+        "none": "None",
+        "unknown": "Unknown"
+      },
+      "temperatureSubTypes": {
+        "contact": "Contact probe",
+        "room": "Room temperature",
+        "infrared": "Infrared"
+      },
+      "temperatureSubLabel": "Sensor type"
+    },
+    "step7": {
+      "title": "Location",
+      "subtitle": "How should the location be determined?",
+      "manual": "Manual",
+      "automatic": "Automatic",
+      "skip": "Skip",
+      "selected": "Selected",
+      "none": "none"
+    },
+    "step8": {
+      "title": "Review & Save",
+      "subtitle": "Review your entries and save the profile.",
+      "sections": {
+        "profile": "Home Profile",
+        "building": "Building",
+        "rooms": "Rooms",
+        "heating": "Heating System",
+        "heatTransfer": "Heat Transfer",
+        "instruments": "Measuring Instruments",
+        "location": "Location"
+      },
+      "labels": {
+        "profileName": "Profile name",
+        "persons": "Persons",
+        "roomsCount": "Room count",
+        "buildingYear": "Year built",
+        "buildingType": "Building type",
+        "livingArea": "Living area",
+        "heatGenerators": "Heat generators",
+        "hotWater": "Hot water",
+        "locationMode": "Location mode"
+      }
+    }
   },
   "pages": {
     "onboarding": {
