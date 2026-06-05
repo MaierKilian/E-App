@@ -56,27 +56,35 @@ export function Step7Renovation({ data, onChange }: Props) {
               key={year}
               label={t(`onboarding.step7renovation.renovationYearOptions.${year}`)}
               selected={data.lastRenovationYear === year}
-              onClick={() => onChange({ lastRenovationYear: year })}
+              onClick={() =>
+                onChange(
+                  year === 'never'
+                    ? { lastRenovationYear: year, renovationItems: [] }
+                    : { lastRenovationYear: year },
+                )
+              }
             />
           ))}
         </div>
       </div>
 
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground">
-          {t('onboarding.step7renovation.renovationItems')}
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {RENOVATION_ITEMS.map((item) => (
-            <SelectChip
-              key={item}
-              label={t(`onboarding.step7renovation.renovationItemOptions.${item}`)}
-              selected={data.renovationItems.includes(item)}
-              onClick={() => toggleRenovationItem(item)}
-            />
-          ))}
+      {data.lastRenovationYear !== 'never' && (
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-foreground">
+            {t('onboarding.step7renovation.renovationItems')}
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {RENOVATION_ITEMS.map((item) => (
+              <SelectChip
+                key={item}
+                label={t(`onboarding.step7renovation.renovationItemOptions.${item}`)}
+                selected={data.renovationItems.includes(item)}
+                onClick={() => toggleRenovationItem(item)}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

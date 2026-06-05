@@ -53,17 +53,19 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
         />
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <label className="text-sm font-medium text-foreground">
-          {t('onboarding.step1.rooms')}
-        </label>
-        <Stepper
-          value={data.roomsCount}
-          min={1}
-          max={20}
-          onChange={(v) => onChange({ roomsCount: v })}
-        />
-      </div>
+      {!detailed && (
+        <div className="flex items-center justify-between gap-4">
+          <label className="text-sm font-medium text-foreground">
+            {t('onboarding.step1.rooms')}
+          </label>
+          <Stepper
+            value={data.roomsCount}
+            min={1}
+            max={20}
+            onChange={(v) => onChange({ roomsCount: v })}
+          />
+        </div>
+      )}
 
       {detailed && (
         <>

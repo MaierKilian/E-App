@@ -48,7 +48,8 @@
     "instruments": "Wähle vorhandene Geräte – pro Gerät kannst du Typ und passende Empfehlungen sehen.",
     "smartHome": "Smarte Geräte können Verbrauchsdaten liefern und die Auswertung verbessern.",
     "energyCost": "Eine grobe Schätzung genügt, um Einsparpotenziale in Euro abzubilden.",
-    "renovation": "Renovierungen verbessern den Dämmstandard und senken den Energiebedarf."
+    "renovation": "Renovierungen verbessern den Dämmstandard und senken den Energiebedarf.",
+    "location": "Mit der Postleitzahl können später regionale Klima- und Wetterdaten einfließen."
   },
   "affiliate": {
     "adLabel": "Anzeige",
@@ -241,7 +242,7 @@
     },
     "step5": {
       "title": "Gebäudehülle & Heizung",
-      "subtitle": "Wähle für jeden Raum den Wärmeüberträger.",
+      "subtitle": "Wärmeübergabe je Raum sowie Lüftung und Dämmung.",
       "noRooms": "Keine Zimmer ausgewählt. Bitte gehe zurück zu Schritt 3.",
       "radiator": "Heizkörper",
       "underfloor": "Fußbodenheizung",
@@ -336,7 +337,10 @@
     },
     "step7": {
       "title": "Standort",
-      "subtitle": "Wie soll der Standort ermittelt werden?",
+      "subtitle": "Optional – für regionale Klima- und Wetterdaten.",
+      "postalCode": "Postleitzahl",
+      "postalCodePlaceholder": "z. B. 10829",
+      "optionalHint": "Freiwillig. Hilft später bei wetter- und klimabezogenen Auswertungen.",
       "manual": "Manuell",
       "automatic": "Automatisch",
       "skip": "Auslassen",
@@ -375,7 +379,7 @@
         "energyCostRange": "Energiekosten/Monat",
         "lastRenovationYear": "Letzte Renovierung",
         "renovationItems": "Renoviert",
-        "locationMode": "Standortmodus",
+        "postalCode": "Postleitzahl",
         "goals": "Ziele",
         "occupancyStatus": "Status"
       }

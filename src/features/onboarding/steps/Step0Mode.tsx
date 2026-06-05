@@ -49,6 +49,7 @@ export function Step0Mode({ data, onChange }: Props) {
 
   return (
     <div className="space-y-3">
+      <p className="text-sm text-muted">{t('onboarding.step0.subtitle')}</p>
       <ModeCard
         mode="quick"
         selected={data.mode === 'quick'}

@@ -86,7 +86,9 @@ export function Step8Review({ data }: Props) {
       <ReviewSection title={t('onboarding.step8.sections.profile')}>
         <ReviewRow label={t('onboarding.step8.labels.profileName')} value={data.profileName || '—'} />
         <ReviewRow label={t('onboarding.step8.labels.persons')} value={data.personsCount} />
-        <ReviewRow label={t('onboarding.step8.labels.roomsCount')} value={data.roomsCount} />
+        {!isDetailed && (
+          <ReviewRow label={t('onboarding.step8.labels.roomsCount')} value={data.roomsCount} />
+        )}
         {isDetailed && goalsSummary && (
           <ReviewRow label={t('onboarding.step8.labels.goals')} value={goalsSummary} />
         )}
@@ -203,8 +205,8 @@ export function Step8Review({ data }: Props) {
 
       <ReviewSection title={t('onboarding.step8.sections.location')}>
         <ReviewRow
-          label={t('onboarding.step8.labels.locationMode')}
-          value={t(`onboarding.step7.${data.locationMode}`)}
+          label={t('onboarding.step8.labels.postalCode')}
+          value={data.postalCode || '—'}
         />
       </ReviewSection>
     </div>

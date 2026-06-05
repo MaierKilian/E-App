@@ -60,43 +60,25 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
         </div>
       </div>
 
-      {!detailed && (
-        <div className="space-y-3">
-          <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-            {t('onboarding.step4.hotWater')}
-            <InfoButton text={t('info.hotWater')} />
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {HOT_WATER_TYPES.map((type) => (
-              <SelectChip
-                key={type}
-                label={t(`onboarding.step4.hotWaterOptions.${type}`)}
-                selected={data.hotWaterType === type}
-                onClick={() => onChange({ hotWaterType: type })}
-              />
-            ))}
-          </div>
+      <div className="space-y-3">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+          {t('onboarding.step4.hotWater')}
+          <InfoButton text={t('info.hotWater')} />
+        </label>
+        <div className="flex flex-wrap gap-2">
+          {HOT_WATER_TYPES.map((type) => (
+            <SelectChip
+              key={type}
+              label={t(`onboarding.step4.hotWaterOptions.${type}`)}
+              selected={data.hotWaterType === type}
+              onClick={() => onChange({ hotWaterType: type })}
+            />
+          ))}
         </div>
-      )}
+      </div>
 
       {detailed && (
         <>
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
-              {t('onboarding.step4.hotWater')}
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {HOT_WATER_TYPES.map((type) => (
-                <SelectChip
-                  key={type}
-                  label={t(`onboarding.step4.hotWaterOptions.${type}`)}
-                  selected={data.hotWaterType === type}
-                  onClick={() => onChange({ hotWaterType: type })}
-                />
-              ))}
-            </div>
-          </div>
-
           <div className="space-y-3">
             <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               {t('onboarding.step4.hasPV')}

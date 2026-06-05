@@ -14,6 +14,7 @@ const defaultData: OnboardingData = {
   hotWaterType: 'unknown',
   instruments: [],
   locationMode: 'skip',
+  postalCode: '',
   completed: false,
   mode: 'detailed',
   goals: [],

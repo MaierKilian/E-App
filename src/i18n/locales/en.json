@@ -48,7 +48,8 @@
     "instruments": "Select the devices you own – per device you can pick a type and see recommendations.",
     "smartHome": "Smart devices can provide consumption data and improve the analysis.",
     "energyCost": "A rough estimate is enough to express savings potential in euros.",
-    "renovation": "Renovations improve the insulation standard and reduce the energy demand."
+    "renovation": "Renovations improve the insulation standard and reduce the energy demand.",
+    "location": "Your postal code lets regional climate and weather data flow in later."
   },
   "affiliate": {
     "adLabel": "Ad",
@@ -207,7 +208,7 @@
     },
     "step5": {
       "title": "Building Envelope & Heating",
-      "subtitle": "Select the heat transfer type for each room.",
+      "subtitle": "Heat transfer per room, plus ventilation and insulation.",
       "noRooms": "No rooms selected. Please go back to step 3.",
       "radiator": "Radiator",
       "underfloor": "Underfloor heating",
@@ -302,7 +303,10 @@
     },
     "step7": {
       "title": "Location",
-      "subtitle": "How should the location be determined?",
+      "subtitle": "Optional – for regional climate and weather data.",
+      "postalCode": "Postal code",
+      "postalCodePlaceholder": "e.g. 10829",
+      "optionalHint": "Optional. Helps later with weather- and climate-based analysis.",
       "manual": "Manual",
       "automatic": "Automatic",
       "skip": "Skip",
@@ -341,7 +345,7 @@
         "energyCostRange": "Energy costs/month",
         "lastRenovationYear": "Last renovation",
         "renovationItems": "Renovated",
-        "locationMode": "Location mode",
+        "postalCode": "Postal code",
         "goals": "Goals",
         "occupancyStatus": "Status"
       }

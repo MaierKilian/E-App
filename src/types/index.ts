@@ -128,6 +128,7 @@ export interface OnboardingData {
   hotWaterType: HotWaterType
   instruments: InstrumentEntry[]
   locationMode: LocationMode
+  postalCode: string
   completed: boolean
   mode: OnboardingMode
   goals: UserGoal[]
