@@ -15,6 +15,19 @@ const defaultData: OnboardingData = {
   instruments: [],
   locationMode: 'skip',
   completed: false,
+  mode: 'detailed',
+  goals: [],
+  occupancyStatus: null,
+  floors: 1,
+  windowAge: 'unknown',
+  hasPV: 'no',
+  hasExtraFireplace: false,
+  ventilationType: 'unknown',
+  insulationState: 'unknown',
+  smartHomeDevices: [],
+  energyCostRange: 'unknown',
+  lastRenovationYear: 'unknown',
+  renovationItems: [],
 }
 
 interface OnboardingState {

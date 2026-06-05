@@ -20,27 +20,27 @@
 /* Hell (Standard) */
 :root,
 [data-theme='light'] {
-  --bg: #f6f8f6;
-  --surface: #ffffff;
-  --surface-2: #eef1ee;
-  --fg: #15201a;
-  --muted: #5c6b62;
-  --border: #e3e8e4;
-  --primary: #2f8f4e;
-  --primary-fg: #ffffff;
+  --bg: #FAFAFA;
+  --surface: #FFFFFF;
+  --surface-2: #F4F4F5;
+  --fg: #09090B;
+  --muted: #71717A;
+  --border: #E4E4E7;
+  --primary: #18181B;
+  --primary-fg: #FFFFFF;
   color-scheme: light;
 }
 
 /* Dunkel */
 [data-theme='dark'] {
-  --bg: #0c1310;
-  --surface: #121b16;
-  --surface-2: #1b2620;
-  --fg: #e9efea;
-  --muted: #9bb0a4;
-  --border: #243029;
-  --primary: #46bb6e;
-  --primary-fg: #052110;
+  --bg: #09090B;
+  --surface: #18181B;
+  --surface-2: #27272A;
+  --fg: #FAFAFA;
+  --muted: #A1A1AA;
+  --border: #27272A;
+  --primary: #FAFAFA;
+  --primary-fg: #09090B;
   color-scheme: dark;
 }
 
