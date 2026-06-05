@@ -441,6 +441,10 @@
   "home": {
     "greeting": "Willkommen zurück",
     "profileNameFallback": "dein Zuhause",
+    "questionnaire": {
+      "continue": "Fragebogen fortsetzen",
+      "review": "Fragebogen ansehen"
+    },
     "completenessLabel": "Profil zu {{value}} % vollständig",
     "hero": {
       "title": "Geschätzte Energiekosten",

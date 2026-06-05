@@ -441,6 +441,10 @@
   "home": {
     "greeting": "Welcome back",
     "profileNameFallback": "your home",
+    "questionnaire": {
+      "continue": "Continue questionnaire",
+      "review": "View questionnaire"
+    },
     "completenessLabel": "Profile {{value}} % complete",
     "hero": {
       "title": "Estimated energy costs",

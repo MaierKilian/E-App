@@ -42,3 +42,11 @@ npm run dev      # Entwicklungsserver starten (http://localhost:5173)
 npm run build    # Produktions-Build erstellen
 npm run lint     # Code prüfen
 ```
+
+## Backlog / Ideen
+
+- **Gebäudeautomation-Fragebogen** (geplant): raumweise Erfassung von Tastern,
+  Steckdosen, Schaltern, Leuchten usw. Daraus per KI/API passende Smart-Home-
+  Produktvorschläge generieren (z. B. Homematic IP, Zigbee, IKEA, Alexa,
+  Philips Hue) – vorbereitet für Affiliate-Empfehlungen als Einnahmequelle.
+
