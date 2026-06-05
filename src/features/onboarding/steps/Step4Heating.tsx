@@ -5,6 +5,7 @@ import type { OnboardingData, HeatGeneratorType, HotWaterType } from '@/types'
 interface Props {
   data: OnboardingData
   onChange: (partial: Partial<OnboardingData>) => void
+  detailed?: boolean
 }
 
 const HEAT_GENERATORS: HeatGeneratorType[] = [
@@ -24,7 +25,10 @@ const HOT_WATER_TYPES: HotWaterType[] = [
   'unknown',
 ]
 
-export function Step4Heating({ data, onChange }: Props) {
+const PV_OPTIONS = ['yes', 'no', 'planned'] as const
+type PVOption = (typeof PV_OPTIONS)[number]
+
+export function Step4Heating({ data, onChange, detailed = false }: Props) {
   const { t } = useTranslation()
 
   function toggleGenerator(type: HeatGeneratorType) {
@@ -54,21 +58,77 @@ export function Step4Heating({ data, onChange }: Props) {
         </div>
       </div>
 
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground">
-          {t('onboarding.step4.hotWater')}
-        </label>
-        <div className="flex flex-wrap gap-2">
-          {HOT_WATER_TYPES.map((type) => (
-            <SelectChip
-              key={type}
-              label={t(`onboarding.step4.hotWaterOptions.${type}`)}
-              selected={data.hotWaterType === type}
-              onClick={() => onChange({ hotWaterType: type })}
-            />
-          ))}
+      {!detailed && (
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-foreground">
+            {t('onboarding.step4.hotWater')}
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {HOT_WATER_TYPES.map((type) => (
+              <SelectChip
+                key={type}
+                label={t(`onboarding.step4.hotWaterOptions.${type}`)}
+                selected={data.hotWaterType === type}
+                onClick={() => onChange({ hotWaterType: type })}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {detailed && (
+        <>
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-foreground">
+              {t('onboarding.step4.hotWater')}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {HOT_WATER_TYPES.map((type) => (
+                <SelectChip
+                  key={type}
+                  label={t(`onboarding.step4.hotWaterOptions.${type}`)}
+                  selected={data.hotWaterType === type}
+                  onClick={() => onChange({ hotWaterType: type })}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-foreground">
+              {t('onboarding.step4.hasPV')}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {PV_OPTIONS.map((option) => (
+                <SelectChip
+                  key={option}
+                  label={t(`onboarding.step4.pvOptions.${option}`)}
+                  selected={data.hasPV === option}
+                  onClick={() => onChange({ hasPV: option as PVOption })}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-foreground">
+              {t('onboarding.step4.hasExtraFireplace')}
+            </label>
+            <div className="flex gap-2">
+              <SelectChip
+                label={t('onboarding.step4.yes')}
+                selected={data.hasExtraFireplace === true}
+                onClick={() => onChange({ hasExtraFireplace: true })}
+              />
+              <SelectChip
+                label={t('onboarding.step4.no')}
+                selected={data.hasExtraFireplace === false}
+                onClick={() => onChange({ hasExtraFireplace: false })}
+              />
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

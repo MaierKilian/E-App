@@ -43,13 +43,13 @@ export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set) => ({
       data: defaultData,
-      currentStep: 0,
+      currentStep: -1,
       setStep: (step) => set({ currentStep: step }),
       updateData: (partial) =>
         set((state) => ({ data: { ...state.data, ...partial } })),
       complete: () =>
         set((state) => ({ data: { ...state.data, completed: true } })),
-      reset: () => set({ data: defaultData, currentStep: 0 }),
+      reset: () => set({ data: defaultData, currentStep: -1 }),
     }),
     { name: 'eapp-onboarding' },
   ),

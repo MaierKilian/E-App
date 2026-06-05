@@ -8,34 +8,54 @@ import {
   Wrench,
   MapPin,
   CheckCircle,
+  HardHat,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { OnboardingMode } from '@/types'
 
-const STEP_ICONS: LucideIcon[] = [
+// Icons for detailed flow (9 steps: Profile, Building, Rooms, Heating, Envelope, Devices, Renovation, Location, Review)
+const DETAILED_ICONS: LucideIcon[] = [
   User,
   Building2,
   LayoutGrid,
   Flame,
   Thermometer,
   Wrench,
+  HardHat,
   MapPin,
+  CheckCircle,
+]
+
+// Icons for quick flow (5 steps: Profile, Building, Heating, Devices, Review)
+const QUICK_ICONS: LucideIcon[] = [
+  User,
+  Building2,
+  Flame,
+  Wrench,
   CheckCircle,
 ]
 
 interface StepIndicatorProps {
   currentStep: number
   totalSteps: number
+  mode: OnboardingMode
 }
 
-export function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
+export function StepIndicator({ currentStep, totalSteps, mode }: StepIndicatorProps) {
   const { t } = useTranslation()
-  const labels = t('onboarding.stepIndicator.steps', { returnObjects: true }) as string[]
+
+  const labelKey = mode === 'quick'
+    ? 'onboarding.stepIndicator.stepsQuick'
+    : 'onboarding.stepIndicator.steps'
+  const labels = t(labelKey, { returnObjects: true }) as string[]
+
+  const icons = mode === 'quick' ? QUICK_ICONS : DETAILED_ICONS
 
   return (
     <div className="w-full overflow-x-auto pb-1">
       <div className="flex items-center min-w-max mx-auto px-1">
         {Array.from({ length: totalSteps }, (_, i) => {
-          const Icon = STEP_ICONS[i]
+          const Icon = icons[i] ?? icons[icons.length - 1]
           const isCompleted = i < currentStep
           const isActive = i === currentStep
 

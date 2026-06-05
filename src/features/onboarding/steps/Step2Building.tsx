@@ -2,16 +2,18 @@ import { useTranslation } from 'react-i18next'
 import { Slider } from '@/components/ui/Slider'
 import { Stepper } from '@/components/ui/Stepper'
 import { SelectChip } from '@/components/ui/SelectChip'
-import type { OnboardingData, BuildingType } from '@/types'
+import type { OnboardingData, BuildingType, WindowAge } from '@/types'
 
 interface Props {
   data: OnboardingData
   onChange: (partial: Partial<OnboardingData>) => void
+  detailed?: boolean
 }
 
 const BUILDING_TYPES: BuildingType[] = ['apartment', 'house']
+const WINDOW_AGES: WindowAge[] = ['before_1980', '1980_2000', '2000_2015', 'after_2015', 'unknown']
 
-export function Step2Building({ data, onChange }: Props) {
+export function Step2Building({ data, onChange, detailed = false }: Props) {
   const { t } = useTranslation()
 
   return (
@@ -55,6 +57,38 @@ export function Step2Building({ data, onChange }: Props) {
           onChange={(v) => onChange({ livingArea: v })}
         />
       </div>
+
+      {detailed && (
+        <>
+          <div className="flex items-center justify-between gap-4">
+            <label className="text-sm font-medium text-foreground">
+              {t('onboarding.step2.floors')}
+            </label>
+            <Stepper
+              value={data.floors}
+              min={1}
+              max={6}
+              onChange={(v) => onChange({ floors: v })}
+            />
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-foreground">
+              {t('onboarding.step2.windowAge')}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {WINDOW_AGES.map((age) => (
+                <SelectChip
+                  key={age}
+                  label={t(`onboarding.step2.windowAgeOptions.${age}`)}
+                  selected={data.windowAge === age}
+                  onClick={() => onChange({ windowAge: age })}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

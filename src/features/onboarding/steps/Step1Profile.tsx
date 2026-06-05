@@ -1,14 +1,28 @@
 import { useTranslation } from 'react-i18next'
 import { Stepper } from '@/components/ui/Stepper'
-import type { OnboardingData } from '@/types'
+import { SelectChip } from '@/components/ui/SelectChip'
+import type { OnboardingData, UserGoal, OccupancyStatus } from '@/types'
 
 interface Props {
   data: OnboardingData
   onChange: (partial: Partial<OnboardingData>) => void
+  detailed?: boolean
 }
 
-export function Step1Profile({ data, onChange }: Props) {
+const GOALS: UserGoal[] = ['save_costs', 'reduce_co2', 'improve_comfort', 'curiosity', 'htw_study']
+const OCCUPANCY_STATUSES: OccupancyStatus[] = ['tenant', 'owner']
+
+export function Step1Profile({ data, onChange, detailed = false }: Props) {
   const { t } = useTranslation()
+
+  function toggleGoal(goal: UserGoal) {
+    const current = data.goals
+    if (current.includes(goal)) {
+      onChange({ goals: current.filter((g) => g !== goal) })
+    } else {
+      onChange({ goals: [...current, goal] })
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -48,6 +62,42 @@ export function Step1Profile({ data, onChange }: Props) {
           onChange={(v) => onChange({ roomsCount: v })}
         />
       </div>
+
+      {detailed && (
+        <>
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-foreground">
+              {t('onboarding.step1.goals')}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {GOALS.map((goal) => (
+                <SelectChip
+                  key={goal}
+                  label={t(`onboarding.step1.goalOptions.${goal}`)}
+                  selected={data.goals.includes(goal)}
+                  onClick={() => toggleGoal(goal)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-foreground">
+              {t('onboarding.step1.occupancyStatus')}
+            </label>
+            <div className="flex gap-2">
+              {OCCUPANCY_STATUSES.map((status) => (
+                <SelectChip
+                  key={status}
+                  label={t(`onboarding.step1.occupancyOptions.${status}`)}
+                  selected={data.occupancyStatus === status}
+                  onClick={() => onChange({ occupancyStatus: status })}
+                />
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }
