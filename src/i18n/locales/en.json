@@ -437,5 +437,61 @@
         "Lab experiments with preparation and a short quiz"
       ]
     }
+  },
+  "home": {
+    "greeting": "Welcome back",
+    "profileNameFallback": "your home",
+    "completenessLabel": "Profile {{value}} % complete",
+    "hero": {
+      "title": "Estimated energy costs",
+      "label": "Estimated energy costs / year",
+      "estimateNote": "Estimate",
+      "perYear": "€ / year",
+      "kwhNote": "≈ {{kwh}} kWh / year",
+      "info": "This is a rough estimate based on your profile (people, living area) and the stored electricity price. With real measurements and meter readings the figure becomes much more accurate."
+    },
+    "stats": {
+      "electricityPrice": "Electricity price",
+      "co2": "CO₂ emissions",
+      "consumption": "Consumption",
+      "livingArea": "Living area",
+      "unitCtKwh": "ct/kWh",
+      "unitKgYear": "kg/year",
+      "unitKwhYear": "kWh/year",
+      "unitSqm": "m²",
+      "badgeCustom": "custom",
+      "badgeAvg": "avg"
+    },
+    "nextSteps": {
+      "title": "Next steps",
+      "progress": "{{done}}/{{total}}",
+      "done": "Done",
+      "tariff": "Add your electricity price",
+      "measurement": "Take your first measurement",
+      "meter": "Enter a meter reading",
+      "profile": "Complete your profile"
+    },
+    "quickActions": {
+      "title": "Quick actions",
+      "startMeasurement": "Start measurement",
+      "meterReading": "Meter reading",
+      "report": "Report"
+    },
+    "tipTitle": "Tip of the day",
+    "tips": [
+      "Lower the room temperature by 1 °C – it saves about 6 % of heating energy.",
+      "Standby devices quietly draw power: switchable power strips help.",
+      "Air the room briefly with wide-open windows instead of tilting them to save heat and prevent mould.",
+      "When buying new appliances, choose the highest energy efficiency class.",
+      "Washing laundry at 30 °C instead of 60 °C saves up to two thirds of the electricity.",
+      "Set the fridge to 7 °C – any colder just wastes energy."
+    ],
+    "profile": {
+      "sectionTitle": "Household profile",
+      "expand": "Show",
+      "collapse": "Hide",
+      "editButton": "Edit profile",
+      "resetButton": "Reset profile"
+    }
   }
 }

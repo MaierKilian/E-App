@@ -37,6 +37,7 @@ interface OnboardingState {
   setStep: (step: number) => void
   updateData: (partial: Partial<OnboardingData>) => void
   complete: () => void
+  editProfile: () => void
   reset: () => void
 }
 
@@ -50,6 +51,9 @@ export const useOnboardingStore = create<OnboardingState>()(
         set((state) => ({ data: { ...state.data, ...partial } })),
       complete: () =>
         set((state) => ({ data: { ...state.data, completed: true } })),
+      // Öffnet den Fragebogen erneut bei Schritt 1, ohne vorhandene Antworten zu verlieren.
+      editProfile: () =>
+        set((state) => ({ data: { ...state.data, completed: false }, currentStep: 0 })),
       reset: () => set({ data: defaultData, currentStep: -1 }),
     }),
     { name: 'eapp-onboarding' },

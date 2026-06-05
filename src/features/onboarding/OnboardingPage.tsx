@@ -14,6 +14,7 @@ import { Step7Location } from './steps/Step7Location'
 import { Step7Renovation } from './steps/Step7Renovation'
 import { Step8Review } from './steps/Step8Review'
 import { Card } from '@/components/ui/Card'
+import { HomeDashboard } from '@/features/home/HomeDashboard'
 import type { OnboardingData } from '@/types'
 
 // Quick flow steps (indices 0..4, displayed as steps 1..5):
@@ -108,42 +109,10 @@ const PRIMARY_BTN =
 const SECONDARY_BTN =
   'flex items-center justify-center gap-1 px-5 py-3 rounded-2xl border border-border bg-surface/70 text-foreground text-sm font-medium transition-[transform,colors] hover:bg-surface-2 active:scale-[0.97]'
 
-function CompletedSummary({
-  data,
-  onEdit,
-}: {
-  data: OnboardingData
-  onEdit: () => void
-}) {
-  const { t } = useTranslation()
-
-  return (
-    <div className="space-y-4">
-      <Card>
-        <h2 className="text-lg font-semibold text-foreground">
-          {t('onboarding.completed.title')}
-        </h2>
-        <p className="text-sm text-muted mt-1">{t('onboarding.completed.subtitle')}</p>
-        {data.profileName && (
-          <p className="mt-3 text-base font-medium text-primary">{data.profileName}</p>
-        )}
-      </Card>
-      <Step8Review data={data} />
-      <button
-        type="button"
-        onClick={onEdit}
-        className="w-full py-3 rounded-2xl border border-primary text-primary font-medium text-sm hover:bg-primary/10 transition-colors"
-      >
-        {t('onboarding.completed.editButton')}
-      </button>
-    </div>
-  )
-}
-
 export function OnboardingPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { data, currentStep, setStep, updateData, complete, reset } = useOnboardingStore()
+  const { data, currentStep, setStep, updateData, complete, editProfile } = useOnboardingStore()
 
   // Step -1 = mode selection (Step0Mode), steps >= 0 = actual flow steps
   const isOnModeSelection = currentStep === -1
@@ -155,14 +124,7 @@ export function OnboardingPage() {
   const isReviewStep = isLastStep
 
   if (data.completed) {
-    return (
-      <CompletedSummary
-        data={data}
-        onEdit={() => {
-          reset()
-        }}
-      />
-    )
+    return <HomeDashboard data={data} onEdit={editProfile} />
   }
 
   function handleBack() {

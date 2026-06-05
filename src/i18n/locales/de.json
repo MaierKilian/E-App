@@ -437,5 +437,61 @@
         "Laborversuche mit Vorbereitung und kurzem Test"
       ]
     }
+  },
+  "home": {
+    "greeting": "Willkommen zurück",
+    "profileNameFallback": "dein Zuhause",
+    "completenessLabel": "Profil zu {{value}} % vollständig",
+    "hero": {
+      "title": "Geschätzte Energiekosten",
+      "label": "Geschätzte Energiekosten / Jahr",
+      "estimateNote": "Schätzung",
+      "perYear": "€ / Jahr",
+      "kwhNote": "≈ {{kwh}} kWh / Jahr",
+      "info": "Dies ist eine grobe Schätzung aus deinem Profil (Personen, Wohnfläche) und dem hinterlegten Strompreis. Mit echten Messungen und Zählerständen wird der Wert deutlich genauer."
+    },
+    "stats": {
+      "electricityPrice": "Strompreis",
+      "co2": "CO₂-Ausstoß",
+      "consumption": "Verbrauch",
+      "livingArea": "Wohnfläche",
+      "unitCtKwh": "ct/kWh",
+      "unitKgYear": "kg/Jahr",
+      "unitKwhYear": "kWh/Jahr",
+      "unitSqm": "m²",
+      "badgeCustom": "eigener",
+      "badgeAvg": "Ø"
+    },
+    "nextSteps": {
+      "title": "Nächste Schritte",
+      "progress": "{{done}}/{{total}}",
+      "done": "Erledigt",
+      "tariff": "Strompreis hinterlegen",
+      "measurement": "Erste Messung machen",
+      "meter": "Zählerstand eintragen",
+      "profile": "Profil vervollständigen"
+    },
+    "quickActions": {
+      "title": "Schnellzugriffe",
+      "startMeasurement": "Messung starten",
+      "meterReading": "Zählerstand",
+      "report": "Bericht"
+    },
+    "tipTitle": "Tipp des Tages",
+    "tips": [
+      "Senke die Raumtemperatur um 1 °C – das spart rund 6 % Heizenergie.",
+      "Stand-by-Geräte ziehen heimlich Strom: schaltbare Steckdosenleisten helfen.",
+      "Stoßlüften statt Fenster kippen spart Wärme und beugt Schimmel vor.",
+      "Beim Neukauf auf die höchste Energieeffizienzklasse achten.",
+      "Wäsche bei 30 °C statt 60 °C waschen spart bis zu zwei Drittel Strom.",
+      "Kühlschrank auf 7 °C einstellen – kälter kostet nur unnötig Energie."
+    ],
+    "profile": {
+      "sectionTitle": "Haushaltsprofil",
+      "expand": "Anzeigen",
+      "collapse": "Verbergen",
+      "editButton": "Profil bearbeiten",
+      "resetButton": "Profil zurücksetzen"
+    }
   }
 }
