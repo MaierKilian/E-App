@@ -18,7 +18,7 @@ export function Step2Building({ data, onChange, detailed = false }: Props) {
   const { t } = useTranslation()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="space-y-2">
         <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           {t('onboarding.step2.buildingYear')}
@@ -49,13 +49,16 @@ export function Step2Building({ data, onChange, detailed = false }: Props) {
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <label className="text-sm font-medium text-foreground">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           {t('onboarding.step2.livingArea')}
+          <InfoButton text={t('info.livingArea')} />
         </label>
         <Stepper
           value={data.livingArea}
           min={10}
           max={1000}
+          step={5}
+          unit="m²"
           onChange={(v) => onChange({ livingArea: v })}
         />
       </div>

@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { SelectChip } from '@/components/ui/SelectChip'
+import { InfoButton } from '@/components/ui/InfoButton'
 import type { OnboardingData, HeatGeneratorType, HotWaterType } from '@/types'
 
 interface Props {
@@ -41,10 +42,11 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           {t('onboarding.step4.heatGenerators')}
+          <InfoButton text={t('info.heatGenerators')} />
         </label>
         <div className="flex flex-wrap gap-2">
           {HEAT_GENERATORS.map((type) => (
@@ -60,8 +62,9 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
 
       {!detailed && (
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-foreground">
+          <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
             {t('onboarding.step4.hotWater')}
+            <InfoButton text={t('info.hotWater')} />
           </label>
           <div className="flex flex-wrap gap-2">
             {HOT_WATER_TYPES.map((type) => (
@@ -95,8 +98,9 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
           </div>
 
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               {t('onboarding.step4.hasPV')}
+              <InfoButton text={t('info.pv')} />
             </label>
             <div className="flex flex-wrap gap-2">
               {PV_OPTIONS.map((option) => (
@@ -111,8 +115,9 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
           </div>
 
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               {t('onboarding.step4.hasExtraFireplace')}
+              <InfoButton text={t('info.fireplace')} />
             </label>
             <div className="flex gap-2">
               <SelectChip

@@ -76,64 +76,169 @@ body {
 
 /*
  * Liquid-Glass-Hintergrund.
- * Sehr weicher, neutraler Verlauf hinter der ganzen App, damit die Glasflächen
- * Tiefe bekommen. Pro Theme dezent angepasst – die Theme-Hintergrundfarbe bleibt
- * als Basis erhalten (HTW-Grün wird nicht verändert).
+ * Ruhige Basisfläche pro Theme. Darüber liegen langsam driftende
+ * Verlaufs-„Blobs" (.app-backdrop::before / ::after) für lebendige Tiefe.
+ * Die Theme-Hintergrundfarbe bleibt als Basis erhalten (HTW-Grün bleibt grün).
  */
 .app-backdrop {
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
+  overflow: hidden;
   background:
-    radial-gradient(60% 50% at 20% 0%, color-mix(in srgb, var(--fg) 6%, transparent), transparent 70%),
-    radial-gradient(70% 60% at 90% 10%, color-mix(in srgb, var(--fg) 4%, transparent), transparent 70%),
+    radial-gradient(60% 50% at 20% 0%, color-mix(in srgb, var(--fg) 5%, transparent), transparent 70%),
+    radial-gradient(70% 60% at 90% 8%, color-mix(in srgb, var(--fg) 4%, transparent), transparent 70%),
     var(--bg);
 }
 
-[data-theme='dark'] .app-backdrop {
-  background:
-    radial-gradient(60% 50% at 15% 0%, color-mix(in srgb, var(--fg) 10%, transparent), transparent 70%),
-    radial-gradient(70% 60% at 95% 10%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 70%),
-    var(--bg);
+/* Zwei weiche, sehr dezente Verlaufs-Blobs, die langsam driften. */
+.app-backdrop::before,
+.app-backdrop::after {
+  content: '';
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  opacity: 0.55;
+  will-change: transform;
 }
 
-[data-theme='htw'] .app-backdrop {
-  background:
-    radial-gradient(60% 50% at 20% 0%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 70%),
-    radial-gradient(70% 60% at 90% 10%, color-mix(in srgb, var(--primary) 8%, transparent), transparent 70%),
-    var(--bg);
+.app-backdrop::before {
+  width: 60vw;
+  height: 60vw;
+  max-width: 520px;
+  max-height: 520px;
+  top: -12vh;
+  left: -10vw;
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 22%, transparent), transparent 70%);
+  animation: blob-drift-a 26s ease-in-out infinite alternate;
+}
+
+.app-backdrop::after {
+  width: 55vw;
+  height: 55vw;
+  max-width: 480px;
+  max-height: 480px;
+  bottom: -16vh;
+  right: -12vw;
+  background: radial-gradient(circle, color-mix(in srgb, var(--fg) 12%, transparent), transparent 70%);
+  animation: blob-drift-b 32s ease-in-out infinite alternate;
+}
+
+[data-theme='dark'] .app-backdrop::before {
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 16%, transparent), transparent 70%);
+  opacity: 0.5;
+}
+
+[data-theme='dark'] .app-backdrop::after {
+  background: radial-gradient(circle, color-mix(in srgb, #3b82f6 28%, transparent), transparent 70%);
+  opacity: 0.32;
+}
+
+[data-theme='htw'] .app-backdrop::before {
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 30%, transparent), transparent 70%);
+  opacity: 0.55;
+}
+
+[data-theme='htw'] .app-backdrop::after {
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 18%, transparent), transparent 70%);
+  opacity: 0.45;
+}
+
+@keyframes blob-drift-a {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    transform: translate3d(8vw, 6vh, 0) scale(1.12);
+  }
+}
+
+@keyframes blob-drift-b {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(-7vw, -5vh, 0) scale(0.92);
+  }
 }
 
 /*
- * Glass-Flächen: halbtransparenter Hintergrund + Blur, feine Border, weicher
- * Schatten und ein zarter Innen-Highlight oben (über ::before).
+ * Glass-Flächen: mehrschichtige Transluzenz, sauberer Blur, feine
+ * lichtbrechende Ränder (heller Innen-Highlight oben, dunklerer Rand unten)
+ * und mehrstufige, weiche Tiefenschatten.
  */
 .glass {
   position: relative;
-  background-color: color-mix(in srgb, var(--surface) 72%, transparent);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
-  backdrop-filter: blur(20px) saturate(160%);
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  background-color: color-mix(in srgb, var(--surface) 62%, transparent);
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in srgb, #ffffff 14%, transparent),
+    transparent 42%
+  );
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  backdrop-filter: blur(26px) saturate(180%);
+  border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   box-shadow:
-    0 1px 2px color-mix(in srgb, var(--fg) 6%, transparent),
-    0 8px 30px color-mix(in srgb, var(--fg) 8%, transparent);
+    0 1px 1px color-mix(in srgb, var(--fg) 5%, transparent),
+    0 6px 16px color-mix(in srgb, var(--fg) 7%, transparent),
+    0 18px 40px color-mix(in srgb, var(--fg) 9%, transparent);
 }
 
+[data-theme='dark'] .glass {
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in srgb, #ffffff 8%, transparent),
+    transparent 45%
+  );
+}
+
+/* Heller Innen-Highlight oben, zarter dunkler Rand unten (lichtbrechende Kante). */
 .glass::before {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff 35%, transparent);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 45%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--fg) 8%, transparent);
 }
 
-/* Kräftigere Variante für die fixierte Aktionsleiste / Header. */
+/* Kräftigere Variante für fixierte Leisten (Header / Aktionsleiste / Nav). */
 .glass-bar {
-  background-color: color-mix(in srgb, var(--surface) 80%, transparent);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
-  backdrop-filter: blur(24px) saturate(180%);
+  background-color: color-mix(in srgb, var(--surface) 72%, transparent);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  backdrop-filter: blur(30px) saturate(190%);
+}
+
+/* Schwebende Glass-Leiste (Pill) – etwas Abstand vom Rand, runde Form. */
+.glass-floating {
+  position: relative;
+  background-color: color-mix(in srgb, var(--surface) 66%, transparent);
+  background-image: linear-gradient(
+    160deg,
+    color-mix(in srgb, #ffffff 16%, transparent),
+    transparent 45%
+  );
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  backdrop-filter: blur(30px) saturate(190%);
+  border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  box-shadow:
+    0 1px 1px color-mix(in srgb, var(--fg) 5%, transparent),
+    0 10px 30px color-mix(in srgb, var(--fg) 14%, transparent),
+    0 24px 50px color-mix(in srgb, var(--fg) 10%, transparent);
+}
+
+.glass-floating::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, #ffffff 50%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--fg) 8%, transparent);
 }
 
 /* Sanfter Schritt-Übergang im Onboarding. */
@@ -152,8 +257,59 @@ body {
   animation: step-in 0.28s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Elegantes Aufklappen für Geräte-Panels (max-height + fade). */
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-panel-in {
+  animation: panel-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Premium Fokus-Ring für interaktive Glass-Elemente. */
+.focus-ring:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px color-mix(in srgb, var(--primary) 60%, transparent);
+}
+
+/* Edel „leuchtender" Fortschrittsbalken. */
+.progress-glow {
+  background-image: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--primary) 80%, transparent),
+    var(--primary)
+  );
+  box-shadow:
+    0 0 8px color-mix(in srgb, var(--primary) 55%, transparent),
+    0 0 2px color-mix(in srgb, var(--primary) 70%, transparent);
+}
+
+/* Karussell ohne sichtbare Scrollbar (Affiliate-Karten). */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .animate-step-in {
+  .animate-step-in,
+  .animate-panel-in {
+    animation: none;
+  }
+  .app-backdrop::before,
+  .app-backdrop::after {
     animation: none;
   }
 }

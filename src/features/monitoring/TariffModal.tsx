@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/Modal'
 import { InfoButton } from '@/components/ui/InfoButton'
@@ -31,14 +31,17 @@ export function TariffModal({ open, onClose }: TariffModalProps) {
   const [base, setBase] = useState(String(electricityBasePrice))
   const [showHelp, setShowHelp] = useState(false)
 
-  // Felder bei jedem Öffnen mit den aktuellen Store-Werten vorbelegen.
-  useEffect(() => {
-    if (open) {
-      setWork(String(electricityWorkPrice))
-      setBase(String(electricityBasePrice))
-      setShowHelp(false)
-    }
-  }, [open, electricityWorkPrice, electricityBasePrice])
+  // Felder beim Öffnen mit den aktuellen Store-Werten vorbelegen
+  // (Anpassung des States während des Renderns beim Wechsel von geschlossen -> offen).
+  const [wasOpen, setWasOpen] = useState(false)
+  if (open && !wasOpen) {
+    setWasOpen(true)
+    setWork(String(electricityWorkPrice))
+    setBase(String(electricityBasePrice))
+    setShowHelp(false)
+  } else if (!open && wasOpen) {
+    setWasOpen(false)
+  }
 
   function handleSave() {
     setTariff(parseNumber(work, DEFAULT_WORK_PRICE), parseNumber(base, DEFAULT_BASE_PRICE))

@@ -98,7 +98,7 @@ export function InfoButton({ text, title }: InfoButtonProps) {
             ref={popoverRef}
             role="tooltip"
             className="glass fixed z-50 rounded-2xl p-3 text-sm text-foreground animate-step-in"
-            style={{ top: pos.top, left: pos.left, width: pos.width }}
+            style={{ position: 'fixed', top: pos.top, left: pos.left, width: pos.width }}
           >
             {title && <p className="font-semibold mb-1">{title}</p>}
             <p className="text-muted">{text}</p>

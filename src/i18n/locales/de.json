@@ -36,7 +36,55 @@
     "buildingYear": "Das Baujahr verrät den typischen Dämmstandard und hilft, den Energiebedarf besser einzuschätzen.",
     "windowAge": "Ältere Fenster haben oft höhere Wärmeverluste – das Alter hilft bei der Einschätzung.",
     "ventilation": "WRG steht für Wärmerückgewinnung: Die Lüftung nutzt die Wärme der Abluft, um Frischluft vorzuwärmen.",
-    "insulation": "Eine grobe Selbsteinschätzung genügt – du musst nichts genau messen."
+    "insulation": "Eine grobe Selbsteinschätzung genügt – du musst nichts genau messen.",
+    "goals": "Deine Ziele helfen der App, passende Messungen und Tipps zu priorisieren.",
+    "occupancy": "Als Eigentümer sind oft größere Maßnahmen möglich als zur Miete.",
+    "persons": "Die Personenzahl beeinflusst Warmwasser- und Stromverbrauch deutlich.",
+    "livingArea": "Die beheizte Wohnfläche ist eine zentrale Größe für den Wärmebedarf.",
+    "heatGenerators": "Mehrfachauswahl möglich, falls mehrere Systeme parallel heizen.",
+    "hotWater": "Wird das Warmwasser über die Heizung erzeugt oder durch ein eigenes Gerät?",
+    "pv": "Eine PV-Anlage liefert eigenen Strom und verändert die Energiebilanz.",
+    "fireplace": "Ein zusätzlicher Kamin/Ofen trägt zur Raumwärme bei und sollte erfasst werden.",
+    "instruments": "Wähle vorhandene Geräte – pro Gerät kannst du Typ und passende Empfehlungen sehen.",
+    "smartHome": "Smarte Geräte können Verbrauchsdaten liefern und die Auswertung verbessern.",
+    "energyCost": "Eine grobe Schätzung genügt, um Einsparpotenziale in Euro abzubilden.",
+    "renovation": "Renovierungen verbessern den Dämmstandard und senken den Energiebedarf."
+  },
+  "affiliate": {
+    "adLabel": "Anzeige",
+    "cta": "Auf Amazon ansehen",
+    "products": {
+      "temp_infrared_pro": {
+        "name": "Infrarot-Thermometer Pro",
+        "benefit": "Oberflächentemperaturen berührungslos in Sekunden messen.",
+        "price": "ab 24,99 €"
+      },
+      "temp_room_smart": {
+        "name": "Smartes Raumthermometer",
+        "benefit": "Raumtemperatur dauerhaft im Blick, inkl. App-Anbindung.",
+        "price": "ab 19,99 €"
+      },
+      "distance_laser": {
+        "name": "Laser-Entfernungsmesser",
+        "benefit": "Räume und Flächen schnell und präzise vermessen.",
+        "price": "ab 29,99 €"
+      },
+      "co2_monitor": {
+        "name": "CO₂-Messgerät",
+        "benefit": "Luftqualität überwachen und rechtzeitig lüften.",
+        "price": "ab 59,99 €"
+      },
+      "humidity_hygro": {
+        "name": "Digitales Hygrometer",
+        "benefit": "Luftfeuchte messen und Schimmel vorbeugen.",
+        "price": "ab 14,99 €"
+      },
+      "power_plug": {
+        "name": "Energiekosten-Messgerät",
+        "benefit": "Stromfresser im Haushalt einfach aufspüren.",
+        "price": "ab 17,99 €"
+      }
+    }
   },
   "monitoring": {
     "tariff": {
@@ -133,7 +181,7 @@
       "buildingType": "Gebäudeteil",
       "apartment": "Wohnung",
       "house": "Haus",
-      "livingArea": "Wohnfläche (m²)",
+      "livingArea": "Wohnfläche",
       "floors": "Anzahl der Etagen",
       "windowAge": "Ungefähres Alter der Fenster",
       "windowAgeOptions": {
@@ -225,12 +273,30 @@
         "none": "Keines",
         "unknown": "Nicht bekannt"
       },
-      "temperatureSubTypes": {
-        "contact": "Kontaktfühler",
-        "room": "Raumtemperatur",
-        "infrared": "Infrarot"
+      "modelTypeLabel": "Typ / Modell",
+      "modelTypes": {
+        "temperature_sensor": {
+          "contact": "Kontaktfühler",
+          "room": "Raumtemperatur",
+          "infrared": "Infrarot"
+        },
+        "distance_meter": {
+          "laser": "Laser",
+          "ultrasonic": "Ultraschall"
+        },
+        "co2_sensor": {
+          "portable": "Mobil",
+          "stationary": "Stationär"
+        },
+        "humidity_sensor": {
+          "hygrometer": "Hygrometer",
+          "combined": "Kombigerät"
+        },
+        "power_meter": {
+          "plug": "Steckdosen-Messer",
+          "clamp": "Strommesszange"
+        }
       },
-      "temperatureSubLabel": "Sensor-Typ",
       "smartHomeDevices": "Smart-Home-Geräte vorhanden?",
       "smartHomeOptions": {
         "smart_thermostat": "Smartes Thermostat",

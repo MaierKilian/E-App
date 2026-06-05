@@ -29,17 +29,17 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-4"
       onClick={onClose}
     >
       <div
         role="dialog"
         aria-modal="true"
-        className="glass w-full max-w-md rounded-3xl p-5 animate-step-in"
+        className="glass-floating w-full max-w-md rounded-3xl p-5 animate-step-in"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 mb-4">
-          <h2 className="font-semibold text-foreground">{title}</h2>
+          <h2 className="text-lg font-semibold text-foreground tracking-tight">{title}</h2>
           <button
             type="button"
             onClick={onClose}

@@ -57,10 +57,10 @@ export function Step3Rooms({ data, onChange }: Props) {
           return (
             <div
               key={type}
-              className={`rounded-2xl border px-3 py-2.5 transition-colors active:scale-[0.98] ${
+              className={`rounded-2xl px-3 py-2.5 transition-[transform,background-color,box-shadow] active:scale-[0.98] ${
                 selected
-                  ? 'border-primary bg-primary/10'
-                  : 'border-border bg-surface/70'
+                  ? 'bg-primary/10 border border-primary shadow-[0_3px_14px_color-mix(in_srgb,var(--primary)_18%,transparent)]'
+                  : 'glass'
               }`}
             >
               <button

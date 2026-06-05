@@ -48,9 +48,9 @@ export function Step8Review({ data }: Props) {
   const instrumentsSummary = data.instruments
     .map((i) => {
       const label = t(`onboarding.step6.instruments.${i.type}`)
-      if (i.type === 'temperature_sensor' && i.temperatureSubTypes?.length) {
-        const subs = i.temperatureSubTypes
-          .map((s) => t(`onboarding.step6.temperatureSubTypes.${s}`))
+      if (i.modelTypes?.length) {
+        const subs = i.modelTypes
+          .map((m) => t(`onboarding.step6.modelTypes.${i.type}.${m}`))
           .join(', ')
         return `${label} (${subs})`
       }

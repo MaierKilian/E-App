@@ -30,30 +30,30 @@ export function Step5HeatTransfer({ data, onChange }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
+    <div className="space-y-5">
+      <div className="space-y-2.5">
         <p className="text-sm text-muted">{t('onboarding.step5.subtitle')}</p>
         {data.rooms.map((room) => (
           <div
             key={room.type}
-            className="rounded-xl border border-border bg-surface px-4 py-3 space-y-2"
+            className="rounded-2xl glass px-3.5 py-2.5 flex items-center justify-between gap-3"
           >
-            <p className="text-sm font-medium text-foreground">
+            <p className="text-sm font-medium text-foreground truncate">
               {t(`onboarding.step3.roomTypes.${room.type}`)}
               {room.count > 1 && (
                 <span className="text-muted ml-1">×{room.count}</span>
               )}
             </p>
-            <div className="flex gap-2">
+            <div className="flex gap-1.5 shrink-0">
               {TRANSFER_TYPES.map((type) => (
                 <button
                   key={type}
                   type="button"
                   onClick={() => setTransfer(room.type, type)}
-                  className={`px-4 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
+                  className={`focus-ring px-3 py-1.5 rounded-xl text-xs font-medium transition-[transform,background-color] active:scale-95 ${
                     room.heatTransfer === type
-                      ? 'bg-primary text-primary-foreground border-primary'
-                      : 'bg-surface-2 border-border text-foreground hover:bg-surface'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-surface-2/70 text-foreground hover:bg-surface-2'
                   }`}
                 >
                   {t(`onboarding.step5.${type}`)}

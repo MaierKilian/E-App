@@ -1,6 +1,16 @@
 import { useTranslation } from 'react-i18next'
 import { SelectChip } from '@/components/ui/SelectChip'
-import type { OnboardingData, InstrumentType, TemperatureSensorSubType, SmartHomeDevice, EnergyCostRange } from '@/types'
+import { InfoButton } from '@/components/ui/InfoButton'
+import { AffiliateRow } from '@/components/AffiliateCard'
+import { getModelTypes, hasModelTypes } from '../instrumentOptions'
+import { getAffiliateProducts } from '../affiliateProducts'
+import type {
+  OnboardingData,
+  InstrumentType,
+  InstrumentEntry,
+  SmartHomeDevice,
+  EnergyCostRange,
+} from '@/types'
 
 interface Props {
   data: OnboardingData
@@ -18,38 +28,86 @@ const INSTRUMENT_TYPES: InstrumentType[] = [
   'unknown',
 ]
 
-const TEMP_SUB_TYPES: TemperatureSensorSubType[] = ['contact', 'room', 'infrared']
 const SMART_HOME_DEVICES: SmartHomeDevice[] = ['smart_thermostat', 'smart_meter', 'smart_plugs', 'none']
 const ENERGY_COST_RANGES: EnergyCostRange[] = ['under_100', '100_200', '200_350', 'over_350', 'unknown']
 
+/** Aufklappbares Detail-Panel je ausgewähltem Gerät: Subtypen + Empfehlung. */
+function InstrumentPanel({
+  type,
+  selectedModels,
+  onToggleModel,
+}: {
+  type: InstrumentType
+  selectedModels: string[]
+  onToggleModel: (model: string) => void
+}) {
+  const { t } = useTranslation()
+  const models = getModelTypes(type)
+  const products = getAffiliateProducts(type)
+
+  return (
+    <div className="animate-panel-in rounded-2xl glass p-3 space-y-3">
+      {models.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-muted">
+            {t('onboarding.step6.modelTypeLabel')}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {models.map((model) => (
+              <SelectChip
+                key={model}
+                label={t(`onboarding.step6.modelTypes.${type}.${model}`)}
+                selected={selectedModels.includes(model)}
+                onClick={() => onToggleModel(model)}
+                className="px-3 py-1.5"
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {products.length > 0 && <AffiliateRow products={products} />}
+    </div>
+  )
+}
+
 export function Step6Instruments({ data, onChange, detailed = false }: Props) {
   const { t } = useTranslation()
+
+  function getEntry(type: InstrumentType): InstrumentEntry | undefined {
+    return data.instruments.find((i) => i.type === type)
+  }
 
   function isSelected(type: InstrumentType) {
     return data.instruments.some((i) => i.type === type)
   }
 
-  function getTempSubTypes(): TemperatureSensorSubType[] {
-    return data.instruments.find((i) => i.type === 'temperature_sensor')?.temperatureSubTypes ?? []
-  }
-
   function toggleInstrument(type: InstrumentType) {
-    if (isSelected(type)) {
-      onChange({ instruments: data.instruments.filter((i) => i.type !== type) })
+    // "none" und "unknown" sind exklusiv (heben jede andere Auswahl auf).
+    if (type === 'none' || type === 'unknown') {
+      onChange({ instruments: isSelected(type) ? [] : [{ type }] })
+      return
+    }
+    const withoutExclusive = data.instruments.filter(
+      (i) => i.type !== 'none' && i.type !== 'unknown',
+    )
+    if (withoutExclusive.some((i) => i.type === type)) {
+      onChange({ instruments: withoutExclusive.filter((i) => i.type !== type) })
     } else {
-      onChange({ instruments: [...data.instruments, { type }] })
+      onChange({ instruments: [...withoutExclusive, { type }] })
     }
   }
 
-  function toggleTempSubType(sub: TemperatureSensorSubType) {
-    const current = getTempSubTypes()
-    const updated = current.includes(sub)
-      ? current.filter((s) => s !== sub)
-      : [...current, sub]
+  function toggleModel(type: InstrumentType, model: string) {
     onChange({
-      instruments: data.instruments.map((i) =>
-        i.type === 'temperature_sensor' ? { ...i, temperatureSubTypes: updated } : i,
-      ),
+      instruments: data.instruments.map((i) => {
+        if (i.type !== type) return i
+        const current = i.modelTypes ?? []
+        const updated = current.includes(model)
+          ? current.filter((m) => m !== model)
+          : [...current, model]
+        return { ...i, modelTypes: updated }
+      }),
     })
   }
 
@@ -67,11 +125,13 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
     }
   }
 
-  const hasTempSensor = isSelected('temperature_sensor')
-
   return (
-    <div className="space-y-5">
-      <p className="text-sm text-muted">{t('onboarding.step6.subtitle')}</p>
+    <div className="space-y-4">
+      <p className="flex items-center gap-1.5 text-sm text-muted">
+        {t('onboarding.step6.subtitle')}
+        <InfoButton text={t('info.instruments')} />
+      </p>
+
       <div className="flex flex-wrap gap-2">
         {INSTRUMENT_TYPES.map((type) => (
           <SelectChip
@@ -83,29 +143,24 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
         ))}
       </div>
 
-      {hasTempSensor && (
-        <div className="rounded-xl border border-border bg-surface px-4 py-3 space-y-2">
-          <p className="text-sm font-medium text-foreground">
-            {t('onboarding.step6.temperatureSubLabel')}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {TEMP_SUB_TYPES.map((sub) => (
-              <SelectChip
-                key={sub}
-                label={t(`onboarding.step6.temperatureSubTypes.${sub}`)}
-                selected={getTempSubTypes().includes(sub)}
-                onClick={() => toggleTempSubType(sub)}
-              />
-            ))}
-          </div>
-        </div>
+      {/* Detail-Panels nur für ausgewählte Geräte mit Subtypen/Empfehlung. */}
+      {INSTRUMENT_TYPES.filter((type) => isSelected(type) && hasModelTypes(type)).map(
+        (type) => (
+          <InstrumentPanel
+            key={type}
+            type={type}
+            selectedModels={getEntry(type)?.modelTypes ?? []}
+            onToggleModel={(model) => toggleModel(type, model)}
+          />
+        ),
       )}
 
       {detailed && (
         <>
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
+          <div className="space-y-2">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               {t('onboarding.step6.smartHomeDevices')}
+              <InfoButton text={t('info.smartHome')} />
             </label>
             <div className="flex flex-wrap gap-2">
               {SMART_HOME_DEVICES.map((device) => (
@@ -119,9 +174,10 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
             </div>
           </div>
 
-          <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
+          <div className="space-y-2">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               {t('onboarding.step6.energyCostRange')}
+              <InfoButton text={t('info.energyCost')} />
             </label>
             <div className="flex flex-wrap gap-2">
               {ENERGY_COST_RANGES.map((range) => (

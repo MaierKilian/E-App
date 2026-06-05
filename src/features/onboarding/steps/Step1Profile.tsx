@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Stepper } from '@/components/ui/Stepper'
 import { SelectChip } from '@/components/ui/SelectChip'
+import { InfoButton } from '@/components/ui/InfoButton'
 import type { OnboardingData, UserGoal, OccupancyStatus } from '@/types'
 
 interface Props {
@@ -25,7 +26,7 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="space-y-2">
         <label className="block text-sm font-medium text-foreground">
           {t('onboarding.step1.profileName')}
@@ -35,13 +36,14 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
           value={data.profileName}
           onChange={(e) => onChange({ profileName: e.target.value })}
           placeholder={t('onboarding.step1.profileNamePlaceholder')}
-          className="w-full px-4 py-3 rounded-xl border border-border bg-surface text-foreground placeholder:text-muted focus:outline-none focus:border-primary transition-colors"
+          className="focus-ring w-full px-4 py-3 rounded-2xl glass text-foreground placeholder:text-muted transition-colors"
         />
       </div>
 
       <div className="flex items-center justify-between gap-4">
-        <label className="text-sm font-medium text-foreground">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           {t('onboarding.step1.persons')}
+          <InfoButton text={t('info.persons')} />
         </label>
         <Stepper
           value={data.personsCount}
@@ -66,8 +68,9 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
       {detailed && (
         <>
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               {t('onboarding.step1.goals')}
+              <InfoButton text={t('info.goals')} />
             </label>
             <div className="flex flex-wrap gap-2">
               {GOALS.map((goal) => (
@@ -82,8 +85,9 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
           </div>
 
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-foreground">
+            <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
               {t('onboarding.step1.occupancyStatus')}
+              <InfoButton text={t('info.occupancy')} />
             </label>
             <div className="flex gap-2">
               {OCCUPANCY_STATUSES.map((status) => (

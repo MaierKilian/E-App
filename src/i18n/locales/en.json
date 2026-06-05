@@ -36,7 +36,55 @@
     "buildingYear": "The year of construction reveals the typical insulation standard and helps estimate the energy demand.",
     "windowAge": "Older windows often have higher heat losses – the age helps with the assessment.",
     "ventilation": "HRV stands for heat recovery: the ventilation uses the warmth of the exhaust air to pre-heat fresh air.",
-    "insulation": "A rough self-assessment is enough – you don't need to measure anything precisely."
+    "insulation": "A rough self-assessment is enough – you don't need to measure anything precisely.",
+    "goals": "Your goals help the app prioritise the right measurements and tips.",
+    "occupancy": "As an owner, larger measures are often possible than when renting.",
+    "persons": "The number of people significantly affects hot water and electricity use.",
+    "livingArea": "The heated living area is a key figure for the heating demand.",
+    "heatGenerators": "Multiple selection is possible if several systems heat in parallel.",
+    "hotWater": "Is the hot water produced by the heating system or by a separate device?",
+    "pv": "A PV system supplies your own electricity and changes the energy balance.",
+    "fireplace": "An additional fireplace/stove adds room heat and should be recorded.",
+    "instruments": "Select the devices you own – per device you can pick a type and see recommendations.",
+    "smartHome": "Smart devices can provide consumption data and improve the analysis.",
+    "energyCost": "A rough estimate is enough to express savings potential in euros.",
+    "renovation": "Renovations improve the insulation standard and reduce the energy demand."
+  },
+  "affiliate": {
+    "adLabel": "Ad",
+    "cta": "View on Amazon",
+    "products": {
+      "temp_infrared_pro": {
+        "name": "Infrared Thermometer Pro",
+        "benefit": "Measure surface temperatures contactlessly in seconds.",
+        "price": "from €24.99"
+      },
+      "temp_room_smart": {
+        "name": "Smart Room Thermometer",
+        "benefit": "Keep room temperature in view, with app connectivity.",
+        "price": "from €19.99"
+      },
+      "distance_laser": {
+        "name": "Laser Distance Meter",
+        "benefit": "Measure rooms and areas quickly and precisely.",
+        "price": "from €29.99"
+      },
+      "co2_monitor": {
+        "name": "CO₂ Monitor",
+        "benefit": "Monitor air quality and ventilate in good time.",
+        "price": "from €59.99"
+      },
+      "humidity_hygro": {
+        "name": "Digital Hygrometer",
+        "benefit": "Measure humidity and prevent mould.",
+        "price": "from €14.99"
+      },
+      "power_plug": {
+        "name": "Energy Cost Meter",
+        "benefit": "Easily track down power hogs in your home.",
+        "price": "from €17.99"
+      }
+    }
   },
   "onboarding": {
     "stepIndicator": {
@@ -99,7 +147,7 @@
       "buildingType": "Building type",
       "apartment": "Apartment",
       "house": "House",
-      "livingArea": "Living area (m²)",
+      "livingArea": "Living area",
       "floors": "Number of floors",
       "windowAge": "Approximate window age",
       "windowAgeOptions": {
@@ -191,12 +239,30 @@
         "none": "None",
         "unknown": "Unknown"
       },
-      "temperatureSubTypes": {
-        "contact": "Contact probe",
-        "room": "Room temperature",
-        "infrared": "Infrared"
+      "modelTypeLabel": "Type / model",
+      "modelTypes": {
+        "temperature_sensor": {
+          "contact": "Contact probe",
+          "room": "Room temperature",
+          "infrared": "Infrared"
+        },
+        "distance_meter": {
+          "laser": "Laser",
+          "ultrasonic": "Ultrasonic"
+        },
+        "co2_sensor": {
+          "portable": "Portable",
+          "stationary": "Stationary"
+        },
+        "humidity_sensor": {
+          "hygrometer": "Hygrometer",
+          "combined": "Combined device"
+        },
+        "power_meter": {
+          "plug": "Plug-in meter",
+          "clamp": "Clamp meter"
+        }
       },
-      "temperatureSubLabel": "Sensor type",
       "smartHomeDevices": "Smart home devices available?",
       "smartHomeOptions": {
         "smart_thermostat": "Smart thermostat",

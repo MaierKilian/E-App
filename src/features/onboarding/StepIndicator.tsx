@@ -24,8 +24,8 @@ export function StepIndicator({ currentStep, totalSteps, title }: StepIndicatorP
           return (
             <span
               key={i}
-              className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${
-                filled ? 'bg-primary' : 'bg-border'
+              className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                filled ? 'progress-glow' : 'bg-border'
               }`}
             />
           )

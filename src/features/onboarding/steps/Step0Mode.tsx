@@ -21,10 +21,10 @@ function ModeCard({ selected, onClick, title, desc, icon }: ModeCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`w-full text-left rounded-2xl border-2 px-5 py-4 transition-colors flex gap-4 items-start ${
+      className={`focus-ring w-full text-left rounded-3xl px-5 py-4 transition-[transform,background-color,box-shadow] duration-200 active:scale-[0.98] flex gap-4 items-start ${
         selected
-          ? 'border-primary bg-primary/10'
-          : 'border-border bg-surface hover:bg-surface-2'
+          ? 'bg-primary/10 border border-primary shadow-[0_4px_18px_color-mix(in_srgb,var(--primary)_22%,transparent)]'
+          : 'glass hover:bg-surface-2/60'
       }`}
     >
       <div
@@ -48,26 +48,23 @@ export function Step0Mode({ data, onChange }: Props) {
   const { t } = useTranslation()
 
   return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted">{t('onboarding.step0.subtitle')}</p>
-      <div className="space-y-3">
-        <ModeCard
-          mode="quick"
-          selected={data.mode === 'quick'}
-          onClick={() => onChange({ mode: 'quick' })}
-          title={t('onboarding.step0.quick')}
-          desc={t('onboarding.step0.quickDesc')}
-          icon={<Zap className="w-4 h-4" />}
-        />
-        <ModeCard
-          mode="detailed"
-          selected={data.mode === 'detailed'}
-          onClick={() => onChange({ mode: 'detailed' })}
-          title={t('onboarding.step0.detailed')}
-          desc={t('onboarding.step0.detailedDesc')}
-          icon={<ClipboardList className="w-4 h-4" />}
-        />
-      </div>
+    <div className="space-y-3">
+      <ModeCard
+        mode="quick"
+        selected={data.mode === 'quick'}
+        onClick={() => onChange({ mode: 'quick' })}
+        title={t('onboarding.step0.quick')}
+        desc={t('onboarding.step0.quickDesc')}
+        icon={<Zap className="w-4 h-4" />}
+      />
+      <ModeCard
+        mode="detailed"
+        selected={data.mode === 'detailed'}
+        onClick={() => onChange({ mode: 'detailed' })}
+        title={t('onboarding.step0.detailed')}
+        desc={t('onboarding.step0.detailedDesc')}
+        icon={<ClipboardList className="w-4 h-4" />}
+      />
     </div>
   )
 }

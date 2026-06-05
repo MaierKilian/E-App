@@ -102,11 +102,6 @@ export type InstrumentType =
   | 'none'
   | 'unknown'
 
-export type TemperatureSensorSubType =
-  | 'contact'
-  | 'room'
-  | 'infrared'
-
 export type LocationMode = 'manual' | 'automatic' | 'skip'
 
 export interface RoomEntry {
@@ -117,7 +112,8 @@ export interface RoomEntry {
 
 export interface InstrumentEntry {
   type: InstrumentType
-  temperatureSubTypes?: TemperatureSensorSubType[]
+  /** Gewählte Subtyp/Modell-Schlüssel für dieses Gerät (gerätespezifisch). */
+  modelTypes?: string[]
 }
 
 export interface OnboardingData {

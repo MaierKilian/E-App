@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { SelectChip } from '@/components/ui/SelectChip'
+import { InfoButton } from '@/components/ui/InfoButton'
 import type { OnboardingData, RenovationYear, RenovationItem } from '@/types'
 
 interface Props {
@@ -43,10 +44,11 @@ export function Step7Renovation({ data, onChange }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-foreground">
+        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
           {t('onboarding.step7renovation.lastRenovationYear')}
+          <InfoButton text={t('info.renovation')} />
         </label>
         <div className="flex flex-wrap gap-2">
           {RENOVATION_YEARS.map((year) => (

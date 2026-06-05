@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { LineChart } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
@@ -8,13 +8,8 @@ import { TariffModal } from './TariffModal'
 
 export function MonitoringPage() {
   const { t } = useTranslation()
-  const promptSeen = useTariffStore((s) => s.promptSeen)
-  const [modalOpen, setModalOpen] = useState(false)
-
-  // Beim Erstbesuch automatisch das Tarif-Modal anzeigen.
-  useEffect(() => {
-    if (!promptSeen) setModalOpen(true)
-  }, [promptSeen])
+  // Beim Erstbesuch automatisch das Tarif-Modal anzeigen (Initialwert ohne Effekt).
+  const [modalOpen, setModalOpen] = useState(() => !useTariffStore.getState().promptSeen)
 
   const soonPoints = t('monitoring.tariff.soonPoints', { returnObjects: true }) as string[]
 
