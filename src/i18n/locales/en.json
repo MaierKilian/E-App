@@ -89,6 +89,11 @@
         "name": "Water-Saving Showerhead",
         "benefit": "Up to 50% less hot water with full shower comfort.",
         "price": "from €29.99"
+      },
+      "smart_plug": {
+        "name": "Smart Power Strip",
+        "benefit": "Cut standby completely via switch or app.",
+        "price": "from €24.99"
       }
     }
   },
@@ -207,8 +212,56 @@
       "short": "Check the temperature and energy use of your fridge."
     },
     "standby": {
-      "title": "Standby Consumption",
-      "short": "Track down hidden power drains in standby mode."
+      "title": "Standby Check",
+      "short": "Track down hidden power drains in standby mode.",
+      "intro": {
+        "needs": "You'll need a power meter (energy cost meter).",
+        "stepsTitle": "How it works",
+        "steps": [
+          "Plug the meter between socket & device",
+          "Put device in standby, read the watts",
+          "Enter the values"
+        ],
+        "start": "Start test",
+        "affiliateNote": "It reliably tracks down standby drains:",
+        "smartTeaser": "Connect smart meter",
+        "smartSoon": "soon"
+      },
+      "run": {
+        "deviceLabel": "Device {{index}}",
+        "remove": "Remove",
+        "addDevice": "Add device",
+        "wattsLabel": "Standby power",
+        "wattsUnit": "W",
+        "sum": "Total"
+      },
+      "result": {
+        "unit": "W",
+        "costLabel": "Electricity cost",
+        "perYear": "≈ {{value}} €/year",
+        "breakdownTitle": "Breakdown",
+        "avoidable": "Avoidable ≈ {{value}}",
+        "affiliateNote": "A switchable power strip nearly eliminates standby:",
+        "summary": {
+          "good": "Very efficient – barely any standby use.",
+          "medium": "Moderate standby use – savings potential here.",
+          "high": "High standby use – hidden power drains at work."
+        },
+        "chips": {
+          "good": "Keep it up",
+          "powerStrip": "Use a power strip",
+          "smartPlug": "Use a smart plug"
+        }
+      },
+      "deviceTypes": {
+        "tv": "TV",
+        "console": "Game console",
+        "pc": "PC",
+        "router": "Router",
+        "audio": "Audio",
+        "charger": "Charger",
+        "other": "Other"
+      }
     },
     "room_temperature": {
       "title": "Room Temperature",

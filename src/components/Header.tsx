@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Leaf } from 'lucide-react'
+import { Logo } from './ui/Logo'
 import { NAV_ITEMS } from '@/app/navigation'
 import { ThemeSwitcher } from './ThemeSwitcher'
 import { LanguageSwitcher } from './LanguageSwitcher'
@@ -13,9 +13,7 @@ export function Header() {
     <header className="glass-bar sticky top-0 z-20 border-b border-border/60">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
         <div className="flex items-center gap-2 font-semibold">
-          <span className="grid place-items-center w-8 h-8 rounded-lg bg-primary text-primary-foreground">
-            <Leaf className="w-5 h-5" />
-          </span>
+          <Logo className="h-6 w-6 text-foreground" />
           <span>{t('app.name')}</span>
         </div>
 

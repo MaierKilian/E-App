@@ -51,7 +51,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     id: 'standby',
     icon: Plug,
     difficulty: 2,
-    available: false,
+    available: true,
     category: 'electricity',
     estimatedMinutes: 12,
     rooms: ['living_room', 'office', 'bureau'],

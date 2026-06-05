@@ -29,7 +29,7 @@ interface RowProps {
  * Status-Badge erledigt/Wert/bald, Chevron). Anklickbar nur, wenn verfügbar.
  */
 export function MeasurementRow({ meta, result }: RowProps) {
-  const { t, i18n } = useTranslation()
+  const { i18n, t } = useTranslation()
   const navigate = useNavigate()
   const Icon = meta.icon
   const done = Boolean(result)
@@ -40,7 +40,7 @@ export function MeasurementRow({ meta, result }: RowProps) {
     `${new Intl.NumberFormat(i18n.language, {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1,
-    }).format(result.primaryValue)} ${t('measurements.showerhead.result.flowUnit')}`
+    }).format(result.primaryValue)} ${result.unit ?? ''}`.trim()
 
   const metaLine = `${t(`measurements.categories.${meta.category}`)} · ${meta.estimatedMinutes} ${t('measurements.minutesUnit')}`
 

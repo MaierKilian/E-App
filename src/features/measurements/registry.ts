@@ -3,6 +3,9 @@ import type { MeasurementModule } from './runnerTypes'
 import { ShowerheadIntro } from './showerhead/ShowerheadIntro'
 import { ShowerheadRun } from './showerhead/ShowerheadRun'
 import { ShowerheadResult } from './showerhead/ShowerheadResult'
+import { StandbyIntro } from './standby/StandbyIntro'
+import { StandbyRun } from './standby/StandbyRun'
+import { StandbyResult } from './standby/StandbyResult'
 
 /**
  * Registry der durchführbaren Messungen: id → {Intro, Run, Result}.
@@ -14,6 +17,11 @@ export const MEASUREMENT_MODULES: Partial<Record<MeasurementId, MeasurementModul
     Intro: ShowerheadIntro,
     Run: ShowerheadRun,
     Result: ShowerheadResult,
+  },
+  standby: {
+    Intro: StandbyIntro,
+    Run: StandbyRun,
+    Result: StandbyResult,
   },
 }
 

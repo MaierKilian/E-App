@@ -44,6 +44,7 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
         id: 'showerhead',
         rating: calc.rating,
         primaryValue: calc.flowLpm,
+        unit: 'L/min',
         completedAt: new Date().toISOString(),
         details: { liters, seconds, yearlyCost: calc.yearlyCost, yearlySaving: calc.yearlySaving },
       },

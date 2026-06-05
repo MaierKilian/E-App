@@ -89,6 +89,11 @@
         "name": "Sparduschkopf",
         "benefit": "Bis zu 50 % weniger Warmwasser bei vollem Duschkomfort.",
         "price": "ab 29,99 €"
+      },
+      "smart_plug": {
+        "name": "Smarte Steckdosenleiste",
+        "benefit": "Standby per Schalter oder App komplett abschalten.",
+        "price": "ab 24,99 €"
       }
     }
   },
@@ -207,8 +212,56 @@
       "short": "Prüfe die Temperatur und den Energieverbrauch deines Kühlschranks."
     },
     "standby": {
-      "title": "Standby-Verbrauch",
-      "short": "Spüre heimliche Stromfresser im Standby-Betrieb auf."
+      "title": "Standby-Check",
+      "short": "Spüre heimliche Stromfresser im Standby-Betrieb auf.",
+      "intro": {
+        "needs": "Du brauchst ein Strommessgerät (Energiekosten-Messgerät).",
+        "stepsTitle": "So funktioniert's",
+        "steps": [
+          "Messgerät zwischen Steckdose & Gerät",
+          "Gerät in Standby, Watt ablesen",
+          "Werte eintragen"
+        ],
+        "start": "Test starten",
+        "affiliateNote": "Damit spürst du Standby-Verbraucher zuverlässig auf:",
+        "smartTeaser": "Smartes Messgerät verbinden",
+        "smartSoon": "bald"
+      },
+      "run": {
+        "deviceLabel": "Gerät {{index}}",
+        "remove": "Entfernen",
+        "addDevice": "Gerät hinzufügen",
+        "wattsLabel": "Standby-Leistung",
+        "wattsUnit": "W",
+        "sum": "Summe"
+      },
+      "result": {
+        "unit": "W",
+        "costLabel": "Stromkosten",
+        "perYear": "≈ {{value}} €/Jahr",
+        "breakdownTitle": "Aufschlüsselung",
+        "avoidable": "Vermeidbar ≈ {{value}}",
+        "affiliateNote": "Eine schaltbare Steckdosenleiste eliminiert den Standby fast komplett:",
+        "summary": {
+          "good": "Sehr sparsam – kaum Standby-Verbrauch.",
+          "medium": "Mittlerer Standby-Verbrauch – hier steckt Sparpotenzial.",
+          "high": "Hoher Standby-Verbrauch – heimliche Stromfresser am Werk."
+        },
+        "chips": {
+          "good": "Weiter so",
+          "powerStrip": "Steckdosenleiste nutzen",
+          "smartPlug": "Smart-Plug einsetzen"
+        }
+      },
+      "deviceTypes": {
+        "tv": "Fernseher",
+        "console": "Spielkonsole",
+        "pc": "PC",
+        "router": "Router",
+        "audio": "Audio",
+        "charger": "Ladegerät",
+        "other": "Sonstiges"
+      }
     },
     "room_temperature": {
       "title": "Raumtemperatur",

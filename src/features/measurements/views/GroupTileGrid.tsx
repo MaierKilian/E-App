@@ -31,7 +31,7 @@ function MiniCard({ meta, result }: { meta: MeasurementMeta; result?: Measuremen
     `${new Intl.NumberFormat(i18n.language, {
       minimumFractionDigits: 1,
       maximumFractionDigits: 1,
-    }).format(result.primaryValue)} ${t('measurements.showerhead.result.flowUnit')}`
+    }).format(result.primaryValue)} ${result.unit ?? ''}`.trim()
 
   const inner = (
     <>

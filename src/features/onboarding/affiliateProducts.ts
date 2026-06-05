@@ -96,3 +96,13 @@ export const SHOWERHEAD_PRODUCT: AffiliateProduct = {
   rating: 4.5,
   url: '#',
 }
+
+/** Smarte Steckdose/Steckdosenleiste – Empfehlung beim Standby-Check. */
+export const SMART_PLUG_PRODUCT: AffiliateProduct = {
+  id: 'smart_plug',
+  nameKey: 'affiliate.products.smart_plug.name',
+  benefitKey: 'affiliate.products.smart_plug.benefit',
+  priceKey: 'affiliate.products.smart_plug.price',
+  rating: 4.5,
+  url: '#',
+}
