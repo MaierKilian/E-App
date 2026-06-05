@@ -1,0 +1,28 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Layout } from './Layout'
+import { useApplyTheme } from './useApplyTheme'
+import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
+import { MeasurementsPage } from '@/features/measurements/MeasurementsPage'
+import { MonitoringPage } from '@/features/monitoring/MonitoringPage'
+import { ReportsPage } from '@/features/reports/ReportsPage'
+import { EducationPage } from '@/features/education/EducationPage'
+
+export function App() {
+  useApplyTheme()
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<Navigate to="/onboarding" replace />} />
+          <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/measurements" element={<MeasurementsPage />} />
+          <Route path="/monitoring" element={<MonitoringPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/education" element={<EducationPage />} />
+          <Route path="*" element={<Navigate to="/onboarding" replace />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  )
+}

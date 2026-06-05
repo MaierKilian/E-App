@@ -1,0 +1,81 @@
+{
+  "app": {
+    "name": "E-App",
+    "tagline": "Energieanalyse für deinen Haushalt – einfach selbst gemacht."
+  },
+  "nav": {
+    "onboarding": "Einrichtung",
+    "measurements": "Messungen",
+    "monitoring": "Monitoring",
+    "reports": "Berichte",
+    "education": "Wissen"
+  },
+  "theme": {
+    "label": "Design",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "htw": "HTW-Grün"
+  },
+  "language": {
+    "label": "Sprache",
+    "de": "Deutsch",
+    "en": "Englisch"
+  },
+  "common": {
+    "comingSoon": "In Arbeit",
+    "plannedFeatures": "Das ist hier geplant"
+  },
+  "pages": {
+    "onboarding": {
+      "title": "Einrichtung",
+      "subtitle": "Ein paar Fragen zu deinem Zuhause – damit die App dich passend begleiten kann.",
+      "points": [
+        "Räume, Wohnfläche und Baujahr des Gebäudes",
+        "Heizungsart (Wärmepumpe, Gas, Öl, Pellets, Holz …)",
+        "Warmwasser: zentral, dezentral oder über die Heizung",
+        "Anzahl der Bewohner",
+        "Vorhandene Messgeräte (Thermometer, Strommessgerät …)"
+      ]
+    },
+    "measurements": {
+      "title": "Messungen",
+      "subtitle": "Das Herzstück: einfache, geführte Messungen Schritt für Schritt.",
+      "points": [
+        "Geführter Ablauf: Erklärung → Durchführung → Ergebnis",
+        "Beispiele wie Duschkopf-Test oder Kühlschrank-Check",
+        "Sofort verständliche Tipps zum Ergebnis",
+        "Sortierung nach Raum, Wert oder empfohlener Reihenfolge"
+      ]
+    },
+    "monitoring": {
+      "title": "Monitoring",
+      "subtitle": "Zählerstände erfassen und den Verbrauch über die Zeit verfolgen.",
+      "points": [
+        "Zählerstände für Strom, Wasser, Gas, Pellets eintragen",
+        "Verbrauch als übersichtliches Diagramm",
+        "Erinnerungen für regelmäßiges Ablesen",
+        "Trends und Auffälligkeiten erkennen"
+      ]
+    },
+    "reports": {
+      "title": "Berichte",
+      "subtitle": "Ergebnisse als Kurz- und Langbericht – exportierbar als PDF.",
+      "points": [
+        "Zusammenfassung aller Messungen",
+        "Auswertung des Energie-Monitorings",
+        "Kurz- und Langfassung wählbar",
+        "Export als PDF zum Teilen und Archivieren"
+      ]
+    },
+    "education": {
+      "title": "Wissen",
+      "subtitle": "Hintergründe, FAQ und Lerninhalte rund um Energie im Haushalt.",
+      "points": [
+        "FAQ und weiterführende Informationen zu den Messungen",
+        "Verständliche Erklärungen für alle",
+        "Bereich für die HTW Berlin: Gebäudeenergie- und Informationstechnik",
+        "Laborversuche mit Vorbereitung und kurzem Test"
+      ]
+    }
+  }
+}

@@ -1,0 +1,69 @@
+@import 'tailwindcss';
+
+/*
+ * Theme-System der E-App.
+ * Farben werden als CSS-Variablen je Theme definiert und über `@theme inline`
+ * an Tailwind-Utilities gebunden (z. B. bg-background, text-foreground).
+ * Das Theme wird über das Attribut data-theme am <html>-Element umgeschaltet.
+ */
+@theme inline {
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-foreground: var(--fg);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-fg);
+}
+
+/* Hell (Standard) */
+:root,
+[data-theme='light'] {
+  --bg: #f6f8f6;
+  --surface: #ffffff;
+  --surface-2: #eef1ee;
+  --fg: #15201a;
+  --muted: #5c6b62;
+  --border: #e3e8e4;
+  --primary: #2f8f4e;
+  --primary-fg: #ffffff;
+  color-scheme: light;
+}
+
+/* Dunkel */
+[data-theme='dark'] {
+  --bg: #0c1310;
+  --surface: #121b16;
+  --surface-2: #1b2620;
+  --fg: #e9efea;
+  --muted: #9bb0a4;
+  --border: #243029;
+  --primary: #46bb6e;
+  --primary-fg: #052110;
+  color-scheme: dark;
+}
+
+/* HTW-Grün (Hochschule für Technik und Wirtschaft Berlin) */
+[data-theme='htw'] {
+  --bg: #f0f5ea;
+  --surface: #ffffff;
+  --surface-2: #e4efd7;
+  --fg: #1b2a12;
+  --muted: #586b48;
+  --border: #d3e2c2;
+  --primary: #5a8a1b;
+  --primary-fg: #ffffff;
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

@@ -1,0 +1,81 @@
+{
+  "app": {
+    "name": "E-App",
+    "tagline": "Home energy analysis – easy to do yourself."
+  },
+  "nav": {
+    "onboarding": "Setup",
+    "measurements": "Measurements",
+    "monitoring": "Monitoring",
+    "reports": "Reports",
+    "education": "Learn"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "htw": "HTW Green"
+  },
+  "language": {
+    "label": "Language",
+    "de": "German",
+    "en": "English"
+  },
+  "common": {
+    "comingSoon": "In progress",
+    "plannedFeatures": "Planned for this area"
+  },
+  "pages": {
+    "onboarding": {
+      "title": "Setup",
+      "subtitle": "A few questions about your home – so the app can guide you properly.",
+      "points": [
+        "Rooms, living area and year the building was built",
+        "Heating type (heat pump, gas, oil, pellets, wood …)",
+        "Hot water: central, decentral or via the heating system",
+        "Number of residents",
+        "Available measuring devices (thermometer, power meter …)"
+      ]
+    },
+    "measurements": {
+      "title": "Measurements",
+      "subtitle": "The core: simple, guided measurements step by step.",
+      "points": [
+        "Guided flow: explanation → measurement → result",
+        "Examples like the shower head test or fridge check",
+        "Instantly understandable tips for each result",
+        "Sort by room, value or recommended order"
+      ]
+    },
+    "monitoring": {
+      "title": "Monitoring",
+      "subtitle": "Record meter readings and track consumption over time.",
+      "points": [
+        "Enter meter readings for electricity, water, gas, pellets",
+        "Consumption shown as a clear chart",
+        "Reminders for regular readings",
+        "Spot trends and anomalies"
+      ]
+    },
+    "reports": {
+      "title": "Reports",
+      "subtitle": "Results as short and long reports – exportable as PDF.",
+      "points": [
+        "Summary of all measurements",
+        "Evaluation of the energy monitoring",
+        "Choose a short or long version",
+        "Export as PDF to share and archive"
+      ]
+    },
+    "education": {
+      "title": "Learn",
+      "subtitle": "Background, FAQ and learning content about home energy.",
+      "points": [
+        "FAQ and further information about the measurements",
+        "Clear explanations for everyone",
+        "Section for HTW Berlin: Building Energy and Information Technology",
+        "Lab experiments with preparation and a short quiz"
+      ]
+    }
+  }
+}
