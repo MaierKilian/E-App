@@ -442,8 +442,18 @@
     "greeting": "Welcome back",
     "profileNameFallback": "your home",
     "questionnaire": {
-      "continue": "Continue questionnaire",
-      "review": "View questionnaire"
+      "continue": "Complete your profile",
+      "review": "View your profile"
+    },
+    "snapshot": {
+      "building": "Building",
+      "year": "Year built",
+      "people": "People",
+      "rooms": "Rooms",
+      "heating": "Heating",
+      "status": "Status",
+      "goal": "Goal",
+      "location": "Postal code"
     },
     "completenessLabel": "Profile {{value}} % complete",
     "hero": {
@@ -491,9 +501,9 @@
       "Set the fridge to 7 °C – any colder just wastes energy."
     ],
     "profile": {
-      "sectionTitle": "Household profile",
-      "expand": "Show",
-      "collapse": "Hide",
+      "sectionTitle": "Your energy profile",
+      "expand": "Show all details",
+      "collapse": "Hide details",
       "editButton": "Edit profile",
       "resetButton": "Reset profile"
     }

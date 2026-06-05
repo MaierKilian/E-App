@@ -6,6 +6,7 @@ import { Step8Review } from '@/features/onboarding/steps/Step8Review'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import type { OnboardingData } from '@/types'
 import { ProgressRing } from './ProgressRing'
+import { ProfileSnapshot } from './ProfileSnapshot'
 import { profileCompleteness } from './estimateEnergy'
 
 interface HomeDashboardProps {
@@ -58,44 +59,45 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
         {isComplete ? t('home.questionnaire.review') : t('home.questionnaire.continue')}
       </button>
 
-      {/* 3. Haushaltsprofil (einklappbar, standardmäßig zu) */}
+      {/* 3. Energieprofil als prägnanter Snapshot + aufklappbare Details */}
       <Card className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-semibold text-foreground">
+            {t('home.profile.sectionTitle')}
+          </span>
+          <button
+            type="button"
+            onClick={onEdit}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            {t('home.profile.editButton')}
+          </button>
+        </div>
+
+        <ProfileSnapshot data={data} />
+
         <button
           type="button"
           onClick={() => setProfileOpen((open) => !open)}
           aria-expanded={profileOpen}
-          className="flex w-full items-center justify-between gap-3 text-left"
+          className="flex w-full items-center justify-center gap-1.5 pt-1 text-xs font-medium text-muted hover:text-foreground transition-colors"
         >
-          <span className="text-sm font-semibold text-foreground">
-            {t('home.profile.sectionTitle')}
-          </span>
-          <span className="flex items-center gap-1.5 text-xs text-muted">
-            {profileOpen ? t('home.profile.collapse') : t('home.profile.expand')}
-            <ChevronDown
-              className={`w-4 h-4 transition-transform ${profileOpen ? 'rotate-180' : ''}`}
-            />
-          </span>
+          {profileOpen ? t('home.profile.collapse') : t('home.profile.expand')}
+          <ChevronDown
+            className={`w-4 h-4 transition-transform ${profileOpen ? 'rotate-180' : ''}`}
+          />
         </button>
 
         {profileOpen && (
           <div className="animate-step-in space-y-4">
             <Step8Review data={data} />
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={onEdit}
-                className="w-full py-3 rounded-2xl border border-primary text-primary font-medium text-sm hover:bg-primary/10 transition-colors"
-              >
-                {t('home.profile.editButton')}
-              </button>
-              <button
-                type="button"
-                onClick={reset}
-                className="w-full py-2.5 rounded-2xl text-muted font-medium text-xs hover:text-foreground transition-colors"
-              >
-                {t('home.profile.resetButton')}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={reset}
+              className="w-full py-2.5 rounded-2xl text-muted font-medium text-xs hover:text-foreground transition-colors"
+            >
+              {t('home.profile.resetButton')}
+            </button>
           </div>
         )}
       </Card>

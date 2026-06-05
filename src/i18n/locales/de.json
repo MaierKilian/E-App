@@ -442,8 +442,18 @@
     "greeting": "Willkommen zurück",
     "profileNameFallback": "dein Zuhause",
     "questionnaire": {
-      "continue": "Fragebogen fortsetzen",
-      "review": "Fragebogen ansehen"
+      "continue": "Energieprofil vervollständigen",
+      "review": "Energieprofil ansehen"
+    },
+    "snapshot": {
+      "building": "Gebäude",
+      "year": "Baujahr",
+      "people": "Personen",
+      "rooms": "Zimmer",
+      "heating": "Heizung",
+      "status": "Status",
+      "goal": "Ziel",
+      "location": "PLZ"
     },
     "completenessLabel": "Profil zu {{value}} % vollständig",
     "hero": {
@@ -491,9 +501,9 @@
       "Kühlschrank auf 7 °C einstellen – kälter kostet nur unnötig Energie."
     ],
     "profile": {
-      "sectionTitle": "Haushaltsprofil",
-      "expand": "Anzeigen",
-      "collapse": "Verbergen",
+      "sectionTitle": "Dein Energieprofil",
+      "expand": "Alle Angaben anzeigen",
+      "collapse": "Angaben ausblenden",
       "editButton": "Profil bearbeiten",
       "resetButton": "Profil zurücksetzen"
     }
