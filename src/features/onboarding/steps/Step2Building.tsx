@@ -37,7 +37,7 @@ export function Step2Building({ data, onChange, detailed = false }: Props) {
         </label>
         <Slider
           value={data.buildingYear}
-          min={1900}
+          min={1850}
           max={2025}
           onChange={(v) => onChange({ buildingYear: v })}
         />

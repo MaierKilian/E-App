@@ -71,13 +71,13 @@ export function ProfileSnapshot({ data }: { data: OnboardingData }) {
       {facts.map((fact, i) => {
         const Icon = fact.icon
         return (
-          <div key={i} className="glass rounded-2xl p-3 flex items-center gap-2.5 min-w-0">
+          <div key={i} className="glass rounded-2xl p-3 flex items-start gap-2.5 min-w-0">
             <span className="grid place-items-center w-8 h-8 shrink-0 rounded-xl bg-primary/10 text-primary">
               <Icon className="w-4 h-4" />
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-foreground truncate">{fact.value}</p>
-              <p className="text-[0.7rem] text-muted truncate">{fact.label}</p>
+              <p className="text-sm font-semibold text-foreground leading-tight break-words">{fact.value}</p>
+              <p className="mt-0.5 text-[0.7rem] text-muted">{fact.label}</p>
             </div>
           </div>
         )
