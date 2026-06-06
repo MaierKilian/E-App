@@ -106,3 +106,23 @@ export const SMART_PLUG_PRODUCT: AffiliateProduct = {
   rating: 4.5,
   url: '#',
 }
+
+/** Thermo-Hygrometer – Empfehlung beim Raumklima-Check. */
+export const HYGROMETER_PRODUCT: AffiliateProduct = {
+  id: 'hygrometer',
+  nameKey: 'affiliate.products.hygrometer.name',
+  benefitKey: 'affiliate.products.hygrometer.benefit',
+  priceKey: 'affiliate.products.hygrometer.price',
+  rating: 4.5,
+  url: '#',
+}
+
+/** Infrarot-Thermometer – Empfehlung beim Kühl-/Gefrierschrank-Check. */
+export const INFRARED_THERMOMETER_PRODUCT: AffiliateProduct = {
+  id: 'infrared_thermometer',
+  nameKey: 'affiliate.products.infrared.name',
+  benefitKey: 'affiliate.products.infrared.benefit',
+  priceKey: 'affiliate.products.infrared.price',
+  rating: 4.5,
+  url: '#',
+}

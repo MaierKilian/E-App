@@ -94,6 +94,16 @@
         "name": "Smarte Steckdosenleiste",
         "benefit": "Standby per Schalter oder App komplett abschalten.",
         "price": "ab 24,99 €"
+      },
+      "hygrometer": {
+        "name": "Thermo-Hygrometer",
+        "benefit": "Temperatur und Luftfeuchte präzise im Blick behalten.",
+        "price": "ab 14,99 €"
+      },
+      "infrared": {
+        "name": "Infrarot-Thermometer",
+        "benefit": "Temperaturen berührungslos in Sekunden messen.",
+        "price": "ab 19,99 €"
       }
     }
   },
@@ -213,7 +223,37 @@
     },
     "fridge": {
       "title": "Kühlschrank-Check",
-      "short": "Prüfe die Temperatur und den Energieverbrauch deines Kühlschranks."
+      "short": "Prüfe die Temperatur und den Energieverbrauch deines Kühlschranks.",
+      "intro": {
+        "stepsTitle": "So funktioniert's",
+        "steps": [
+          "Thermometer in den Kühlschrank",
+          "Tür zu, kurz warten",
+          "Temperatur ablesen & eingeben"
+        ],
+        "start": "Check starten"
+      },
+      "run": {
+        "tempLabel": "Innentemperatur",
+        "tempUnit": "°C",
+        "tempStandard": "Empfohlen 5–7 °C"
+      },
+      "result": {
+        "costPerYear": "€/Jahr",
+        "perYear": "≈ {{value}} €/Jahr",
+        "savingLabel": "Ersparnis ≈ {{value}}",
+        "affiliateNote": "Ein Infrarot-Thermometer misst die Temperatur berührungslos:",
+        "status": {
+          "tooCold": "Zu kalt eingestellt – das kostet unnötig Strom.",
+          "optimal": "Optimal eingestellt – sparsam und sicher.",
+          "tooWarm": "Zu warm – Lebensmittel verderben schneller."
+        },
+        "chips": {
+          "tooCold": "Wärmer einstellen",
+          "optimal": "Weiter so",
+          "tooWarm": "Kälter einstellen"
+        }
+      }
     },
     "standby": {
       "title": "Standby-Check",
@@ -276,8 +316,101 @@
       }
     },
     "room_temperature": {
-      "title": "Raumtemperatur",
-      "short": "Miss die Raumtemperatur und finde dein Sparpotenzial beim Heizen."
+      "title": "Raumklima-Check",
+      "short": "Miss die Raumtemperatur und finde dein Sparpotenzial beim Heizen.",
+      "intro": {
+        "stepsTitle": "So funktioniert's",
+        "steps": [
+          "Thermometer im Raum platzieren",
+          "Werte ablesen",
+          "Eingeben & auswerten"
+        ],
+        "start": "Check starten"
+      },
+      "run": {
+        "tempLabel": "Raumtemperatur",
+        "tempUnit": "°C",
+        "humidityToggle": "Luftfeuchte gemessen",
+        "humidityUnit": "%",
+        "draftLabel": "Zugluft",
+        "draftOptions": {
+          "none": "keine",
+          "noticeable": "spürbar",
+          "strong": "stark"
+        }
+      },
+      "result": {
+        "summary": {
+          "good": "Angenehmes Raumklima – ideal eingestellt.",
+          "medium": "Solides Raumklima – kleine Stellschrauben bleiben.",
+          "high": "Deutliche Abweichung – hier lohnt sich Nachjustieren."
+        },
+        "dimensions": {
+          "temperature": "Temperatur",
+          "humidity": "Luftfeuchte",
+          "draft": "Zugluft"
+        },
+        "status": {
+          "optimal": "Optimal.",
+          "tooCold": "Etwas kühl – jedes Grad weniger spart, aber Komfort beachten.",
+          "tooWarm": "Etwas warm – 1 °C weniger spart spürbar Heizkosten.",
+          "tooDry": "Eher trocken – öfter lüften oder Pflanzen helfen.",
+          "tooHumid": "Eher feucht – regelmäßig stoßlüften beugt Schimmel vor."
+        },
+        "draftStatus": {
+          "none": "Keine Zugluft spürbar.",
+          "noticeable": "Spürbare Zugluft – Fenster/Türen abdichten.",
+          "strong": "Starke Zugluft – Dichtungen prüfen lohnt sich."
+        },
+        "affiliateNote": "Ein Thermo-Hygrometer behält Temperatur und Feuchte im Blick:"
+      }
+    },
+    "freezer": {
+      "title": "Gefrierschrank-Check",
+      "short": "Prüfe Vereisung und Temperatur und spare unnötigen Stromverbrauch.",
+      "intro": {
+        "stepsTitle": "So funktioniert's",
+        "steps": [
+          "Gefrierschrank öffnen",
+          "Vereisung einschätzen",
+          "Optional Temperatur messen"
+        ],
+        "start": "Check starten"
+      },
+      "run": {
+        "frostLabel": "Vereisung",
+        "frostOptions": {
+          "none": "eisfrei",
+          "light": "leichte Vereisung",
+          "heavy": "starke Vereisung"
+        },
+        "tempToggle": "Temperatur gemessen",
+        "tempUnit": "°C"
+      },
+      "result": {
+        "costPerYear": "vermeidbar/Jahr",
+        "allGood": "Alles gut",
+        "summary": {
+          "good": "Eisfrei – dein Gefrierschrank läuft effizient.",
+          "medium": "Leichte Vereisung – Abtauen senkt den Verbrauch.",
+          "high": "Starke Vereisung – jetzt abtauen spart spürbar Strom."
+        },
+        "frostChips": {
+          "none": "Eisfrei",
+          "light": "Leichte Vereisung",
+          "heavy": "Starke Vereisung"
+        },
+        "chips": {
+          "defrost": "Abtauen"
+        },
+        "tempHint": "Temperatur {{value}}: {{status}}",
+        "tempStatus": {
+          "optimal": "optimal eingestellt",
+          "tooWarm": "zu warm – kälter stellen",
+          "tooCold": "zu kalt – wärmer stellen spart Strom"
+        },
+        "affiliateNote": "Ein Infrarot-Thermometer hilft beim schnellen Kontrollieren:"
+      }
     }
   },
   "monitoring": {

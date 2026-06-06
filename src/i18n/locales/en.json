@@ -94,6 +94,16 @@
         "name": "Smart Power Strip",
         "benefit": "Cut standby completely via switch or app.",
         "price": "from €24.99"
+      },
+      "hygrometer": {
+        "name": "Thermo-Hygrometer",
+        "benefit": "Keep temperature and humidity precisely in view.",
+        "price": "ab 14,99 €"
+      },
+      "infrared": {
+        "name": "Infrared Thermometer",
+        "benefit": "Measure temperatures contact-free in seconds.",
+        "price": "ab 19,99 €"
       }
     }
   },
@@ -213,7 +223,37 @@
     },
     "fridge": {
       "title": "Fridge Check",
-      "short": "Check the temperature and energy use of your fridge."
+      "short": "Check the temperature and energy use of your fridge.",
+      "intro": {
+        "stepsTitle": "How it works",
+        "steps": [
+          "Put a thermometer in the fridge",
+          "Close the door, wait briefly",
+          "Read & enter the temperature"
+        ],
+        "start": "Start check"
+      },
+      "run": {
+        "tempLabel": "Inside temperature",
+        "tempUnit": "°C",
+        "tempStandard": "Recommended 5–7 °C"
+      },
+      "result": {
+        "costPerYear": "€/year",
+        "perYear": "≈ {{value}} €/year",
+        "savingLabel": "Savings ≈ {{value}}",
+        "affiliateNote": "An infrared thermometer measures the temperature contact-free:",
+        "status": {
+          "tooCold": "Set too cold – this wastes electricity.",
+          "optimal": "Optimally set – efficient and safe.",
+          "tooWarm": "Too warm – food spoils faster."
+        },
+        "chips": {
+          "tooCold": "Set warmer",
+          "optimal": "Keep it up",
+          "tooWarm": "Set colder"
+        }
+      }
     },
     "standby": {
       "title": "Standby Check",
@@ -276,8 +316,101 @@
       }
     },
     "room_temperature": {
-      "title": "Room Temperature",
-      "short": "Measure room temperature and find your heating savings potential."
+      "title": "Room Climate Check",
+      "short": "Measure room temperature and find your heating savings potential.",
+      "intro": {
+        "stepsTitle": "How it works",
+        "steps": [
+          "Place a thermometer in the room",
+          "Read the values",
+          "Enter & evaluate"
+        ],
+        "start": "Start check"
+      },
+      "run": {
+        "tempLabel": "Room temperature",
+        "tempUnit": "°C",
+        "humidityToggle": "Humidity measured",
+        "humidityUnit": "%",
+        "draftLabel": "Draft",
+        "draftOptions": {
+          "none": "none",
+          "noticeable": "noticeable",
+          "strong": "strong"
+        }
+      },
+      "result": {
+        "summary": {
+          "good": "Comfortable climate – nicely dialed in.",
+          "medium": "Solid climate – minor tweaks remain.",
+          "high": "Clear deviation – worth adjusting here."
+        },
+        "dimensions": {
+          "temperature": "Temperature",
+          "humidity": "Humidity",
+          "draft": "Draft"
+        },
+        "status": {
+          "optimal": "Optimal.",
+          "tooCold": "A bit cool – every degree less saves, but mind comfort.",
+          "tooWarm": "A bit warm – 1 °C less noticeably cuts heating costs.",
+          "tooDry": "Rather dry – airing out or plants can help.",
+          "tooHumid": "Rather humid – regular airing prevents mold."
+        },
+        "draftStatus": {
+          "none": "No noticeable draft.",
+          "noticeable": "Noticeable draft – seal windows/doors.",
+          "strong": "Strong draft – checking the seals pays off."
+        },
+        "affiliateNote": "A thermo-hygrometer keeps temperature and humidity in view:"
+      }
+    },
+    "freezer": {
+      "title": "Freezer Check",
+      "short": "Check ice build-up and temperature to avoid wasted electricity.",
+      "intro": {
+        "stepsTitle": "How it works",
+        "steps": [
+          "Open the freezer",
+          "Assess the ice build-up",
+          "Optionally measure temperature"
+        ],
+        "start": "Start check"
+      },
+      "run": {
+        "frostLabel": "Ice build-up",
+        "frostOptions": {
+          "none": "ice-free",
+          "light": "light frost",
+          "heavy": "heavy frost"
+        },
+        "tempToggle": "Temperature measured",
+        "tempUnit": "°C"
+      },
+      "result": {
+        "costPerYear": "avoidable/year",
+        "allGood": "All good",
+        "summary": {
+          "good": "Ice-free – your freezer runs efficiently.",
+          "medium": "Light frost – defrosting lowers consumption.",
+          "high": "Heavy frost – defrosting now saves noticeable power."
+        },
+        "frostChips": {
+          "none": "Ice-free",
+          "light": "Light frost",
+          "heavy": "Heavy frost"
+        },
+        "chips": {
+          "defrost": "Defrost"
+        },
+        "tempHint": "Temperature {{value}}: {{status}}",
+        "tempStatus": {
+          "optimal": "optimally set",
+          "tooWarm": "too warm – set colder",
+          "tooCold": "too cold – setting warmer saves power"
+        },
+        "affiliateNote": "An infrared thermometer helps you check quickly:"
+      }
     }
   },
   "onboarding": {

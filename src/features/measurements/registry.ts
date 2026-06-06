@@ -6,6 +6,15 @@ import { ShowerheadResult } from './showerhead/ShowerheadResult'
 import { StandbyIntro } from './standby/StandbyIntro'
 import { StandbyRun } from './standby/StandbyRun'
 import { StandbyResult } from './standby/StandbyResult'
+import { RoomTemperatureIntro } from './room_temperature/RoomTemperatureIntro'
+import { RoomTemperatureRun } from './room_temperature/RoomTemperatureRun'
+import { RoomTemperatureResult } from './room_temperature/RoomTemperatureResult'
+import { FridgeIntro } from './fridge/FridgeIntro'
+import { FridgeRun } from './fridge/FridgeRun'
+import { FridgeResult } from './fridge/FridgeResult'
+import { FreezerIntro } from './freezer/FreezerIntro'
+import { FreezerRun } from './freezer/FreezerRun'
+import { FreezerResult } from './freezer/FreezerResult'
 
 /**
  * Registry der durchführbaren Messungen: id → {Intro, Run, Result}.
@@ -22,6 +31,21 @@ export const MEASUREMENT_MODULES: Partial<Record<MeasurementId, MeasurementModul
     Intro: StandbyIntro,
     Run: StandbyRun,
     Result: StandbyResult,
+  },
+  room_temperature: {
+    Intro: RoomTemperatureIntro,
+    Run: RoomTemperatureRun,
+    Result: RoomTemperatureResult,
+  },
+  fridge: {
+    Intro: FridgeIntro,
+    Run: FridgeRun,
+    Result: FridgeResult,
+  },
+  freezer: {
+    Intro: FreezerIntro,
+    Run: FreezerRun,
+    Result: FreezerResult,
   },
 }
 

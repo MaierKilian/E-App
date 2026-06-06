@@ -1,4 +1,9 @@
-export type MeasurementId = 'showerhead' | 'fridge' | 'standby' | 'room_temperature'
+export type MeasurementId =
+  | 'showerhead'
+  | 'fridge'
+  | 'standby'
+  | 'room_temperature'
+  | 'freezer'
 
 export type MeasurementRating = 'good' | 'medium' | 'high'
 
