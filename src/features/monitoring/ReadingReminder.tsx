@@ -54,36 +54,31 @@ export function ReadingReminder({ readings }: ReadingReminderProps) {
   })
 
   return (
-    <div className="mt-4 rounded-2xl border border-border bg-surface-2/40 p-4">
-      <div className="flex items-center gap-1.5 mb-3">
-        <Bell className="w-4 h-4 text-muted" />
-        <h4 className="text-sm font-semibold text-foreground">
-          {t('monitoring.reminder.title')}
-        </h4>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-2 text-sm">
+      <span className="flex items-center gap-1.5 text-muted">
+        <Bell className="w-4 h-4" />
+        {t('monitoring.reminder.title')}
+      </span>
+      <div className="flex gap-1.5">
         {FREQUENCIES.map((freq) => (
           <SelectChip
             key={freq}
             label={t(`monitoring.reminder.frequency.${freq}`)}
             selected={frequency === freq}
             onClick={() => setFrequency(freq)}
+            className="px-3 py-1 text-xs"
           />
         ))}
       </div>
-
       {due && (
-        <div className="mt-3 flex items-center gap-2 text-sm">
-          <span className="text-muted">
-            {t('monitoring.reminder.nextDue', { date: dateFmt.format(due) })}
-          </span>
+        <span className="ml-auto flex items-center gap-1.5 text-xs text-muted">
+          {t('monitoring.reminder.nextDue', { date: dateFmt.format(due) })}
           {isOverdue && (
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+            <span className="font-semibold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
               {t('monitoring.reminder.due')}
             </span>
           )}
-        </div>
+        </span>
       )}
     </div>
   )

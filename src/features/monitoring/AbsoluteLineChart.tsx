@@ -15,7 +15,7 @@ interface AbsoluteLineChartProps {
 
 // Geometrie im viewBox-Koordinatensystem; per CSS auf 100 % skaliert.
 const VB_W = 320
-const VB_H = 140
+const VB_H = 104
 const PAD_L = 8
 const PAD_R = 8
 const PAD_TOP = 10

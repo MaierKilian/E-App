@@ -92,47 +92,45 @@ export function MeterDetailPage() {
         )
 
   return (
-    <div className="space-y-4">
-      {/* Kopf */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={() => navigate('/monitoring')}
-          className="flex items-center gap-1 text-sm font-medium text-muted hover:text-foreground transition-colors -ml-1"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          {t('monitoring.detail.back')}
-        </button>
-      </div>
-      <div className="flex items-center gap-2">
+    <div className="space-y-3">
+      {/* Kopf: Zurück + Träger + kompakter aktueller Stand als Unterzeile */}
+      <button
+        type="button"
+        onClick={() => navigate('/monitoring')}
+        className="flex items-center gap-1 -ml-1 text-sm font-medium text-muted hover:text-foreground transition-colors"
+      >
+        <ChevronLeft className="w-4 h-4" />
+        {t('monitoring.detail.back')}
+      </button>
+      <div className="flex items-center gap-3">
         <span className="grid place-items-center w-10 h-10 rounded-2xl bg-primary/10 text-primary shrink-0">
           <Icon className="w-5 h-5" />
         </span>
-        <h1 className="text-xl font-bold text-foreground">{name}</h1>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl font-bold leading-tight text-foreground">{name}</h1>
+          <p className="text-sm">
+            {latest ? (
+              <>
+                <span className="font-semibold text-foreground tabular-nums">
+                  {numFmt.format(latest.value)} {unit}
+                </span>
+                <span className="text-muted">
+                  {' · '}
+                  {formatTimestamp(latest.date, latest.createdAt)}
+                </span>
+              </>
+            ) : (
+              <span className="text-muted">{t('monitoring.detail.noReadings')}</span>
+            )}
+          </p>
+        </div>
       </div>
-
-      {/* Kompakter aktueller Stand */}
-      <p className="text-sm text-foreground">
-        {latest ? (
-          <>
-            <span className="text-lg font-semibold tabular-nums">
-              {numFmt.format(latest.value)} {unit}
-            </span>
-            <span className="text-muted">
-              {' · '}
-              {formatTimestamp(latest.date, latest.createdAt)}
-            </span>
-          </>
-        ) : (
-          <span className="text-muted">{t('monitoring.detail.noReadings')}</span>
-        )}
-      </p>
 
       {/* Ablesung hinzufügen */}
       <button
         type="button"
         onClick={() => setAddOpen(true)}
-        className="flex w-full items-center justify-center gap-1.5 rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
+        className="flex w-full items-center justify-center gap-1.5 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
       >
         <Plus className="w-4 h-4" />
         {t('monitoring.detail.addReading')}
