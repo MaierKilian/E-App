@@ -439,12 +439,37 @@
       "average": "Durchschnitt",
       "edit": "Bearbeiten",
       "soonTitle": "Bald verfügbar",
-      "soonPoints": [
-        "Zählerstände für Strom, Wasser, Gas und Pellets erfassen",
-        "Verbrauch als übersichtliches Diagramm",
-        "Erinnerungen für das regelmäßige Ablesen",
-        "Trends und Auffälligkeiten erkennen"
-      ]
+      "soonText": "Weitere Zähler (Wasser, Gas, Pellets) folgen."
+    },
+    "readings": {
+      "title": "Stromzähler",
+      "addReading": "Ablesung",
+      "dateLabel": "Datum",
+      "valueLabel": "Zählerstand",
+      "valueUnit": "kWh",
+      "emptyTitle": "Erste Ablesung eintragen",
+      "emptyText": "Trage deinen aktuellen Zählerstand ein, um mit dem Erfassen zu beginnen.",
+      "needTwo": "Es sind mindestens 2 Ablesungen nötig, um deinen Verbrauch zu sehen.",
+      "stats": {
+        "lastConsumption": "Letzter Verbrauch",
+        "perDay": "Ø pro Tag",
+        "projectedYear": "Hochrechnung / Jahr",
+        "costPerYear": "Kosten / Jahr"
+      },
+      "allReadings": "Alle Ablesungen",
+      "delete": "Löschen",
+      "chartTitle": "Verbrauch je Intervall",
+      "consumptionUnit": "kWh"
+    },
+    "reminder": {
+      "title": "Ablese-Erinnerung",
+      "frequency": {
+        "off": "Aus",
+        "weekly": "Wöchentlich",
+        "monthly": "Monatlich"
+      },
+      "nextDue": "Nächste Ablesung: {{date}}",
+      "due": "fällig"
     }
   },
   "onboarding": {

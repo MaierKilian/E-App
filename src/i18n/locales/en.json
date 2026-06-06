@@ -770,12 +770,37 @@
       "average": "Average",
       "edit": "Edit",
       "soonTitle": "Coming soon",
-      "soonPoints": [
-        "Enter meter readings for electricity, water, gas and pellets",
-        "Consumption shown as a clear chart",
-        "Reminders for regular readings",
-        "Spot trends and anomalies"
-      ]
+      "soonText": "More meters (water, gas, pellets) are coming."
+    },
+    "readings": {
+      "title": "Electricity meter",
+      "addReading": "Reading",
+      "dateLabel": "Date",
+      "valueLabel": "Meter reading",
+      "valueUnit": "kWh",
+      "emptyTitle": "Add your first reading",
+      "emptyText": "Enter your current meter reading to start tracking.",
+      "needTwo": "At least 2 readings are needed to see your consumption.",
+      "stats": {
+        "lastConsumption": "Last consumption",
+        "perDay": "Avg per day",
+        "projectedYear": "Projected / year",
+        "costPerYear": "Cost / year"
+      },
+      "allReadings": "All readings",
+      "delete": "Delete",
+      "chartTitle": "Consumption per interval",
+      "consumptionUnit": "kWh"
+    },
+    "reminder": {
+      "title": "Reading reminder",
+      "frequency": {
+        "off": "Off",
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      },
+      "nextDue": "Next reading: {{date}}",
+      "due": "due"
     }
   },
   "pages": {

@@ -5,13 +5,12 @@ import { Card } from '@/components/ui/Card'
 import { useTariffStore } from '@/store/tariffStore'
 import { TariffCard } from './TariffCard'
 import { TariffModal } from './TariffModal'
+import { ElectricityMonitor } from './ElectricityMonitor'
 
 export function MonitoringPage() {
   const { t } = useTranslation()
   // Beim Erstbesuch automatisch das Tarif-Modal anzeigen (Initialwert ohne Effekt).
   const [modalOpen, setModalOpen] = useState(() => !useTariffStore.getState().promptSeen)
-
-  const soonPoints = t('monitoring.tariff.soonPoints', { returnObjects: true }) as string[]
 
   return (
     <div className="space-y-6">
@@ -27,18 +26,13 @@ export function MonitoringPage() {
 
       <TariffCard onEdit={() => setModalOpen(true)} />
 
+      <ElectricityMonitor />
+
       <Card>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2">
           {t('monitoring.tariff.soonTitle')}
         </h2>
-        <ul className="space-y-2.5">
-          {soonPoints.map((point, index) => (
-            <li key={index} className="flex items-start gap-2.5">
-              <span className="mt-2 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
-              <span>{point}</span>
-            </li>
-          ))}
-        </ul>
+        <p className="text-sm text-muted">{t('monitoring.tariff.soonText')}</p>
       </Card>
 
       <TariffModal open={modalOpen} onClose={() => setModalOpen(false)} />
