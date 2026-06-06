@@ -772,12 +772,31 @@
       "soonTitle": "Coming soon",
       "soonText": "More meters (water, gas, pellets) are coming."
     },
+    "energyTypes": {
+      "electricity": "Electricity",
+      "water": "Water",
+      "gas": "Gas",
+      "oil": "Oil",
+      "pellets": "Pellets"
+    },
+    "soonBadge": "soon",
     "readings": {
       "title": "Electricity meter",
+      "newReading": "New reading",
       "addReading": "Reading",
       "dateLabel": "Date",
       "valueLabel": "Meter reading",
       "valueUnit": "kWh",
+      "currentTitle": "Current electricity reading",
+      "absoluteTitle": "Electricity reading (kWh)",
+      "absoluteSubtitle": "Absolute trend",
+      "range": {
+        "d7": "7 days",
+        "d30": "30 days",
+        "all": "All"
+      },
+      "bonusTitle": "Consumption & cost",
+      "historyTitle": "Reading history",
       "emptyTitle": "Add your first reading",
       "emptyText": "Enter your current meter reading to start tracking.",
       "needTwo": "At least 2 readings are needed to see your consumption.",

@@ -10,6 +10,8 @@ export interface MeterReading {
   date: string
   /** Abgelesener Zählerstand */
   value: number
+  /** Zeitpunkt der Erfassung als ISO-DateTime (zur Unterscheidung gleicher Tage). */
+  createdAt?: string
 }
 
 export type ReminderFrequency = 'off' | 'weekly' | 'monthly'
@@ -32,9 +34,15 @@ function makeId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
 }
 
-/** Sortiert Ablesungen aufsteigend nach Datum (rein, ohne Seiteneffekt). */
+/**
+ * Sortiert Ablesungen aufsteigend nach Datum (rein, ohne Seiteneffekt).
+ * Gleiche Tage werden anhand des Erfassungszeitpunkts (createdAt) stabil geordnet.
+ */
 function sortReadings(list: MeterReading[]): MeterReading[] {
-  return [...list].sort((a, b) => a.date.localeCompare(b.date))
+  return [...list].sort(
+    (a, b) =>
+      a.date.localeCompare(b.date) || (a.createdAt ?? '').localeCompare(b.createdAt ?? ''),
+  )
 }
 
 /**
@@ -52,6 +60,7 @@ export const useReadingsStore = create<ReadingsState>()(
             id: makeId(),
             date: reading.date,
             value: reading.value,
+            createdAt: new Date().toISOString(),
           }
           const existing = state.readings[type] ?? []
           return {

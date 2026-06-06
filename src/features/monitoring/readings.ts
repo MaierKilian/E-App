@@ -33,9 +33,12 @@ export interface ReadingStats {
   projectedYearCostEur?: number
 }
 
-/** Sortiert Ablesungen aufsteigend nach Datum. */
+/** Sortiert Ablesungen aufsteigend nach Datum, bei Gleichstand nach Erfassungszeit. */
 export function sortByDate(readings: MeterReading[]): MeterReading[] {
-  return [...readings].sort((a, b) => a.date.localeCompare(b.date))
+  return [...readings].sort(
+    (a, b) =>
+      a.date.localeCompare(b.date) || (a.createdAt ?? '').localeCompare(b.createdAt ?? ''),
+  )
 }
 
 /** Tagesdifferenz zwischen zwei ISO-Daten (kann negativ/0 sein). */

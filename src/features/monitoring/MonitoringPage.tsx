@@ -3,14 +3,20 @@ import { useTranslation } from 'react-i18next'
 import { LineChart } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { useTariffStore } from '@/store/tariffStore'
+import type { EnergyType } from '@/store/readingsStore'
 import { TariffCard } from './TariffCard'
 import { TariffModal } from './TariffModal'
+import { EnergyTypeSwitcher } from './EnergyTypeSwitcher'
 import { ElectricityMonitor } from './ElectricityMonitor'
+
+/** Aktuell auswählbare Energieträger (nur Strom). */
+const AVAILABLE_TYPES: EnergyType[] = ['electricity']
 
 export function MonitoringPage() {
   const { t } = useTranslation()
   // Beim Erstbesuch automatisch das Tarif-Modal anzeigen (Initialwert ohne Effekt).
   const [modalOpen, setModalOpen] = useState(() => !useTariffStore.getState().promptSeen)
+  const [energyType, setEnergyType] = useState<EnergyType>('electricity')
 
   return (
     <div className="space-y-6">
@@ -26,7 +32,13 @@ export function MonitoringPage() {
 
       <TariffCard onEdit={() => setModalOpen(true)} />
 
-      <ElectricityMonitor />
+      <EnergyTypeSwitcher
+        value={energyType}
+        onChange={setEnergyType}
+        available={AVAILABLE_TYPES}
+      />
+
+      <ElectricityMonitor type={energyType} />
 
       <Card>
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2">
