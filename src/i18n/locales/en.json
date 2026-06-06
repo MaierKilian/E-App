@@ -777,7 +777,34 @@
       "water": "Water",
       "gas": "Gas",
       "oil": "Oil",
-      "pellets": "Pellets"
+      "pellets": "Pellets",
+      "heat_pump": "Heat pump",
+      "pv": "Photovoltaics",
+      "solar_thermal": "Solar thermal"
+    },
+    "overview": {
+      "title": "Monitoring",
+      "subtitle": "All your meters at a glance.",
+      "empty": "No reading yet"
+    },
+    "detail": {
+      "back": "Monitoring",
+      "current": "Current reading",
+      "addReading": "Reading",
+      "history": "History",
+      "consumption": "Consumption",
+      "cost": "Cost / year",
+      "price": "Electricity price",
+      "reminder": "Reminder",
+      "noReadings": "No reading recorded yet."
+    },
+    "odometer": {
+      "title": "Record reading",
+      "keyboard": "Keyboard",
+      "wheel": "Dial",
+      "save": "Save",
+      "cancel": "Cancel",
+      "date": "Date"
     },
     "soonBadge": "soon",
     "readings": {

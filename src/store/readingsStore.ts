@@ -1,8 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-/** Unterstützte Energieträger. Aktuell genutzt: 'electricity'. */
-export type EnergyType = 'electricity' | 'water' | 'gas' | 'oil' | 'pellets'
+/** Unterstützte Energieträger. Welche aktiv sind, ergibt sich aus dem Profil. */
+export type EnergyType =
+  | 'electricity'
+  | 'water'
+  | 'gas'
+  | 'oil'
+  | 'pellets'
+  | 'heat_pump'
+  | 'pv'
+  | 'solar_thermal'
 
 export interface MeterReading {
   id: string

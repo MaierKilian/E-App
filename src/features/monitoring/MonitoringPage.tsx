@@ -1,53 +1,80 @@
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LineChart } from 'lucide-react'
-import { Card } from '@/components/ui/Card'
-import { useTariffStore } from '@/store/tariffStore'
-import type { EnergyType } from '@/store/readingsStore'
-import { TariffCard } from './TariffCard'
-import { TariffModal } from './TariffModal'
-import { EnergyTypeSwitcher } from './EnergyTypeSwitcher'
-import { ElectricityMonitor } from './ElectricityMonitor'
+import { useNavigate } from 'react-router-dom'
+import { ChevronRight } from 'lucide-react'
+import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
+import { useOnboardingStore } from '@/store/onboardingStore'
+import { ENERGY_META, activeEnergyTypes } from './energyConfig'
+import { sortByDate } from './readings'
 
-/** Aktuell auswählbare Energieträger (nur Strom). */
-const AVAILABLE_TYPES: EnergyType[] = ['electricity']
-
+/**
+ * Monitoring-Übersicht (Dashboard): schlanker Kopf und ein Kachel-Grid der
+ * für das Profil aktiven Energieträger. Jede Kachel zeigt Icon, Name und den
+ * letzten Stand; Tap öffnet die Detailseite `/monitoring/<type>`.
+ */
 export function MonitoringPage() {
   const { t } = useTranslation()
-  // Beim Erstbesuch automatisch das Tarif-Modal anzeigen (Initialwert ohne Effekt).
-  const [modalOpen, setModalOpen] = useState(() => !useTariffStore.getState().promptSeen)
-  const [energyType, setEnergyType] = useState<EnergyType>('electricity')
+  const data = useOnboardingStore((s) => s.data)
+  const types = activeEnergyTypes(data)
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start gap-4">
-        <span className="grid place-items-center w-12 h-12 rounded-2xl bg-primary/10 text-primary shrink-0">
-          <LineChart className="w-6 h-6" />
-        </span>
-        <div>
-          <h1 className="text-2xl font-bold">{t('pages.monitoring.title')}</h1>
-          <p className="text-muted mt-1">{t('pages.monitoring.subtitle')}</p>
-        </div>
+    <div className="space-y-5">
+      <div>
+        <h1 className="text-2xl font-bold">{t('monitoring.overview.title')}</h1>
+        <p className="text-muted mt-1 text-sm">{t('monitoring.overview.subtitle')}</p>
       </div>
 
-      <TariffCard onEdit={() => setModalOpen(true)} />
-
-      <EnergyTypeSwitcher
-        value={energyType}
-        onChange={setEnergyType}
-        available={AVAILABLE_TYPES}
-      />
-
-      <ElectricityMonitor type={energyType} />
-
-      <Card>
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted mb-2">
-          {t('monitoring.tariff.soonTitle')}
-        </h2>
-        <p className="text-sm text-muted">{t('monitoring.tariff.soonText')}</p>
-      </Card>
-
-      <TariffModal open={modalOpen} onClose={() => setModalOpen(false)} />
+      <div className="grid grid-cols-2 gap-3">
+        {types.map((type) => (
+          <MeterTile key={type} type={type} />
+        ))}
+      </div>
     </div>
+  )
+}
+
+interface MeterTileProps {
+  type: EnergyType
+}
+
+/** Kompakte Kachel eines Energieträgers mit aktuellem Stand. */
+function MeterTile({ type }: MeterTileProps) {
+  const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
+  const readingsByType = useReadingsStore((s) => s.readings)
+
+  const meta = ENERGY_META[type]
+  const Icon = meta.icon
+  const readings = sortByDate(readingsByType[type] ?? [])
+  const latest = readings.length > 0 ? readings[readings.length - 1] : undefined
+
+  const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
+
+  return (
+    <button
+      type="button"
+      onClick={() => navigate(`/monitoring/${type}`)}
+      className="glass flex flex-col items-start gap-3 rounded-3xl p-4 text-left transition-[transform,background-color] duration-200 hover:bg-surface-2/60 active:scale-[0.97]"
+    >
+      <div className="flex w-full items-center justify-between">
+        <span className="grid place-items-center w-10 h-10 rounded-2xl bg-primary/10 text-primary">
+          <Icon className="w-5 h-5" />
+        </span>
+        <ChevronRight className="w-4 h-4 text-muted" />
+      </div>
+      <div className="w-full min-w-0">
+        <p className="text-sm font-semibold text-foreground truncate">
+          {t(`monitoring.energyTypes.${type}`)}
+        </p>
+        {latest ? (
+          <p className="mt-0.5 text-sm text-muted tabular-nums truncate">
+            {numFmt.format(latest.value)} {meta.unit}
+          </p>
+        ) : (
+          <p className="mt-0.5 text-sm text-muted truncate">
+            {t('monitoring.overview.empty')}
+          </p>
+        )}
+      </div>
+    </button>
   )
 }

@@ -446,7 +446,34 @@
       "water": "Wasser",
       "gas": "Gas",
       "oil": "Öl",
-      "pellets": "Pellets"
+      "pellets": "Pellets",
+      "heat_pump": "Wärmepumpe",
+      "pv": "Photovoltaik",
+      "solar_thermal": "Solarthermie"
+    },
+    "overview": {
+      "title": "Monitoring",
+      "subtitle": "Deine Zähler im Blick.",
+      "empty": "Noch keine Ablesung"
+    },
+    "detail": {
+      "back": "Monitoring",
+      "current": "Aktueller Stand",
+      "addReading": "Ablesung",
+      "history": "Historie",
+      "consumption": "Verbrauch",
+      "cost": "Kosten / Jahr",
+      "price": "Strompreis",
+      "reminder": "Erinnerung",
+      "noReadings": "Noch keine Ablesung erfasst."
+    },
+    "odometer": {
+      "title": "Zählerstand erfassen",
+      "keyboard": "Tastatur",
+      "wheel": "Zählwerk",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "date": "Datum"
     },
     "soonBadge": "bald",
     "readings": {
