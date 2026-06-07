@@ -943,6 +943,44 @@
       ]
     }
   },
+  "education": {
+    "sections": {
+      "faq": "FAQ",
+      "glossary": "Glossar",
+      "measurements": "Messungen",
+      "university": "Hochschule"
+    },
+    "glossarySearch": "Begriff suchen …",
+    "startTest": "Vorbereitungstest starten",
+    "photoComing": "Foto folgt",
+    "expand": "Aufklappen",
+    "collapse": "Zuklappen",
+    "university": {
+      "title": "HTW Berlin · GEIT",
+      "subtitle": "Laborversuche im Studiengang Gebäudeenergie- und Informationstechnik.",
+      "prepTitle": "Vorbereitung"
+    },
+    "quiz": {
+      "question": "Frage",
+      "of": "von",
+      "evaluate": "Auswerten",
+      "result": "Ergebnis",
+      "passed": "Bestanden",
+      "failed": "Nicht bestanden",
+      "score": "Punkte",
+      "retry": "Wiederholen",
+      "back": "Zurück",
+      "namePlaceholder": "Name (optional, fürs Zertifikat)",
+      "export": "Als PDF exportieren",
+      "feedbackPassed": "Gut vorbereitet – viel Erfolg im Labor!",
+      "feedbackFailed": "Schau dir die Vorbereitung noch einmal an und versuche es erneut.",
+      "certificateTitle": "Vorbereitungstest",
+      "certificateExperiment": "Versuch",
+      "certificateName": "Name",
+      "certificateDate": "Datum",
+      "certificateScore": "Ergebnis"
+    }
+  },
   "home": {
     "greeting": "Willkommen zurück",
     "profileNameFallback": "dein Zuhause",

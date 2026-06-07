@@ -943,6 +943,44 @@
       ]
     }
   },
+  "education": {
+    "sections": {
+      "faq": "FAQ",
+      "glossary": "Glossary",
+      "measurements": "Measurements",
+      "university": "University"
+    },
+    "glossarySearch": "Search term …",
+    "startTest": "Start preparation test",
+    "photoComing": "Photo coming",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "university": {
+      "title": "HTW Berlin · GEIT",
+      "subtitle": "Lab experiments in the Building Energy and Information Technology programme.",
+      "prepTitle": "Preparation"
+    },
+    "quiz": {
+      "question": "Question",
+      "of": "of",
+      "evaluate": "Evaluate",
+      "result": "Result",
+      "passed": "Passed",
+      "failed": "Not passed",
+      "score": "Score",
+      "retry": "Retry",
+      "back": "Back",
+      "namePlaceholder": "Name (optional, for the certificate)",
+      "export": "Export as PDF",
+      "feedbackPassed": "Well prepared – good luck in the lab!",
+      "feedbackFailed": "Review the preparation once more and try again.",
+      "certificateTitle": "Preparation test",
+      "certificateExperiment": "Experiment",
+      "certificateName": "Name",
+      "certificateDate": "Date",
+      "certificateScore": "Result"
+    }
+  },
   "home": {
     "greeting": "Welcome back",
     "profileNameFallback": "your home",
