@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, ChevronRight, GraduationCap, Search } from 'lucide-react'
+import { ArrowLeft, ChevronRight, GraduationCap, Search, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { AccordionItem } from './Accordion'
 import { PhotoPlaceholder } from './PhotoPlaceholder'
@@ -85,7 +85,16 @@ function GlossaryView() {
       </div>
       {items.map((item) => (
         <AccordionItem key={item.term} title={item.term}>
-          {item.def}
+          <p>{item.def}</p>
+          <a
+            href={item.source.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            {t('education.source')}: {item.source.label}
+            <ExternalLink className="h-3 w-3 shrink-0" />
+          </a>
         </AccordionItem>
       ))}
     </div>

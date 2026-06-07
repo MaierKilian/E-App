@@ -11,6 +11,8 @@ export interface FaqItem {
 export interface GlossaryItem {
   term: string
   def: string
+  /** Quelle der Information (im Glossar anklickbar). */
+  source: { label: string; url: string }
 }
 
 export interface MeasurementInfo {
@@ -79,66 +81,168 @@ export const FAQ: FaqItem[] = [
 ]
 
 // --- Glossar (alphabetisch, Erstentwurf) ---
+// Quellen verweisen auf die deutschsprachige Wikipedia (stabile, anklickbare
+// Artikel-Links) als allgemein zugängliche Referenz. Bei fachlicher Prüfung
+// können sie durch Primärquellen (z. B. VDI, Umweltbundesamt) ersetzt werden.
+function wiki(article: string): { label: string; url: string } {
+  return { label: `Wikipedia: ${article.replace(/_/g, ' ')}`, url: `https://de.wikipedia.org/wiki/${article}` }
+}
+
 export const GLOSSARY: GlossaryItem[] = [
   {
     term: 'Arbeitspreis',
-    def: 'Preis pro verbrauchter Kilowattstunde (kWh) Energie. Multipliziert mit dem Verbrauch ergibt sich der verbrauchsabhängige Teil der Energiekosten.',
+    def: 'Verbrauchsabhängiger Teil des Energiepreises, angegeben in Cent pro Kilowattstunde (ct/kWh). Multipliziert mit der verbrauchten Energiemenge ergibt er die variablen Energiekosten; zusammen mit dem Grundpreis bildet er den Gesamtpreis. Bei Strom liegt er typischerweise bei rund 25–40 ct/kWh, bei Gas niedriger.',
+    source: wiki('Strompreis'),
   },
   {
-    term: 'COP / JAZ',
-    def: 'Der COP (Coefficient of Performance) beschreibt das momentane Verhältnis von abgegebener Wärme zu eingesetztem Strom einer Wärmepumpe. Die JAZ (Jahresarbeitszahl) ist der entsprechende Mittelwert über ein ganzes Jahr.',
+    term: 'Brennwert / Heizwert',
+    def: 'Der Heizwert (unterer Heizwert) ist die bei der Verbrennung nutzbar freigesetzte Wärme, ohne die Kondensationswärme des im Abgas enthaltenen Wasserdampfs. Der Brennwert (oberer Heizwert) schließt diese Kondensationswärme ein – Brennwertkessel nutzen sie zusätzlich und erreichen dadurch höhere Wirkungsgrade.',
+    source: wiki('Heizwert'),
+  },
+  {
+    term: 'CO₂ (Kohlenstoffdioxid)',
+    def: 'Farb- und geruchloses Gas, das bei der Verbrennung fossiler Energieträger entsteht und als Treibhausgas zur Erderwärmung beiträgt. In Innenräumen ist die CO₂-Konzentration (in ppm) zudem ein Indikator für die Luftqualität: hohe Werte zeigen an, dass gelüftet werden sollte.',
+    source: wiki('Kohlenstoffdioxid'),
+  },
+  {
+    term: 'COP (Leistungszahl)',
+    def: 'Der Coefficient of Performance beschreibt das momentane Verhältnis von abgegebener Wärmeleistung zu eingesetzter elektrischer Leistung einer Wärmepumpe. Ein COP von 4 bedeutet: aus 1 kWh Strom werden 4 kWh Wärme. Der über ein Jahr gemittelte Wert ist die Jahresarbeitszahl (JAZ).',
+    source: wiki('Leistungszahl'),
+  },
+  {
+    term: 'Differenzdruck',
+    def: 'Druckunterschied zwischen zwei Punkten eines Systems, z. B. zwischen Vor- und Rücklauf einer Heizungsanlage. Er treibt den Volumenstrom an und ist eine zentrale Größe beim hydraulischen Abgleich; moderne Pumpen regeln den Differenzdruck konstant oder bedarfsabhängig.',
+    source: wiki('Differenzdruck'),
+  },
+  {
+    term: 'Endenergie',
+    def: 'Energiemenge, die beim Verbraucher ankommt und tatsächlich genutzt wird (z. B. Strom an der Steckdose, Gas am Kessel). Sie liegt zwischen der Primärenergie (gesamte Vorkette) und der Nutzenergie (z. B. erzeugte Raumwärme).',
+    source: wiki('Endenergie'),
+  },
+  {
+    term: 'Energieeffizienzklasse',
+    def: 'Einstufung von Geräten auf dem EU-Energielabel (Skala A bis G) nach ihrem Energieverbrauch. Sie hilft, beim Neukauf sparsame Geräte zu erkennen; seit 2021 gilt eine neue, strengere Skala ohne „A+++".',
+    source: wiki('EU-Energielabel'),
   },
   {
     term: 'Förderhöhe',
-    def: 'Druckhöhe, die eine Pumpe aufbauen kann, angegeben in Metern Wassersäule. Sie beschreibt, gegen welchen Widerstand die Pumpe ein Fördervolumen bewegen kann.',
+    def: 'Druckhöhe, die eine Pumpe aufbauen kann, angegeben in Metern Wassersäule. Sie beschreibt, gegen welchen Strömungswiderstand die Pumpe ein bestimmtes Fördervolumen bewegen kann, und ist – zusammen mit dem Volumenstrom – Teil der Pumpenkennlinie.',
+    source: wiki('Förderhöhe'),
   },
   {
     term: 'Grundpreis',
-    def: 'Fixer, verbrauchsunabhängiger Betrag pro Abrechnungszeitraum (meist pro Jahr) für die Bereitstellung der Energieversorgung.',
+    def: 'Fixer, verbrauchsunabhängiger Betrag pro Abrechnungszeitraum (meist pro Jahr oder Monat) für die Bereitstellung der Energieversorgung – z. B. für Zähler, Netz und Abrechnung. Er fällt auch an, wenn wenig oder nichts verbraucht wird.',
+    source: wiki('Strompreis'),
+  },
+  {
+    term: 'Heizkörperexponent',
+    def: 'Erfahrungswert (Formelzeichen n, meist etwa 1,3), der beschreibt, wie stark die Wärmeleistung eines Heizkörpers mit der Übertemperatur ansteigt. Er geht in die Umrechnung der Normwärmeleistung auf abweichende Betriebstemperaturen ein.',
+    source: wiki('Heizkörper'),
   },
   {
     term: 'Heizkurve',
-    def: 'Regelkennlinie, die die Vorlauftemperatur der Heizung in Abhängigkeit von der Außentemperatur festlegt. Eine gut eingestellte Heizkurve spart Energie.',
+    def: 'Regelkennlinie, die die Vorlauftemperatur der Heizung in Abhängigkeit von der Außentemperatur festlegt: je kälter draußen, desto wärmer der Vorlauf. Eine möglichst flach und niedrig eingestellte Heizkurve senkt den Energieverbrauch, ohne den Komfort einzuschränken.',
+    source: wiki('Heizkurve'),
   },
   {
     term: 'Hydraulischer Abgleich',
-    def: 'Verfahren, bei dem die Wassermengen in einem Heizsystem so eingestellt werden, dass jeder Heizkörper genau den ausgelegten Volumenstrom erhält – für gleichmäßige Wärme und höhere Effizienz.',
+    def: 'Verfahren, bei dem die Wassermengen in einem Heizsystem so eingestellt werden, dass jeder Heizkörper genau den ausgelegten Volumenstrom erhält. Ergebnis sind gleichmäßige Wärmeverteilung, geringere Rücklauftemperaturen, weniger Strömungsgeräusche und ein spürbar niedrigerer Energieverbrauch.',
+    source: wiki('Hydraulischer_Abgleich'),
+  },
+  {
+    term: 'Jahresarbeitszahl (JAZ)',
+    def: 'Verhältnis der über ein ganzes Jahr abgegebenen Wärme zur eingesetzten elektrischen Energie einer Wärmepumpe. Sie ist der praxisrelevante Mittelwert des COP über reale Betriebsbedingungen; je höher, desto effizienter die Anlage.',
+    source: wiki('Jahresarbeitszahl'),
+  },
+  {
+    term: 'Kavitation',
+    def: 'Bildung und schlagartiges Zusammenfallen von Dampfblasen in einer Flüssigkeit, wenn der Druck lokal unter den Dampfdruck fällt (z. B. am Pumpeneintritt). Sie verursacht Geräusche, Leistungseinbußen und Materialschäden und wird über den NPSH-Wert vermieden.',
+    source: wiki('Kavitation'),
   },
   {
     term: 'kWh (Kilowattstunde)',
-    def: 'Einheit für Energie. Ein Gerät mit 1.000 Watt Leistung verbraucht in einer Stunde genau eine Kilowattstunde.',
+    def: 'Einheit für Energie. Ein Gerät mit 1.000 Watt Leistung verbraucht in einer Stunde genau eine Kilowattstunde. Energiekosten ergeben sich aus verbrauchten kWh × Arbeitspreis.',
+    source: wiki('Kilowattstunde'),
+  },
+  {
+    term: 'Luftfeuchtigkeit (relativ)',
+    def: 'Verhältnis des tatsächlichen Wasserdampfgehalts der Luft zum maximal möglichen bei der jeweiligen Temperatur, angegeben in Prozent. In Wohnräumen gelten etwa 40–60 % als behaglich; dauerhaft über 60 % begünstigt Schimmel, unter 30 % trocknet die Schleimhäute aus.',
+    source: wiki('Luftfeuchtigkeit'),
+  },
+  {
+    term: 'Photovoltaik',
+    def: 'Direkte Umwandlung von Sonnenlicht in elektrischen Strom mithilfe von Solarzellen. Der erzeugte Strom kann selbst verbraucht, gespeichert oder ins Netz eingespeist werden und senkt den Bezug aus dem öffentlichen Netz.',
+    source: wiki('Photovoltaik'),
   },
   {
     term: 'Primärenergie',
-    def: 'Energiemenge, die unter Berücksichtigung der gesamten Vorkette (Gewinnung, Umwandlung, Transport) eingesetzt wird, um die nutzbare Endenergie bereitzustellen.',
+    def: 'Energiemenge, die unter Berücksichtigung der gesamten Vorkette (Gewinnung, Umwandlung, Transport, Verluste) eingesetzt wird, um die nutzbare Endenergie bereitzustellen. Der Primärenergiefaktor bewertet Energieträger ökologisch – Strom aus erneuerbaren Quellen schneidet besser ab.',
+    source: wiki('Primärenergie'),
+  },
+  {
+    term: 'Pumpenkennlinie / Betriebspunkt',
+    def: 'Die Pumpenkennlinie zeigt die Förderhöhe einer Pumpe in Abhängigkeit vom Volumenstrom. Der Betriebspunkt ist der Schnittpunkt mit der Anlagenkennlinie (dem Widerstand des Rohrnetzes) – hier arbeitet die Pumpe tatsächlich. Drehzahlregelung verschiebt diesen Punkt energiesparend.',
+    source: wiki('Kreiselpumpe'),
+  },
+  {
+    term: 'Smart Meter',
+    def: 'Intelligentes Messsystem, das den Energieverbrauch digital erfasst und fernauslesbar macht. Es liefert detaillierte Verbrauchsdaten (teils in Echtzeit) und ist Voraussetzung für variable Tarife und eine bessere Verbrauchssteuerung.',
+    source: wiki('Intelligenter_Zähler'),
+  },
+  {
+    term: 'Solarthermie',
+    def: 'Nutzung der Sonnenstrahlung zur Wärmegewinnung über Kollektoren – meist für Warmwasser und zur Heizungsunterstützung. Im Unterschied zur Photovoltaik wird hier nicht Strom, sondern Wärme erzeugt.',
+    source: wiki('Solarthermie'),
   },
   {
     term: 'Standby',
-    def: 'Bereitschaftsbetrieb eines Geräts, in dem es nicht aktiv genutzt wird, aber weiterhin Strom verbraucht. Über das Jahr kann das viele Kilowattstunden ausmachen.',
+    def: 'Bereitschaftsbetrieb eines Geräts, in dem es nicht aktiv genutzt wird, aber weiterhin Strom verbraucht. Schon wenige Watt summieren sich über 8.760 Stunden im Jahr zu mehreren Kilowattstunden; schaltbare Steckdosenleisten oder Smart-Plugs schaffen Abhilfe.',
+    source: wiki('Bereitschaftsbetrieb'),
+  },
+  {
+    term: 'Thermostatventil',
+    def: 'Selbsttätig regelndes Heizkörperventil, das den Wasserdurchfluss anhand der Raumtemperatur steuert. Über die Voreinstellung des Ventils wird der maximale Volumenstrom begrenzt – ein zentrales Stellglied beim hydraulischen Abgleich.',
+    source: wiki('Thermostatventil'),
   },
   {
     term: 'Übertemperatur',
-    def: 'Differenz zwischen der mittleren Heizmitteltemperatur und der Raumtemperatur. Sie ist maßgeblich für die abgegebene Wärmeleistung eines Heizkörpers.',
+    def: 'Differenz zwischen der mittleren Heizmitteltemperatur und der Raumtemperatur. Sie ist maßgeblich für die abgegebene Wärmeleistung eines Heizkörpers; üblich ist die logarithmische Übertemperatur aus Vorlauf-, Rücklauf- und Raumtemperatur.',
+    source: wiki('Heizkörper'),
   },
   {
     term: 'U-Wert',
-    def: 'Wärmedurchgangskoeffizient in W/(m²·K). Er gibt an, wie viel Wärme durch ein Bauteil verloren geht – je kleiner, desto besser gedämmt.',
+    def: 'Wärmedurchgangskoeffizient in W/(m²·K). Er gibt an, wie viel Wärmeleistung pro Quadratmeter Bauteil und Grad Temperaturunterschied verloren geht – je kleiner der U-Wert, desto besser die Dämmung.',
+    source: wiki('Wärmedurchgangskoeffizient'),
   },
   {
     term: 'Volumenstrom',
-    def: 'Flüssigkeitsmenge, die pro Zeiteinheit durch eine Leitung strömt, z. B. in Litern pro Stunde oder Kubikmetern pro Stunde.',
+    def: 'Flüssigkeits- oder Gasmenge, die pro Zeiteinheit durch einen Querschnitt strömt, z. B. in Litern pro Stunde (l/h) oder Kubikmetern pro Stunde (m³/h). In Heizungen bestimmt er zusammen mit der Temperaturspreizung die transportierte Wärmeleistung.',
+    source: wiki('Volumenstrom'),
   },
   {
     term: 'Vorlauf / Rücklauf',
-    def: 'Der Vorlauf führt das warme Heizwasser zu den Heizkörpern, der Rücklauf das abgekühlte Wasser zurück zum Wärmeerzeuger. Die Spreizung zwischen beiden ist ein wichtiger Effizienzindikator.',
+    def: 'Der Vorlauf führt das warme Heizwasser zu den Heizkörpern, der Rücklauf das abgekühlte Wasser zurück zum Wärmeerzeuger. Die Differenz (Spreizung) ist ein wichtiger Effizienzindikator – eine niedrige Rücklauftemperatur ist besonders für Brennwert- und Wärmepumpenbetrieb günstig.',
+    source: wiki('Vorlauftemperatur'),
   },
   {
     term: 'Wärmepumpe',
-    def: 'Gerät, das Umweltwärme (aus Luft, Erdreich oder Wasser) mit Hilfe von elektrischem Strom auf ein nutzbares Temperaturniveau anhebt.',
+    def: 'Gerät, das Umweltwärme aus Luft, Erdreich oder Wasser mithilfe von elektrischem Strom auf ein nutzbares Temperaturniveau anhebt. Aus einem Teil Strom werden mehrere Teile Wärme (siehe COP/JAZ), weshalb Wärmepumpen sehr effizient heizen können.',
+    source: wiki('Wärmepumpe'),
   },
   {
     term: 'Wärmerückgewinnung',
-    def: 'Verfahren, bei dem die Wärme der Abluft genutzt wird, um zugeführte Frischluft vorzuwärmen, und so Heizenergie eingespart wird.',
+    def: 'Verfahren, bei dem die Wärme der Abluft genutzt wird, um zugeführte Frischluft vorzuwärmen (WRG). So lassen sich Lüftungswärmeverluste stark reduzieren – moderne Lüftungsanlagen erreichen Rückgewinnungsgrade von über 80 %.',
+    source: wiki('Wärmerückgewinnung'),
+  },
+  {
+    term: 'Watt (Leistung)',
+    def: 'Einheit der Leistung, also der Energie pro Zeit (1 Watt = 1 Joule pro Sekunde). Sie beschreibt, wie schnell ein Gerät Energie umsetzt; über die Zeit ergibt die Leistung den Energieverbrauch in Wattstunden bzw. Kilowattstunden.',
+    source: wiki('Watt_(Einheit)'),
+  },
+  {
+    term: 'Wirkungsgrad',
+    def: 'Verhältnis von nutzbarer Ausgangsenergie zu zugeführter Energie, meist in Prozent. Er beschreibt, wie verlustarm eine Umwandlung abläuft – z. B. bei Pumpen, Kesseln oder Motoren; der Rest geht überwiegend als Wärme verloren.',
+    source: wiki('Wirkungsgrad'),
   },
 ]
 
