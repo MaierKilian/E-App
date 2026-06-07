@@ -785,7 +785,8 @@
     "overview": {
       "title": "Monitoring",
       "subtitle": "All your meters at a glance.",
-      "empty": "No reading yet"
+      "empty": "No reading yet",
+      "dueBanner": "{{count}} reading(s) due"
     },
     "detail": {
       "back": "Monitoring",

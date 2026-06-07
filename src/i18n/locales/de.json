@@ -454,7 +454,8 @@
     "overview": {
       "title": "Monitoring",
       "subtitle": "Deine Zähler im Blick.",
-      "empty": "Noch keine Ablesung"
+      "empty": "Noch keine Ablesung",
+      "dueBanner": "{{count}} Ablesung(en) fällig"
     },
     "detail": {
       "back": "Monitoring",
