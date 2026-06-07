@@ -6,6 +6,8 @@
 export interface FaqItem {
   q: string
   a: string
+  /** Optionale, anklickbare Quelle. */
+  source?: { label: string; url: string }
 }
 
 export interface GlossaryItem {
@@ -21,6 +23,8 @@ export interface MeasurementInfo {
   /** Anzeige-Titel (kann auch über i18n aufgelöst werden – hier deutscher Fallback). */
   title: string
   body: string
+  /** Optionale, anklickbare Quelle. */
+  source?: { label: string; url: string }
 }
 
 export interface QuizQuestion {
@@ -48,35 +52,59 @@ const COURSE = 'HTW Berlin · GEIT · Labor Mechanische Gebäudetechnik'
 export const FAQ: FaqItem[] = [
   {
     q: 'Was bringt mir die E-App konkret?',
-    a: 'Die App hilft dir, mit einfachen, geführten Messungen Energiefresser im Haushalt aufzuspüren, Einsparpotenziale in Euro abzuschätzen und deinen Verbrauch über die Zeit im Blick zu behalten.',
+    a: 'Die App hilft dir, mit einfachen, geführten Messungen Energiefresser im Haushalt aufzuspüren, Einsparpotenziale in Euro abzuschätzen und deinen Verbrauch über die Zeit zu verfolgen. So werden abstrakte Kilowattstunden zu konkreten, nachvollziehbaren Beträgen – und du erkennst, welche Maßnahmen sich für dich am meisten lohnen.',
   },
   {
     q: 'Brauche ich spezielle Messgeräte?',
-    a: 'Für die meisten Messungen reichen Alltagsgegenstände (z. B. ein Messbecher und eine Uhr). Für Strommessungen ist ein einfaches Steckdosen-Energiemessgerät hilfreich, das es schon für wenige Euro gibt.',
+    a: 'Für die meisten Messungen reichen Alltagsgegenstände wie ein Messbecher und eine Uhr. Für Strommessungen ist ein einfaches Steckdosen-Energiemessgerät hilfreich (ab wenigen Euro), für Temperaturen ein Thermometer oder Infrarot-Thermometer. Bei jeder Messung steht dabei, was du genau benötigst.',
   },
   {
     q: 'Wie viel Strom verbraucht der Standby-Betrieb wirklich?',
-    a: 'Geräte im Bereitschaftsbetrieb können über das Jahr summiert spürbar ins Gewicht fallen. Schon wenige Watt Dauerlast bedeuten über 8.760 Stunden im Jahr mehrere Kilowattstunden – schaltbare Steckdosenleisten helfen.',
+    a: 'Geräte im Bereitschaftsbetrieb ziehen rund um die Uhr Strom. Schon 5 Watt Dauerlast bedeuten über 8.760 Stunden im Jahr rund 44 kWh – je nach Strompreis etwa 13–18 € jährlich, und das pro Gerät. Über alle Geräte eines Haushalts summiert sich das oft auf einen dreistelligen Betrag. Schaltbare Steckdosenleisten oder Smart-Plugs beseitigen diese Last.',
+    source: wiki('Bereitschaftsbetrieb'),
   },
   {
     q: 'Welche Raumtemperatur ist sinnvoll?',
-    a: 'Als Richtwert gelten rund 20 °C in Wohnräumen und etwas weniger in Schlafräumen. Jedes Grad weniger spart grob etwa 6 % Heizenergie – ohne dass es unbehaglich werden muss.',
+    a: 'Als Richtwert gelten rund 20 °C in Wohnräumen, etwas weniger in Schlafräumen (16–18 °C). Jedes Grad weniger senkt den Heizenergiebedarf um grob 6 %. Räume sollten aber nicht stark auskühlen, da das Wiederaufheizen Energie kostet und Feuchte-/Schimmelprobleme begünstigt.',
+    source: wiki('Raumklima'),
+  },
+  {
+    q: 'Wie oft und wie richtig lüften?',
+    a: 'Mehrmals täglich kurz stoßlüften (Fenster weit auf, 5–10 Minuten, am besten quer) statt Fenster dauerhaft auf Kipp. Stoßlüften tauscht die feuchte Luft schnell aus, ohne die Wände auszukühlen – das spart Heizenergie und beugt Schimmel vor.',
+    source: wiki('Lüftung'),
+  },
+  {
+    q: 'Welche Luftfeuchtigkeit ist gesund?',
+    a: 'In Wohnräumen sind etwa 40–60 % relative Luftfeuchte ideal. Dauerhaft über 60 % begünstigt Schimmel, unter 30 % reizt Atemwege und Schleimhäute. Ein Hygrometer hilft, den Wert im Blick zu behalten und gezielt zu lüften.',
+    source: wiki('Luftfeuchtigkeit'),
   },
   {
     q: 'Wie senke ich meinen Warmwasserverbrauch?',
-    a: 'Ein Sparduschkopf reduziert die Durchflussmenge deutlich, ohne den Komfort stark einzuschränken. Kürzere Duschzeiten und eine moderate Warmwassertemperatur helfen zusätzlich.',
+    a: 'Ein Sparduschkopf reduziert den Durchfluss von oft 12–15 l/min auf 6–9 l/min – bei kaum spürbarem Komfortverlust. Da das Wasser zusätzlich erwärmt werden muss, sparst du doppelt: Wasser und Energie. Kürzere Duschzeiten und eine moderate Warmwassertemperatur (ca. 50–55 °C, auch aus Hygienegründen) wirken zusätzlich.',
+    source: wiki('Warmwasser'),
+  },
+  {
+    q: 'Lohnt sich ein hydraulischer Abgleich?',
+    a: 'In den meisten Bestandsanlagen ja: Er sorgt dafür, dass jeder Heizkörper genau die richtige Wassermenge erhält. Ergebnis sind gleichmäßige Wärme, niedrigere Vorlauf-/Rücklauftemperaturen, weniger Strömungsgeräusche und ein messbar geringerer Energieverbrauch – besonders wichtig für effiziente Brennwert- und Wärmepumpenheizungen.',
+    source: wiki('Hydraulischer_Abgleich'),
   },
   {
     q: 'Was unterscheidet Arbeitspreis und Grundpreis?',
-    a: 'Der Arbeitspreis wird pro verbrauchter Kilowattstunde berechnet, der Grundpreis ist ein fixer Betrag pro Jahr unabhängig vom Verbrauch. Beide zusammen ergeben deine Energiekosten.',
+    a: 'Der Arbeitspreis wird pro verbrauchter Kilowattstunde berechnet (ct/kWh) und steigt mit dem Verbrauch. Der Grundpreis ist ein fixer Betrag pro Abrechnungszeitraum, unabhängig vom Verbrauch (z. B. für Zähler und Netz). Beide zusammen ergeben deine Energiekosten.',
+    source: wiki('Strompreis'),
   },
   {
-    q: 'Lohnt sich das Abschalten von Geräten oder ist häufiges Ein-/Ausschalten schädlich?',
-    a: 'Bei den meisten modernen Geräten ist das vollständige Ausschalten klar sinnvoll. Der oft genannte hohe Einschaltstrom fällt über das Jahr kaum ins Gewicht gegenüber dauerhafter Standby-Last.',
+    q: 'Ist häufiges Ein- und Ausschalten schädlich?',
+    a: 'Bei den meisten modernen Geräten ist vollständiges Ausschalten klar sinnvoll. Der oft genannte hohe „Einschaltstrom" dauert nur Sekundenbruchteile und fällt über das Jahr kaum ins Gewicht gegenüber dauerhafter Standby-Last. Ausnahme: Geräte mit sehr häufigen Schaltzyklen oder Anlaufverschleiß (z. B. manche Leuchtmittel).',
+  },
+  {
+    q: 'Wie viel spart der Wechsel auf LED?',
+    a: 'LED-Lampen verbrauchen rund 80–90 % weniger Strom als klassische Glühlampen bei gleicher Helligkeit und halten deutlich länger. Gerade bei lange brennenden Leuchten (Küche, Wohnzimmer, Außenbeleuchtung) amortisiert sich der Tausch oft schon innerhalb eines Jahres.',
+    source: wiki('Leuchtdiode'),
   },
   {
     q: 'Werden meine Daten irgendwohin übertragen?',
-    a: 'Die App ist darauf ausgelegt, deine Eingaben lokal auf dem Gerät zu verarbeiten. Es geht primär darum, dir selbst Transparenz über deinen Energieverbrauch zu geben.',
+    a: 'Die App verarbeitet deine Eingaben lokal auf deinem Gerät. Es geht darum, dir selbst Transparenz über deinen Energieverbrauch zu geben – ohne dass deine Daten zwingend das Gerät verlassen. (Spätere Cloud-/Konto-Funktionen wären optional und klar gekennzeichnet.)',
   },
 ]
 
@@ -251,27 +279,32 @@ export const MEASUREMENT_INFOS: MeasurementInfo[] = [
   {
     id: 'showerhead',
     title: 'Duschkopf-Durchfluss',
-    body: 'Beim Duschen entstehen erhebliche Warmwasserkosten. Ein herkömmlicher Duschkopf liefert oft 12–15 Liter pro Minute, ein Sparduschkopf nur etwa 6–9 Liter – bei kaum spürbarem Komfortverlust. Da das Wasser zusätzlich erwärmt werden muss, spart ein geringerer Durchfluss doppelt: Wasser und Energie.',
+    body: 'Warmwasser ist nach dem Heizen oft der zweitgrößte Energieposten im Haushalt – und Duschen macht davon einen großen Teil aus. Ein herkömmlicher Duschkopf liefert 12–15 Liter pro Minute, ein Sparduschkopf nur etwa 6–9 Liter, ohne dass der Komfort spürbar leidet. Da jeder Liter zusätzlich von etwa 10 °C auf rund 38 °C erwärmt werden muss, spart ein geringerer Durchfluss doppelt: Trinkwasser und Heizenergie. So misst du: einen Messbecher unter den laufenden Duschkopf halten und stoppen, wie viele Liter in einer bestimmten Zeit zusammenkommen – daraus ergibt sich der Durchfluss in l/min.',
+    source: wiki('Warmwasser'),
   },
   {
     id: 'room_temperature',
     title: 'Raumtemperatur',
-    body: 'Die Raumtemperatur ist einer der größten Hebel beim Heizen. Als Richtwert gelten rund 20 °C in Wohnräumen. Jedes Grad weniger reduziert den Heizenergiebedarf um grob 6 %. Wichtig ist, nicht einzelne Räume stark auskühlen zu lassen, da das Wiederaufheizen und Feuchteprobleme entstehen können.',
+    body: 'Die Raumtemperatur ist einer der größten Hebel beim Heizen: Jedes Grad weniger reduziert den Heizenergiebedarf um grob 6 %. Als Richtwerte gelten etwa 20 °C in Wohnräumen, 16–18 °C in Schlafräumen und um die 22 °C im Bad. Wichtig ist, Räume nicht stark auskühlen zu lassen – das spätere Wiederaufheizen kostet Energie und kühle Wandflächen begünstigen Feuchte und Schimmel. Miss die Temperatur in Raummitte, nicht direkt an Heizkörper oder Außenwand, und lass das Thermometer kurz angleichen.',
+    source: wiki('Raumklima'),
   },
   {
     id: 'standby',
     title: 'Standby-Verbrauch',
-    body: 'Viele Geräte verbrauchen auch im Bereitschaftsbetrieb dauerhaft Strom. Schon wenige Watt summieren sich über 8.760 Stunden im Jahr zu mehreren Kilowattstunden. Mit einem Steckdosen-Energiemessgerät lässt sich die tatsächliche Standby-Last bestimmen; schaltbare Steckdosenleisten machen das Abschalten bequem.',
+    body: 'Viele Geräte ziehen auch im Bereitschaftsbetrieb dauerhaft Strom – Fernseher, Konsolen, PCs, Router, Ladegeräte oder Audioanlagen. Schon wenige Watt summieren sich über 8.760 Stunden im Jahr zu mehreren Kilowattstunden je Gerät; über den ganzen Haushalt entstehen schnell 50–150 € im Jahr „für nichts". Mit einem Steckdosen-Energiemessgerät bestimmst du die tatsächliche Standby-Leistung in Watt. Schaltbare Steckdosenleisten oder Smart-Plugs trennen mehrere Geräte auf einen Schlag vom Netz.',
+    source: wiki('Bereitschaftsbetrieb'),
   },
   {
     id: 'fridge',
     title: 'Kühlschrank',
-    body: 'Der Kühlschrank läuft rund um die Uhr und gehört damit zu den ständigen Stromverbrauchern. Eine Innentemperatur von etwa 7 °C ist ausreichend; jedes Grad kälter erhöht den Verbrauch. Auch Gerätealter, Dichtungen und der Aufstellort (nicht neben Wärmequellen) beeinflussen den Verbrauch deutlich.',
+    body: 'Der Kühlschrank läuft rund um die Uhr und zählt damit zu den ständigen Stromverbrauchern. Eine Innentemperatur von etwa 5–7 °C ist ausreichend; jedes Grad kälter erhöht den Verbrauch spürbar (Richtwert ~6 % je Grad). Auch Gerätealter, Türdichtungen, Vereisung und der Aufstellort beeinflussen den Verbrauch – das Gerät sollte nicht neben Herd, Spülmaschine oder Heizung stehen. Zum Messen ein Thermometer in ein Glas Wasser in die Mitte stellen und nach einigen Stunden ablesen (das dämpft kurzfristige Schwankungen).',
+    source: wiki('Kühlschrank'),
   },
   {
     id: 'freezer',
     title: 'Gefrierschrank',
-    body: 'Gefriergeräte arbeiten dauerhaft auf tiefem Temperaturniveau. Etwa −18 °C sind ausreichend – kälter zu kühlen kostet unnötig Energie. Vereiste Innenflächen wirken als Isolierschicht und erhöhen den Verbrauch, daher lohnt regelmäßiges Abtauen.',
+    body: 'Gefriergeräte arbeiten dauerhaft auf tiefem Temperaturniveau und laufen ununterbrochen. Etwa −18 °C sind ausreichend – jedes Grad kälter kostet unnötig Energie. Eine Eisschicht an den Innenwänden wirkt wie eine Dämmung gegen die Kühlung: Schon wenige Millimeter Reif können den Stromverbrauch deutlich erhöhen, daher lohnt regelmäßiges Abtauen. Prüfe außerdem die Türdichtung und vermeide langes Offenstehen.',
+    source: wiki('Gefriergerät'),
   },
 ]
 

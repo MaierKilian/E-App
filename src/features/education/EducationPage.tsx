@@ -48,12 +48,30 @@ function SectionSwitch({
   )
 }
 
+/** Anklickbare Quellenangabe (öffnet im neuen Tab). */
+function SourceLink({ source }: { source?: { label: string; url: string } }) {
+  const { t } = useTranslation()
+  if (!source) return null
+  return (
+    <a
+      href={source.url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+    >
+      {t('education.source')}: {source.label}
+      <ExternalLink className="h-3 w-3 shrink-0" />
+    </a>
+  )
+}
+
 function FaqView() {
   return (
     <div className="space-y-3">
       {FAQ.map((item) => (
         <AccordionItem key={item.q} title={item.q}>
-          {item.a}
+          <p>{item.a}</p>
+          <SourceLink source={item.source} />
         </AccordionItem>
       ))}
     </div>
@@ -86,15 +104,7 @@ function GlossaryView() {
       {items.map((item) => (
         <AccordionItem key={item.term} title={item.term}>
           <p>{item.def}</p>
-          <a
-            href={item.source.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-          >
-            {t('education.source')}: {item.source.label}
-            <ExternalLink className="h-3 w-3 shrink-0" />
-          </a>
+          <SourceLink source={item.source} />
         </AccordionItem>
       ))}
     </div>
@@ -107,7 +117,8 @@ function MeasurementsView() {
     <div className="space-y-3">
       {MEASUREMENT_INFOS.map((info) => (
         <AccordionItem key={info.id} title={t(`measurements.${info.id}.title`, info.title)}>
-          {info.body}
+          <p>{info.body}</p>
+          <SourceLink source={info.source} />
         </AccordionItem>
       ))}
     </div>
