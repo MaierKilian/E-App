@@ -107,6 +107,46 @@
       }
     }
   },
+  "report": {
+    "title": "Berichte",
+    "subtitle": "Profil, Messungen und Monitoring als PDF.",
+    "variantTitle": "Berichtsumfang",
+    "variant": {
+      "short": "Kurzbericht",
+      "long": "Langbericht"
+    },
+    "previewTitle": "Vorschau",
+    "include": {
+      "profile": "Profil",
+      "measurements": "Messungen",
+      "monitoring": "Monitoring"
+    },
+    "counts": {
+      "profileReady": "Bereit",
+      "measurements_one": "{{count}} Messung",
+      "measurements_other": "{{count}} Messungen",
+      "meters_one": "{{count}} Zähler",
+      "meters_other": "{{count}} Zähler"
+    },
+    "export": "Als PDF exportieren",
+    "pdf": {
+      "title": "E-App – Energiebericht",
+      "dateLine": "Erstellt am {{date}}",
+      "page": "Seite {{n}} / {{total}}",
+      "footnote": "Erstellt mit der E-App",
+      "section": {
+        "profile": "Profil",
+        "measurements": "Messungen",
+        "monitoring": "Monitoring"
+      },
+      "empty": {
+        "none": "keine",
+        "measurements": "Noch keine Messungen erledigt.",
+        "monitoring": "Keine Energieträger aktiv.",
+        "noReading": "Noch keine Ablesung"
+      }
+    }
+  },
   "measurements": {
     "page": {
       "title": "Messungen",

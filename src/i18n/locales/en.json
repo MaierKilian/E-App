@@ -107,6 +107,46 @@
       }
     }
   },
+  "report": {
+    "title": "Reports",
+    "subtitle": "Profile, measurements and monitoring as PDF.",
+    "variantTitle": "Report scope",
+    "variant": {
+      "short": "Short report",
+      "long": "Detailed report"
+    },
+    "previewTitle": "Preview",
+    "include": {
+      "profile": "Profile",
+      "measurements": "Measurements",
+      "monitoring": "Monitoring"
+    },
+    "counts": {
+      "profileReady": "Ready",
+      "measurements_one": "{{count}} measurement",
+      "measurements_other": "{{count}} measurements",
+      "meters_one": "{{count}} meter",
+      "meters_other": "{{count}} meters"
+    },
+    "export": "Export as PDF",
+    "pdf": {
+      "title": "E-App – Energy report",
+      "dateLine": "Created on {{date}}",
+      "page": "Page {{n}} / {{total}}",
+      "footnote": "Created with the E-App",
+      "section": {
+        "profile": "Profile",
+        "measurements": "Measurements",
+        "monitoring": "Monitoring"
+      },
+      "empty": {
+        "none": "none",
+        "measurements": "No measurements completed yet.",
+        "monitoring": "No energy sources active.",
+        "noReading": "No reading yet"
+      }
+    }
+  },
   "measurements": {
     "page": {
       "title": "Measurements",
