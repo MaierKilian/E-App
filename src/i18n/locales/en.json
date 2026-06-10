@@ -129,6 +129,60 @@
       "meters_other": "{{count}} meters"
     },
     "export": "Export as PDF",
+    "types": {
+      "measurements": {
+        "title": "Measurements",
+        "description": "Results of your checks with rating and savings potential."
+      },
+      "monitoring": {
+        "title": "Monitoring",
+        "description": "Meter readings, consumption and trends as charts."
+      },
+      "total": {
+        "title": "Overall",
+        "description": "Profile, measurements and monitoring in one report."
+      }
+    },
+    "builder": {
+      "back": "Back",
+      "variant": "Scope",
+      "contents": "Contents",
+      "range": "Period",
+      "meters": "Meters",
+      "categories": "Trades",
+      "previewTitle": "Preview",
+      "export": "Export as PDF",
+      "allHint": "No selection = all."
+    },
+    "contents": {
+      "charts": "Charts",
+      "kpis": "Key figures",
+      "comparison": "Previous period",
+      "history": "Reading history",
+      "savings": "Savings potential",
+      "tips": "Tips",
+      "openMeasurements": "Open measurements"
+    },
+    "range": {
+      "d7": "7 days",
+      "d30": "30 days",
+      "d90": "90 days",
+      "all": "All"
+    },
+    "kpi": {
+      "currentValue": "Current value",
+      "consumption": "Consumption",
+      "perDay": "Avg. per day",
+      "projectedYear": "Projection / year",
+      "costYear": "Cost / year",
+      "savingsTotal": "Total savings potential"
+    },
+    "trend": {
+      "up": "rising",
+      "down": "falling",
+      "flat": "unchanged",
+      "vsPrevious": "vs. previous period"
+    },
     "pdf": {
       "title": "E-App – Energy report",
       "dateLine": "Created on {{date}}",
@@ -138,6 +192,23 @@
         "profile": "Profile",
         "measurements": "Measurements",
         "monitoring": "Monitoring"
+      },
+      "measurements": {
+        "title": "Measurements report",
+        "subtitle": "Results, rating and savings potential",
+        "progress": "Completed measurements",
+        "completed": "Completed measurements"
+      },
+      "monitoring": {
+        "title": "Monitoring report",
+        "subtitle": "Period: {{range}}",
+        "historyDate": "Date",
+        "historyValue": "Meter value"
+      },
+      "total": {
+        "title": "Overall energy report",
+        "subtitle": "Profile, measurements and monitoring",
+        "profile": "Profile"
       },
       "empty": {
         "none": "none",

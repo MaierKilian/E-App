@@ -129,6 +129,60 @@
       "meters_other": "{{count}} Zähler"
     },
     "export": "Als PDF exportieren",
+    "types": {
+      "measurements": {
+        "title": "Messungen",
+        "description": "Ergebnisse deiner Checks mit Bewertung und Sparpotenzial."
+      },
+      "monitoring": {
+        "title": "Monitoring",
+        "description": "Zählerstände, Verbrauch und Trends als Diagramme."
+      },
+      "total": {
+        "title": "Gesamt",
+        "description": "Profil, Messungen und Monitoring in einem Bericht."
+      }
+    },
+    "builder": {
+      "back": "Zurück",
+      "variant": "Umfang",
+      "contents": "Inhalte",
+      "range": "Zeitraum",
+      "meters": "Zähler",
+      "categories": "Gewerke",
+      "previewTitle": "Vorschau",
+      "export": "Als PDF exportieren",
+      "allHint": "Keine Auswahl = alle."
+    },
+    "contents": {
+      "charts": "Diagramme",
+      "kpis": "Kennzahlen",
+      "comparison": "Vergleich Vorperiode",
+      "history": "Zählerhistorie",
+      "savings": "Sparpotenzial",
+      "tips": "Tipps",
+      "openMeasurements": "Offene Messungen"
+    },
+    "range": {
+      "d7": "7 Tage",
+      "d30": "30 Tage",
+      "d90": "90 Tage",
+      "all": "Alle"
+    },
+    "kpi": {
+      "currentValue": "Aktueller Stand",
+      "consumption": "Verbrauch",
+      "perDay": "Ø pro Tag",
+      "projectedYear": "Hochrechnung / Jahr",
+      "costYear": "Kosten / Jahr",
+      "savingsTotal": "Sparpotenzial gesamt"
+    },
+    "trend": {
+      "up": "steigend",
+      "down": "sinkend",
+      "flat": "unverändert",
+      "vsPrevious": "ggü. Vorperiode"
+    },
     "pdf": {
       "title": "E-App – Energiebericht",
       "dateLine": "Erstellt am {{date}}",
@@ -138,6 +192,23 @@
         "profile": "Profil",
         "measurements": "Messungen",
         "monitoring": "Monitoring"
+      },
+      "measurements": {
+        "title": "Messungen-Bericht",
+        "subtitle": "Ergebnisse, Bewertung und Sparpotenzial",
+        "progress": "Erledigte Messungen",
+        "completed": "Erledigte Messungen"
+      },
+      "monitoring": {
+        "title": "Monitoring-Bericht",
+        "subtitle": "Zeitraum: {{range}}",
+        "historyDate": "Datum",
+        "historyValue": "Zählerstand"
+      },
+      "total": {
+        "title": "Gesamt-Energiebericht",
+        "subtitle": "Profil, Messungen und Monitoring",
+        "profile": "Profil"
       },
       "empty": {
         "none": "keine",
