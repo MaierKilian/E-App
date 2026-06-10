@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import {
-  ChevronRight,
+  ChevronLeft,
   User,
   Building2,
   DoorOpen,
@@ -14,8 +14,8 @@ import {
   Check,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import type { OnboardingData } from '@/types'
-import { ProgressRing } from '@/features/home/ProgressRing'
 import { profileCompleteness } from '@/features/home/estimateEnergy'
 import { sectionStatus } from './sectionStatus'
 
@@ -46,113 +46,158 @@ const SECTIONS: SectionDef[] = [
   { index: 7, icon: MapPin, titleKey: 'onboarding.step7.title' },
 ]
 
-const PRIMARY_BTN =
-  'flex items-center justify-center gap-1 px-5 py-3 rounded-2xl bg-primary text-primary-foreground text-sm font-semibold transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]'
-
-/** Eine antippbare Abschnitts-Karte mit Icon, Titel, Status und Chevron. */
-function SectionRow({
-  icon: Icon,
-  title,
-  status,
-  badge,
-  onClick,
-}: {
+interface HubTileProps {
   icon: LucideIcon
   title: string
-  status: React.ReactNode
-  badge?: React.ReactNode
   onClick: () => void
-}) {
+  /** Füllgrad 0..100 (für die Fortschrittsleiste der Kachel). */
+  pct?: number
+  complete?: boolean
+  open?: number
+  accent?: boolean
+  badge?: ReactNode
+  subtitle?: string
+}
+
+/**
+ * Kompakte, antippbare Kategorie-Kachel mit Icon, Status (erledigt/offen) und
+ * einer Füllanzeige am unteren Rand – so sieht man auf einen Blick, wie weit ein
+ * Abschnitt ausgefüllt ist.
+ */
+function HubTile({
+  icon: Icon,
+  title,
+  onClick,
+  pct = 0,
+  complete = false,
+  open = 0,
+  accent = false,
+  badge,
+  subtitle,
+}: HubTileProps) {
+  const { t } = useTranslation()
   return (
     <button
       type="button"
       onClick={onClick}
-      className="focus-ring glass w-full rounded-2xl px-3.5 py-3 flex items-center gap-3 text-left transition-transform active:scale-[0.99]"
+      className={`focus-ring glass relative flex flex-col gap-2 rounded-2xl p-3 text-left transition-transform active:scale-[0.98] ${
+        complete ? 'ring-1 ring-primary/40' : ''
+      }`}
     >
-      <span className="grid place-items-center w-9 h-9 shrink-0 rounded-xl bg-surface-2/70 text-foreground">
-        <Icon className="w-4.5 h-4.5" />
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-          {title}
-          {badge}
+      <div className="flex items-start justify-between gap-2">
+        <span
+          className={`grid h-9 w-9 place-items-center rounded-xl ${
+            complete || accent ? 'bg-primary/10 text-primary' : 'bg-surface-2 text-foreground'
+          }`}
+        >
+          <Icon className="h-4.5 w-4.5" />
         </span>
-        <span className="block mt-0.5 text-xs">{status}</span>
-      </span>
-      <ChevronRight className="w-5 h-5 shrink-0 text-muted" />
+        {badge ??
+          (complete ? (
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-primary text-primary-foreground">
+              <Check className="h-3.5 w-3.5" />
+            </span>
+          ) : (
+            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
+              {t('onboarding.hub.sectionOpen', { count: open })}
+            </span>
+          ))}
+      </div>
+
+      <p className="text-sm font-medium leading-tight text-foreground">{title}</p>
+
+      {subtitle ? (
+        <p className="mt-auto text-[11px] leading-tight text-muted">{subtitle}</p>
+      ) : (
+        <div className="mt-auto h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-500"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+      )}
     </button>
   )
 }
 
 export function ProfileHub({ data, onOpenSection, onDone }: ProfileHubProps) {
   const { t } = useTranslation()
-  const completeness = profileCompleteness(data)
   const statuses = sectionStatus(data)
+  const completeness = profileCompleteness(data)
 
   return (
-    <div className="pb-28 space-y-5">
-      <div>
-        <h2 className="text-lg font-semibold text-foreground">{t('onboarding.hub.title')}</h2>
-        <p className="text-sm text-muted mt-0.5">{t('onboarding.hub.subtitle')}</p>
+    <div className="space-y-4">
+      {/* Kopfzeile: gut sichtbares Zurück (-> Dashboard) + Fertig */}
+      <div className="flex items-center justify-between gap-3">
+        <button
+          type="button"
+          onClick={onDone}
+          className="focus-ring -ml-1 flex items-center gap-1 text-sm font-medium text-muted hover:text-foreground transition-colors"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          {t('common.back')}
+        </button>
+        <button
+          type="button"
+          onClick={onDone}
+          className="focus-ring rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
+        >
+          {t('onboarding.hub.done')}
+        </button>
       </div>
 
-      <div className="glass rounded-3xl p-5 flex items-center gap-4">
-        <ProgressRing value={completeness} size={64} stroke={6} />
-        <div className="min-w-0 flex-1">
-          <p className="text-sm font-semibold text-foreground">
-            {(data.profileName ?? '').trim() || t('home.profileNameFallback')}
-          </p>
-          <p className="text-xs text-muted mt-0.5">
-            {t('home.completenessLabel', { value: completeness })}
-          </p>
+      {/* Titel + Gesamtfortschritt */}
+      <div>
+        <h2 className="text-lg font-bold text-foreground">{t('onboarding.hub.title')}</h2>
+        <div className="mt-2 flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
+            <div
+              className="h-full rounded-full bg-primary transition-[width] duration-500"
+              style={{ width: `${completeness}%` }}
+            />
+          </div>
+          <span className="shrink-0 text-xs font-medium text-muted tabular-nums">
+            {completeness}%
+          </span>
         </div>
       </div>
 
-      <div className="space-y-2.5">
+      {/* Kachel-Grid der Abschnitte */}
+      <div className="grid grid-cols-2 gap-2.5">
         {SECTIONS.map((section) => {
           const status = statuses[section.index]
-          const complete = status.open === 0
+          const pct =
+            status.total > 0
+              ? Math.round(((status.total - status.open) / status.total) * 100)
+              : 0
           return (
-            <SectionRow
+            <HubTile
               key={section.index}
               icon={section.icon}
               title={t(section.titleKey)}
+              pct={pct}
+              complete={status.open === 0}
+              open={status.open}
               onClick={() => onOpenSection(section.index)}
-              status={
-                complete ? (
-                  <span className="inline-flex items-center gap-1 text-primary font-medium">
-                    <Check className="w-3.5 h-3.5" />
-                    {t('onboarding.hub.sectionComplete')}
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-amber-500 font-medium">
-                    <span className="text-base leading-none">●</span>
-                    {t('onboarding.hub.sectionOpen', { count: status.open })}
-                  </span>
-                )
-              }
             />
           )
         })}
 
-        {/* Zusatz-Abschnitt: Gebäudeautomation (optional, mit „Neu"-Badge). */}
-        <SectionRow
+        {/* Zusatz-Abschnitt: Gebäudeautomation (optional, „Neu"). */}
+        <HubTile
           icon={Cpu}
           title={t('onboarding.hub.gaTitle')}
+          accent
+          subtitle={t('onboarding.hub.optional')}
           onClick={() => onOpenSection(GA_INDEX)}
           badge={
             <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
-              <Sparkles className="w-3 h-3" />
+              <Sparkles className="h-3 w-3" />
               {t('onboarding.hub.gaNew')}
             </span>
           }
-          status={<span className="text-muted">{t('onboarding.ga.subtitle')}</span>}
         />
       </div>
-
-      <button type="button" onClick={onDone} className={`${PRIMARY_BTN} w-full`}>
-        {t('onboarding.hub.done')}
-      </button>
     </div>
   )
 }
