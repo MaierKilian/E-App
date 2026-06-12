@@ -182,18 +182,30 @@ export class PdfKit {
     this.y = h + 26
   }
 
-  /** Zeichnet das E-App-Logo: drei versetzte, gerundete Balken. */
+  /** Zeichnet das E-App-Logo: drei versetzte, schräge Balken (Parallelogramme). */
   private drawLogo(x: number, y: number, size: number): void {
-    const bw = size * 0.78
+    // Balken als Parallelogramm-Form (Anteile der Balkenbox), aus dem Original abgeleitet.
+    const SHAPE: Array<[number, number]> = [
+      [0, 0.7],
+      [0.87, 0],
+      [1, 0.08],
+      [0.13, 0.78],
+    ]
+    // Position und Größe je Balken in Anteilen der Logo-Box (Treppen-Muster).
     const bars = [
-      { dx: 0, dy: size * 0.42, h: size * 0.58 },
-      { dx: size * 0.26, dy: size * 0.18, h: size * 0.82 },
-      { dx: size * 0.52, dy: 0, h: size },
+      { bx: 0.19, by: 0.08, bw: 0.55, bh: 0.4 },
+      { bx: 0.03, by: 0.41, bw: 0.53, bh: 0.38 },
+      { bx: 0.41, by: 0.47, bw: 0.55, bh: 0.41 },
     ]
     this.setFill(PALETTE.white)
     for (const b of bars) {
-      const w = bw * 0.34
-      this.doc.roundedRect(x + b.dx, y + b.dy, w, b.h, w / 2, w / 2, 'F')
+      const p = SHAPE.map(
+        ([fx, fy]) =>
+          [x + (b.bx + fx * b.bw) * size, y + (b.by + fy * b.bh) * size] as [number, number],
+      )
+      // Parallelogramm aus zwei Dreiecken füllen.
+      this.doc.triangle(p[0][0], p[0][1], p[1][0], p[1][1], p[2][0], p[2][1], 'F')
+      this.doc.triangle(p[0][0], p[0][1], p[2][0], p[2][1], p[3][0], p[3][1], 'F')
     }
   }
 

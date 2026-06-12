@@ -1,17 +1,24 @@
 import { useEffect, useState } from 'react'
 
 /**
- * Kurzer Start-Bildschirm: Das E-App-Markenzeichen (drei versetzte Balken)
- * fliegt dynamisch ein – zwei von unten-links, einer von oben-rechts –,
+ * Kurzer Start-Bildschirm: Das E-App-Markenzeichen (drei versetzte, schräge
+ * Balken) fliegt dynamisch ein – zwei von unten-links, einer von oben-rechts –,
  * hält kurz und blendet dann weich aus. Erscheint bei jedem App-Start.
  * Themen-angepasst (Hintergrund = Theme-Hintergrund, Balken = Vordergrundfarbe);
  * respektiert `prefers-reduced-motion`.
+ *
+ * Die Balken sind als Parallelogramme (clip-path) geformt und in denselben
+ * Anteilen positioniert wie das echte Logo – dadurch fügen sie sich am Ende
+ * der Animation exakt zum Markenzeichen zusammen.
  */
 const BARS = [
-  { cls: 'splash-bar-1', left: 39, top: 22 }, // oben – von oben-rechts
-  { cls: 'splash-bar-2', left: 14, top: 59 }, // mitte-links – von unten-links
-  { cls: 'splash-bar-3', left: 58, top: 95 }, // unten-rechts – von unten-links
+  // Anteilige Position/Größe je Balken (wie im Original), + Flugrichtung.
+  { cls: 'splash-bar-1', left: 19, top: 8, width: 55, height: 40 }, // oben – von oben-rechts
+  { cls: 'splash-bar-2', left: 3, top: 41, width: 53, height: 38 }, // mitte-links – von unten-links
+  { cls: 'splash-bar-3', left: 41, top: 47, width: 55, height: 41 }, // unten-rechts – von unten-links
 ]
+
+const BOX = 188
 
 export function SplashScreen() {
   const [phase, setPhase] = useState<'visible' | 'leaving' | 'done'>('visible')
@@ -36,12 +43,17 @@ export function SplashScreen() {
         phase === 'leaving' ? 'splash-leaving' : ''
       }`}
     >
-      <div className="relative" style={{ width: 152, height: 140 }}>
+      <div className="relative" style={{ width: BOX, height: BOX }}>
         {BARS.map((bar) => (
           <span
             key={bar.cls}
             className={`splash-bar ${bar.cls}`}
-            style={{ left: bar.left, top: bar.top, width: 78, height: 30 }}
+            style={{
+              left: `${bar.left}%`,
+              top: `${bar.top}%`,
+              width: `${bar.width}%`,
+              height: `${bar.height}%`,
+            }}
           />
         ))}
       </div>

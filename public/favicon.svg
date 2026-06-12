@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <rect width="64" height="64" rx="14" fill="#18181B" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <rect width="100" height="100" rx="22" fill="#18181B" />
   <g fill="#FAFAFA">
-    <rect x="17" y="9.5" width="34" height="13" rx="6" transform="rotate(-21 34 16)" />
-    <rect x="6" y="25.5" width="34" height="13" rx="6" transform="rotate(-21 23 32)" />
-    <rect x="25" y="41.5" width="34" height="13" rx="6" transform="rotate(-21 42 48)" />
+    <!-- Drei versetzte, schräge Balken (Parallelogramme) im Treppen-Muster -->
+    <polygon points="26.44,39.36 62.81,18.08 68.24,20.51 31.87,41.79" />
+    <polygon points="14.28,63.38 49.32,43.16 54.56,45.47 19.52,65.69" />
+    <polygon points="43.16,69.53 79.53,47.72 84.96,50.21 48.59,72.02" />
   </g>
 </svg>
