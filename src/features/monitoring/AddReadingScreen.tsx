@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X, Keyboard, Gauge } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
 import { OdometerInput } from './OdometerInput'
 import { clampInt } from './odometer'
@@ -10,6 +11,10 @@ interface AddReadingScreenProps {
   unit: string
   /** Name des Energieträgers (übersetzt). */
   typeLabel: string
+  /** Typ-eigener Akzent (Icon-Tönung, Fokus, aktives Zählwerk). */
+  accent: string
+  /** Icon des Energieträgers. */
+  icon: LucideIcon
   /** Letzter bekannter Stand als Default für das Zählwerk (Ganzzahl-Anteil). */
   defaultValue: number
   onClose: () => void
@@ -35,6 +40,8 @@ export function AddReadingScreen({
   type,
   unit,
   typeLabel,
+  accent,
+  icon: Icon,
   defaultValue,
   onClose,
 }: AddReadingScreenProps) {
@@ -71,22 +78,31 @@ export function AddReadingScreen({
       aria-modal="true"
     >
       <div className="flex items-center justify-between gap-4">
-        <h2 className="text-base font-semibold text-foreground">
-          {t('monitoring.odometer.title')}
-        </h2>
+        <div className="flex items-center gap-3 min-w-0">
+          <span
+            className="grid place-items-center w-11 h-11 rounded-2xl shrink-0"
+            style={{ background: `${accent}1f`, color: accent }}
+          >
+            <Icon className="w-5 h-5" />
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-base font-semibold text-foreground truncate">
+              {t('monitoring.odometer.title')}
+            </h2>
+            <p className="text-sm text-muted truncate">
+              {typeLabel} · {unit}
+            </p>
+          </div>
+        </div>
         <button
           type="button"
           onClick={onClose}
           aria-label={t('common.close')}
-          className="grid place-items-center w-9 h-9 rounded-xl text-muted hover:text-foreground transition-colors"
+          className="grid place-items-center w-9 h-9 rounded-xl text-muted hover:text-foreground transition-colors shrink-0"
         >
           <X className="w-5 h-5" />
         </button>
       </div>
-
-      <p className="mt-1 text-sm text-muted">
-        {typeLabel} · {unit}
-      </p>
 
       <div className="flex-1 flex flex-col justify-center gap-6">
         {/* Datum */}
@@ -120,7 +136,7 @@ export function AddReadingScreen({
             <span className="text-base text-muted">{unit}</span>
           </div>
         ) : (
-          <OdometerInput digits={DIGITS} value={value} onChange={setValue} />
+          <OdometerInput digits={DIGITS} value={value} onChange={setValue} accent={accent} />
         )}
 
         {/* Umschalter Zählwerk <-> Tastatur */}

@@ -9,6 +9,8 @@ interface OdometerInputProps {
   value: number
   /** Wird mit dem neuen Ganzzahl-Wert aufgerufen. */
   onChange: (value: number) => void
+  /** Optionaler typ-eigener Akzent für die aktive Ziffer. */
+  accent?: string
 }
 
 const DRAG_STEP_PX = 28 // Pixel je Schritt beim vertikalen Ziehen
@@ -18,7 +20,7 @@ const DRAG_STEP_PX = 28 // Pixel je Schritt beim vertikalen Ziehen
  * per Pfeil (mit Übertrag), vertikalem Ziehen oder über die manuelle Tastatur
  * (in der übergeordneten Komponente) verändern. Bereich/NaN-sicher.
  */
-export function OdometerInput({ digits, value, onChange }: OdometerInputProps) {
+export function OdometerInput({ digits, value, onChange, accent }: OdometerInputProps) {
   const max = 10 ** digits - 1
   const safeValue = clampInt(value, max)
   const cells = toDigits(safeValue, digits)
@@ -35,6 +37,7 @@ export function OdometerInput({ digits, value, onChange }: OdometerInputProps) {
         <OdometerCell
           key={index}
           digit={digit}
+          accent={accent}
           onStep={(dir) => step(index, dir)}
         />
       ))}
@@ -44,11 +47,12 @@ export function OdometerInput({ digits, value, onChange }: OdometerInputProps) {
 
 interface OdometerCellProps {
   digit: number
+  accent?: string
   onStep: (dir: 1 | -1) => void
 }
 
 /** Einzelne Ziffern-Rolle mit Pfeilen und Drag-Geste. */
-function OdometerCell({ digit, onStep }: OdometerCellProps) {
+function OdometerCell({ digit, accent, onStep }: OdometerCellProps) {
   const startY = useRef<number | null>(null)
   const accum = useRef(0)
   const [dragging, setDragging] = useState(false)
@@ -99,6 +103,11 @@ function OdometerCell({ digit, onStep }: OdometerCellProps) {
           accum.current = 0
           setDragging(true)
         }}
+        style={
+          dragging && accent
+            ? { borderColor: accent, boxShadow: `0 0 0 1px ${accent}` }
+            : undefined
+        }
         className={`grid place-items-center w-11 h-14 rounded-xl border bg-surface-2/40 text-3xl font-bold tabular-nums text-foreground cursor-ns-resize touch-none transition-colors ${
           dragging ? 'border-primary' : 'border-border'
         }`}

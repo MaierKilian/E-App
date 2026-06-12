@@ -11,7 +11,8 @@ import { AbsoluteLineChart, type LinePoint } from './AbsoluteLineChart'
 import { AddReadingScreen } from './AddReadingScreen'
 import { ReadingReminder } from './ReadingReminder'
 import { TariffModal } from './TariffModal'
-import { sortByDate, stats } from './readings'
+import { sortByDate, stats, consumptionTrend, daysSinceLastReading } from './readings'
+import { TrendBadge } from './MeterTrend'
 
 /** Auswählbare Zeiträume für das Verlaufs-Diagramm. */
 type RangeKey = 'd7' | 'd30' | 'all'
@@ -80,6 +81,14 @@ export function MeterDetailPage() {
   }
 
   const s = stats(readings, meta.hasCost ? workPriceCt : undefined)
+  const trend = consumptionTrend(readings)
+  const sinceDays = daysSinceLastReading(readings, now)
+  const lastText =
+    sinceDays === undefined
+      ? null
+      : sinceDays === 0
+        ? t('monitoring.overview.readToday')
+        : t('monitoring.overview.readDaysAgo', { count: sinceDays })
 
   // Diagramm-Punkte nach Zeitraum filtern.
   const allPoints: LinePoint[] = readings.map((r) => ({ date: r.date, value: r.value }))
@@ -92,8 +101,8 @@ export function MeterDetailPage() {
         )
 
   return (
-    <div className="space-y-3">
-      {/* Kopf: Zurück + Träger + kompakter aktueller Stand als Unterzeile */}
+    <div className="space-y-4">
+      {/* Kopf: Zurück + Träger-Hero + Diagramm im Stil der Übersicht */}
       <button
         type="button"
         onClick={() => navigate('/monitoring')}
@@ -102,75 +111,92 @@ export function MeterDetailPage() {
         <ChevronLeft className="w-4 h-4" />
         {t('monitoring.detail.back')}
       </button>
-      <div className="flex items-center gap-3">
-        <span className="grid place-items-center w-10 h-10 rounded-2xl bg-primary/10 text-primary shrink-0">
-          <Icon className="w-5 h-5" />
-        </span>
-        <div className="min-w-0 flex-1">
-          <h1 className="text-xl font-bold leading-tight text-foreground">{name}</h1>
-          <p className="text-sm">
+      {/* Hero-Karte: gleicher Stil wie die Monitoring-Übersicht */}
+      <section className="glass relative overflow-hidden rounded-3xl p-5">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full blur-3xl"
+          style={{ background: meta.accent, opacity: 0.16 }}
+        />
+        <div className="relative">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <span
+                className="grid place-items-center w-11 h-11 rounded-2xl shrink-0"
+                style={{ background: `${meta.accent}1f`, color: meta.accent }}
+              >
+                <Icon className="w-5 h-5" />
+              </span>
+              <div className="min-w-0">
+                <h1 className="text-base font-semibold leading-tight text-foreground truncate">
+                  {name}
+                </h1>
+                {lastText && <p className="text-xs text-muted">{lastText}</p>}
+              </div>
+            </div>
+            {trend && <TrendBadge trend={trend} />}
+          </div>
+
+          <div className="mt-4">
+            <p className="text-xs uppercase tracking-wide text-muted">
+              {t('monitoring.detail.current')}
+            </p>
             {latest ? (
-              <>
-                <span className="font-semibold text-foreground tabular-nums">
-                  {numFmt.format(latest.value)} {unit}
-                </span>
-                <span className="text-muted">
-                  {' · '}
-                  {formatTimestamp(latest.date, latest.createdAt)}
-                </span>
-              </>
+              <p className="mt-0.5 text-3xl font-bold tabular-nums leading-none">
+                {numFmt.format(latest.value)}
+                <span className="ml-1 text-base font-medium text-muted">{unit}</span>
+              </p>
             ) : (
-              <span className="text-muted">{t('monitoring.detail.noReadings')}</span>
+              <p className="mt-0.5 text-base text-muted">{t('monitoring.detail.noReadings')}</p>
             )}
-          </p>
+          </div>
+
+          {/* Kosten/Verbrauch + Strompreis (nur bei kostenfähigen Trägern) */}
+          {meta.hasCost && (s.lastConsumptionKwh !== undefined || type === 'electricity') && (
+            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              {s.lastConsumptionKwh !== undefined && (
+                <span className="text-muted">
+                  {t('monitoring.detail.consumption')}:{' '}
+                  <span className="font-medium text-foreground tabular-nums">
+                    {numFmt.format(s.lastConsumptionKwh)} {unit}
+                  </span>
+                </span>
+              )}
+              {s.projectedYearCostEur !== undefined && (
+                <span className="text-muted">
+                  {t('monitoring.detail.cost')}:{' '}
+                  <span className="font-medium text-foreground tabular-nums">
+                    {eurFmt.format(s.projectedYearCostEur)}
+                  </span>
+                </span>
+              )}
+              {type === 'electricity' && (
+                <button
+                  type="button"
+                  onClick={() => setTariffOpen(true)}
+                  className="ml-auto flex items-center gap-1 rounded-full bg-surface-2/70 px-3 py-1 text-xs font-medium text-foreground hover:bg-surface-2 transition-colors"
+                >
+                  <span className="tabular-nums">{intFmt.format(workPriceCt)} ct/kWh</span>
+                  <Pencil className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
+          >
+            <Plus className="w-4 h-4" />
+            {t('monitoring.detail.addReading')}
+          </button>
         </div>
-      </div>
+      </section>
 
-      {/* Ablesung hinzufügen */}
-      <button
-        type="button"
-        onClick={() => setAddOpen(true)}
-        className="flex w-full items-center justify-center gap-1.5 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90 transition-opacity"
-      >
-        <Plus className="w-4 h-4" />
-        {t('monitoring.detail.addReading')}
-      </button>
-
-      {/* Strompreis-Chip + Kosten (nur bei kostenfähigen Trägern) */}
-      {meta.hasCost && (
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          {s.lastConsumptionKwh !== undefined && (
-            <span className="text-muted">
-              {t('monitoring.detail.consumption')}:{' '}
-              <span className="font-medium text-foreground tabular-nums">
-                {numFmt.format(s.lastConsumptionKwh)} {unit}
-              </span>
-            </span>
-          )}
-          {s.projectedYearCostEur !== undefined && (
-            <span className="text-muted">
-              {t('monitoring.detail.cost')}:{' '}
-              <span className="font-medium text-foreground tabular-nums">
-                {eurFmt.format(s.projectedYearCostEur)}
-              </span>
-            </span>
-          )}
-          {type === 'electricity' && (
-            <button
-              type="button"
-              onClick={() => setTariffOpen(true)}
-              className="glass ml-auto flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium text-foreground hover:bg-surface-2/70 transition-colors"
-            >
-              <span className="tabular-nums">{intFmt.format(workPriceCt)} ct/kWh</span>
-              <Pencil className="w-3 h-3" />
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Diagramm */}
+      {/* Diagramm-Karte */}
       {readings.length > 0 && (
-        <div className="space-y-2">
+        <section className="glass space-y-3 rounded-3xl p-4">
           <div className="flex flex-wrap gap-2">
             {(Object.keys(RANGE_DAYS) as RangeKey[]).map((key) => (
               <SelectChip
@@ -181,8 +207,8 @@ export function MeterDetailPage() {
               />
             ))}
           </div>
-          <AbsoluteLineChart points={points} unit={unit} />
-        </div>
+          <AbsoluteLineChart points={points} unit={unit} accent={meta.accent} />
+        </section>
       )}
 
       {/* Historie (eingeklappt) */}
@@ -237,6 +263,8 @@ export function MeterDetailPage() {
           type={type}
           unit={unit}
           typeLabel={name}
+          accent={meta.accent}
+          icon={Icon}
           defaultValue={defaultValue}
           onClose={() => setAddOpen(false)}
         />

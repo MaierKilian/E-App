@@ -1,19 +1,14 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, Bell, Plus, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { ChevronRight, Bell, Plus } from 'lucide-react'
 import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { ENERGY_META, activeEnergyTypes } from './energyConfig'
-import {
-  sortByDate,
-  perDaySeries,
-  consumptionTrend,
-  daysSinceLastReading,
-  type ConsumptionTrend,
-} from './readings'
+import { sortByDate, consumptionTrend, daysSinceLastReading } from './readings'
 import { dueTypes } from './due'
 import { Sparkline } from './Sparkline'
+import { TrendBadge, useLastReadingText } from './MeterTrend'
 
 /**
  * Monitoring-Übersicht (Dashboard): prägnanter Kopf, eine Hero-Karte für den
@@ -63,41 +58,6 @@ export function MonitoringPage() {
   )
 }
 
-/** Trend-Badge mit Pfeil und Prozent. Sinkender Verbrauch ist „gut" (grün). */
-function TrendBadge({ trend, compact }: { trend: ConsumptionTrend; compact?: boolean }) {
-  const { t } = useTranslation()
-  const pct = trend.changePct
-  const tone =
-    trend.direction === 'down'
-      ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
-      : trend.direction === 'up'
-        ? 'text-rose-600 dark:text-rose-400 bg-rose-500/10'
-        : 'text-muted bg-surface-2/70'
-  const Icon =
-    trend.direction === 'down' ? TrendingDown : trend.direction === 'up' ? TrendingUp : Minus
-  const label =
-    pct !== undefined ? `${pct > 0 ? '+' : ''}${Math.round(pct * 100)}%` : t('monitoring.overview.trendNew')
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full font-semibold ${tone} ${
-        compact ? 'px-1.5 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs'
-      }`}
-    >
-      <Icon className={compact ? 'w-3 h-3' : 'w-3.5 h-3.5'} />
-      {label}
-    </span>
-  )
-}
-
-/** Lesbarer Text „heute / vor N Tagen abgelesen". */
-function useLastReadingText(days: number | undefined): string | null {
-  const { t } = useTranslation()
-  if (days === undefined) return null
-  if (days === 0) return t('monitoring.overview.readToday')
-  return t('monitoring.overview.readDaysAgo', { count: days })
-}
-
 interface MeterProps {
   type: EnergyType
   due: boolean
@@ -114,7 +74,9 @@ function HeroMeter({ type, due, now }: MeterProps) {
   const Icon = meta.icon
   const readings = sortByDate(readingsByType[type] ?? [])
   const latest = readings[readings.length - 1]
-  const series = perDaySeries(readings)
+  // Gleiche Datengrundlage wie das Detail-Diagramm (absoluter Zählerstand),
+  // damit Mini- und Detailkurve übereinstimmen.
+  const series = readings.map((r) => r.value)
   const trend = consumptionTrend(readings)
   const days = daysSinceLastReading(readings, now)
   const lastText = useLastReadingText(days)
@@ -204,7 +166,7 @@ function MeterTile({ type, due }: MeterProps) {
   const Icon = meta.icon
   const readings = sortByDate(readingsByType[type] ?? [])
   const latest = readings[readings.length - 1]
-  const series = perDaySeries(readings)
+  const series = readings.map((r) => r.value)
   const trend = consumptionTrend(readings)
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
