@@ -8,9 +8,9 @@ import { useEffect, useState } from 'react'
  * respektiert `prefers-reduced-motion`.
  */
 const BARS = [
-  { cls: 'splash-bar-1', left: 40, top: 24 }, // oben – von oben-rechts
-  { cls: 'splash-bar-2', left: 14, top: 46 }, // mitte – von unten-links
-  { cls: 'splash-bar-3', left: 52, top: 56 }, // unten – von unten-links
+  { cls: 'splash-bar-1', left: 39, top: 22 }, // oben – von oben-rechts
+  { cls: 'splash-bar-2', left: 14, top: 59 }, // mitte-links – von unten-links
+  { cls: 'splash-bar-3', left: 58, top: 95 }, // unten-rechts – von unten-links
 ]
 
 export function SplashScreen() {
@@ -36,12 +36,12 @@ export function SplashScreen() {
         phase === 'leaving' ? 'splash-leaving' : ''
       }`}
     >
-      <div className="relative" style={{ width: 132, height: 112 }}>
+      <div className="relative" style={{ width: 152, height: 140 }}>
         {BARS.map((bar) => (
           <span
             key={bar.cls}
             className={`splash-bar ${bar.cls}`}
-            style={{ left: bar.left, top: bar.top, width: 64, height: 22 }}
+            style={{ left: bar.left, top: bar.top, width: 78, height: 30 }}
           />
         ))}
       </div>

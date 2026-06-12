@@ -315,7 +315,7 @@ body {
   .splash-bar {
     animation: none !important;
     opacity: 1;
-    transform: rotate(-15deg);
+    transform: rotate(-21deg);
   }
 }
 
@@ -330,7 +330,7 @@ body {
 .splash-bar {
   position: absolute;
   background: var(--fg);
-  border-radius: 9999px;
+  border-radius: 12px;
   opacity: 0;
 }
 .splash-bar-1 {
@@ -345,20 +345,20 @@ body {
 @keyframes splash-bl {
   from {
     opacity: 0;
-    transform: translate(-54px, 72px) rotate(-15deg) scale(0.7);
+    transform: translate(-54px, 72px) rotate(-21deg) scale(0.7);
   }
   to {
     opacity: 1;
-    transform: translate(0, 0) rotate(-15deg) scale(1);
+    transform: translate(0, 0) rotate(-21deg) scale(1);
   }
 }
 @keyframes splash-tr {
   from {
     opacity: 0;
-    transform: translate(64px, -64px) rotate(-15deg) scale(0.7);
+    transform: translate(64px, -64px) rotate(-21deg) scale(0.7);
   }
   to {
     opacity: 1;
-    transform: translate(0, 0) rotate(-15deg) scale(1);
+    transform: translate(0, 0) rotate(-21deg) scale(1);
   }
 }
