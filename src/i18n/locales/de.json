@@ -566,7 +566,13 @@
       "title": "Monitoring",
       "subtitle": "Deine Zähler im Blick.",
       "empty": "Noch keine Ablesung",
-      "dueBanner": "{{count}} Ablesung(en) fällig"
+      "dueBanner": "{{count}} Ablesung(en) fällig",
+      "add": "Ablesen",
+      "trendNew": "Neu",
+      "readToday": "heute abgelesen",
+      "readDaysAgo_one": "vor {{count}} Tag abgelesen",
+      "readDaysAgo_other": "vor {{count}} Tagen abgelesen",
+      "trackHint": "Erfasse regelmäßig, um deinen Verlauf zu sehen."
     },
     "detail": {
       "back": "Monitoring",

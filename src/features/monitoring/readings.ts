@@ -33,6 +33,48 @@ export interface ReadingStats {
   projectedYearCostEur?: number
 }
 
+/** Trend des Tagesverbrauchs: letzter Abschnitt gegenüber dem vorletzten. */
+export interface ConsumptionTrend {
+  /** Tagesverbrauch im letzten Abschnitt. */
+  perDay: number
+  /** Richtung gegenüber dem vorherigen Abschnitt. */
+  direction: 'up' | 'down' | 'flat'
+  /** Relative Änderung (z. B. 0.12 = +12 %), falls ein Vergleich möglich ist. */
+  changePct?: number
+}
+
+/**
+ * Vergleicht den Tagesverbrauch der letzten beiden Abschnitte.
+ * Liefert undefined, wenn dafür zu wenige (verwertbare) Ablesungen vorliegen.
+ */
+export function consumptionTrend(readings: MeterReading[]): ConsumptionTrend | undefined {
+  const segments = consumptionSegments(readings)
+  if (segments.length === 0) return undefined
+  const last = segments[segments.length - 1]
+  const perDay = last.days > 0 ? last.kwh / last.days : 0
+  if (segments.length < 2) return { perDay, direction: 'flat' }
+  const prev = segments[segments.length - 2]
+  const prevPerDay = prev.days > 0 ? prev.kwh / prev.days : 0
+  if (prevPerDay <= 0) return { perDay, direction: 'flat' }
+  const changePct = (perDay - prevPerDay) / prevPerDay
+  const direction = Math.abs(changePct) < 0.03 ? 'flat' : changePct > 0 ? 'up' : 'down'
+  return { perDay, direction, changePct }
+}
+
+/** Tagesverbrauch je Abschnitt (für Sparklines), älteste zuerst. */
+export function perDaySeries(readings: MeterReading[]): number[] {
+  return consumptionSegments(readings).map((s) => (s.days > 0 ? s.kwh / s.days : 0))
+}
+
+/** Tage seit der letzten Ablesung (0 = heute), oder undefined ohne Ablesung. */
+export function daysSinceLastReading(readings: MeterReading[], now = Date.now()): number | undefined {
+  const sorted = sortByDate(readings)
+  if (sorted.length === 0) return undefined
+  const last = new Date(`${sorted[sorted.length - 1].date}T00:00:00`).getTime()
+  if (!Number.isFinite(last)) return undefined
+  return Math.max(0, Math.round((now - last) / MS_PER_DAY))
+}
+
 /** Sortiert Ablesungen aufsteigend nach Datum, bei Gleichstand nach Erfassungszeit. */
 export function sortByDate(readings: MeterReading[]): MeterReading[] {
   return [...readings].sort(

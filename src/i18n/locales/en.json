@@ -898,7 +898,13 @@
       "title": "Monitoring",
       "subtitle": "All your meters at a glance.",
       "empty": "No reading yet",
-      "dueBanner": "{{count}} reading(s) due"
+      "dueBanner": "{{count}} reading(s) due",
+      "add": "Add reading",
+      "trendNew": "New",
+      "readToday": "read today",
+      "readDaysAgo_one": "read {{count}} day ago",
+      "readDaysAgo_other": "read {{count}} days ago",
+      "trackHint": "Log readings regularly to see your trend."
     },
     "detail": {
       "back": "Monitoring",

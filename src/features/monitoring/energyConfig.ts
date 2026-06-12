@@ -13,17 +13,19 @@ export interface EnergyMeta {
   unit: string
   /** true → Verbrauch lässt sich über den Strompreis in Kosten umrechnen. */
   hasCost: boolean
+  /** Dezenter, typ-eigener Akzentton (für Icon-Tönung und Sparkline). */
+  accent: string
 }
 
 export const ENERGY_META: Record<EnergyType, EnergyMeta> = {
-  electricity: { icon: Zap, unit: 'kWh', hasCost: true },
-  water: { icon: Droplet, unit: 'm³', hasCost: false },
-  gas: { icon: Flame, unit: 'm³', hasCost: false },
-  oil: { icon: Fuel, unit: 'l', hasCost: false },
-  pellets: { icon: Trees, unit: 'kg', hasCost: false },
-  heat_pump: { icon: Heater, unit: 'kWh', hasCost: true },
-  pv: { icon: Sun, unit: 'kWh', hasCost: false },
-  solar_thermal: { icon: SunMedium, unit: 'kWh', hasCost: false },
+  electricity: { icon: Zap, unit: 'kWh', hasCost: true, accent: '#f59e0b' },
+  water: { icon: Droplet, unit: 'm³', hasCost: false, accent: '#0ea5e9' },
+  gas: { icon: Flame, unit: 'm³', hasCost: false, accent: '#f97316' },
+  oil: { icon: Fuel, unit: 'l', hasCost: false, accent: '#6366f1' },
+  pellets: { icon: Trees, unit: 'kg', hasCost: false, accent: '#a16207' },
+  heat_pump: { icon: Heater, unit: 'kWh', hasCost: true, accent: '#14b8a6' },
+  pv: { icon: Sun, unit: 'kWh', hasCost: false, accent: '#eab308' },
+  solar_thermal: { icon: SunMedium, unit: 'kWh', hasCost: false, accent: '#f59e0b' },
 }
 
 /** Stabile Anzeige-Reihenfolge der Energieträger (Strom zuerst). */
