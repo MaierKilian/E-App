@@ -9,6 +9,7 @@ import { sortByDate, consumptionTrend, daysSinceLastReading } from './readings'
 import { dueTypes } from './due'
 import { Sparkline } from './Sparkline'
 import { TrendBadge, useLastReadingText } from './MeterTrend'
+import { AddReadingScreen } from './AddReadingScreen'
 
 /**
  * Monitoring-Übersicht (Dashboard): prägnanter Kopf, eine Hero-Karte für den
@@ -22,10 +23,15 @@ export function MonitoringPage() {
   const readingsByType = useReadingsStore((s) => s.readings)
   const frequency = useReadingsStore((s) => s.reminderFrequency)
   const [now] = useState(() => Date.now())
+  // Direkteingabe: ohne Umweg über die Detailseite den Zählerstand erfassen.
+  const [addType, setAddType] = useState<EnergyType | null>(null)
 
   const types = activeEnergyTypes(data)
   const due = new Set(dueTypes(data, readingsByType, frequency, now))
   const [hero, ...rest] = types
+
+  const addMeta = addType ? ENERGY_META[addType] : null
+  const addLatest = addType ? sortByDate(readingsByType[addType] ?? []).at(-1) : undefined
 
   return (
     <div className="space-y-5">
@@ -45,7 +51,9 @@ export function MonitoringPage() {
         </div>
       )}
 
-      {hero && <HeroMeter type={hero} due={due.has(hero)} now={now} />}
+      {hero && (
+        <HeroMeter type={hero} due={due.has(hero)} now={now} onAdd={() => setAddType(hero)} />
+      )}
 
       {rest.length > 0 && (
         <div className="grid grid-cols-2 gap-3">
@@ -53,6 +61,18 @@ export function MonitoringPage() {
             <MeterTile key={type} type={type} due={due.has(type)} now={now} />
           ))}
         </div>
+      )}
+
+      {addType && addMeta && (
+        <AddReadingScreen
+          type={addType}
+          unit={addMeta.unit}
+          typeLabel={t(`monitoring.energyTypes.${addType}`)}
+          accent={addMeta.accent}
+          icon={addMeta.icon}
+          defaultValue={addLatest ? Math.trunc(addLatest.value) : 0}
+          onClose={() => setAddType(null)}
+        />
       )}
     </div>
   )
@@ -65,7 +85,7 @@ interface MeterProps {
 }
 
 /** Große Hero-Karte des wichtigsten Zählers: Stand, Verlaufskurve, Trend. */
-function HeroMeter({ type, due, now }: MeterProps) {
+function HeroMeter({ type, due, now, onAdd }: MeterProps & { onAdd: () => void }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const readingsByType = useReadingsStore((s) => s.readings)
@@ -93,59 +113,64 @@ function HeroMeter({ type, due, now }: MeterProps) {
         style={{ background: meta.accent, opacity: 0.16 }}
       />
       <div className="relative">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span
-              className="grid place-items-center w-11 h-11 rounded-2xl"
-              style={{ background: `${meta.accent}1f`, color: meta.accent }}
-            >
-              <Icon className="w-5 h-5" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t(`monitoring.energyTypes.${type}`)}
-              </p>
-              {lastText && <p className="text-xs text-muted">{lastText}</p>}
+        {/* Antippen öffnet die Detailseite (Diagramm & Historie). */}
+        <button type="button" onClick={go} className="block w-full text-left">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <span
+                className="grid place-items-center w-11 h-11 rounded-2xl shrink-0"
+                style={{ background: `${meta.accent}1f`, color: meta.accent }}
+              >
+                <Icon className="w-5 h-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">
+                  {t(`monitoring.energyTypes.${type}`)}
+                </p>
+                {lastText && <p className="text-xs text-muted">{lastText}</p>}
+              </div>
             </div>
-          </div>
-          {due && (
-            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary">
-              {t('monitoring.reminder.due')}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-4 flex items-end justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-xs uppercase tracking-wide text-muted">
-              {t('monitoring.detail.current')}
-            </p>
-            {latest ? (
-              <p className="mt-0.5 text-3xl font-bold tabular-nums leading-none">
-                {numFmt.format(latest.value)}
-                <span className="ml-1 text-base font-medium text-muted">{meta.unit}</span>
-              </p>
+            {due ? (
+              <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary shrink-0">
+                {t('monitoring.reminder.due')}
+              </span>
             ) : (
-              <p className="mt-0.5 text-base text-muted">{t('monitoring.overview.empty')}</p>
+              <ChevronRight className="w-4 h-4 text-muted shrink-0" />
             )}
           </div>
-          {trend && <TrendBadge trend={trend} />}
-        </div>
 
-        <div className="mt-4">
-          {series.length > 0 ? (
-            <Sparkline values={series} color={meta.accent} height={48} />
-          ) : (
-            <div className="flex items-center gap-3 rounded-2xl bg-surface-2/50 px-3 py-2.5">
-              <Sparkline values={[]} color={meta.accent} height={28} className="max-w-[88px]" />
-              <p className="text-xs text-muted">{t('monitoring.overview.trackHint')}</p>
+          <div className="mt-4 flex items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p className="text-xs uppercase tracking-wide text-muted">
+                {t('monitoring.detail.current')}
+              </p>
+              {latest ? (
+                <p className="mt-0.5 text-3xl font-bold tabular-nums leading-none">
+                  {numFmt.format(latest.value)}
+                  <span className="ml-1 text-base font-medium text-muted">{meta.unit}</span>
+                </p>
+              ) : (
+                <p className="mt-0.5 text-base text-muted">{t('monitoring.overview.empty')}</p>
+              )}
             </div>
-          )}
-        </div>
+            {trend && <TrendBadge trend={trend} />}
+          </div>
+
+          <div className="mt-4">
+            {series.length > 0 ? (
+              <Sparkline values={series} color={meta.accent} height={48} />
+            ) : (
+              <div className="flex items-center gap-3 rounded-2xl bg-surface-2/50 px-3 py-2.5">
+                <Sparkline values={[]} color={meta.accent} height={28} className="max-w-[88px]" />
+                <p className="text-xs text-muted">{t('monitoring.overview.trackHint')}</p>
+              </div>
+            )}
+          </div>
+        </button>
 
         <button
           type="button"
-          onClick={go}
+          onClick={onAdd}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
         >
           <Plus className="w-4 h-4" />

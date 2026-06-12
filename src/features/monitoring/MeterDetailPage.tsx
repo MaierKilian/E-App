@@ -4,9 +4,10 @@ import { useTranslation } from 'react-i18next'
 import { ChevronLeft, Plus, Trash2, ChevronDown, Pencil } from 'lucide-react'
 import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
-import { useTariffStore } from '@/store/tariffStore'
+import { useTariffStore, resolvePrice } from '@/store/tariffStore'
 import { SelectChip } from '@/components/ui/SelectChip'
 import { ENERGY_META, activeEnergyTypes } from './energyConfig'
+import { PRICE_META } from './priceConfig'
 import { AbsoluteLineChart, type LinePoint } from './AbsoluteLineChart'
 import { AddReadingScreen } from './AddReadingScreen'
 import { ReadingReminder } from './ReadingReminder'
@@ -31,7 +32,6 @@ export function MeterDetailPage() {
   const data = useOnboardingStore((s) => s.data)
   const readingsByType = useReadingsStore((s) => s.readings)
   const deleteReading = useReadingsStore((s) => s.deleteReading)
-  const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
 
   const [addOpen, setAddOpen] = useState(false)
   const [tariffOpen, setTariffOpen] = useState(false)
@@ -41,6 +41,7 @@ export function MeterDetailPage() {
 
   const active = activeEnergyTypes(data)
   const type = rawType as EnergyType
+  const priceWork = useTariffStore((st) => resolvePrice(st, type).work)
   // Ungültiger / nicht aktiver Träger → zurück zur Übersicht.
   if (!type || !active.includes(type)) {
     return <Navigate to="/monitoring" replace />
@@ -56,7 +57,6 @@ export function MeterDetailPage() {
   const defaultValue = latest ? Math.trunc(latest.value) : 0
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
-  const intFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
   const eurFmt = new Intl.NumberFormat(i18n.language, {
     style: 'currency',
     currency: 'EUR',
@@ -80,7 +80,9 @@ export function MeterDetailPage() {
     return Number.isNaN(d.getTime()) ? date : dateFmt.format(d)
   }
 
-  const s = stats(readings, meta.hasCost ? workPriceCt : undefined)
+  const priceMeta = PRICE_META[type]
+  const eurPerUnit = priceMeta ? priceWork * priceMeta.priceToEur : undefined
+  const s = stats(readings, eurPerUnit)
   const trend = consumptionTrend(readings)
   const sinceDays = daysSinceLastReading(readings, now)
   const lastText =
@@ -151,36 +153,47 @@ export function MeterDetailPage() {
             )}
           </div>
 
-          {/* Kosten/Verbrauch + Strompreis (nur bei kostenfähigen Trägern) */}
-          {meta.hasCost && (s.lastConsumptionKwh !== undefined || type === 'electricity') && (
-            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-              {s.lastConsumptionKwh !== undefined && (
-                <span className="text-muted">
-                  {t('monitoring.detail.consumption')}:{' '}
-                  <span className="font-medium text-foreground tabular-nums">
-                    {numFmt.format(s.lastConsumptionKwh)} {unit}
-                  </span>
-                </span>
-              )}
-              {s.projectedYearCostEur !== undefined && (
-                <span className="text-muted">
-                  {t('monitoring.detail.cost')}:{' '}
-                  <span className="font-medium text-foreground tabular-nums">
-                    {eurFmt.format(s.projectedYearCostEur)}
-                  </span>
-                </span>
-              )}
-              {type === 'electricity' && (
-                <button
-                  type="button"
-                  onClick={() => setTariffOpen(true)}
-                  className="ml-auto flex items-center gap-1 rounded-full bg-surface-2/70 px-3 py-1 text-xs font-medium text-foreground hover:bg-surface-2 transition-colors"
-                >
-                  <span className="tabular-nums">{intFmt.format(workPriceCt)} ct/kWh</span>
-                  <Pencil className="w-3 h-3" />
-                </button>
-              )}
+          {/* Kennzahlen: Verbrauch & Jahreskosten als aufgeräumte Mini-Kacheln */}
+          {priceMeta && (s.lastConsumptionKwh !== undefined || s.projectedYearCostEur !== undefined) && (
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="rounded-2xl bg-surface-2/60 px-3 py-2.5">
+                <p className="text-[11px] uppercase tracking-wide text-muted">
+                  {t('monitoring.detail.consumption')}
+                </p>
+                <p className="mt-0.5 font-semibold tabular-nums text-foreground">
+                  {s.lastConsumptionKwh !== undefined
+                    ? `${numFmt.format(s.lastConsumptionKwh)} ${unit}`
+                    : '–'}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-surface-2/60 px-3 py-2.5">
+                <p className="text-[11px] uppercase tracking-wide text-muted">
+                  {t('monitoring.detail.cost')}
+                </p>
+                <p className="mt-0.5 font-semibold tabular-nums text-foreground">
+                  {s.projectedYearCostEur !== undefined
+                    ? eurFmt.format(s.projectedYearCostEur)
+                    : '–'}
+                </p>
+              </div>
             </div>
+          )}
+
+          {/* Preis-Zeile: für jeden kostenfähigen Träger bearbeitbar */}
+          {priceMeta && (
+            <button
+              type="button"
+              onClick={() => setTariffOpen(true)}
+              className="mt-2 flex w-full items-center justify-between gap-2 rounded-2xl bg-surface-2/60 px-3 py-2.5 text-sm hover:bg-surface-2 transition-colors"
+            >
+              <span className="text-muted">{t('monitoring.price.label')}</span>
+              <span className="flex items-center gap-1.5 font-semibold text-foreground">
+                <span className="tabular-nums">
+                  {numFmt.format(priceWork)} {priceMeta.priceUnit}
+                </span>
+                <Pencil className="w-3.5 h-3.5 text-muted" />
+              </span>
+            </button>
           )}
 
           <button
@@ -269,7 +282,7 @@ export function MeterDetailPage() {
           onClose={() => setAddOpen(false)}
         />
       )}
-      <TariffModal open={tariffOpen} onClose={() => setTariffOpen(false)} />
+      <TariffModal open={tariffOpen} onClose={() => setTariffOpen(false)} type={type} />
     </div>
   )
 }

@@ -899,7 +899,7 @@
       "subtitle": "All your meters at a glance.",
       "empty": "No reading yet",
       "dueBanner": "{{count}} reading(s) due",
-      "add": "Add reading",
+      "add": "Enter reading",
       "trendNew": "New",
       "readToday": "read today",
       "readDaysAgo_one": "read {{count}} day ago",
@@ -909,7 +909,7 @@
     "detail": {
       "back": "Monitoring",
       "current": "Current reading",
-      "addReading": "Reading",
+      "addReading": "Enter reading",
       "history": "History",
       "consumption": "Consumption",
       "cost": "Cost / year",
@@ -918,7 +918,7 @@
       "noReadings": "No reading recorded yet."
     },
     "odometer": {
-      "title": "Record reading",
+      "title": "Enter reading",
       "keyboard": "Keyboard",
       "wheel": "Dial",
       "save": "Save",
@@ -966,6 +966,14 @@
       },
       "nextDue": "Next reading: {{date}}",
       "due": "due"
+    },
+    "price": {
+      "modalTitle": "Price for {{name}}",
+      "intro": "With the price, the app converts your consumption into real euro amounts.",
+      "label": "Price",
+      "workInfo": "Price per consumed unit (e.g. kWh, m³, litre).",
+      "whereTitle": "Where do I find the price?",
+      "whereText": "On your latest bill or in your supplier contract."
     }
   },
   "pages": {

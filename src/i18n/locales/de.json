@@ -567,7 +567,7 @@
       "subtitle": "Deine Zähler im Blick.",
       "empty": "Noch keine Ablesung",
       "dueBanner": "{{count}} Ablesung(en) fällig",
-      "add": "Ablesen",
+      "add": "Zählerstand eintragen",
       "trendNew": "Neu",
       "readToday": "heute abgelesen",
       "readDaysAgo_one": "vor {{count}} Tag abgelesen",
@@ -577,7 +577,7 @@
     "detail": {
       "back": "Monitoring",
       "current": "Aktueller Stand",
-      "addReading": "Ablesung",
+      "addReading": "Zählerstand eintragen",
       "history": "Historie",
       "consumption": "Verbrauch",
       "cost": "Kosten / Jahr",
@@ -586,7 +586,7 @@
       "noReadings": "Noch keine Ablesung erfasst."
     },
     "odometer": {
-      "title": "Zählerstand erfassen",
+      "title": "Zählerstand eintragen",
       "keyboard": "Tastatur",
       "wheel": "Zählwerk",
       "save": "Speichern",
@@ -634,6 +634,14 @@
       },
       "nextDue": "Nächste Ablesung: {{date}}",
       "due": "fällig"
+    },
+    "price": {
+      "modalTitle": "Preis für {{name}}",
+      "intro": "Mit dem Preis rechnet die App deinen Verbrauch in echte Euro-Beträge um.",
+      "label": "Preis",
+      "workInfo": "Preis pro verbrauchter Einheit (z. B. kWh, m³, Liter).",
+      "whereTitle": "Wo finde ich den Preis?",
+      "whereText": "Auf deiner letzten Rechnung oder im Liefervertrag deines Anbieters."
     }
   },
   "onboarding": {

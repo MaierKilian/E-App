@@ -113,9 +113,10 @@ export function consumptionSegments(readings: MeterReading[]): ConsumptionSegmen
 /**
  * Berechnet Kennzahlen aus den Ablesungen.
  * @param readings Liste der Ablesungen.
- * @param workPriceCt Arbeitspreis in ct/kWh (für Kosten); 0/undefined → keine Kosten.
+ * @param eurPerUnit Preis in € pro Zähler-Einheit (z. B. €/kWh, €/m³);
+ *                   0/undefined → keine Kosten.
  */
-export function stats(readings: MeterReading[], workPriceCt?: number): ReadingStats {
+export function stats(readings: MeterReading[], eurPerUnit?: number): ReadingStats {
   const segments = consumptionSegments(readings)
   if (segments.length === 0) return {}
 
@@ -124,8 +125,8 @@ export function stats(readings: MeterReading[], workPriceCt?: number): ReadingSt
   const perDayKwh = last.days > 0 ? last.kwh / last.days : undefined
   const projectedYearKwh = perDayKwh !== undefined ? perDayKwh * 365 : undefined
 
-  const hasPrice = typeof workPriceCt === 'number' && Number.isFinite(workPriceCt)
-  const priceEur = hasPrice ? workPriceCt / 100 : undefined
+  const priceEur =
+    typeof eurPerUnit === 'number' && Number.isFinite(eurPerUnit) ? eurPerUnit : undefined
 
   const lastCostEur = priceEur !== undefined ? lastConsumptionKwh * priceEur : undefined
   const projectedYearCostEur =
