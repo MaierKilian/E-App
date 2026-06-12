@@ -7,6 +7,9 @@ import { generateCertificate } from './generateCertificate'
 
 interface QuizProps {
   experiment: LabExperiment
+  /** Name fürs Zertifikat – bereits vor dem Test erfasst. */
+  name: string
+  onName: (value: string) => void
   onBack: () => void
 }
 
@@ -15,13 +18,12 @@ interface QuizProps {
  * Liste mit Radio-Auswahl, wertet auf Knopfdruck aus und zeigt das Ergebnis
  * (Bestanden/Nicht bestanden) mit PDF-Export und Wiederholen.
  */
-export function Quiz({ experiment, onBack }: QuizProps) {
+export function Quiz({ experiment, name, onName, onBack }: QuizProps) {
   const { t, i18n } = useTranslation()
   const { quiz, passRatio, title, id } = experiment
 
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const [submitted, setSubmitted] = useState(false)
-  const [name, setName] = useState('')
 
   const allAnswered = quiz.every((q) => answers[q.id] !== undefined)
 
@@ -62,7 +64,7 @@ export function Quiz({ experiment, onBack }: QuizProps) {
         score={score}
         total={total}
         name={name}
-        onName={setName}
+        onName={onName}
         onExport={exportPdf}
         onRetry={retry}
         onBack={onBack}

@@ -17,7 +17,7 @@ type Section = 'faq' | 'glossary' | 'measurements' | 'university'
 
 const SECTIONS: Section[] = ['faq', 'glossary', 'measurements', 'university']
 
-/** Schlanker Bereichs-Umschalter (segmented control). */
+/** Horizontal scrollbare Themen-Chips (statt gequetschter 4er-Segmentleiste). */
 function SectionSwitch({
   section,
   onChange,
@@ -27,7 +27,7 @@ function SectionSwitch({
 }) {
   const { t } = useTranslation()
   return (
-    <div className="glass flex gap-1 rounded-2xl p-1">
+    <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
       {SECTIONS.map((s) => {
         const active = s === section
         return (
@@ -36,8 +36,10 @@ function SectionSwitch({
             type="button"
             onClick={() => onChange(s)}
             aria-pressed={active}
-            className={`flex-1 rounded-xl px-2 py-2 text-sm font-medium transition-colors ${
-              active ? 'bg-primary text-primary-foreground' : 'text-muted hover:text-foreground'
+            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+              active
+                ? 'bg-primary text-primary-foreground'
+                : 'glass text-foreground hover:bg-surface-2/70'
             }`}
           >
             {t(`education.sections.${s}`)}
@@ -66,14 +68,75 @@ function SourceLink({ source }: { source?: { label: string; url: string } }) {
 }
 
 function FaqView() {
+  const { t } = useTranslation()
+  const [query, setQuery] = useState('')
+
+  const q = query.trim().toLowerCase()
+  const filtered = useMemo(() => {
+    if (!q) return FAQ
+    return FAQ.filter(
+      (item) => item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q),
+    )
+  }, [q])
+
+  const popular = FAQ.filter((item) => item.popular)
+  const searching = q.length > 0
+
   return (
-    <div className="space-y-3">
-      {FAQ.map((item) => (
-        <AccordionItem key={item.q} title={item.q}>
-          <p>{item.a}</p>
-          <SourceLink source={item.source} />
-        </AccordionItem>
-      ))}
+    <div className="space-y-4">
+      <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5">
+        <Search className="h-4 w-4 shrink-0 text-muted" />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t('education.faqSearch')}
+          aria-label={t('education.faqSearch')}
+          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted focus:outline-none"
+        />
+      </div>
+
+      {searching ? (
+        filtered.length > 0 ? (
+          <div className="space-y-3">
+            {filtered.map((item) => (
+              <AccordionItem key={item.q} title={item.q}>
+                <p>{item.a}</p>
+                <SourceLink source={item.source} />
+              </AccordionItem>
+            ))}
+          </div>
+        ) : (
+          <p className="py-8 text-center text-sm text-muted">{t('education.faqNoResults')}</p>
+        )
+      ) : (
+        <>
+          {popular.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+                {t('education.faqPopular')}
+              </h2>
+              {popular.map((item) => (
+                <AccordionItem key={item.q} title={item.q}>
+                  <p>{item.a}</p>
+                  <SourceLink source={item.source} />
+                </AccordionItem>
+              ))}
+            </div>
+          )}
+          <div className="space-y-3">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+              {t('education.faqAll')}
+            </h2>
+            {FAQ.map((item) => (
+              <AccordionItem key={item.q} title={item.q}>
+                <p>{item.a}</p>
+                <SourceLink source={item.source} />
+              </AccordionItem>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -134,6 +197,8 @@ function ExperimentDetail({
 }) {
   const { t } = useTranslation()
   const [testing, setTesting] = useState(false)
+  // Name wird bewusst VOR dem Test erfragt (nicht erst am Ende).
+  const [name, setName] = useState('')
 
   return (
     <div className="space-y-4">
@@ -152,11 +217,16 @@ function ExperimentDetail({
       </div>
 
       {testing ? (
-        <Quiz experiment={experiment} onBack={() => setTesting(false)} />
+        <Quiz
+          experiment={experiment}
+          name={name}
+          onName={setName}
+          onBack={() => setTesting(false)}
+        />
       ) : (
         <div className="space-y-4">
           <Card>
-            <p className="text-sm leading-relaxed text-muted">{experiment.intro}</p>
+            <p className="text-sm leading-relaxed text-foreground">{experiment.intro}</p>
           </Card>
 
           <Card>
@@ -173,7 +243,24 @@ function ExperimentDetail({
             </ul>
           </Card>
 
-          <PhotoPlaceholder count={experiment.photoCount} />
+          <PhotoPlaceholder photos={experiment.photos} alt={experiment.title} />
+
+          <Card>
+            <label
+              htmlFor="quiz-name"
+              className="mb-2 block text-sm font-medium text-foreground"
+            >
+              {t('education.quiz.nameLabel')}
+            </label>
+            <input
+              id="quiz-name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder={t('education.quiz.namePlaceholder')}
+              className="focus-ring w-full rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted"
+            />
+          </Card>
 
           <button
             type="button"

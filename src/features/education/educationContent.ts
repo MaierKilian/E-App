@@ -8,6 +8,8 @@ export interface FaqItem {
   a: string
   /** Optionale, anklickbare Quelle. */
   source?: { label: string; url: string }
+  /** Hervorgehoben als „Beliebte Frage" oben in der FAQ-Liste. */
+  popular?: boolean
 }
 
 export interface GlossaryItem {
@@ -42,6 +44,8 @@ export interface LabExperiment {
   intro: string
   prep: string[]
   photoCount: number
+  /** Echte Versuchsfotos (URLs); leer/fehlend → keine Galerie. */
+  photos?: string[]
   passRatio: number
   quiz: QuizQuestion[]
 }
@@ -53,6 +57,7 @@ export const FAQ: FaqItem[] = [
   {
     q: 'Was bringt mir die E-App konkret?',
     a: 'Die App hilft dir, mit einfachen, geführten Messungen Energiefresser im Haushalt aufzuspüren, Einsparpotenziale in Euro abzuschätzen und deinen Verbrauch über die Zeit zu verfolgen. So werden abstrakte Kilowattstunden zu konkreten, nachvollziehbaren Beträgen – und du erkennst, welche Maßnahmen sich für dich am meisten lohnen.',
+    popular: true,
   },
   {
     q: 'Brauche ich spezielle Messgeräte?',
@@ -62,11 +67,13 @@ export const FAQ: FaqItem[] = [
     q: 'Wie viel Strom verbraucht der Standby-Betrieb wirklich?',
     a: 'Geräte im Bereitschaftsbetrieb ziehen rund um die Uhr Strom. Schon 5 Watt Dauerlast bedeuten über 8.760 Stunden im Jahr rund 44 kWh – je nach Strompreis etwa 13–18 € jährlich, und das pro Gerät. Über alle Geräte eines Haushalts summiert sich das oft auf einen dreistelligen Betrag. Schaltbare Steckdosenleisten oder Smart-Plugs beseitigen diese Last.',
     source: wiki('Bereitschaftsbetrieb'),
+    popular: true,
   },
   {
     q: 'Welche Raumtemperatur ist sinnvoll?',
     a: 'Als Richtwert gelten rund 20 °C in Wohnräumen, etwas weniger in Schlafräumen (16–18 °C). Jedes Grad weniger senkt den Heizenergiebedarf um grob 6 %. Räume sollten aber nicht stark auskühlen, da das Wiederaufheizen Energie kostet und Feuchte-/Schimmelprobleme begünstigt.',
     source: wiki('Raumklima'),
+    popular: true,
   },
   {
     q: 'Wie oft und wie richtig lüften?',

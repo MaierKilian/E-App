@@ -1065,8 +1065,13 @@
       "certificateExperiment": "Experiment",
       "certificateName": "Name",
       "certificateDate": "Date",
-      "certificateScore": "Result"
-    }
+      "certificateScore": "Result",
+      "nameLabel": "Name for the certificate (optional)"
+    },
+    "faqSearch": "Search a question …",
+    "faqPopular": "Popular questions",
+    "faqAll": "All questions",
+    "faqNoResults": "No matching question found."
   },
   "home": {
     "greeting": "Welcome back",

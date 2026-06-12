@@ -27,7 +27,9 @@ export function AccordionItem({ title, children }: AccordionItemProps) {
           className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? 'rotate-180' : ''}`}
         />
       </button>
-      {open && <div className="px-5 pb-4 text-sm leading-relaxed text-muted">{children}</div>}
+      {open && (
+        <div className="px-5 pb-4 text-sm leading-relaxed text-foreground">{children}</div>
+      )}
     </Card>
   )
 }

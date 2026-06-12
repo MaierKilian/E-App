@@ -188,12 +188,12 @@ Quiz mit Sofort-Feedback → Erfolgs-Screen mit XP + Zertifikat.
 
 ## 7. Roadmap (abhakbar)
 
-### Phase 0 – Quick Wins (½–1 Tag)
-- [ ] Lesbarkeit: Body-Text entgrauen (Accordion/FAQ/Glossar)
-- [ ] Foto-Platzhalter bedingt ausblenden
-- [ ] FAQ-Suche + 3 „Beliebte Fragen"
-- [ ] Segmented Control → scrollbare Chips
-- [ ] Quiz: Name-Eingabe nach vorne
+### Phase 0 – Quick Wins (½–1 Tag) — ✅ erledigt
+- [x] Lesbarkeit: Body-Text entgrauen (Accordion/FAQ/Glossar)
+- [x] Foto-Platzhalter bedingt ausblenden (nur echte Fotos, sonst nichts)
+- [x] FAQ-Suche + „Beliebte Fragen"
+- [x] Segmented Control → scrollbare Chips
+- [x] Quiz: Name-Eingabe nach vorne (auf der Vorbereitungs-Seite)
 
 ### Phase 1 – Substanz im Lernen (2–3 Tage)
 - [ ] Quiz mit Sofort-Feedback + Erklärungen + dezentem Erfolgs-Moment
