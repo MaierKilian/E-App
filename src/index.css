@@ -329,10 +329,16 @@ body {
 }
 .splash-bar {
   position: absolute;
+  inset: 0;
   background: var(--fg);
   opacity: 0;
-  /* Parallelogramm-Form wie im echten Logo (aus dem Original abgeleitet). */
-  clip-path: polygon(0% 70%, 87% 0%, 100% 8%, 13% 78%);
+  /* Jeder Balken ist eine Maske aus dem echten Logo, auf voller Fläche. */
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-position: center;
+  mask-position: center;
 }
 .splash-bar-1 {
   animation: splash-tr 0.72s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s forwards;
