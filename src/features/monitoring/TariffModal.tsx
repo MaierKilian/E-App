@@ -24,21 +24,24 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
   const { t } = useTranslation()
   const setTypePrice = useTariffStore((s) => s.setTypePrice)
   const skipPrompt = useTariffStore((s) => s.skipPrompt)
-  const current = useTariffStore((s) => resolvePrice(s, type))
+  // Wichtig: Primitive selektieren (nicht ein neues Objekt), sonst wirft
+  // useSyncExternalStore „getSnapshot should be cached" → Endlos-Loop.
+  const currentWork = useTariffStore((s) => resolvePrice(s, type).work)
+  const currentBase = useTariffStore((s) => resolvePrice(s, type).base)
 
   const meta = PRICE_META[type]
   const name = t(`monitoring.energyTypes.${type}`)
 
-  const [work, setWork] = useState(String(current.work))
-  const [base, setBase] = useState(String(current.base))
+  const [work, setWork] = useState(String(currentWork))
+  const [base, setBase] = useState(String(currentBase))
   const [showHelp, setShowHelp] = useState(false)
 
   // Felder beim Öffnen mit den aktuellen Store-Werten vorbelegen.
   const [wasOpen, setWasOpen] = useState(false)
   if (open && !wasOpen) {
     setWasOpen(true)
-    setWork(String(current.work))
-    setBase(String(current.base))
+    setWork(String(currentWork))
+    setBase(String(currentBase))
     setShowHelp(false)
   } else if (!open && wasOpen) {
     setWasOpen(false)
