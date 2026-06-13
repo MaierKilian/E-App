@@ -1,8 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, CheckCircle2, Download, RotateCcw, XCircle } from 'lucide-react'
+import { ArrowLeft, Check, CheckCircle2, Download, RotateCcw, X, XCircle } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
-import type { LabExperiment } from './educationContent'
+import { useProgressStore } from '@/store/progressStore'
+import type { LabExperiment, QuizQuestion } from './educationContent'
 import { generateCertificate } from './generateCertificate'
 
 interface QuizProps {
@@ -14,13 +15,15 @@ interface QuizProps {
 }
 
 /**
- * Vorbereitungstest für einen Laborversuch. Zeigt alle Fragen als kompakte
- * Liste mit Radio-Auswahl, wertet auf Knopfdruck aus und zeigt das Ergebnis
- * (Bestanden/Nicht bestanden) mit PDF-Export und Wiederholen.
+ * Vorbereitungstest für einen Laborversuch. Fragen mit Radio-Auswahl, danach
+ * Auswertung mit Sofort-Feedback je Frage (richtig/falsch + Erklärung),
+ * Ergebnis (Bestanden/Nicht bestanden), PDF-Export und Wiederholen.
+ * Das Ergebnis wird im Fortschritts-Store gespeichert.
  */
 export function Quiz({ experiment, name, onName, onBack }: QuizProps) {
   const { t, i18n } = useTranslation()
   const { quiz, passRatio, title, id } = experiment
+  const recordQuiz = useProgressStore((s) => s.recordQuiz)
 
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const [submitted, setSubmitted] = useState(false)
@@ -37,6 +40,11 @@ export function Quiz({ experiment, name, onName, onBack }: QuizProps) {
   function select(questionId: string, optionIndex: number) {
     if (submitted) return
     setAnswers((prev) => ({ ...prev, [questionId]: optionIndex }))
+  }
+
+  function evaluate() {
+    recordQuiz(id, { score, total, passed })
+    setSubmitted(true)
   }
 
   function retry() {
@@ -57,21 +65,85 @@ export function Quiz({ experiment, name, onName, onBack }: QuizProps) {
     })
   }
 
+  // --- Auswertungsansicht: Ergebnis + Lösungen + Aktionen ---
   if (submitted) {
     return (
-      <ResultScreen
-        passed={passed}
-        score={score}
-        total={total}
-        name={name}
-        onName={onName}
-        onExport={exportPdf}
-        onRetry={retry}
-        onBack={onBack}
-      />
+      <div className="space-y-4">
+        <Card className="text-center">
+          <div className="flex flex-col items-center gap-3">
+            {passed ? (
+              <CheckCircle2 className="h-12 w-12 text-emerald-500" />
+            ) : (
+              <XCircle className="h-12 w-12 text-muted" />
+            )}
+            <h2 className="text-xl font-bold">
+              {passed ? t('education.quiz.passed') : t('education.quiz.failed')}
+            </h2>
+            <p className="text-sm text-muted">
+              {t('education.quiz.score')}: <span className="font-semibold text-foreground">{score}/{total}</span>
+            </p>
+            <p className="text-sm text-muted">
+              {passed ? t('education.quiz.feedbackPassed') : t('education.quiz.feedbackFailed')}
+            </p>
+          </div>
+        </Card>
+
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
+            {t('education.quiz.solutions')}
+          </h3>
+          {quiz.map((q, index) => (
+            <ReviewCard key={q.id} q={q} index={index} chosen={answers[q.id]} />
+          ))}
+        </div>
+
+        <Card>
+          <label htmlFor="quiz-name-result" className="mb-2 block text-sm font-medium text-foreground">
+            {t('education.quiz.nameLabel')}
+          </label>
+          <input
+            id="quiz-name-result"
+            type="text"
+            value={name}
+            onChange={(e) => onName(e.target.value)}
+            placeholder={t('education.quiz.namePlaceholder')}
+            className="focus-ring w-full rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted"
+          />
+        </Card>
+
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={exportPdf}
+            className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+          >
+            <Download className="h-4 w-4" />
+            {t('education.quiz.export')}
+          </button>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={retry}
+              className="focus-ring glass flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium text-foreground"
+            >
+              <RotateCcw className="h-4 w-4" />
+              {t('education.quiz.retry')}
+            </button>
+            <button
+              type="button"
+              onClick={onBack}
+              className="focus-ring glass flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              {t('education.quiz.back')}
+            </button>
+          </div>
+        </div>
+      </div>
     )
   }
 
+  // --- Fragenansicht ---
   return (
     <div className="space-y-4">
       <ol className="space-y-4">
@@ -129,7 +201,7 @@ export function Quiz({ experiment, name, onName, onBack }: QuizProps) {
         <button
           type="button"
           disabled={!allAnswered}
-          onClick={() => setSubmitted(true)}
+          onClick={evaluate}
           className="focus-ring flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity disabled:opacity-40"
         >
           {t('education.quiz.evaluate')}
@@ -139,87 +211,61 @@ export function Quiz({ experiment, name, onName, onBack }: QuizProps) {
   )
 }
 
-interface ResultScreenProps {
-  passed: boolean
-  score: number
-  total: number
-  name: string
-  onName: (value: string) => void
-  onExport: () => void
-  onRetry: () => void
-  onBack: () => void
-}
-
-function ResultScreen({
-  passed,
-  score,
-  total,
-  name,
-  onName,
-  onExport,
-  onRetry,
-  onBack,
-}: ResultScreenProps) {
+/** Eine ausgewertete Frage: markiert richtige/falsche Antwort + Erklärung. */
+function ReviewCard({ q, index, chosen }: { q: QuizQuestion; index: number; chosen?: number }) {
   const { t } = useTranslation()
+  const correct = chosen === q.correct
+
   return (
-    <div className="space-y-4">
-      <Card className="text-center">
-        <div className="flex flex-col items-center gap-3">
-          {passed ? (
-            <CheckCircle2 className="h-12 w-12 text-primary" />
-          ) : (
-            <XCircle className="h-12 w-12 text-muted" />
-          )}
-          <h2 className="text-xl font-bold">
-            {passed ? t('education.quiz.passed') : t('education.quiz.failed')}
-          </h2>
-          <p className="text-muted">
-            {t('education.quiz.score')}: {score}/{total}
-          </p>
-          <p className="text-sm text-muted">
-            {passed ? t('education.quiz.feedbackPassed') : t('education.quiz.feedbackFailed')}
-          </p>
-        </div>
-
-        <div className="mt-5">
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => onName(e.target.value)}
-            placeholder={t('education.quiz.namePlaceholder')}
-            className="focus-ring w-full rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm text-foreground placeholder:text-muted"
-          />
-        </div>
-      </Card>
-
-      <div className="space-y-3">
-        <button
-          type="button"
-          onClick={onExport}
-          className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+    <Card>
+      <p className="mb-3 flex items-start gap-2 text-sm font-semibold">
+        <span
+          className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full ${
+            correct ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+          }`}
         >
-          <Download className="h-4 w-4" />
-          {t('education.quiz.export')}
-        </button>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={onRetry}
-            className="focus-ring glass flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium text-foreground"
-          >
-            <RotateCcw className="h-4 w-4" />
-            {t('education.quiz.retry')}
-          </button>
-          <button
-            type="button"
-            onClick={onBack}
-            className="focus-ring glass flex flex-1 items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            {t('education.quiz.back')}
-          </button>
-        </div>
+          {correct ? <Check className="h-3.5 w-3.5" /> : <X className="h-3.5 w-3.5" />}
+        </span>
+        <span>
+          <span className="text-muted">
+            {t('education.quiz.question')} {index + 1}
+          </span>
+          <br />
+          {q.question}
+        </span>
+      </p>
+      <div className="space-y-1.5">
+        {q.options.map((opt, optIndex) => {
+          const isCorrect = optIndex === q.correct
+          const isChosenWrong = optIndex === chosen && !isCorrect
+          return (
+            <div
+              key={optIndex}
+              className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm ${
+                isCorrect
+                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-medium'
+                  : isChosenWrong
+                    ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300'
+                    : 'text-muted'
+              }`}
+            >
+              {isCorrect ? (
+                <Check className="h-3.5 w-3.5 shrink-0" />
+              ) : isChosenWrong ? (
+                <X className="h-3.5 w-3.5 shrink-0" />
+              ) : (
+                <span className="h-3.5 w-3.5 shrink-0" />
+              )}
+              <span>{opt}</span>
+            </div>
+          )
+        })}
       </div>
-    </div>
+      {q.explanation && (
+        <p className="mt-3 rounded-xl bg-surface-2/60 px-3 py-2 text-sm text-foreground">
+          {q.explanation}
+        </p>
+      )}
+    </Card>
   )
 }

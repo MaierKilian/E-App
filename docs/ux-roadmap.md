@@ -196,10 +196,10 @@ Quiz mit Sofort-Feedback → Erfolgs-Screen mit XP + Zertifikat.
 - [x] Quiz: Name-Eingabe nach vorne (auf der Vorbereitungs-Seite)
 
 ### Phase 1 – Substanz im Lernen (2–3 Tage)
-- [ ] Quiz mit Sofort-Feedback + Erklärungen + dezentem Erfolgs-Moment
-- [ ] Lern-/Quiz-Status persistieren (neuer `progressStore`)
-- [ ] Versuchskarten mit Dauer/Schwierigkeit/Status-Badge
-- [ ] Messergebnis-Karte mit €/CO₂-Wirkung
+- [x] Quiz mit Sofort-Feedback (richtig/falsch je Frage) + Erklärungen
+- [x] Lern-/Quiz-Status persistieren (neuer `progressStore`)
+- [x] Versuchskarten mit Dauer/Schwierigkeit/Status-Badge
+- [ ] Messergebnis-Karte mit €/CO₂-Wirkung (Aggregat in der Messübersicht)
 
 ### Phase 2 – Gamification-Fundament (3–4 Tage)
 - [ ] `progressStore`: XP, Level, Streak, Badges

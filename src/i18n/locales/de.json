@@ -1045,7 +1045,10 @@
     "university": {
       "title": "HTW Berlin · GEIT",
       "subtitle": "Laborversuche im Studiengang Gebäudeenergie- und Informationstechnik.",
-      "prepTitle": "Vorbereitung"
+      "prepTitle": "Vorbereitung",
+      "passed": "Bestanden",
+      "notPassed": "Offen",
+      "retake": "Erneut testen"
     },
     "quiz": {
       "question": "Frage",
@@ -1066,12 +1069,18 @@
       "certificateName": "Name",
       "certificateDate": "Datum",
       "certificateScore": "Ergebnis",
-      "nameLabel": "Name fürs Zertifikat (optional)"
+      "nameLabel": "Name fürs Zertifikat (optional)",
+      "solutions": "Lösungen"
     },
     "faqSearch": "Frage suchen …",
     "faqPopular": "Beliebte Fragen",
     "faqAll": "Alle Fragen",
-    "faqNoResults": "Keine passende Frage gefunden."
+    "faqNoResults": "Keine passende Frage gefunden.",
+    "difficulty": {
+      "easy": "Leicht",
+      "medium": "Mittel",
+      "hard": "Anspruchsvoll"
+    }
   },
   "home": {
     "greeting": "Willkommen zurück",

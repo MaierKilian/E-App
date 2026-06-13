@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, ChevronRight, GraduationCap, Search, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Check, ChevronRight, GraduationCap, Search, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { useProgressStore } from '@/store/progressStore'
 import { AccordionItem } from './Accordion'
 import { PhotoPlaceholder } from './PhotoPlaceholder'
 import { Quiz } from './Quiz'
@@ -275,6 +276,45 @@ function ExperimentDetail({
   )
 }
 
+/** Karte eines Laborversuchs mit Dauer, Schwierigkeit und Test-Status. */
+function ExperimentCard({
+  exp,
+  onSelect,
+}: {
+  exp: LabExperiment
+  onSelect: () => void
+}) {
+  const { t } = useTranslation()
+  const record = useProgressStore((s) => s.quizResults[exp.id])
+  const passed = record?.passed
+
+  return (
+    <button type="button" onClick={onSelect} className="w-full text-left">
+      <Card className="flex items-center justify-between gap-3">
+        <span className="min-w-0">
+          <span className="flex items-center gap-2">
+            <span className="block truncate text-sm font-semibold">{exp.title}</span>
+            {passed && (
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                <Check className="h-3 w-3" />
+                {t('education.university.passed')}
+              </span>
+            )}
+          </span>
+          <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted">
+            <span>{exp.durationMin} {t('measurements.minutesUnit')}</span>
+            <span aria-hidden>·</span>
+            <span>{t(`education.difficulty.${exp.difficulty}`)}</span>
+            <span aria-hidden>·</span>
+            <span>{exp.quiz.length} {t('education.quiz.question')}n</span>
+          </span>
+        </span>
+        <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+      </Card>
+    </button>
+  )
+}
+
 function UniversityView() {
   const { t } = useTranslation()
   const [selected, setSelected] = useState<LabExperiment | null>(null)
@@ -291,15 +331,7 @@ function UniversityView() {
       </div>
       <div className="space-y-3">
         {LAB_EXPERIMENTS.map((exp) => (
-          <button key={exp.id} type="button" onClick={() => setSelected(exp)} className="w-full text-left">
-            <Card className="flex items-center justify-between gap-3">
-              <span>
-                <span className="block text-sm font-semibold">{exp.title}</span>
-                <span className="mt-0.5 block text-xs text-muted">{exp.course}</span>
-              </span>
-              <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
-            </Card>
-          </button>
+          <ExperimentCard key={exp.id} exp={exp} onSelect={() => setSelected(exp)} />
         ))}
       </div>
     </div>

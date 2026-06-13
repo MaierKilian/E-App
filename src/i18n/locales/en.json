@@ -1045,7 +1045,10 @@
     "university": {
       "title": "HTW Berlin · GEIT",
       "subtitle": "Lab experiments in the Building Energy and Information Technology programme.",
-      "prepTitle": "Preparation"
+      "prepTitle": "Preparation",
+      "passed": "Passed",
+      "notPassed": "Open",
+      "retake": "Retake"
     },
     "quiz": {
       "question": "Question",
@@ -1066,12 +1069,18 @@
       "certificateName": "Name",
       "certificateDate": "Date",
       "certificateScore": "Result",
-      "nameLabel": "Name for the certificate (optional)"
+      "nameLabel": "Name for the certificate (optional)",
+      "solutions": "Solutions"
     },
     "faqSearch": "Search a question …",
     "faqPopular": "Popular questions",
     "faqAll": "All questions",
-    "faqNoResults": "No matching question found."
+    "faqNoResults": "No matching question found.",
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Advanced"
+    }
   },
   "home": {
     "greeting": "Welcome back",

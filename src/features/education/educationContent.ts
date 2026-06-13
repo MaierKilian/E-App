@@ -35,6 +35,8 @@ export interface QuizQuestion {
   options: string[]
   /** 0-basierter Index der korrekten Option. */
   correct: number
+  /** Kurze Erklärung der richtigen Antwort (Lern-Feedback nach der Auswertung). */
+  explanation?: string
 }
 
 export interface LabExperiment {
@@ -46,6 +48,10 @@ export interface LabExperiment {
   photoCount: number
   /** Echte Versuchsfotos (URLs); leer/fehlend → keine Galerie. */
   photos?: string[]
+  /** Geschätzte Dauer des Vorbereitungstests in Minuten. */
+  durationMin: number
+  /** Schwierigkeitsgrad zur Orientierung. */
+  difficulty: 'easy' | 'medium' | 'hard'
   passRatio: number
   quiz: QuizQuestion[]
 }
@@ -331,6 +337,8 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
       'Erwartete Vorteile benennen können: Effizienz, gleichmäßige Wärme, weniger Geräusche, Energieeinsparung.',
     ],
     photoCount: 2,
+    durationMin: 5,
+    difficulty: 'medium',
     passRatio: 0.6,
     quiz: [
       {
@@ -343,6 +351,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Alle Ventile werden vollständig geöffnet',
         ],
         correct: 0,
+        explanation: 'Genau das ist der Kern: Jeder Heizkörper bekommt den ausgelegten Volumenstrom – nicht zu viel, nicht zu wenig.',
       },
       {
         id: 'ha2',
@@ -354,6 +363,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Über die Farbe des Heizkörpers',
         ],
         correct: 0,
+        explanation: 'Die Voreinstellung am Thermostatventil begrenzt den Durchfluss und sorgt so für die richtige Verteilung.',
       },
       {
         id: 'ha3',
@@ -365,6 +375,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Höherer Stromverbrauch der Pumpe',
         ],
         correct: 3,
+        explanation: 'Ein korrekter Abgleich senkt den Pumpenstrom eher (geringere Förderhöhe nötig) – höherer Verbrauch ist kein Vorteil.',
       },
       {
         id: 'ha4',
@@ -376,6 +387,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Die Dichte des Heizwassers',
         ],
         correct: 0,
+        explanation: 'Der Differenzdruck ist die Druckdifferenz, die das Wasser durch die Bauteile treibt.',
       },
       {
         id: 'ha5',
@@ -387,6 +399,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Vollständig geschlossene Thermostatventile',
         ],
         correct: 1,
+        explanation: 'Eine ans Gebäude angepasste Heizkurve mit niedriger Rücklauftemperatur steigert die Effizienz zusätzlich.',
       },
       {
         id: 'ha6',
@@ -398,6 +411,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Verfahren B gilt nur für Fußbodenheizungen',
         ],
         correct: 0,
+        explanation: 'Verfahren B stützt sich auf eine raumweise Heizlastberechnung und ist dadurch genauer als das vereinfachte Verfahren A.',
       },
     ],
   },
@@ -416,6 +430,8 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
       'Kavitation und die Bedeutung des NPSH-Werts kennen.',
     ],
     photoCount: 2,
+    durationMin: 6,
+    difficulty: 'hard',
     passRatio: 0.6,
     quiz: [
       {
@@ -428,6 +444,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Den Wirkungsgrad über die Drehzahl der Anlage',
         ],
         correct: 0,
+        explanation: 'Die Pumpenkennlinie zeigt die Förderhöhe H über dem Volumenstrom Q.',
       },
       {
         id: 'pp2',
@@ -439,18 +456,21 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Immer im Stillstand der Pumpe',
         ],
         correct: 0,
+        explanation: 'Der Betriebspunkt ist der Schnittpunkt von Pumpen- und Anlagenkennlinie.',
       },
       {
         id: 'pp3',
         question: 'Wie ändert sich der Volumenstrom Q näherungsweise mit der Drehzahl n?',
         options: ['Q ~ n', 'Q ~ n²', 'Q ~ n³', 'Q ~ 1/n'],
         correct: 0,
+        explanation: 'Nach den Affinitätsgesetzen gilt Q ~ n (linear mit der Drehzahl).',
       },
       {
         id: 'pp4',
         question: 'Wie verhält sich die Antriebsleistung P näherungsweise zur Drehzahl n?',
         options: ['P ~ n³', 'P ~ n', 'P ~ n²', 'P ist von n unabhängig'],
         correct: 0,
+        explanation: 'Die Leistung steigt mit der dritten Potenz: P ~ n³ – deshalb spart Drehzahlabsenkung so viel Energie.',
       },
       {
         id: 'pp5',
@@ -462,6 +482,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Die Förderhöhe bei Q = 0',
         ],
         correct: 0,
+        explanation: 'Der NPSH-Wert gibt den erforderlichen Zulaufdruck an, um Kavitation zu vermeiden.',
       },
       {
         id: 'pp6',
@@ -473,6 +494,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Die Pumpe läuft besonders leise und effizient',
         ],
         correct: 0,
+        explanation: 'Bei Kavitation bilden sich Dampfblasen, die implodieren und die Pumpe schädigen können.',
       },
     ],
   },
@@ -491,6 +513,8 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
       'Anteile von Konvektion und Strahlung an der Wärmeabgabe unterscheiden.',
     ],
     photoCount: 2,
+    durationMin: 5,
+    difficulty: 'medium',
     passRatio: 0.6,
     quiz: [
       {
@@ -503,6 +527,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Der Wasserdruck im Keller',
         ],
         correct: 0,
+        explanation: 'Treibende Größe ist die Übertemperatur zwischen Heizmittel und Raumluft.',
       },
       {
         id: 'hk2',
@@ -514,6 +539,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Die Leistung bei abgeschalteter Pumpe',
         ],
         correct: 0,
+        explanation: 'Die Normwärmeleistung gilt unter genormten Randbedingungen (z. B. 75/65/20 °C).',
       },
       {
         id: 'hk3',
@@ -525,6 +551,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Für die Drehzahl der Umwälzpumpe',
         ],
         correct: 0,
+        explanation: 'Der Heizkörperexponent n beschreibt die Nichtlinearität der Leistung über der Übertemperatur.',
       },
       {
         id: 'hk4',
@@ -536,6 +563,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Als konstante 50 K unabhängig vom Betrieb',
         ],
         correct: 0,
+        explanation: 'Üblich ist die (logarithmische) mittlere Übertemperatur als treibende Differenz.',
       },
       {
         id: 'hk5',
@@ -547,6 +575,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Verdunstung und Kondensation',
         ],
         correct: 0,
+        explanation: 'Heizkörper geben Wärme über Konvektion UND Strahlung ab.',
       },
       {
         id: 'hk6',
@@ -558,6 +587,7 @@ export const LAB_EXPERIMENTS: LabExperiment[] = [
           'Der Heizkörper kühlt vollständig aus',
         ],
         correct: 0,
+        explanation: 'Höherer Massenstrom hebt die Rücklauftemperatur und damit die mittlere Übertemperatur.',
       },
     ],
   },
