@@ -1,6 +1,9 @@
 import { useTranslation } from 'react-i18next'
 import { Card } from '@/components/ui/Card'
 import type { OnboardingData } from '@/types'
+import type { EnergyType } from '@/store/readingsStore'
+import { useTariffStore, resolvePrice } from '@/store/tariffStore'
+import { PRICE_META } from '@/features/monitoring/priceConfig'
 
 interface Props {
   data: OnboardingData
@@ -35,7 +38,7 @@ function ReviewSection({ title, children }: ReviewSectionProps) {
 }
 
 export function Step8Review({ data }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
 
   const roomsSummary = data.rooms
     .map((r) => `${t(`onboarding.step3.roomTypes.${r.type}`)} ×${r.count}`)
@@ -78,6 +81,15 @@ export function Step8Review({ data }: Props) {
     .join(', ')
 
   const isDetailed = data.mode === 'detailed'
+
+  // Verbrauchspreise (zentral aus dem Tarif-Store; je nach Profil relevante Träger).
+  const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 2 })
+  const tariff = useTariffStore.getState()
+  const priceTypes: EnergyType[] = ['electricity', 'water']
+  if (data.heatGenerators.includes('gas_boiler')) priceTypes.push('gas')
+  if (data.heatGenerators.includes('oil_boiler')) priceTypes.push('oil')
+  if (data.heatGenerators.includes('pellets')) priceTypes.push('pellets')
+  if (data.heatGenerators.includes('heat_pump')) priceTypes.push('heat_pump')
 
   return (
     <div className="space-y-4">
@@ -202,6 +214,22 @@ export function Step8Review({ data }: Props) {
           )}
         </ReviewSection>
       )}
+
+      <ReviewSection title={t('onboarding.prices.title')}>
+        {priceTypes.map((type) => {
+          const meta = PRICE_META[type]
+          if (!meta) return null
+          const entry = resolvePrice(tariff, type)
+          const suffix = entry.custom ? '' : ` · ${t('onboarding.prices.standard')}`
+          return (
+            <ReviewRow
+              key={type}
+              label={t(`monitoring.energyTypes.${type}`)}
+              value={`${numFmt.format(entry.work)} ${meta.priceUnit}${suffix}`}
+            />
+          )
+        })}
+      </ReviewSection>
 
       <ReviewSection title={t('onboarding.step8.sections.location')}>
         <ReviewRow
