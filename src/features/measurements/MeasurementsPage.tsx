@@ -6,9 +6,9 @@ import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { ProgressRing } from '@/components/ui/ProgressRing'
-import { buildTasks } from './tasks'
+import { buildSteps } from './tasks'
 import { impactSummary } from './impact'
-import { MeasurementCarousel } from './views/MeasurementCarousel'
+import { MeasurementFlow } from './views/MeasurementFlow'
 import { TradesView } from './views/TradesView'
 import { ByRoomView } from './views/ByRoomView'
 
@@ -78,10 +78,9 @@ export function MeasurementsPage() {
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
   const [view, setView] = useState<View>('recommended')
 
-  const tasks = buildTasks(rooms, t)
-  const available = tasks.filter((tk) => tk.meta.available)
-  const done = available.filter((tk) => results[tk.key]).length
-  const total = available.length
+  const steps = buildSteps(rooms, results, t)
+  const done = steps.filter((s) => s.done).length
+  const total = steps.length
 
   const { savingsEur, co2Kg } = impactSummary(results, workPriceCt)
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
@@ -122,7 +121,7 @@ export function MeasurementsPage() {
         </div>
       </div>
 
-      {view === 'recommended' && <MeasurementCarousel tasks={tasks} results={results} />}
+      {view === 'recommended' && <MeasurementFlow steps={steps} savingsEur={savingsEur} />}
       {view === 'trades' && <TradesView results={results} />}
       {view === 'byRoom' && <ByRoomView results={results} />}
     </div>

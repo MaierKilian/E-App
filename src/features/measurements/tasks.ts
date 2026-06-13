@@ -3,44 +3,60 @@ import type { RoomEntry } from '@/types'
 import { MEASUREMENT_CATALOG, type MeasurementMeta } from './catalog'
 import { roomInstances, roomLabel, instanceKey } from './rooms'
 
-/** Eine konkrete Mess-Aufgabe: Messung + optional Raum. */
-export interface MeasurementTask {
+/** Ein gruppierter Schritt (eine Messung; bei Pro-Raum mit Raum-Fortschritt). */
+export interface MeasurementStep {
   meta: MeasurementMeta
-  /** Raum-Schlüssel bei Pro-Raum-Messungen (sonst undefined). */
-  roomKey?: string
-  /** Anzeigename des Raums (nur bei Pro-Raum-Aufgaben). */
-  roomName?: string
-  /** Ergebnis-Schlüssel im Store ("id" oder "id@room"). */
-  key: string
+  perRoom: boolean
+  /** Anzahl Räume (bei Pro-Raum) bzw. 1. */
+  roomsTotal: number
+  /** Bereits gemessene Räume bzw. 0/1. */
+  roomsDone: number
+  /** Schritt vollständig erledigt. */
+  done: boolean
+  /** Nächster offener Raum (nur Pro-Raum). */
+  nextRoomKey?: string
+  nextRoomName?: string
 }
 
 /**
- * Baut die Aufgabenliste in Katalog-Reihenfolge. Pro-Raum-Messungen werden je
- * Raum expandiert (für die geführte „Raum für Raum"-Reihenfolge).
+ * Baut die gruppierte Schrittliste: ein Schritt je verfügbarer Messung.
+ * Pro-Raum-Messungen werden NICHT expandiert, sondern als ein Schritt mit
+ * Raum-Fortschritt geführt (z. B. „Raumklima 2/4 Räume").
  */
-export function buildTasks(rooms: RoomEntry[], t: TFunction): MeasurementTask[] {
+export function buildSteps(
+  rooms: RoomEntry[],
+  results: Partial<Record<string, { id: string } | undefined>>,
+  t: TFunction,
+): MeasurementStep[] {
   const instances = roomInstances(rooms)
-  const tasks: MeasurementTask[] = []
+  const steps: MeasurementStep[] = []
   for (const meta of MEASUREMENT_CATALOG) {
+    if (!meta.available) continue
     if (meta.perRoom) {
-      for (const inst of instances) {
-        tasks.push({
-          meta,
-          roomKey: inst.key,
-          roomName: roomLabel(t, inst),
-          key: instanceKey(meta.id, inst.key),
-        })
-      }
+      if (instances.length === 0) continue // ohne Räume nicht messbar
+      const open = instances.filter((inst) => !results[instanceKey(meta.id, inst.key)])
+      const next = open[0]
+      steps.push({
+        meta,
+        perRoom: true,
+        roomsTotal: instances.length,
+        roomsDone: instances.length - open.length,
+        done: open.length === 0,
+        nextRoomKey: next?.key,
+        nextRoomName: next ? roomLabel(t, next) : undefined,
+      })
     } else {
-      tasks.push({ meta, key: instanceKey(meta.id) })
+      const done = Boolean(results[instanceKey(meta.id)])
+      steps.push({ meta, perRoom: false, roomsTotal: 1, roomsDone: done ? 1 : 0, done })
     }
   }
-  return tasks
+  return steps
 }
 
-/** Pfad zum Runner für eine Aufgabe (inkl. Raum, falls vorhanden). */
-export function taskHref(task: MeasurementTask): string {
-  return task.roomKey
-    ? `/measurements/${task.meta.id}?room=${encodeURIComponent(task.roomKey)}`
-    : `/measurements/${task.meta.id}`
+/** Pfad zum Starten/Fortsetzen eines Schritts (nächster offener Raum bzw. Messung). */
+export function stepHref(step: MeasurementStep): string {
+  if (step.perRoom && step.nextRoomKey) {
+    return `/measurements/${step.meta.id}?room=${encodeURIComponent(step.nextRoomKey)}`
+  }
+  return `/measurements/${step.meta.id}`
 }

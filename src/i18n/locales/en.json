@@ -535,6 +535,18 @@
     },
     "roomPicker": {
       "subtitle": "Which room do you want to measure?"
+    },
+    "flow": {
+      "stepOf": "Step {{current}} of {{total}}",
+      "start": "Start now",
+      "continueRoom": "Next: {{room}}",
+      "rooms": "{{done}}/{{total}} rooms",
+      "allDoneTitle": "All measurements done",
+      "allDoneSavings": "Great! ~{{value}} €/year savings potential found.",
+      "savedTitle": "Saved!",
+      "savedSavings": "Great! ~{{value}} €/year potential found.",
+      "continue": "Continue",
+      "continueOverview": "To overview"
     }
   },
   "onboarding": {

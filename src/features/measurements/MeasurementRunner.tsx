@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useSearchParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Check, ChevronRight, DoorOpen } from 'lucide-react'
@@ -7,8 +7,16 @@ import { useOnboardingStore } from '@/store/onboardingStore'
 import { getMeasurementMeta } from './catalog'
 import { getMeasurementModule } from './registry'
 import { roomInstances, roomLabel, instanceKey } from './rooms'
+import { resultSavingsEur } from './impact'
 import type { RunnerPhase, RunOutcome } from './runnerTypes'
 import type { MeasurementResult } from './types'
+
+/** Zustand des Erfolgs-Zwischenschritts nach dem Speichern. */
+interface SavedState {
+  savings: number
+  nextHref: string
+  nextRoomName?: string
+}
 
 const PHASES: RunnerPhase[] = ['intro', 'run', 'result']
 
@@ -41,6 +49,22 @@ export function MeasurementRunner() {
   // anklickbar sind (man darf nur zu schon erreichten Phasen zurückspringen).
   const [maxReached, setMaxReached] = useState(0)
   const [outcome, setOutcome] = useState<RunOutcome | null>(null)
+  const [justSaved, setJustSaved] = useState<SavedState | null>(null)
+
+  // Wechselt der Raum (z. B. „auto weiter" durch die Räume), Ablauf zurücksetzen.
+  useEffect(() => {
+    setPhase('intro')
+    setMaxReached(0)
+    setOutcome(null)
+    setJustSaved(null)
+  }, [roomKey])
+
+  // Erfolgs-Zwischenschritt: nach kurzer Anzeige automatisch weiter.
+  useEffect(() => {
+    if (!justSaved) return
+    const tid = setTimeout(() => navigate(justSaved.nextHref), 1600)
+    return () => clearTimeout(tid)
+  }, [justSaved, navigate])
 
   // Unbekannte oder (noch) nicht verfügbare Messung → zurück zur Übersicht.
   if (!meta || !meta.available || !mod) {
@@ -50,6 +74,11 @@ export function MeasurementRunner() {
   // Pro-Raum-Messung ohne gewählten Raum → Raum-Auswahl anzeigen.
   if (meta.perRoom && !roomKey) {
     return <RoomPicker id={id} />
+  }
+
+  // Erfolgsmoment nach dem Speichern.
+  if (justSaved) {
+    return <SavedInterstitial state={justSaved} onContinue={() => navigate(justSaved.nextHref)} />
   }
 
   const { Intro, Run, Result } = mod
@@ -69,8 +98,20 @@ export function MeasurementRunner() {
   }
 
   function handleSave(result: MeasurementResult) {
-    saveResult({ ...result, roomKey })
-    navigate('/measurements')
+    const full = { ...result, roomKey }
+    saveResult(full)
+    // Nächstes Ziel bestimmen: bei Pro-Raum der nächste offene Raum, sonst Übersicht.
+    let nextHref = '/measurements'
+    let nextRoomName: string | undefined
+    if (meta!.perRoom) {
+      const fresh = useMeasurementsStore.getState().results
+      const open = roomInstances(rooms).find((inst) => !fresh[instanceKey(id, inst.key)])
+      if (open) {
+        nextHref = `/measurements/${id}?room=${encodeURIComponent(open.key)}`
+        nextRoomName = roomLabel(t, open)
+      }
+    }
+    setJustSaved({ savings: resultSavingsEur(full), nextHref, nextRoomName })
   }
 
   return (
@@ -161,6 +202,47 @@ export function MeasurementRunner() {
           </div>
         </>
       )}
+    </div>
+  )
+}
+
+/** Kurzer Erfolgsmoment nach dem Speichern, dann automatisch weiter. */
+function SavedInterstitial({ state, onContinue }: { state: SavedState; onContinue: () => void }) {
+  const { t, i18n } = useTranslation()
+  const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
+  const backToOverview = state.nextHref === '/measurements'
+
+  return (
+    <div className="grid min-h-[60vh] place-items-center">
+      <div className="glass relative w-full overflow-hidden rounded-3xl p-8 text-center">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 -top-12 mx-auto h-40 w-40 rounded-full bg-emerald-500 opacity-[0.16] blur-3xl"
+        />
+        <div className="relative flex flex-col items-center gap-3">
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-emerald-500/15 text-emerald-500">
+            <Check className="h-8 w-8" />
+          </span>
+          <h2 className="text-xl font-bold text-foreground">{t('measurements.flow.savedTitle')}</h2>
+          {state.savings > 0 && (
+            <p className="text-sm text-muted">
+              {t('measurements.flow.savedSavings', { value: eurFmt.format(state.savings) })}
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={onContinue}
+            className="mt-3 flex items-center justify-center gap-1.5 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.97]"
+          >
+            {state.nextRoomName
+              ? t('measurements.flow.continueRoom', { room: state.nextRoomName })
+              : backToOverview
+                ? t('measurements.flow.continueOverview')
+                : t('measurements.flow.continue')}
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

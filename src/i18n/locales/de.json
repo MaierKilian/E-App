@@ -535,6 +535,18 @@
     },
     "roomPicker": {
       "subtitle": "Für welchen Raum möchtest du die Messung durchführen?"
+    },
+    "flow": {
+      "stepOf": "Schritt {{current}} von {{total}}",
+      "start": "Jetzt starten",
+      "continueRoom": "Weiter: {{room}}",
+      "rooms": "{{done}}/{{total}} Räume",
+      "allDoneTitle": "Alle Messungen erledigt",
+      "allDoneSavings": "Stark! ~{{value}} €/Jahr Einsparpotenzial entdeckt.",
+      "savedTitle": "Gespeichert!",
+      "savedSavings": "Stark! ~{{value}} €/Jahr Potenzial entdeckt.",
+      "continue": "Weiter",
+      "continueOverview": "Zur Übersicht"
     }
   },
   "monitoring": {
