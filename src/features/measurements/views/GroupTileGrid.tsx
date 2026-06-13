@@ -6,12 +6,20 @@ import type { LucideIcon } from 'lucide-react'
 import type { MeasurementMeta } from '../catalog'
 import type { MeasurementResult } from '../types'
 import { RATING_COLOR } from '../rating'
+import { instanceKey } from '../rooms'
+
+/** Eine Messung innerhalb einer Gruppe, optional an einen konkreten Raum gebunden. */
+export interface TileItem {
+  meta: MeasurementMeta
+  /** Raum-Schlüssel bei Pro-Raum-Messungen (sonst undefined). */
+  roomKey?: string
+}
 
 export interface TileGroup {
   key: string
   label: string
   icon: LucideIcon
-  items: MeasurementMeta[]
+  items: TileItem[]
 }
 
 /** Optionale „nichts zu messen"-Funktion (nur Raum-Ansicht). */
@@ -30,11 +38,22 @@ interface Props {
 }
 
 /** Kleine, horizontal scrollbare Messungs-Kachel innerhalb einer aufgeklappten Gruppe. */
-function MiniCard({ meta, result }: { meta: MeasurementMeta; result?: MeasurementResult }) {
+function MiniCard({
+  meta,
+  roomKey,
+  result,
+}: {
+  meta: MeasurementMeta
+  roomKey?: string
+  result?: MeasurementResult
+}) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const Icon = meta.icon
   const clickable = meta.available
+  const href = roomKey
+    ? `/measurements/${meta.id}?room=${encodeURIComponent(roomKey)}`
+    : `/measurements/${meta.id}`
 
   const value =
     result &&
@@ -86,7 +105,7 @@ function MiniCard({ meta, result }: { meta: MeasurementMeta; result?: Measuremen
   return (
     <button
       type="button"
-      onClick={() => navigate(`/measurements/${meta.id}`)}
+      onClick={() => navigate(href)}
       className={`${base} transition-transform active:scale-[0.98]`}
     >
       {inner}
@@ -105,7 +124,7 @@ export function GroupTileGrid({ groups, results, skip }: Props) {
   return (
     <div className="grid grid-cols-2 gap-3">
       {groups.map((group) => {
-        const done = group.items.filter((m) => results[m.id]).length
+        const done = group.items.filter((it) => results[instanceKey(it.meta.id, it.roomKey)]).length
         const isSkipped = skip?.skipped.has(group.key) ?? false
         const isActive = active === group.key && !isSkipped
         const Icon = group.icon
@@ -169,8 +188,13 @@ export function GroupTileGrid({ groups, results, skip }: Props) {
             {isActive && (
               <div className="col-span-2">
                 <div className="flex gap-3 overflow-x-auto px-0.5 pb-1 snap-x">
-                  {group.items.map((meta) => (
-                    <MiniCard key={meta.id} meta={meta} result={results[meta.id]} />
+                  {group.items.map((it) => (
+                    <MiniCard
+                      key={instanceKey(it.meta.id, it.roomKey)}
+                      meta={it.meta}
+                      roomKey={it.roomKey}
+                      result={results[instanceKey(it.meta.id, it.roomKey)]}
+                    />
                   ))}
                 </div>
               </div>

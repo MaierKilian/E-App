@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { useParams, useNavigate, Navigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Check, ChevronRight, DoorOpen } from 'lucide-react'
 import { useMeasurementsStore } from '@/store/measurementsStore'
+import { useOnboardingStore } from '@/store/onboardingStore'
 import { getMeasurementMeta } from './catalog'
 import { getMeasurementModule } from './registry'
+import { roomInstances, roomLabel, instanceKey } from './rooms'
 import type { RunnerPhase, RunOutcome } from './runnerTypes'
 import type { MeasurementResult } from './types'
 
@@ -18,15 +20,18 @@ const PHASE_LABEL: Record<RunnerPhase, string> = {
 
 /**
  * Generischer, geführter Mess-Ablauf (Intro → Run → Result).
- * Liest die Messung aus `:id`; ist sie unbekannt oder nicht verfügbar, geht es
- * zurück zur Übersicht. Die messungsspezifischen Inhalte kommen aus der
- * Registry, sodass weitere Messungen leicht ergänzbar sind.
+ * Liest die Messung aus `:id` und – bei raumbezogenen Messungen – den Raum aus
+ * `?room=`. Fehlt der Raum bei einer Pro-Raum-Messung, erscheint zuerst eine
+ * Raum-Auswahl. Die messungsspezifischen Inhalte kommen aus der Registry.
  */
 export function MeasurementRunner() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { id = '' } = useParams()
+  const [searchParams] = useSearchParams()
+  const roomKey = searchParams.get('room') ?? undefined
   const saveResult = useMeasurementsStore((s) => s.saveResult)
+  const rooms = useOnboardingStore((s) => s.data.rooms)
 
   const meta = getMeasurementMeta(id)
   const mod = getMeasurementModule(id)
@@ -42,8 +47,15 @@ export function MeasurementRunner() {
     return <Navigate to="/measurements" replace />
   }
 
+  // Pro-Raum-Messung ohne gewählten Raum → Raum-Auswahl anzeigen.
+  if (meta.perRoom && !roomKey) {
+    return <RoomPicker id={id} />
+  }
+
   const { Intro, Run, Result } = mod
   const phaseIndex = PHASES.indexOf(phase)
+  const roomInst = roomKey ? roomInstances(rooms).find((r) => r.key === roomKey) : undefined
+  const roomSuffix = roomInst ? ` · ${roomLabel(t, roomInst)}` : ''
 
   function goToPhase(next: RunnerPhase) {
     const nextIndex = PHASES.indexOf(next)
@@ -57,7 +69,7 @@ export function MeasurementRunner() {
   }
 
   function handleSave(result: MeasurementResult) {
-    saveResult(result)
+    saveResult({ ...result, roomKey })
     navigate('/measurements')
   }
 
@@ -73,7 +85,10 @@ export function MeasurementRunner() {
           {t('nav.measurements')}
         </button>
 
-        <h1 className="mt-3 text-2xl font-bold">{t(`measurements.${id}.title`)}</h1>
+        <h1 className="mt-3 text-2xl font-bold">
+          {t(`measurements.${id}.title`)}
+          {roomSuffix && <span className="text-muted font-semibold">{roomSuffix}</span>}
+        </h1>
 
         {/* Phasen-Segmente: Info · Messen · Ergebnis. Bereits erreichte
             vorherige Segmente dienen als Rück-Navigation (nur zurück). */}
@@ -81,8 +96,6 @@ export function MeasurementRunner() {
           {PHASES.map((p, i) => {
             const active = i === phaseIndex
             const passed = i < phaseIndex
-            // Nur zu einem schon erreichten, früheren Segment darf gesprungen
-            // werden – nicht nach vorne.
             const canGoBack = i < phaseIndex && i <= maxReached
             const baseClass = `flex-1 rounded-xl px-2 py-1.5 text-center text-xs font-semibold transition-colors ${
               active
@@ -104,11 +117,7 @@ export function MeasurementRunner() {
               )
             }
             return (
-              <div
-                key={p}
-                aria-current={active ? 'step' : undefined}
-                className={baseClass}
-              >
+              <div key={p} aria-current={active ? 'step' : undefined} className={baseClass}>
                 {t(PHASE_LABEL[p])}
               </div>
             )
@@ -151,6 +160,65 @@ export function MeasurementRunner() {
             </button>
           </div>
         </>
+      )}
+    </div>
+  )
+}
+
+/** Raum-Auswahl für Pro-Raum-Messungen (mit Status je Raum). */
+function RoomPicker({ id }: { id: string }) {
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const rooms = useOnboardingStore((s) => s.data.rooms)
+  const results = useMeasurementsStore((s) => s.results)
+  const instances = roomInstances(rooms)
+
+  return (
+    <div className="space-y-5">
+      <button
+        type="button"
+        onClick={() => navigate('/measurements')}
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-foreground transition-colors"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        {t('nav.measurements')}
+      </button>
+
+      <div>
+        <h1 className="text-2xl font-bold">{t(`measurements.${id}.title`)}</h1>
+        <p className="mt-1 text-muted">{t('measurements.roomPicker.subtitle')}</p>
+      </div>
+
+      {instances.length === 0 ? (
+        <div className="glass rounded-3xl p-6 text-center text-sm text-muted">
+          {t('measurements.byRoom.noRooms')}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {instances.map((inst) => {
+            const done = Boolean(results[instanceKey(id, inst.key)])
+            return (
+              <button
+                key={inst.key}
+                type="button"
+                onClick={() => navigate(`/measurements/${id}?room=${encodeURIComponent(inst.key)}`)}
+                className="glass flex w-full items-center gap-3 rounded-2xl p-3 text-left transition-transform active:scale-[0.99]"
+              >
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                  <DoorOpen className="h-5 w-5" />
+                </span>
+                <span className="min-w-0 flex-1 font-semibold text-foreground">
+                  {roomLabel(t, inst)}
+                </span>
+                {done ? (
+                  <Check className="h-5 w-5 shrink-0 text-primary" />
+                ) : (
+                  <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+                )}
+              </button>
+            )
+          })}
+        </div>
       )}
     </div>
   )

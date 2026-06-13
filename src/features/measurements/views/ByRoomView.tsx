@@ -1,20 +1,21 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { DoorOpen } from 'lucide-react'
+import { DoorOpen, Home } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
-import type { RoomType } from '@/types'
 import { MEASUREMENT_CATALOG, appliesToRoom } from '../catalog'
 import type { MeasurementResult } from '../types'
-import { GroupTileGrid, type TileGroup } from './GroupTileGrid'
+import { roomInstances, roomLabel } from '../rooms'
+import { GroupTileGrid, type TileGroup, type TileItem } from './GroupTileGrid'
 
 interface ViewProps {
   results: Partial<Record<string, MeasurementResult>>
 }
 
 /**
- * Raumweise Ansicht als Kachel-Grid: je Raum eine Kachel; Tippen klappt die
- * anwendbaren Messungen horizontal scrollbar auf. Ohne Räume ein Hinweis.
+ * Raumweise Ansicht als Kachel-Grid: je Raum-Instanz eine Kachel; Pro-Raum-
+ * Messungen erhalten ein eigenes Ergebnis je Raum. Ganz-Haus-Messungen (z. B.
+ * Standby) stehen in einer eigenen „Ganzes Zuhause"-Gruppe.
  */
 export function ByRoomView({ results }: ViewProps) {
   const { t } = useTranslation()
@@ -45,18 +46,31 @@ export function ByRoomView({ results }: ViewProps) {
     )
   }
 
-  const groups: TileGroup[] = rooms
-    .map((room) => ({
-      key: room.type,
-      label: t(`onboarding.step3.roomTypes.${room.type}`),
+  // Eine Gruppe je Raum-Instanz; Pro-Raum-Messungen mit raumspezifischem Schlüssel.
+  const roomGroups: TileGroup[] = roomInstances(rooms)
+    .map((inst) => ({
+      key: inst.key,
+      label: roomLabel(t, inst),
       icon: DoorOpen,
-      items: MEASUREMENT_CATALOG.filter((m) => appliesToRoom(m, room.type)),
+      items: MEASUREMENT_CATALOG.filter((m) => appliesToRoom(m, inst.type)).map<TileItem>((meta) => ({
+        meta,
+        roomKey: meta.perRoom ? inst.key : undefined,
+      })),
     }))
     .filter((g) => g.items.length > 0)
 
+  // Ganz-Haus-Messungen als eigene Gruppe.
+  const homeItems = MEASUREMENT_CATALOG.filter((m) => m.wholeHome).map<TileItem>((meta) => ({ meta }))
+  const homeGroup: TileGroup[] =
+    homeItems.length > 0
+      ? [{ key: '__home__', label: t('measurements.byRoom.wholeHome'), icon: Home, items: homeItems }]
+      : []
+
+  const groups = [...homeGroup, ...roomGroups]
+
   const skip = {
     skipped: new Set<string>(skippedRooms),
-    onToggle: (key: string) => toggleSkippedRoom(key as RoomType),
+    onToggle: (key: string) => toggleSkippedRoom(key),
   }
 
   return <GroupTileGrid groups={groups} results={results} skip={skip} />

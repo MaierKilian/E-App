@@ -2,14 +2,26 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, Check, Sparkles, TrendingDown } from 'lucide-react'
 import { useTariffStore } from '@/store/tariffStore'
+import { useOnboardingStore } from '@/store/onboardingStore'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { MEASUREMENT_CATALOG } from '../catalog'
 import type { MeasurementMeta } from '../catalog'
 import type { MeasurementResult } from '../types'
 import { impactSummary } from '../impact'
+import { roomInstances, roomLabel, instanceKey } from '../rooms'
 
 interface ViewProps {
   results: Partial<Record<string, MeasurementResult>>
+}
+
+/** Eine konkrete Mess-Aufgabe: Messung + optional Raum. */
+interface Task {
+  meta: MeasurementMeta
+  roomKey?: string
+  /** Anzeigename des Raums (nur bei Pro-Raum-Aufgaben). */
+  roomName?: string
+  /** Ergebnis-Schlüssel im Store. */
+  key: string
 }
 
 /** Hero-Karte mit aggregiertem Einsparpotenzial (€ und CO₂-Schätzung). */
@@ -53,10 +65,18 @@ function ImpactCard({ results }: ViewProps) {
   )
 }
 
-/** Hero-Karte „Als Nächstes" für die nächste offene, verfügbare Messung. */
-function NextCard({ meta }: { meta: MeasurementMeta }) {
+/** Pfad zum Runner für eine Aufgabe (inkl. Raum, falls vorhanden). */
+function taskHref(task: Task): string {
+  return task.roomKey
+    ? `/measurements/${task.meta.id}?room=${encodeURIComponent(task.roomKey)}`
+    : `/measurements/${task.meta.id}`
+}
+
+/** Hero-Karte „Als Nächstes" für die nächste offene Aufgabe. */
+function NextCard({ task }: { task: Task }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { meta, roomName } = task
   const Icon = meta.icon
   const metaLine = `${t(`measurements.categories.${meta.category}`)} · ${meta.estimatedMinutes} ${t('measurements.minutesUnit')}`
 
@@ -72,7 +92,10 @@ function NextCard({ meta }: { meta: MeasurementMeta }) {
           <Icon className="h-6 w-6" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-lg font-bold text-foreground">{t(`measurements.${meta.id}.title`)}</p>
+          <p className="text-lg font-bold text-foreground">
+            {t(`measurements.${meta.id}.title`)}
+            {roomName && <span className="text-muted"> · {roomName}</span>}
+          </p>
           <p className="mt-0.5 text-sm text-muted">{metaLine}</p>
         </div>
       </div>
@@ -81,7 +104,7 @@ function NextCard({ meta }: { meta: MeasurementMeta }) {
 
       <button
         type="button"
-        onClick={() => navigate(`/measurements/${meta.id}`)}
+        onClick={() => navigate(taskHref(task))}
         className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]"
       >
         {t('measurements.next.start')}
@@ -94,15 +117,16 @@ function NextCard({ meta }: { meta: MeasurementMeta }) {
 /** Kompakte, nummerierte Zeile der „Weitere Schritte"-Liste. */
 function MoreRow({
   index,
-  meta,
+  task,
   result,
 }: {
   index: number
-  meta: MeasurementMeta
+  task: Task
   result?: MeasurementResult
 }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const { meta, roomName } = task
   const done = Boolean(result)
   const clickable = meta.available
   const metaLine = `${t(`measurements.categories.${meta.category}`)} · ${meta.estimatedMinutes} ${t('measurements.minutesUnit')}`
@@ -113,7 +137,10 @@ function MoreRow({
         {index}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold text-foreground">{t(`measurements.${meta.id}.title`)}</p>
+        <p className="truncate font-semibold text-foreground">
+          {t(`measurements.${meta.id}.title`)}
+          {roomName && <span className="text-muted"> · {roomName}</span>}
+        </p>
         <p className="truncate text-sm text-muted">{metaLine}</p>
       </div>
       {done ? (
@@ -133,7 +160,7 @@ function MoreRow({
   return (
     <button
       type="button"
-      onClick={() => navigate(`/measurements/${meta.id}`)}
+      onClick={() => navigate(taskHref(task))}
       className={`${base} transition-transform active:scale-[0.99]`}
     >
       {content}
@@ -147,14 +174,34 @@ function MoreRow({
  */
 export function RecommendedView({ results }: ViewProps) {
   const { t } = useTranslation()
+  const rooms = useOnboardingStore((s) => s.data.rooms)
 
-  const available = MEASUREMENT_CATALOG.filter((m) => m.available)
-  const done = available.filter((m) => results[m.id]).length
-  const total = available.length
+  // Aufgaben in Katalog-Reihenfolge; Pro-Raum-Messungen werden je Raum expandiert
+  // (dadurch „Raum für Raum" hintereinander in der geführten Reihenfolge).
+  const instances = roomInstances(rooms)
+  const tasks: Task[] = []
+  for (const meta of MEASUREMENT_CATALOG) {
+    if (meta.perRoom) {
+      for (const inst of instances) {
+        tasks.push({
+          meta,
+          roomKey: inst.key,
+          roomName: roomLabel(t, inst),
+          key: instanceKey(meta.id, inst.key),
+        })
+      }
+    } else {
+      tasks.push({ meta, key: instanceKey(meta.id) })
+    }
+  }
+
+  const availableTasks = tasks.filter((tk) => tk.meta.available)
+  const done = availableTasks.filter((tk) => results[tk.key]).length
+  const total = availableTasks.length
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
 
-  const next = available.find((m) => !results[m.id])
-  const rest = MEASUREMENT_CATALOG.filter((m) => m.id !== next?.id)
+  const next = availableTasks.find((tk) => !results[tk.key])
+  const rest = tasks.filter((tk) => tk.key !== next?.key)
 
   return (
     <div className="space-y-5">
@@ -176,7 +223,7 @@ export function RecommendedView({ results }: ViewProps) {
       </div>
 
       {next ? (
-        <NextCard meta={next} />
+        <NextCard task={next} />
       ) : (
         <div className="glass flex items-center gap-3 rounded-3xl p-5">
           <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -192,8 +239,8 @@ export function RecommendedView({ results }: ViewProps) {
             {t('measurements.more')}
           </h2>
           <div className="space-y-2">
-            {rest.map((meta, i) => (
-              <MoreRow key={meta.id} index={i + 1} meta={meta} result={results[meta.id]} />
+            {rest.map((task, i) => (
+              <MoreRow key={task.key} index={i + 1} task={task} result={results[task.key]} />
             ))}
           </div>
         </div>

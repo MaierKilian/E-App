@@ -16,6 +16,8 @@ export interface MeasurementResult {
   unit: string
   /** Zeitpunkt der Auswertung als ISO-String. */
   completedAt: string
+  /** Raum-Schlüssel bei raumbezogenen Messungen (z. B. "bedroom#0"). */
+  roomKey?: string
   /** Optionale Roh-/Zusatzwerte der Messung (z. B. Liter, Sekunden). */
   details?: Record<string, number>
 }

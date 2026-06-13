@@ -262,7 +262,8 @@
       "selectRooms": "Zimmer auswählen",
       "nothingToMeasure": "Nichts zu messen",
       "markNothing": "Nichts zu messen",
-      "undo": "Rückgängig"
+      "undo": "Rückgängig",
+      "wholeHome": "Ganzes Zuhause"
     },
     "stopwatch": {
       "start": "Start",
@@ -530,6 +531,9 @@
       "from_one": "aus {{count}} Messung",
       "from_other": "aus {{count}} Messungen",
       "info": "Grobe Schätzung: Das Euro-Einsparpotenzial wird über deinen Strompreis in Kilowattstunden umgerechnet und mit rund 0,38 kg CO₂ je kWh hochgerechnet."
+    },
+    "roomPicker": {
+      "subtitle": "Für welchen Raum möchtest du die Messung durchführen?"
     }
   },
   "monitoring": {

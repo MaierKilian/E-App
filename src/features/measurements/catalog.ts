@@ -17,10 +17,12 @@ export interface MeasurementMeta {
   category: MeasurementCategory
   /** Geschätzte Dauer in Minuten. */
   estimatedMinutes: number
-  /** Räume, in denen die Messung sinnvoll ist (alternativ `allRooms`). */
+  /** Räume(typen), in denen die Messung sinnvoll ist (ein gemeinsames Ergebnis). */
   rooms?: RoomType[]
-  /** True = Messung gilt für alle Räume (überschreibt `rooms`). */
-  allRooms?: boolean
+  /** True = Messung wird je Raum einzeln durchgeführt (eigenes Ergebnis pro Raum). */
+  perRoom?: boolean
+  /** True = Messung gilt fürs ganze Zuhause (ein Ergebnis, nicht je Raum). */
+  wholeHome?: boolean
 }
 
 /**
@@ -45,7 +47,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     available: true,
     category: 'heating',
     estimatedMinutes: 5,
-    allRooms: true,
+    perRoom: true,
   },
   {
     id: 'standby',
@@ -54,7 +56,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     available: true,
     category: 'electricity',
     estimatedMinutes: 12,
-    allRooms: true,
+    wholeHome: true,
   },
   {
     id: 'fridge',
@@ -80,8 +82,9 @@ export function getMeasurementMeta(id: string): MeasurementMeta | undefined {
   return MEASUREMENT_CATALOG.find((m) => m.id === id)
 }
 
-/** Prüft, ob eine Messung auf einen Raumtyp anwendbar ist. */
+/** Prüft, ob eine Messung in einem Raum(typ) angeboten wird. */
 export function appliesToRoom(meta: MeasurementMeta, room: RoomType): boolean {
-  if (meta.allRooms) return true
+  if (meta.wholeHome) return false
+  if (meta.perRoom) return true
   return Boolean(meta.rooms?.includes(room))
 }

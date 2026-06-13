@@ -1,20 +1,23 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { MeasurementId, MeasurementResult } from '@/features/measurements/types'
-import type { RoomType } from '@/types'
+import { instanceKey } from '@/features/measurements/rooms'
 
 interface MeasurementsState {
-  /** Gespeicherte Ergebnisse je Messung (jeweils das zuletzt gespeicherte). */
-  results: Partial<Record<MeasurementId, MeasurementResult>>
-  /** Räume, die der Nutzer als „nichts zu messen" markiert hat. */
-  skippedRooms: RoomType[]
+  /**
+   * Gespeicherte Ergebnisse, je Mess-Instanz (Messung + optional Raum).
+   * Schlüssel: `instanceKey(id, roomKey)` – also "id" oder "id@room".
+   */
+  results: Partial<Record<string, MeasurementResult>>
+  /** Räume (Instanz-Schlüssel), die als „nichts zu messen" markiert sind. */
+  skippedRooms: string[]
   saveResult: (result: MeasurementResult) => void
-  clearResult: (id: MeasurementId) => void
-  toggleSkippedRoom: (room: RoomType) => void
+  clearResult: (id: MeasurementId, roomKey?: string) => void
+  toggleSkippedRoom: (roomKey: string) => void
   resetAll: () => void
 }
 
-const defaultResults: Partial<Record<MeasurementId, MeasurementResult>> = {}
+const defaultResults: Partial<Record<string, MeasurementResult>> = {}
 
 /**
  * Dauerhaft gespeicherte Mess-Ergebnisse.
@@ -27,19 +30,19 @@ export const useMeasurementsStore = create<MeasurementsState>()(
       skippedRooms: [],
       saveResult: (result) =>
         set((state) => ({
-          results: { ...state.results, [result.id]: result },
+          results: { ...state.results, [instanceKey(result.id, result.roomKey)]: result },
         })),
-      clearResult: (id) =>
+      clearResult: (id, roomKey) =>
         set((state) => {
           const next = { ...state.results }
-          delete next[id]
+          delete next[instanceKey(id, roomKey)]
           return { results: next }
         }),
-      toggleSkippedRoom: (room) =>
+      toggleSkippedRoom: (roomKey) =>
         set((state) => ({
-          skippedRooms: state.skippedRooms.includes(room)
-            ? state.skippedRooms.filter((r) => r !== room)
-            : [...state.skippedRooms, room],
+          skippedRooms: state.skippedRooms.includes(roomKey)
+            ? state.skippedRooms.filter((r) => r !== roomKey)
+            : [...state.skippedRooms, roomKey],
         })),
       resetAll: () => set({ results: {}, skippedRooms: [] }),
     }),

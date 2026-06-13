@@ -5,6 +5,7 @@ import type {
 } from '@/features/measurements/types'
 import type { MeasurementCategory } from '@/features/measurements/catalog'
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
+import { anyResultFor } from '@/features/measurements/rooms'
 
 /**
  * Reine Datenaufbereitung für die Messungen-Berichte.
@@ -85,7 +86,8 @@ export function buildMeasurementsReportData({
   for (const meta of MEASUREMENT_CATALOG) {
     if (catFilter && !catFilter.has(meta.category)) continue
     totalCount += 1
-    const r = results[meta.id]
+    // Repräsentatives Ergebnis (direkt oder erstes Raum-Ergebnis bei Pro-Raum-Messungen).
+    const r = anyResultFor(results, meta.id)
     if (r && Number.isFinite(r.primaryValue)) {
       const saving = readSaving(r.details)
       if (saving !== undefined) savingsTotal += saving

@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 import { MEASUREMENT_CATALOG } from '../catalog'
 import type { MeasurementCategory } from '../catalog'
 import type { MeasurementResult } from '../types'
-import { GroupTileGrid, type TileGroup } from './GroupTileGrid'
+import { GroupTileGrid, type TileGroup, type TileItem } from './GroupTileGrid'
 
 interface ViewProps {
   results: Partial<Record<string, MeasurementResult>>
@@ -27,7 +27,9 @@ export function TradesView({ results }: ViewProps) {
     key: category,
     label: t(`measurements.categories.${category}`),
     icon: CATEGORY_ICON[category],
-    items: MEASUREMENT_CATALOG.filter((m) => m.category === category),
+    items: MEASUREMENT_CATALOG.filter((m) => m.category === category).map<TileItem>((meta) => ({
+      meta,
+    })),
   })).filter((g) => g.items.length > 0)
 
   return <GroupTileGrid groups={groups} results={results} />
