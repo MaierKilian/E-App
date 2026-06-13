@@ -7,6 +7,16 @@ import type { MeasurementCategory } from '@/features/measurements/catalog'
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import { anyResultFor } from '@/features/measurements/rooms'
 
+/** Einheit je Messung (Fallback, falls ein Ergebnis ohne `unit` gespeichert wurde). */
+const UNIT_FALLBACK: Partial<Record<MeasurementId, string>> = {
+  showerhead: 'L/min',
+  hot_water_wait: 's',
+  room_temperature: '°C',
+  standby: '€/Jahr',
+  fridge: '°C',
+  freezer: '€/Jahr',
+}
+
 /**
  * Reine Datenaufbereitung für die Messungen-Berichte.
  * Liefert erledigte Ergebnisse in Katalog-Reihenfolge, gruppiert nach Gewerk,
@@ -95,7 +105,8 @@ export function buildMeasurementsReportData({
         id: r.id,
         category: meta.category,
         primaryValue: r.primaryValue,
-        unit: r.unit,
+        // Einheit aus dem Ergebnis; Fallback je Messung (robust gegen Altdaten).
+        unit: r.unit || UNIT_FALLBACK[r.id] || '',
         rating: r.rating,
         yearlySaving: saving,
       })

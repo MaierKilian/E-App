@@ -14,9 +14,10 @@ export function fmtNum(value: number | undefined, fmt: Intl.NumberFormat): strin
   return fmt.format(value)
 }
 
-/** Zahl + Einheit, leersicher. */
-export function fmtVal(value: number | undefined, unit: string, fmt: Intl.NumberFormat): string {
-  return `${fmtNum(value, fmt)} ${unit}`.trim()
+/** Zahl + Einheit, leersicher. Fehlt der Wert, „—" ohne Einheit. */
+export function fmtVal(value: number | undefined, unit: string | undefined, fmt: Intl.NumberFormat): string {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return '—'
+  return unit ? `${fmt.format(value)} ${unit}` : fmt.format(value)
 }
 
 /** Währung leersicher. */

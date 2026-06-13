@@ -1,7 +1,7 @@
 import type { OnboardingData } from '@/types'
 import type { EnergyType, MeterReading } from '@/store/readingsStore'
 import { ENERGY_META, activeEnergyTypes } from '@/features/monitoring/energyConfig'
-import { sortByDate, consumptionSegments } from '@/features/monitoring/readings'
+import { sortByDate } from '@/features/monitoring/readings'
 
 /**
  * Reine Datenaufbereitung für die Monitoring-Berichte.
@@ -64,11 +64,16 @@ export interface BuildMonitoringArgs {
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24
 
-/** Verbrauchssumme über die gegebenen (bereits sortierten) Ablesungen. */
+/**
+ * Verbrauch über die gegebenen Ablesungen: letzter minus erster Stand.
+ * Robust auch bei Ablesungen am selben Tag (Tagesabstand spielt keine Rolle).
+ * Negative Differenzen (Zählerwechsel) gelten als nicht auswertbar.
+ */
 function consumptionOf(readings: MeterReading[]): number | undefined {
-  const segs = consumptionSegments(readings)
-  if (segs.length === 0) return undefined
-  return segs.reduce((sum, s) => sum + s.kwh, 0)
+  const sorted = sortByDate(readings)
+  if (sorted.length < 2) return undefined
+  const diff = sorted[sorted.length - 1].value - sorted[0].value
+  return Number.isFinite(diff) && diff >= 0 ? diff : undefined
 }
 
 /** Filtert Ablesungen auf das Fenster [from, to] (inkl.). */

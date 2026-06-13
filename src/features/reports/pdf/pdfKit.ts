@@ -152,40 +152,42 @@ export class PdfKit {
 
   // --- Text-Bausteine ---
 
-  /** Farbiger Kopfbalken mit E-App-Logo, Titel und Datum. */
+  /** Schlichter Kopf (weiß/grau/schwarz): dunkles Logo, Titel, Datum, feine Trennlinie. */
   headerBand({ title, subtitle, date }: HeaderBandOptions): void {
-    const h = 74
-    this.setFill(PALETTE.accent)
-    this.doc.rect(0, 0, PAGE_W, h, 'F')
+    const top = MARGIN_TOP
+    // Logo dunkel (Vektor).
+    this.drawLogo(MARGIN_X, top - 7, 22, PALETTE.ink)
 
-    // Logo: drei versetzte, gerundete Balken (Vektor).
-    this.drawLogo(MARGIN_X, 24, 26)
-
-    const textX = MARGIN_X + 40
+    const textX = MARGIN_X + 32
     this.doc.setFont('helvetica', 'bold')
-    this.doc.setFontSize(17)
-    this.setColor(PALETTE.white)
-    this.doc.text(toLatin1(title), textX, 36)
+    this.doc.setFontSize(18)
+    this.setColor(PALETTE.ink)
+    this.doc.text(toLatin1(title), textX, top + 8)
 
     if (subtitle) {
       this.doc.setFont('helvetica', 'normal')
       this.doc.setFontSize(9.5)
-      this.setColor([224, 232, 255])
-      this.doc.text(toLatin1(subtitle), textX, 52)
+      this.setColor(PALETTE.muted)
+      this.doc.text(toLatin1(subtitle), textX, top + 22)
     }
 
     if (date) {
       this.doc.setFont('helvetica', 'normal')
-      this.doc.setFontSize(9.5)
-      this.setColor([224, 232, 255])
-      this.doc.text(toLatin1(date), PAGE_W - MARGIN_X, 36, { align: 'right' })
+      this.doc.setFontSize(9)
+      this.setColor(PALETTE.muted)
+      this.doc.text(toLatin1(date), PAGE_W - MARGIN_X, top + 8, { align: 'right' })
     }
 
-    this.y = h + 26
+    const ruleY = top + 32
+    this.setDraw(PALETTE.hair)
+    this.doc.setLineWidth(0.8)
+    this.doc.line(MARGIN_X, ruleY, PAGE_W - MARGIN_X, ruleY)
+
+    this.y = ruleY + 22
   }
 
   /** Zeichnet das E-App-Logo: drei versetzte, schräge Balken (Parallelogramme). */
-  private drawLogo(x: number, y: number, size: number): void {
+  private drawLogo(x: number, y: number, size: number, color: RGB = PALETTE.white): void {
     // Balken als Parallelogramm-Form (Anteile der Balkenbox), aus dem Original abgeleitet.
     const SHAPE: Array<[number, number]> = [
       [0, 0.7],
@@ -199,7 +201,7 @@ export class PdfKit {
       { bx: 0.03, by: 0.41, bw: 0.53, bh: 0.38 },
       { bx: 0.41, by: 0.47, bw: 0.55, bh: 0.41 },
     ]
-    this.setFill(PALETTE.white)
+    this.setFill(color)
     for (const b of bars) {
       const p = SHAPE.map(
         ([fx, fy]) =>
@@ -292,7 +294,7 @@ export class PdfKit {
 
   /** Liniendiagramm (Vektor): Achsen, Linie, Punkte, x-Datumslabels, y min/max. */
   lineChart(points: LinePoint[], opts: LineChartOptions = {}): void {
-    const { height = 150, unit = '', color = PALETTE.accent, language } = opts
+    const { height = 150, unit = '', color = PALETTE.ink, language } = opts
     const clean = points.filter((p) => Number.isFinite(p.value))
     const plotX = MARGIN_X + 38
     const plotW = CONTENT_W - 38
@@ -371,7 +373,7 @@ export class PdfKit {
 
   /** Balkendiagramm (Vektor) für Verbrauch je Intervall. */
   barChart(bars: BarItem[], opts: { height?: number; color?: RGB; language?: string } = {}): void {
-    const { height = 130, color = PALETTE.accent, language } = opts
+    const { height = 130, color = PALETTE.ink, language } = opts
     const clean = bars.filter((b) => Number.isFinite(b.value) && b.value >= 0)
     const labelArea = 24
     const plotH = height - labelArea
@@ -521,7 +523,7 @@ export class PdfKit {
     if (opts.tag) {
       this.doc.setFont('helvetica', 'normal')
       this.doc.setFontSize(8)
-      this.setColor(color)
+      this.setColor(PALETTE.muted)
       this.doc.text(toLatin1(opts.tag), PAGE_W - MARGIN_X, this.y + 12 - 11, { align: 'right' })
     }
     this.setDraw(PALETTE.hair)
