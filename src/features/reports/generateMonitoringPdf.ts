@@ -73,12 +73,21 @@ function writeShortEntry(
   e: MonitoringEntry,
   options: ReportContentOptions,
 ): void {
-  kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
-
   if (e.currentValue === undefined) {
+    kit.ensure(52)
+    kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
     kit.subtle(t('report.pdf.empty.noReading'))
     return
   }
+
+  // Ganzen Block zusammenhalten (kein Umbruch mitten in Titel/KPIs/Diagramm).
+  let est = 36
+  if (options.kpis) est += 70
+  if (options.comparison) est += 18
+  if (options.charts) est += 124
+  kit.ensure(est)
+
+  kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
 
   if (options.kpis) {
     const cards: KpiCard[] = [
@@ -96,8 +105,8 @@ function writeShortEntry(
   }
 
   if (options.charts) {
-    kit.gap(2)
-    kit.lineChart(e.points, { height: 110, unit: e.unit, language })
+    kit.gap(6)
+    kit.lineChart(e.points, { height: 116, unit: e.unit, language })
   }
 }
 
@@ -111,12 +120,21 @@ function writeLongEntry(
   e: MonitoringEntry,
   options: ReportContentOptions,
 ): void {
-  kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
-
   if (e.currentValue === undefined) {
+    kit.ensure(52)
+    kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
     kit.subtle(t('report.pdf.empty.noReading'))
     return
   }
+
+  // Titel + Diagramm + KPIs zusammenhalten (Historie darf umbrechen).
+  let est = 36
+  if (options.charts) est += 178
+  if (options.kpis) est += 150
+  if (options.comparison) est += 19
+  kit.ensure(est)
+
+  kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
 
   if (options.charts) {
     kit.lineChart(e.points, { height: 170, unit: e.unit, language })

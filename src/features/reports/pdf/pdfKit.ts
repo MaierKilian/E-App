@@ -298,16 +298,26 @@ export class PdfKit {
     const clean = points.filter((p) => Number.isFinite(p.value))
     const plotX = MARGIN_X + 38
     const plotW = CONTENT_W - 38
-    const labelArea = 28
-    const plotH = height - labelArea
+    const labelArea = 24 // Platz für x-Datumslabels unten
+    const headPad = unit ? 14 : 4 // eigener Kopfbereich für die Einheit (keine Überlappung)
+    const plotH = height - labelArea - headPad
 
     this.ensure(height + 8)
     const top = this.y
-    const baseY = top + plotH
+    const plotTop = top + headPad
+    const baseY = plotTop + plotH
+
+    // Einheit oben links – innerhalb des reservierten Kopfbereichs.
+    if (unit) {
+      this.doc.setFont('helvetica', 'normal')
+      this.doc.setFontSize(7.5)
+      this.setColor(PALETTE.muted)
+      this.doc.text(toLatin1(unit), MARGIN_X, top + 9)
+    }
 
     if (clean.length < 2) {
       this.setFill(PALETTE.card)
-      this.doc.roundedRect(MARGIN_X, top, CONTENT_W, plotH, 8, 8, 'F')
+      this.doc.roundedRect(MARGIN_X, plotTop, CONTENT_W, plotH, 8, 8, 'F')
       this.y = top + height
       return
     }
@@ -326,7 +336,7 @@ export class PdfKit {
     this.doc.setFontSize(7.5)
     const ticks = [max, (max + min) / 2, min]
     ticks.forEach((tv, idx) => {
-      const gy = top + (plotH * idx) / 2
+      const gy = plotTop + (plotH * idx) / 2
       this.setDraw(PALETTE.hair)
       this.doc.line(plotX, gy, plotX + plotW, gy)
       this.setColor(PALETTE.muted)
@@ -360,12 +370,6 @@ export class PdfKit {
       this.doc.text(toLatin1(formatDateShort(clean[i].date, language)), sx(i), baseY + 14, {
         align: align as 'left' | 'center' | 'right',
       })
-    }
-
-    if (unit) {
-      this.doc.setFontSize(7.5)
-      this.setColor(PALETTE.muted)
-      this.doc.text(toLatin1(unit), plotX, top - 4)
     }
 
     this.y = top + height
@@ -509,22 +513,29 @@ export class PdfKit {
 
   /** Listenzeile mit farbigem Punkt (z. B. Rating), Titel und rechtem Wert. */
   swatchRow(color: RGB, title: string, value: string, opts: { tag?: string } = {}): void {
-    const rowH = 20
+    const rowH = opts.tag ? 26 : 22
     this.ensure(rowH)
+    const midY = this.y + rowH / 2
     this.setFill(color)
-    this.doc.circle(MARGIN_X + 4, this.y + 9, 3.2, 'F')
+    this.doc.circle(MARGIN_X + 4, midY, 3.2, 'F')
     this.doc.setFont('helvetica', 'normal')
     this.doc.setFontSize(10)
     this.setColor(PALETTE.ink)
-    this.doc.text(toLatin1(title), MARGIN_X + 14, this.y + 12, { maxWidth: CONTENT_W * 0.6 })
-    this.doc.setFont('helvetica', 'bold')
-    this.setColor(PALETTE.ink)
-    this.doc.text(toLatin1(value), PAGE_W - MARGIN_X, this.y + 12, { align: 'right' })
+    this.doc.text(toLatin1(title), MARGIN_X + 14, midY + 3.5, { maxWidth: CONTENT_W * 0.58 })
     if (opts.tag) {
+      // Tag oben rechts, Wert darunter – klar getrennt.
       this.doc.setFont('helvetica', 'normal')
       this.doc.setFontSize(8)
       this.setColor(PALETTE.muted)
-      this.doc.text(toLatin1(opts.tag), PAGE_W - MARGIN_X, this.y + 12 - 11, { align: 'right' })
+      this.doc.text(toLatin1(opts.tag), PAGE_W - MARGIN_X, this.y + 9, { align: 'right' })
+      this.doc.setFont('helvetica', 'bold')
+      this.doc.setFontSize(10)
+      this.setColor(PALETTE.ink)
+      this.doc.text(toLatin1(value), PAGE_W - MARGIN_X, this.y + 21, { align: 'right' })
+    } else {
+      this.doc.setFont('helvetica', 'bold')
+      this.setColor(PALETTE.ink)
+      this.doc.text(toLatin1(value), PAGE_W - MARGIN_X, midY + 3.5, { align: 'right' })
     }
     this.setDraw(PALETTE.hair)
     this.doc.setLineWidth(0.4)
