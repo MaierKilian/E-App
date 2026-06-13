@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FileText, Download, Ruler, Gauge, Layers, ChevronLeft, ChevronRight, Check, Sparkles } from 'lucide-react'
+import { FileText, Download, Ruler, Gauge, Layers, ChevronLeft, Check, Sparkles } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { SelectChip } from '@/components/ui/SelectChip'
@@ -65,7 +65,45 @@ interface OverviewProps {
   onSelect: (type: ReportType) => void
 }
 
-/** Übersicht: drei Berichts-Kacheln mit Inhalts-Chips, Status und Empfehlung. */
+/** Stilisiertes Mini-Vorschau-„Seitenbild" je Berichtstyp (kein echtes PDF). */
+function ReportThumb({ type, dim }: { type: ReportType; dim?: boolean }) {
+  const isChart = type === 'monitoring' || type === 'total'
+  return (
+    <div
+      aria-hidden="true"
+      className={`relative h-[4.75rem] w-14 shrink-0 overflow-hidden rounded-lg border border-border bg-surface shadow-sm ${
+        dim ? 'opacity-50' : ''
+      }`}
+    >
+      <div className="h-3 w-full bg-primary/80" />
+      <div className="space-y-1 p-1.5">
+        {isChart ? (
+          <svg viewBox="0 0 40 16" className="h-4 w-full">
+            <polyline
+              points="0,12 8,8 16,10 24,4 32,6 40,2"
+              fill="none"
+              stroke="var(--color-primary)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        ) : (
+          <div className="flex h-4 items-end gap-0.5">
+            {[7, 11, 5, 9].map((h, i) => (
+              <span key={i} className="w-1.5 rounded-sm bg-primary/60" style={{ height: h }} />
+            ))}
+          </div>
+        )}
+        <div className="h-1 w-10 rounded bg-surface-2" />
+        <div className="h-1 w-8 rounded bg-surface-2" />
+        <div className="h-1 w-9 rounded bg-surface-2" />
+      </div>
+    </div>
+  )
+}
+
+/** Übersicht: drei Berichts-Kacheln mit Mini-Vorschau, Inhalts-Chips, Status. */
 function ReportOverview({ onSelect }: OverviewProps) {
   const { t } = useTranslation()
   const profile = useOnboardingStore((s) => s.data)
@@ -76,6 +114,13 @@ function ReportOverview({ onSelect }: OverviewProps) {
   const measDone = available.filter((m) => anyResultFor(results, m.id)).length
   const meterTypes = activeEnergyTypes(profile)
   const metersWithData = meterTypes.filter((tp) => (readingsByType[tp]?.length ?? 0) > 0).length
+
+  // Gesamt ist immer möglich (Profil ist enthalten); die anderen brauchen Daten.
+  const enabledFor = (type: ReportType): boolean => {
+    if (type === 'measurements') return measDone > 0
+    if (type === 'monitoring') return metersWithData > 0
+    return true
+  }
 
   function statusFor(type: ReportType): string {
     if (type === 'measurements') {
@@ -100,7 +145,59 @@ function ReportOverview({ onSelect }: OverviewProps) {
       {TYPE_ORDER.map((type) => {
         const Icon = TYPE_META[type]
         const recommended = type === 'total'
+        const enabled = enabledFor(type)
         const tags = t(`report.types.${type}.tags`, { returnObjects: true }) as string[]
+
+        const inner = (
+          <div className="flex items-start gap-4">
+            <span
+              className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${
+                recommended ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+              }`}
+            >
+              <Icon className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold text-foreground">
+                  {t(`report.types.${type}.title`)}
+                </h2>
+                {recommended && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                    <Sparkles className="h-3 w-3" />
+                    {t('report.overview.recommended')}
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 text-sm text-muted">{t(`report.types.${type}.description`)}</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-surface-2/70 px-2 py-0.5 text-[11px] font-medium text-muted"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-muted">{statusFor(type)}</p>
+            </div>
+            <ReportThumb type={type} dim={!enabled} />
+          </div>
+        )
+
+        if (!enabled) {
+          return (
+            <div
+              key={type}
+              aria-disabled="true"
+              className="glass w-full cursor-default rounded-3xl p-4 opacity-60"
+            >
+              {inner}
+            </div>
+          )
+        }
+
         return (
           <button
             key={type}
@@ -110,41 +207,7 @@ function ReportOverview({ onSelect }: OverviewProps) {
               recommended ? 'ring-1 ring-primary/40' : ''
             }`}
           >
-            <div className="flex items-start gap-4">
-              <span
-                className={`grid place-items-center w-11 h-11 rounded-2xl shrink-0 ${
-                  recommended ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
-                }`}
-              >
-                <Icon className="w-5 h-5" />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-base font-semibold text-foreground">
-                    {t(`report.types.${type}.title`)}
-                  </h2>
-                  {recommended && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-                      <Sparkles className="h-3 w-3" />
-                      {t('report.overview.recommended')}
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-muted mt-0.5">{t(`report.types.${type}.description`)}</p>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-surface-2/70 px-2 py-0.5 text-[11px] font-medium text-muted"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-2 text-xs text-muted">{statusFor(type)}</p>
-              </div>
-              <ChevronRight className="w-5 h-5 text-muted shrink-0 self-center" />
-            </div>
+            {inner}
           </button>
         )
       })}
@@ -251,8 +314,10 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
     }
   }
 
+  const needsSelection = (showMonitoring && meterTypes.length > 0) || showMeasurements
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 pb-24">
       <button
         type="button"
         onClick={onBack}
@@ -267,142 +332,130 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
         <p className="text-sm text-muted">{t(`report.types.${type}.description`)}</p>
       </div>
 
-      <Card>
-        <SectionLabel>{t('report.builder.variant')}</SectionLabel>
-        <div className="flex flex-wrap gap-2">
-          <SelectChip
-            label={t('report.variant.short')}
-            selected={variant === 'short'}
-            onClick={() => changeVariant('short')}
-          />
-          <SelectChip
-            label={t('report.variant.long')}
-            selected={variant === 'long'}
-            onClick={() => changeVariant('long')}
-          />
+      {/* 1 · Format & Inhalt */}
+      <Card className="space-y-4">
+        <div>
+          <SectionLabel>{t('report.builder.variant')}</SectionLabel>
+          <div className="flex flex-wrap gap-2">
+            <SelectChip
+              label={t('report.variant.short')}
+              selected={variant === 'short'}
+              onClick={() => changeVariant('short')}
+            />
+            <SelectChip
+              label={t('report.variant.long')}
+              selected={variant === 'long'}
+              onClick={() => changeVariant('long')}
+            />
+          </div>
+        </div>
+        <div>
+          <SectionLabel>{t('report.builder.contents')}</SectionLabel>
+          <div className="flex flex-wrap gap-2">
+            {showMonitoring && (
+              <>
+                <ToggleChip label={t('report.contents.charts')} active={options.charts} onClick={() => toggleOption('charts')} />
+                <ToggleChip label={t('report.contents.kpis')} active={options.kpis} onClick={() => toggleOption('kpis')} />
+                <ToggleChip label={t('report.contents.comparison')} active={options.comparison} onClick={() => toggleOption('comparison')} />
+                <ToggleChip label={t('report.contents.history')} active={options.history} onClick={() => toggleOption('history')} />
+              </>
+            )}
+            {showMeasurements && (
+              <>
+                <ToggleChip label={t('report.contents.savings')} active={options.savings} onClick={() => toggleOption('savings')} />
+                <ToggleChip label={t('report.contents.tips')} active={options.tips} onClick={() => toggleOption('tips')} />
+                <ToggleChip label={t('report.contents.openMeasurements')} active={options.openMeasurements} onClick={() => toggleOption('openMeasurements')} />
+              </>
+            )}
+          </div>
         </div>
       </Card>
 
-      <Card>
-        <SectionLabel>{t('report.builder.contents')}</SectionLabel>
-        <div className="flex flex-wrap gap-2">
+      {/* 2 · Zeitraum & Auswahl (zusammengefasst) */}
+      {(showMonitoring || needsSelection) && (
+        <Card className="space-y-4">
           {showMonitoring && (
-            <>
-              <ToggleChip
-                label={t('report.contents.charts')}
-                active={options.charts}
-                onClick={() => toggleOption('charts')}
-              />
-              <ToggleChip
-                label={t('report.contents.kpis')}
-                active={options.kpis}
-                onClick={() => toggleOption('kpis')}
-              />
-              <ToggleChip
-                label={t('report.contents.comparison')}
-                active={options.comparison}
-                onClick={() => toggleOption('comparison')}
-              />
-              <ToggleChip
-                label={t('report.contents.history')}
-                active={options.history}
-                onClick={() => toggleOption('history')}
-              />
-            </>
+            <div>
+              <SectionLabel>{t('report.builder.range')}</SectionLabel>
+              <div className="flex flex-wrap gap-2">
+                {RANGE_OPTIONS.map((r) => (
+                  <SelectChip
+                    key={r.key}
+                    label={t(`report.range.${r.key}`)}
+                    selected={rangeDays === r.value}
+                    onClick={() => setRangeDays(r.value)}
+                  />
+                ))}
+              </div>
+            </div>
           )}
+
+          {showMonitoring && meterTypes.length > 0 && (
+            <div>
+              <SectionLabel>{t('report.builder.meters')}</SectionLabel>
+              <div className="flex flex-wrap gap-2">
+                {meterTypes.map((m) => (
+                  <SelectChip
+                    key={m}
+                    label={t(`monitoring.energyTypes.${m}`)}
+                    selected={meters.length === 0 || meters.includes(m)}
+                    onClick={() => toggleMeter(m)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+
           {showMeasurements && (
-            <>
-              <ToggleChip
-                label={t('report.contents.savings')}
-                active={options.savings}
-                onClick={() => toggleOption('savings')}
-              />
-              <ToggleChip
-                label={t('report.contents.tips')}
-                active={options.tips}
-                onClick={() => toggleOption('tips')}
-              />
-              <ToggleChip
-                label={t('report.contents.openMeasurements')}
-                active={options.openMeasurements}
-                onClick={() => toggleOption('openMeasurements')}
-              />
-            </>
+            <div>
+              <SectionLabel>{t('report.builder.categories')}</SectionLabel>
+              <div className="flex flex-wrap gap-2">
+                {catTypes.map((c) => (
+                  <SelectChip
+                    key={c}
+                    label={t(`measurements.categories.${c}`)}
+                    selected={categories.length === 0 || categories.includes(c)}
+                    onClick={() => toggleCategory(c)}
+                  />
+                ))}
+              </div>
+            </div>
           )}
-        </div>
-      </Card>
 
-      {showMonitoring && (
-        <Card>
-          <SectionLabel>{t('report.builder.range')}</SectionLabel>
-          <div className="flex flex-wrap gap-2">
-            {RANGE_OPTIONS.map((r) => (
-              <SelectChip
-                key={r.key}
-                label={t(`report.range.${r.key}`)}
-                selected={rangeDays === r.value}
-                onClick={() => setRangeDays(r.value)}
-              />
-            ))}
-          </div>
+          {needsSelection && <p className="text-xs text-muted">{t('report.builder.allHint')}</p>}
         </Card>
       )}
 
-      {showMonitoring && meterTypes.length > 0 && (
-        <Card>
-          <SectionLabel>{t('report.builder.meters')}</SectionLabel>
-          <p className="mb-3 text-xs text-muted">{t('report.builder.allHint')}</p>
-          <div className="flex flex-wrap gap-2">
-            {meterTypes.map((m) => (
-              <SelectChip
-                key={m}
-                label={t(`monitoring.energyTypes.${m}`)}
-                selected={meters.length === 0 || meters.includes(m)}
-                onClick={() => toggleMeter(m)}
-              />
-            ))}
-          </div>
-        </Card>
-      )}
-
-      {showMeasurements && (
-        <Card>
-          <SectionLabel>{t('report.builder.categories')}</SectionLabel>
-          <p className="mb-3 text-xs text-muted">{t('report.builder.allHint')}</p>
-          <div className="flex flex-wrap gap-2">
-            {catTypes.map((c) => (
-              <SelectChip
-                key={c}
-                label={t(`measurements.categories.${c}`)}
-                selected={categories.length === 0 || categories.includes(c)}
-                onClick={() => toggleCategory(c)}
-              />
-            ))}
-          </div>
-        </Card>
-      )}
-
+      {/* 3 · Kompakte Vorschau */}
       <Card>
         <SectionLabel>{t('report.builder.previewTitle')}</SectionLabel>
-        <ul className="space-y-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {buildPreviewLines(t, type, variant, options).map((line) => (
-            <li key={line} className="flex items-center gap-2 text-sm text-foreground">
-              <Check className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span className="min-w-0">{line}</span>
-            </li>
+            <span
+              key={line}
+              className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1 text-xs text-foreground"
+            >
+              <Check className="h-3 w-3 text-primary shrink-0" />
+              {line}
+            </span>
           ))}
-        </ul>
+        </div>
       </Card>
 
-      <button
-        type="button"
-        onClick={handleExport}
-        disabled={busy}
-        className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-4 text-base font-semibold text-primary-foreground shadow-[0_4px_14px_color-mix(in_srgb,var(--primary)_35%,transparent)] transition-[transform,background-color] duration-200 active:scale-[0.98] disabled:opacity-60"
-      >
-        <Download className="w-5 h-5" />
-        {t('report.builder.export')}
-      </button>
+      {/* Fixe Export-Leiste – immer erreichbar */}
+      <div className="glass-bar fixed inset-x-0 z-30 border-t border-border/60 bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]">
+        <div className="mx-auto flex max-w-3xl px-4 py-3">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={busy}
+            className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-base font-semibold text-primary-foreground shadow-[0_4px_14px_color-mix(in_srgb,var(--primary)_35%,transparent)] transition-[transform,background-color] duration-200 active:scale-[0.98] disabled:opacity-60"
+          >
+            <Download className="w-5 h-5" />
+            {t('report.builder.export')}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
