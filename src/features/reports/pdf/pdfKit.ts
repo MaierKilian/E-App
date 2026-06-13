@@ -33,13 +33,15 @@ export const PALETTE = {
   white: [255, 255, 255] as RGB,
   good: [22, 163, 74] as RGB, // RATING_COLOR.good
   medium: [217, 119, 6] as RGB, // RATING_COLOR.medium
+  elevated: [234, 88, 12] as RGB, // RATING_COLOR.elevated
   high: [220, 38, 38] as RGB, // RATING_COLOR.high
 }
 
 /** Rating-Schlüssel → Palette-Farbe (spiegelt measurements/rating.ts). */
-export function ratingColor(rating: 'good' | 'medium' | 'high'): RGB {
+export function ratingColor(rating: 'good' | 'medium' | 'elevated' | 'high'): RGB {
   if (rating === 'good') return PALETTE.good
   if (rating === 'medium') return PALETTE.medium
+  if (rating === 'elevated') return PALETTE.elevated
   return PALETTE.high
 }
 

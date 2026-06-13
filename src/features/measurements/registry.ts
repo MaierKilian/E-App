@@ -3,6 +3,9 @@ import type { MeasurementModule } from './runnerTypes'
 import { ShowerheadIntro } from './showerhead/ShowerheadIntro'
 import { ShowerheadRun } from './showerhead/ShowerheadRun'
 import { ShowerheadResult } from './showerhead/ShowerheadResult'
+import { HotWaterWaitIntro } from './hot_water_wait/HotWaterWaitIntro'
+import { HotWaterWaitRun } from './hot_water_wait/HotWaterWaitRun'
+import { HotWaterWaitResult } from './hot_water_wait/HotWaterWaitResult'
 import { StandbyIntro } from './standby/StandbyIntro'
 import { StandbyRun } from './standby/StandbyRun'
 import { StandbyResult } from './standby/StandbyResult'
@@ -26,6 +29,11 @@ export const MEASUREMENT_MODULES: Partial<Record<MeasurementId, MeasurementModul
     Intro: ShowerheadIntro,
     Run: ShowerheadRun,
     Result: ShowerheadResult,
+  },
+  hot_water_wait: {
+    Intro: HotWaterWaitIntro,
+    Run: HotWaterWaitRun,
+    Result: HotWaterWaitResult,
   },
   standby: {
     Intro: StandbyIntro,

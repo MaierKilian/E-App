@@ -98,7 +98,9 @@ export function MeasurementRunner() {
   }
 
   function handleSave(result: MeasurementResult) {
-    const full = { ...result, roomKey }
+    // Eine Messung darf ihren Schlüssel selbst setzen (z. B. Entnahmestelle);
+    // sonst greift der Raum aus der URL.
+    const full = { ...result, roomKey: result.roomKey ?? roomKey }
     saveResult(full)
     // Nächstes Ziel bestimmen: bei Pro-Raum der nächste offene Raum, sonst Übersicht.
     let nextHref = '/measurements'

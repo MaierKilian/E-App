@@ -234,7 +234,8 @@
     "ratings": {
       "good": "sparsam",
       "medium": "mittel",
-      "high": "hoch"
+      "high": "hoch",
+      "elevated": "auffällig"
     },
     "views": {
       "recommended": "Empfohlen",
@@ -548,6 +549,52 @@
       "continue": "Weiter",
       "continueOverview": "Zur Übersicht",
       "roomProgress": "Raum {{current}} von {{total}}"
+    },
+    "hot_water_wait": {
+      "title": "Warmwasser-Wartezeit",
+      "short": "Miss, wie lange du auf warmes Wasser wartest – und welches Potenzial ungenutzt abfließt.",
+      "intro": {
+        "lead": "Bis warmes Wasser ankommt, fließt oft kaltes Wasser ungenutzt ab. Finde heraus, wie viel.",
+        "stepsTitle": "So funktioniert’s",
+        "steps": [
+          "Entnahmestelle wählen",
+          "Voll auf warm stellen & Start",
+          "Bei warmem Wasser stoppen"
+        ],
+        "start": "Check starten"
+      },
+      "fixtures": {
+        "shower": "Dusche",
+        "bath": "Badewanne",
+        "kitchen": "Küche",
+        "washbasin": "Waschbecken"
+      },
+      "run": {
+        "fixtureLabel": "Wo misst du?",
+        "recommended": "Empfohlen",
+        "instruction": "Stelle das Wasser voll auf warm, starte die Stoppuhr – und stoppe, sobald es deutlich warm wird.",
+        "waterPrice": "Wasserpreis"
+      },
+      "result": {
+        "secondsUnit": "Sek.",
+        "explanation": "Bis warmes Wasser da war, vergingen {{seconds}} Sek. In dieser Zeit flossen rund {{liters}} L Trinkwasser ungenutzt ab – das ließe sich auffangen und weiternutzen.",
+        "perDraw": "pro Zapfung",
+        "perYear": "pro Jahr",
+        "savingYear": "Potenzial/Jahr",
+        "reuseTitle": "Aufgefangenes Wasser nutzen für",
+        "reuse": [
+          "Pflanzen gießen",
+          "Putzwasser",
+          "Reinigung",
+          "Toilettenspülung"
+        ],
+        "ratings": {
+          "good": "Sehr gut",
+          "medium": "Gut",
+          "elevated": "Auffällig",
+          "high": "Hoch"
+        }
+      }
     }
   },
   "monitoring": {

@@ -1,7 +1,8 @@
 import type { TFunction } from 'i18next'
 import type { RoomEntry } from '@/types'
+import type { MeasurementResult } from './types'
 import { MEASUREMENT_CATALOG, type MeasurementMeta } from './catalog'
-import { roomInstances, roomLabel, instanceKey } from './rooms'
+import { roomInstances, roomLabel, instanceKey, anyResultFor } from './rooms'
 
 /** Ein gruppierter Schritt (eine Messung; bei Pro-Raum mit Raum-Fortschritt). */
 export interface MeasurementStep {
@@ -25,7 +26,7 @@ export interface MeasurementStep {
  */
 export function buildSteps(
   rooms: RoomEntry[],
-  results: Partial<Record<string, { id: string } | undefined>>,
+  results: Partial<Record<string, MeasurementResult>>,
   t: TFunction,
 ): MeasurementStep[] {
   const instances = roomInstances(rooms)
@@ -46,7 +47,9 @@ export function buildSteps(
         nextRoomName: next ? roomLabel(t, next) : undefined,
       })
     } else {
-      const done = Boolean(results[instanceKey(meta.id)])
+      // Erledigt, sobald ein Ergebnis vorliegt – auch bei mehreren Entnahme-
+      // stellen (z. B. Warmwasser-Wartezeit, je Stelle ein Ergebnis).
+      const done = Boolean(anyResultFor(results, meta.id))
       steps.push({ meta, perRoom: false, roomsTotal: 1, roomsDone: done ? 1 : 0, done })
     }
   }

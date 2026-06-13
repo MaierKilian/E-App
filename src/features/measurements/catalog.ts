@@ -1,4 +1,4 @@
-import { Droplet, Snowflake, Plug, Thermometer } from 'lucide-react'
+import { Droplet, Snowflake, Plug, Thermometer, Hourglass } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { MeasurementId } from './types'
 import type { RoomType } from '@/types'
@@ -39,6 +39,15 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'hot_water',
     estimatedMinutes: 5,
     rooms: ['bathroom'],
+  },
+  {
+    id: 'hot_water_wait',
+    icon: Hourglass,
+    difficulty: 1,
+    available: true,
+    category: 'hot_water',
+    estimatedMinutes: 2,
+    rooms: ['bathroom', 'kitchen'],
   },
   {
     id: 'room_temperature',

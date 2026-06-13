@@ -1,11 +1,13 @@
 export type MeasurementId =
   | 'showerhead'
+  | 'hot_water_wait'
   | 'fridge'
   | 'standby'
   | 'room_temperature'
   | 'freezer'
 
-export type MeasurementRating = 'good' | 'medium' | 'high'
+/** Bewertungsstufen (vierstufig): gut → mittel → erhöht → hoch. */
+export type MeasurementRating = 'good' | 'medium' | 'elevated' | 'high'
 
 export interface MeasurementResult {
   id: MeasurementId

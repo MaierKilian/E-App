@@ -234,7 +234,8 @@
     "ratings": {
       "good": "efficient",
       "medium": "medium",
-      "high": "high"
+      "high": "high",
+      "elevated": "elevated"
     },
     "views": {
       "recommended": "Recommended",
@@ -548,6 +549,52 @@
       "continue": "Continue",
       "continueOverview": "To overview",
       "roomProgress": "Room {{current}} of {{total}}"
+    },
+    "hot_water_wait": {
+      "title": "Hot water wait",
+      "short": "Measure how long you wait for hot water — and the potential that runs off unused.",
+      "intro": {
+        "lead": "Until hot water arrives, cold water often runs off unused. Find out how much.",
+        "stepsTitle": "How it works",
+        "steps": [
+          "Choose a tap",
+          "Turn fully to hot & start",
+          "Stop once it is clearly warm"
+        ],
+        "start": "Start check"
+      },
+      "fixtures": {
+        "shower": "Shower",
+        "bath": "Bathtub",
+        "kitchen": "Kitchen",
+        "washbasin": "Washbasin"
+      },
+      "run": {
+        "fixtureLabel": "Where are you measuring?",
+        "recommended": "Recommended",
+        "instruction": "Turn the water fully to hot, start the stopwatch — and stop as soon as it gets clearly warm.",
+        "waterPrice": "Water price"
+      },
+      "result": {
+        "secondsUnit": "sec",
+        "explanation": "It took {{seconds}} sec for hot water to arrive. In that time about {{liters}} L of drinking water ran off unused — it could be collected and reused.",
+        "perDraw": "per draw",
+        "perYear": "per year",
+        "savingYear": "Potential/year",
+        "reuseTitle": "Use collected water for",
+        "reuse": [
+          "Watering plants",
+          "Cleaning water",
+          "Cleaning",
+          "Toilet flush"
+        ],
+        "ratings": {
+          "good": "Very good",
+          "medium": "Good",
+          "elevated": "Notable",
+          "high": "High"
+        }
+      }
     }
   },
   "onboarding": {
