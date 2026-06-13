@@ -546,7 +546,8 @@
       "savedTitle": "Gespeichert!",
       "savedSavings": "Stark! ~{{value}} €/Jahr Potenzial entdeckt.",
       "continue": "Weiter",
-      "continueOverview": "Zur Übersicht"
+      "continueOverview": "Zur Übersicht",
+      "roomProgress": "Raum {{current}} von {{total}}"
     }
   },
   "monitoring": {

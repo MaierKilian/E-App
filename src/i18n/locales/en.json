@@ -546,7 +546,8 @@
       "savedTitle": "Saved!",
       "savedSavings": "Great! ~{{value}} €/year potential found.",
       "continue": "Continue",
-      "continueOverview": "To overview"
+      "continueOverview": "To overview",
+      "roomProgress": "Room {{current}} of {{total}}"
     }
   },
   "onboarding": {

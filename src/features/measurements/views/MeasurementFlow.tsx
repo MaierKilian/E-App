@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Check, ChevronRight, Sparkles, Lock } from 'lucide-react'
+import { Check, ChevronRight, Lock } from 'lucide-react'
 import { stepHref, type MeasurementStep } from '../tasks'
 
 interface Props {
@@ -55,8 +55,12 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
         </div>
       )}
 
-      {/* Schritt-Leiste: Überblick + Sprungmarken */}
-      <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      {/* Schritt-Leiste als Journey: erledigt · aktuell · kommend */}
+      <div className="relative flex items-center justify-between px-2">
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-6 top-1/2 h-0.5 -translate-y-1/2 bg-surface-2"
+        />
         {steps.map((step, i) => {
           const Icon = step.meta.icon
           const isCurrent = i === currentIndex
@@ -66,29 +70,21 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
               type="button"
               onClick={() => navigate(stepHref(step))}
               aria-label={t(`measurements.${step.meta.id}.title`)}
-              className={`relative flex w-[4.5rem] shrink-0 flex-col items-center gap-1 rounded-2xl p-2 text-center transition-colors ${
-                isCurrent ? 'glass ring-2 ring-primary/60' : 'glass'
+              aria-current={isCurrent ? 'step' : undefined}
+              className={`relative grid h-12 w-12 place-items-center rounded-2xl transition-transform active:scale-95 ${
+                step.done
+                  ? 'bg-emerald-500 text-white'
+                  : isCurrent
+                    ? 'bg-primary text-primary-foreground ring-4 ring-primary/25'
+                    : 'border border-border bg-surface text-muted'
               }`}
             >
-              <span
-                className={`relative grid h-9 w-9 place-items-center rounded-xl ${
-                  step.done
-                    ? 'bg-emerald-500/15 text-emerald-500'
-                    : isCurrent
-                      ? 'bg-primary/10 text-primary'
-                      : 'bg-surface-2 text-muted'
-                }`}
-              >
-                <Icon className="h-4.5 w-4.5" />
-                {step.done && (
-                  <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-emerald-500 text-white">
-                    <Check className="h-2.5 w-2.5" />
-                  </span>
-                )}
-              </span>
-              <span className="line-clamp-1 text-[10px] font-medium text-muted">
-                {t(`measurements.${step.meta.id}.title`)}
-              </span>
+              <Icon className="h-5 w-5" />
+              {step.done && (
+                <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-emerald-500 text-white ring-2 ring-background">
+                  <Check className="h-2.5 w-2.5" />
+                </span>
+              )}
             </button>
           )
         })}
@@ -119,13 +115,15 @@ function FocusCard({ step, index, total }: { step: MeasurementStep; index: numbe
       />
       <div className="relative">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
+          <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
             {t('measurements.flow.stepOf', { current: index + 1, total })}
           </span>
           {step.perRoom && (
             <span className="rounded-full bg-surface-2/70 px-2.5 py-1 text-[11px] font-medium text-muted tabular-nums">
-              {t('measurements.flow.rooms', { done: step.roomsDone, total: step.roomsTotal })}
+              {t('measurements.flow.roomProgress', {
+                current: step.roomsDone + 1,
+                total: step.roomsTotal,
+              })}
             </span>
           )}
         </div>
