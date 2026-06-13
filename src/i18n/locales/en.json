@@ -927,6 +927,20 @@
       "noRooms": "You haven't selected any rooms yet. Add your rooms first.",
       "selectRoomsCta": "Select rooms first",
       "recommendationNote": "Based on these details we'll later show you matching product recommendations."
+    },
+    "prices": {
+      "title": "Energy prices",
+      "subtitle": "Optional: enter your real prices – then we calculate with your tariffs instead of averages. Leaving fields empty is perfectly fine.",
+      "standard": "Default",
+      "laterNote": "You can change these values anytime later in Monitoring.",
+      "info": {
+        "electricity": "On your electricity bill or supply contract – the unit price in ct/kWh.",
+        "water": "On your water/utility statement – price per cubic metre (€/m³).",
+        "gas": "On your gas bill or annual statement – here as price per cubic metre (€/m³).",
+        "oil": "On your delivery/tank invoice – price per litre (€/l).",
+        "pellets": "On your delivery/annual statement – price per kilogram (€/kg).",
+        "heat_pump": "If your heat pump has its own electricity tariff – otherwise like household power (ct/kWh)."
+      }
     }
   },
   "monitoring": {

@@ -1047,6 +1047,20 @@
       "noRooms": "Du hast noch keine Zimmer ausgewählt. Lege zuerst deine Räume an.",
       "selectRoomsCta": "Zuerst Zimmer auswählen",
       "recommendationNote": "Auf Basis dieser Angaben zeigen wir dir später passende Produktempfehlungen."
+    },
+    "prices": {
+      "title": "Verbrauchspreise",
+      "subtitle": "Optional: Trag deine echten Preise ein – dann rechnen wir mit deinen Tarifen statt mit Durchschnittswerten. Felder leer lassen ist völlig in Ordnung.",
+      "standard": "Standard",
+      "laterNote": "Du kannst diese Werte jederzeit später im Monitoring ändern.",
+      "info": {
+        "electricity": "Auf deiner Stromrechnung oder im Liefervertrag – der Arbeitspreis in ct/kWh.",
+        "water": "Auf der Wasser-/Nebenkostenabrechnung – Preis je Kubikmeter (€/m³).",
+        "gas": "Auf der Gasrechnung oder Jahresabrechnung – hier als Preis je Kubikmeter (€/m³).",
+        "oil": "Auf der Liefer-/Tankrechnung – Preis je Liter (€/l).",
+        "pellets": "Auf der Liefer-/Jahresabrechnung – Preis je Kilogramm (€/kg).",
+        "heat_pump": "Falls deine Wärmepumpe einen eigenen Stromtarif hat – sonst wie der Haushaltsstrom (ct/kWh)."
+      }
     }
   },
   "pages": {

@@ -14,19 +14,20 @@ import { Step5HeatTransfer } from './steps/Step5HeatTransfer'
 import { Step6Instruments } from './steps/Step6Instruments'
 import { Step7Location } from './steps/Step7Location'
 import { Step7Renovation } from './steps/Step7Renovation'
+import { StepPrices } from './steps/StepPrices'
 import { Step8Review } from './steps/Step8Review'
 import { Card } from '@/components/ui/Card'
 import { HomeDashboard } from '@/features/home/HomeDashboard'
 import type { OnboardingData } from '@/types'
 
-// Quick flow steps (indices 0..4, displayed as steps 1..5):
-// 0 = Profile, 1 = Building, 2 = Heating, 3 = Instruments, 4 = Review
-const QUICK_TOTAL = 5
+// Quick flow steps (indices 0..5, displayed as steps 1..6):
+// 0 = Profile, 1 = Building, 2 = Heating, 3 = Instruments, 4 = Prices, 5 = Review
+const QUICK_TOTAL = 6
 
-// Detailed flow steps (indices 0..8, displayed as steps 1..9):
+// Detailed flow steps (indices 0..9, displayed as steps 1..10):
 // 0 = Profile, 1 = Building, 2 = Rooms, 3 = Heating, 4 = HeatTransfer,
-// 5 = Instruments, 6 = Renovation, 7 = Location, 8 = Review
-const DETAILED_TOTAL = 9
+// 5 = Instruments, 6 = Renovation, 7 = Location, 8 = Prices, 9 = Review
+const DETAILED_TOTAL = 10
 
 function getStepTitle(step: number, mode: 'quick' | 'detailed', t: (key: string) => string): string {
   if (mode === 'quick') {
@@ -35,6 +36,7 @@ function getStepTitle(step: number, mode: 'quick' | 'detailed', t: (key: string)
       'onboarding.step2.title',
       'onboarding.step4.title',
       'onboarding.step6.title',
+      'onboarding.prices.title',
       'onboarding.step8.title',
     ]
     return t(keys[step] ?? keys[0])
@@ -48,6 +50,7 @@ function getStepTitle(step: number, mode: 'quick' | 'detailed', t: (key: string)
     'onboarding.step6.title',
     'onboarding.step7renovation.title',
     'onboarding.step7.title',
+    'onboarding.prices.title',
     'onboarding.step8.title',
   ]
   return t(keys[step] ?? keys[0])
@@ -56,7 +59,7 @@ function getStepTitle(step: number, mode: 'quick' | 'detailed', t: (key: string)
 /** Titel eines Abschnitts im Bearbeitungsmodus (Detailed-Sektionen + GA). */
 function getSectionTitle(index: number, t: (key: string) => string): string {
   if (index === GA_INDEX) return t('onboarding.ga.title')
-  // Index entspricht den Detailed-Schritten (0..7); 8 = Review wird nicht editiert.
+  // Index entspricht den Detailed-Schritten (0..8, inkl. Preise); 9 = Review wird nicht editiert.
   return getStepTitle(index, 'detailed', t)
 }
 
@@ -73,7 +76,8 @@ function QuickStepContent({ step, data, onChange }: Omit<StepContentProps, 'mode
     case 1: return <Step2Building data={data} onChange={onChange} />
     case 2: return <Step4Heating data={data} onChange={onChange} />
     case 3: return <Step6Instruments data={data} onChange={onChange} />
-    case 4: return <Step8Review data={data} />
+    case 4: return <StepPrices data={data} />
+    case 5: return <Step8Review data={data} />
     default: return null
   }
 }
@@ -88,7 +92,8 @@ function DetailedStepContent({ step, data, onChange }: Omit<StepContentProps, 'm
     case 5: return <Step6Instruments data={data} onChange={onChange} detailed />
     case 6: return <Step7Renovation data={data} onChange={onChange} />
     case 7: return <Step7Location data={data} onChange={onChange} />
-    case 8: return <Step8Review data={data} />
+    case 8: return <StepPrices data={data} />
+    case 9: return <Step8Review data={data} />
     default: return null
   }
 }

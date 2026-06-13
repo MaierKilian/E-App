@@ -11,6 +11,7 @@ import {
   MapPin,
   Cpu,
   Sparkles,
+  Wallet,
   Check,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -19,8 +20,10 @@ import type { OnboardingData } from '@/types'
 import { profileCompleteness } from '@/features/home/estimateEnergy'
 import { sectionStatus } from './sectionStatus'
 
-/** Hub-Index für den Gebäudeautomations-Abschnitt (hinter den Detailed-Schritten). */
-export const GA_INDEX = 9
+/** Hub-Index des optionalen Preise-Schritts (Detailed-Index 8). */
+export const PRICES_INDEX = 8
+/** Hub-Index für den Gebäudeautomations-Abschnitt (hinter Preisen & Review). */
+export const GA_INDEX = 10
 
 interface ProfileHubProps {
   data: OnboardingData
@@ -182,6 +185,15 @@ export function ProfileHub({ data, onOpenSection, onDone }: ProfileHubProps) {
             />
           )
         })}
+
+        {/* Optional: individuelle Verbrauchspreise. */}
+        <HubTile
+          icon={Wallet}
+          title={t('onboarding.prices.title')}
+          accent
+          subtitle={t('onboarding.hub.optional')}
+          onClick={() => onOpenSection(PRICES_INDEX)}
+        />
 
         {/* Zusatz-Abschnitt: Gebäudeautomation (optional, „Neu"). */}
         <HubTile

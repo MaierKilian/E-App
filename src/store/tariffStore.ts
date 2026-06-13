@@ -27,6 +27,8 @@ interface TariffState {
   prices: Partial<Record<EnergyType, PriceEntry>>
   setTariff: (workPrice: number, basePrice: number) => void
   setTypePrice: (type: EnergyType, work: number, base: number) => void
+  /** Setzt einen Träger auf den Standardwert zurück (leeres Feld im Onboarding). */
+  clearTypePrice: (type: EnergyType) => void
   skipPrompt: () => void
   markPromptSeen: () => void
   resetTariff: () => void
@@ -66,6 +68,19 @@ export const useTariffStore = create<TariffState>()(
             prices: { ...s.prices, [type]: { work, base, custom: true } },
             promptSeen: true,
           }
+        }),
+      clearTypePrice: (type) =>
+        set((s) => {
+          if (type === 'electricity') {
+            return {
+              electricityWorkPrice: DEFAULT_WORK_PRICE,
+              electricityBasePrice: DEFAULT_BASE_PRICE,
+              isCustom: false,
+            }
+          }
+          const next = { ...s.prices }
+          delete next[type]
+          return { prices: next }
         }),
       skipPrompt: () => set({ promptSeen: true }),
       markPromptSeen: () => set({ promptSeen: true }),
