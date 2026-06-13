@@ -1,12 +1,56 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Check, Sparkles } from 'lucide-react'
+import { ChevronRight, Check, Sparkles, TrendingDown } from 'lucide-react'
+import { useTariffStore } from '@/store/tariffStore'
+import { InfoButton } from '@/components/ui/InfoButton'
 import { MEASUREMENT_CATALOG } from '../catalog'
 import type { MeasurementMeta } from '../catalog'
 import type { MeasurementResult } from '../types'
+import { impactSummary } from '../impact'
 
 interface ViewProps {
   results: Partial<Record<string, MeasurementResult>>
+}
+
+/** Hero-Karte mit aggregiertem Einsparpotenzial (€ und CO₂-Schätzung). */
+function ImpactCard({ results }: ViewProps) {
+  const { t, i18n } = useTranslation()
+  const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
+  const { savingsEur, co2Kg, contributing } = impactSummary(results, workPriceCt)
+
+  if (savingsEur <= 0) return null
+
+  const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
+
+  return (
+    <div className="glass relative overflow-hidden rounded-3xl p-5">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-emerald-500 opacity-[0.14] blur-3xl"
+      />
+      <div className="relative">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+          <TrendingDown className="h-3.5 w-3.5" />
+          {t('measurements.impact.title')}
+        </span>
+        <div className="mt-3 flex items-baseline gap-1.5">
+          <span className="text-4xl font-bold tabular-nums text-foreground">
+            {eurFmt.format(savingsEur)}
+          </span>
+          <span className="text-base font-medium text-muted">
+            {t('measurements.impact.perYear')}
+          </span>
+        </div>
+        <p className="mt-1 flex items-center gap-1 text-sm text-muted">
+          {t('measurements.impact.co2', { value: eurFmt.format(co2Kg) })}
+          <InfoButton text={t('measurements.impact.info')} />
+        </p>
+        <p className="mt-2 text-xs text-muted">
+          {t('measurements.impact.from', { count: contributing })}
+        </p>
+      </div>
+    </div>
+  )
 }
 
 /** Hero-Karte „Als Nächstes" für die nächste offene, verfügbare Messung. */
@@ -114,6 +158,8 @@ export function RecommendedView({ results }: ViewProps) {
 
   return (
     <div className="space-y-5">
+      <ImpactCard results={results} />
+
       <div className="glass rounded-3xl p-5">
         <div className="flex items-center justify-between gap-3">
           <p className="font-semibold text-foreground">{t('measurements.profile.title')}</p>

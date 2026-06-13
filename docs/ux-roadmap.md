@@ -195,11 +195,12 @@ Quiz mit Sofort-Feedback → Erfolgs-Screen mit XP + Zertifikat.
 - [x] Segmented Control → scrollbare Chips
 - [x] Quiz: Name-Eingabe nach vorne (auf der Vorbereitungs-Seite)
 
-### Phase 1 – Substanz im Lernen (2–3 Tage)
+### Phase 1 – Substanz im Lernen (2–3 Tage) — ✅ erledigt
 - [x] Quiz mit Sofort-Feedback (richtig/falsch je Frage) + Erklärungen
 - [x] Lern-/Quiz-Status persistieren (neuer `progressStore`)
 - [x] Versuchskarten mit Dauer/Schwierigkeit/Status-Badge
-- [ ] Messergebnis-Karte mit €/CO₂-Wirkung (Aggregat in der Messübersicht)
+- [x] Mess-Wirkungskarte: aggregiertes €-Einsparpotenzial + CO₂-Schätzung
+      (Hero oben in der Empfohlen-Ansicht)
 
 ### Phase 2 – Gamification-Fundament (3–4 Tage)
 - [ ] `progressStore`: XP, Level, Streak, Badges

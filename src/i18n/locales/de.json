@@ -522,6 +522,14 @@
         },
         "affiliateNote": "Ein Infrarot-Thermometer hilft beim schnellen Kontrollieren:"
       }
+    },
+    "impact": {
+      "title": "Dein Einsparpotenzial",
+      "perYear": "€ / Jahr",
+      "co2": "≈ {{value}} kg CO₂ / Jahr",
+      "from_one": "aus {{count}} Messung",
+      "from_other": "aus {{count}} Messungen",
+      "info": "Grobe Schätzung: Das Euro-Einsparpotenzial wird über deinen Strompreis in Kilowattstunden umgerechnet und mit rund 0,38 kg CO₂ je kWh hochgerechnet."
     }
   },
   "monitoring": {
