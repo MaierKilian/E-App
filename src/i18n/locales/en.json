@@ -132,15 +132,30 @@
     "types": {
       "measurements": {
         "title": "Measurements",
-        "description": "Results of your checks with rating and savings potential."
+        "description": "Results of your checks with rating and savings potential.",
+        "tags": [
+          "Rating",
+          "Savings",
+          "Tips"
+        ]
       },
       "monitoring": {
         "title": "Monitoring",
-        "description": "Meter readings, consumption and trends as charts."
+        "description": "Meter readings, consumption and trends as charts.",
+        "tags": [
+          "Readings",
+          "Trends",
+          "Charts"
+        ]
       },
       "total": {
         "title": "Overall",
-        "description": "Profile, measurements and monitoring in one report."
+        "description": "Profile, measurements and monitoring in one report.",
+        "tags": [
+          "Profile",
+          "Measurements",
+          "Monitoring"
+        ]
       }
     },
     "builder": {
@@ -216,6 +231,16 @@
         "monitoring": "No energy sources active.",
         "noReading": "No reading yet"
       }
+    },
+    "overview": {
+      "hint": "You set scope and time range in the next step.",
+      "recommended": "Recommended",
+      "measStatus": "{{done}} of {{total}} checks recorded",
+      "measEmpty": "No checks yet – report would be empty",
+      "monStatus": "{{count}} meters with data",
+      "monEmpty": "No readings yet – report would be empty",
+      "totalReady": "Profile, measurements & monitoring combined",
+      "totalEmpty": "Profile is included – add measurement/monitoring data"
     }
   },
   "measurements": {

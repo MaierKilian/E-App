@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FileText, Download, Ruler, Gauge, Layers, ChevronLeft, Check } from 'lucide-react'
+import { FileText, Download, Ruler, Gauge, Layers, ChevronLeft, ChevronRight, Check, Sparkles } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { SelectChip } from '@/components/ui/SelectChip'
@@ -11,6 +11,7 @@ import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { activeEnergyTypes } from '@/features/monitoring/energyConfig'
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
+import { anyResultFor } from '@/features/measurements/rooms'
 import type { MeasurementCategory } from '@/features/measurements/catalog'
 import type { EnergyType } from '@/store/readingsStore'
 import { buildMeasurementsReportData } from './measurementsReportData'
@@ -64,30 +65,85 @@ interface OverviewProps {
   onSelect: (type: ReportType) => void
 }
 
-/** Übersicht: drei Berichts-Kacheln. */
+/** Übersicht: drei Berichts-Kacheln mit Inhalts-Chips, Status und Empfehlung. */
 function ReportOverview({ onSelect }: OverviewProps) {
   const { t } = useTranslation()
+  const profile = useOnboardingStore((s) => s.data)
+  const results = useMeasurementsStore((s) => s.results)
+  const readingsByType = useReadingsStore((s) => s.readings)
+
+  const available = MEASUREMENT_CATALOG.filter((m) => m.available)
+  const measDone = available.filter((m) => anyResultFor(results, m.id)).length
+  const meterTypes = activeEnergyTypes(profile)
+  const metersWithData = meterTypes.filter((tp) => (readingsByType[tp]?.length ?? 0) > 0).length
+
+  function statusFor(type: ReportType): string {
+    if (type === 'measurements') {
+      return measDone > 0
+        ? t('report.overview.measStatus', { done: measDone, total: available.length })
+        : t('report.overview.measEmpty')
+    }
+    if (type === 'monitoring') {
+      return metersWithData > 0
+        ? t('report.overview.monStatus', { count: metersWithData })
+        : t('report.overview.monEmpty')
+    }
+    return measDone > 0 || metersWithData > 0
+      ? t('report.overview.totalReady')
+      : t('report.overview.totalEmpty')
+  }
+
   return (
     <div className="space-y-3">
+      <p className="text-sm text-muted">{t('report.overview.hint')}</p>
+
       {TYPE_ORDER.map((type) => {
         const Icon = TYPE_META[type]
+        const recommended = type === 'total'
+        const tags = t(`report.types.${type}.tags`, { returnObjects: true }) as string[]
         return (
           <button
             key={type}
             type="button"
             onClick={() => onSelect(type)}
-            className="focus-ring glass w-full rounded-3xl p-4 text-left transition-transform duration-200 active:scale-[0.99]"
+            className={`focus-ring glass w-full rounded-3xl p-4 text-left transition-transform duration-200 active:scale-[0.99] ${
+              recommended ? 'ring-1 ring-primary/40' : ''
+            }`}
           >
-            <div className="flex items-center gap-4">
-              <span className="grid place-items-center w-11 h-11 rounded-2xl bg-primary/10 text-primary shrink-0">
+            <div className="flex items-start gap-4">
+              <span
+                className={`grid place-items-center w-11 h-11 rounded-2xl shrink-0 ${
+                  recommended ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+                }`}
+              >
                 <Icon className="w-5 h-5" />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="text-base font-semibold text-foreground">
-                  {t(`report.types.${type}.title`)}
-                </h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-base font-semibold text-foreground">
+                    {t(`report.types.${type}.title`)}
+                  </h2>
+                  {recommended && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                      <Sparkles className="h-3 w-3" />
+                      {t('report.overview.recommended')}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-muted mt-0.5">{t(`report.types.${type}.description`)}</p>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full bg-surface-2/70 px-2 py-0.5 text-[11px] font-medium text-muted"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-2 text-xs text-muted">{statusFor(type)}</p>
               </div>
+              <ChevronRight className="w-5 h-5 text-muted shrink-0 self-center" />
             </div>
           </button>
         )
