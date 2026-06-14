@@ -1453,5 +1453,16 @@
       "editButton": "Edit profile",
       "resetButton": "Reset profile"
     }
+  },
+  "settings": {
+    "open": "Open settings",
+    "title": "Settings",
+    "account": "Account",
+    "signIn": "Sign in / Register",
+    "accountHint": "Save your data across devices",
+    "soon": "Soon",
+    "appearance": "Appearance",
+    "help": "Help",
+    "replayIntro": "Replay introduction"
   }
 }

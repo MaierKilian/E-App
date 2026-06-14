@@ -2,10 +2,9 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Logo } from './ui/Logo'
 import { NAV_ITEMS } from '@/app/navigation'
-import { ThemeSwitcher } from './ThemeSwitcher'
-import { LanguageSwitcher } from './LanguageSwitcher'
+import { ProfileMenu } from './ProfileMenu'
 
-/** Feste Kopfzeile mit Logo, Navigation (Desktop) sowie Sprach- und Theme-Wahl. */
+/** Feste Kopfzeile mit Logo, Navigation (Desktop) und Profil-/Einstellungs-Menü. */
 export function Header() {
   const { t } = useTranslation()
 
@@ -36,8 +35,7 @@ export function Header() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <LanguageSwitcher />
-          <ThemeSwitcher />
+          <ProfileMenu />
         </div>
       </div>
     </header>

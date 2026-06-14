@@ -1453,5 +1453,16 @@
       "editButton": "Profil bearbeiten",
       "resetButton": "Profil zurücksetzen"
     }
+  },
+  "settings": {
+    "open": "Einstellungen öffnen",
+    "title": "Einstellungen",
+    "account": "Konto",
+    "signIn": "Anmelden / Registrieren",
+    "accountHint": "Daten geräteübergreifend speichern",
+    "soon": "Bald",
+    "appearance": "Darstellung",
+    "help": "Hilfe",
+    "replayIntro": "Einführung erneut ansehen"
   }
 }
