@@ -581,7 +581,13 @@
       "preview": "Info & starten",
       "startShort": "Starten",
       "continueShort": "Weiter",
-      "moreInfo": "Mehr Infos"
+      "moreInfo": "Mehr Infos",
+      "planTitle": "Dein Messplan",
+      "planSubtitle": "Empfohlene Messungen in sinnvoller Reihenfolge.",
+      "nextUp": "Als Nächstes",
+      "startMeasurement": "Messung starten",
+      "moreSteps": "Weitere Schritte",
+      "completed": "Abgeschlossen"
     },
     "hot_water_wait": {
       "title": "Warmwasser-Wartezeit",

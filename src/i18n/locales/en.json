@@ -581,7 +581,13 @@
       "preview": "Info & start",
       "startShort": "Start",
       "continueShort": "Continue",
-      "moreInfo": "More info"
+      "moreInfo": "More info",
+      "planTitle": "Your measurement plan",
+      "planSubtitle": "Recommended measurements in a sensible order.",
+      "nextUp": "Up next",
+      "startMeasurement": "Start measurement",
+      "moreSteps": "More steps",
+      "completed": "Completed"
     },
     "hot_water_wait": {
       "title": "Hot water wait",
