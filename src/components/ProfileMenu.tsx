@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { User, Palette, Globe, PlayCircle, ChevronRight, Sun, Moon, Leaf } from 'lucide-react'
+import { User, Palette, Globe, PlayCircle, ChevronRight, Sun, Moon, Leaf, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useSettingsStore, THEMES, type Theme } from '@/store/settingsStore'
 import { SUPPORTED_LANGUAGES } from '@/i18n'
@@ -18,6 +19,7 @@ const THEME_ICONS: Record<Theme, LucideIcon> = {
  */
 export function ProfileMenu() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
@@ -138,6 +140,24 @@ export function ProfileMenu() {
             </span>
             <span className="flex-1 text-sm font-medium text-foreground">
               {t('settings.replayIntro')}
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
+          </button>
+
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false)
+              navigate('/einstellungen/daten')
+            }}
+            className="mt-2 flex w-full items-center gap-2.5 rounded-xl border border-border bg-surface-2/50 p-2.5 text-left transition-colors hover:bg-surface-2"
+          >
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-rose-500/10 text-rose-600">
+              <Trash2 className="h-4.5 w-4.5" />
+            </span>
+            <span className="flex-1 text-sm font-medium text-foreground">
+              {t('settings.resetEntry')}
             </span>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
           </button>

@@ -1463,7 +1463,38 @@
     "soon": "Bald",
     "appearance": "Darstellung",
     "help": "Hilfe",
-    "replayIntro": "Einführung erneut ansehen"
+    "replayIntro": "Einführung erneut ansehen",
+    "resetEntry": "Daten zurücksetzen",
+    "data": {
+      "title": "Daten zurücksetzen",
+      "subtitle": "Setze einzelne Bereiche oder alle deine Daten zurück. Das kann nicht rückgängig gemacht werden.",
+      "reset": "Zurücksetzen",
+      "confirmQuestion": "Wirklich zurücksetzen? Das kann nicht rückgängig gemacht werden.",
+      "confirmYes": "Ja, zurücksetzen",
+      "cancel": "Abbrechen",
+      "done": "Zurückgesetzt",
+      "dangerZone": "Achtung",
+      "profile": {
+        "title": "Profil / Eingaben",
+        "desc": "Onboarding-Angaben: Räume, Gebäude, Heizung usw."
+      },
+      "measurements": {
+        "title": "Messungen",
+        "desc": "Ergebnisse aller durchgeführten Checks."
+      },
+      "tariff": {
+        "title": "Tarife & Preise",
+        "desc": "Hinterlegte Energiepreise."
+      },
+      "readings": {
+        "title": "Monitoring-Zählerstände",
+        "desc": "Erfasste Zählerstände und Erinnerungen."
+      },
+      "all": {
+        "title": "Alles zurücksetzen",
+        "desc": "Löscht alle Nutzerdaten (Profil, Messungen, Tarife, Zählerstände, Lernfortschritt). Theme und Sprache bleiben erhalten; die Einführung wird wieder angezeigt."
+      }
+    }
   },
   "onboardingIntro": {
     "skip": "Überspringen",

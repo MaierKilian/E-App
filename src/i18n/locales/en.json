@@ -1463,7 +1463,38 @@
     "soon": "Soon",
     "appearance": "Appearance",
     "help": "Help",
-    "replayIntro": "Replay introduction"
+    "replayIntro": "Replay introduction",
+    "resetEntry": "Reset data",
+    "data": {
+      "title": "Reset data",
+      "subtitle": "Reset individual areas or all of your data. This cannot be undone.",
+      "reset": "Reset",
+      "confirmQuestion": "Really reset? This cannot be undone.",
+      "confirmYes": "Yes, reset",
+      "cancel": "Cancel",
+      "done": "Reset done",
+      "dangerZone": "Caution",
+      "profile": {
+        "title": "Profile / inputs",
+        "desc": "Onboarding details: rooms, building, heating, etc."
+      },
+      "measurements": {
+        "title": "Measurements",
+        "desc": "Results of all completed checks."
+      },
+      "tariff": {
+        "title": "Tariffs & prices",
+        "desc": "Stored energy prices."
+      },
+      "readings": {
+        "title": "Monitoring meter readings",
+        "desc": "Recorded meter readings and reminders."
+      },
+      "all": {
+        "title": "Reset everything",
+        "desc": "Deletes all user data (profile, measurements, tariffs, meter readings, learning progress). Theme and language are kept; the introduction is shown again."
+      }
+    }
   },
   "onboardingIntro": {
     "skip": "Skip",
