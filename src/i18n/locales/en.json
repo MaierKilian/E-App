@@ -1464,5 +1464,25 @@
     "appearance": "Appearance",
     "help": "Help",
     "replayIntro": "Replay introduction"
+  },
+  "onboardingIntro": {
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Back",
+    "start": "Let's go",
+    "slides": [
+      {
+        "title": "Save energy and money",
+        "body": "In just a few minutes, find out where your home loses energy – and what is really worth it."
+      },
+      {
+        "title": "How it works",
+        "body": "Set up your profile, run simple measurements and see your personal savings potential in euros."
+      },
+      {
+        "title": "Get started",
+        "body": "Begin with your energy profile – you can pause anytime and continue later."
+      }
+    ]
   }
 }

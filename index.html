@@ -15,7 +15,14 @@
       try {
         var raw = localStorage.getItem('eapp-settings');
         var theme = raw ? JSON.parse(raw).state.theme : null;
-        document.documentElement.setAttribute('data-theme', theme || 'light');
+        if (!theme) {
+          // Neue Nutzer: Geräte-Theme (hell/dunkel) als Standard.
+          theme =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
       } catch (e) {
         document.documentElement.setAttribute('data-theme', 'light');
       }

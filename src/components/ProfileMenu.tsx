@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { User, Palette, Globe, PlayCircle, ChevronRight, Sun, Moon, Leaf } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -19,9 +18,9 @@ const THEME_ICONS: Record<Theme, LucideIcon> = {
  */
 export function ProfileMenu() {
   const { t, i18n } = useTranslation()
-  const navigate = useNavigate()
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
+  const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const currentLang = i18n.resolvedLanguage
@@ -130,7 +129,7 @@ export function ProfileMenu() {
             role="menuitem"
             onClick={() => {
               setOpen(false)
-              navigate('/onboarding')
+              setIntroSeen(false)
             }}
             className="flex w-full items-center gap-2.5 rounded-xl border border-border bg-surface-2/50 p-2.5 text-left transition-colors hover:bg-surface-2"
           >

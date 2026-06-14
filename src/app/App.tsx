@@ -9,6 +9,7 @@ import { MeterDetailPage } from '@/features/monitoring/MeterDetailPage'
 import { ReportsPage } from '@/features/reports/ReportsPage'
 import { EducationPage } from '@/features/education/EducationPage'
 import { SplashScreen } from '@/components/SplashScreen'
+import { OnboardingIntro } from '@/components/OnboardingIntro'
 
 export function App() {
   useApplyTheme()
@@ -16,6 +17,7 @@ export function App() {
   return (
     <>
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+        <OnboardingIntro />
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Navigate to="/onboarding" replace />} />

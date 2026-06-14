@@ -1464,5 +1464,25 @@
     "appearance": "Darstellung",
     "help": "Hilfe",
     "replayIntro": "Einführung erneut ansehen"
+  },
+  "onboardingIntro": {
+    "skip": "Überspringen",
+    "next": "Weiter",
+    "back": "Zurück",
+    "start": "Los geht's",
+    "slides": [
+      {
+        "title": "Spare Energie und Geld",
+        "body": "Finde in wenigen Minuten heraus, wo dein Zuhause Energie verliert – und was sich konkret lohnt."
+      },
+      {
+        "title": "So funktioniert's",
+        "body": "Profil anlegen, einfache Messungen durchführen und dein persönliches Sparpotenzial in Euro sehen."
+      },
+      {
+        "title": "Leg direkt los",
+        "body": "Starte mit deinem Energieprofil – du kannst jederzeit pausieren und später weitermachen."
+      }
+    ]
   }
 }
