@@ -985,7 +985,11 @@
       "occupancyOptions": {
         "tenant": "Mieter",
         "owner": "Eigentümer"
-      }
+      },
+      "profileNameHint": "Frei wählbar – praktisch, wenn du mehrere Wohnungen vergleichst.",
+      "personsHint": "Beeinflusst Warmwasser- und Stromverbrauch.",
+      "goalsHint": "Wir priorisieren passende Messungen und Tipps. Mehrfachauswahl möglich.",
+      "statusHint": "Beeinflusst, welche Maßnahmen für dich realistisch sind."
     },
     "step2": {
       "title": "Basisdaten",
@@ -1049,7 +1053,9 @@
       },
       "hasExtraFireplace": "Gibt es einen Kamin/Ofen zusätzlich?",
       "yes": "Ja",
-      "no": "Nein"
+      "no": "Nein",
+      "generatorsHint": "Womit wird geheizt? Mehrfachauswahl möglich.",
+      "hotWaterHint": "Warmwasser ist oft ein großer Kostenposten."
     },
     "step5": {
       "title": "Gebäudehülle & Heizung",
@@ -1071,7 +1077,12 @@
         "medium": "Mittel",
         "poor": "Schlecht",
         "unknown": "Unbekannt"
-      }
+      },
+      "heatTransferTitle": "Wärmeübergabe je Raum",
+      "roomsHint": "Heizkörper oder Fußbodenheizung? Das bestimmt deine Heiz-Tipps je Raum.",
+      "insulationHint": "Eine grobe Selbsteinschätzung genügt.",
+      "radiatorShort": "Heizkörper",
+      "underfloorShort": "Fußboden"
     },
     "step6": {
       "title": "Messinstrumente",

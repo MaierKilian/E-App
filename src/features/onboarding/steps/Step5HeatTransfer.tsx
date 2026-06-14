@@ -1,7 +1,34 @@
 import { useTranslation } from 'react-i18next'
-import { SelectChip } from '@/components/ui/SelectChip'
-import { InfoButton } from '@/components/ui/InfoButton'
-import type { OnboardingData, HeatTransferType, VentilationType, InsulationState } from '@/types'
+import {
+  Heater,
+  Grip,
+  Wind,
+  Recycle,
+  Fan,
+  HelpCircle,
+  ShieldCheck,
+  Shield,
+  ShieldAlert,
+  ShieldX,
+  Sofa,
+  BedDouble,
+  Baby,
+  Utensils,
+  Bath,
+  DoorOpen,
+  Briefcase,
+  Warehouse,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { OptionChip } from '@/components/ui/OptionChip'
+import { Field } from '@/components/ui/Field'
+import type {
+  OnboardingData,
+  HeatTransferType,
+  VentilationType,
+  InsulationState,
+  RoomType,
+} from '@/types'
 
 interface Props {
   data: OnboardingData
@@ -9,94 +36,138 @@ interface Props {
 }
 
 const TRANSFER_TYPES: HeatTransferType[] = ['radiator', 'underfloor']
-const VENTILATION_TYPES: VentilationType[] = ['natural', 'mechanical_hrv', 'mechanical_no_hrv', 'unknown']
+const TRANSFER_ICONS: Record<HeatTransferType, LucideIcon> = {
+  radiator: Heater,
+  underfloor: Grip,
+}
+
+const VENTILATION_TYPES: VentilationType[] = [
+  'natural',
+  'mechanical_hrv',
+  'mechanical_no_hrv',
+  'unknown',
+]
+const VENTILATION_ICONS: Record<VentilationType, LucideIcon> = {
+  natural: Wind,
+  mechanical_hrv: Recycle,
+  mechanical_no_hrv: Fan,
+  unknown: HelpCircle,
+}
+
 const INSULATION_STATES: InsulationState[] = ['very_good', 'good', 'medium', 'poor', 'unknown']
+const INSULATION_ICONS: Record<InsulationState, LucideIcon> = {
+  very_good: ShieldCheck,
+  good: Shield,
+  medium: ShieldAlert,
+  poor: ShieldX,
+  unknown: HelpCircle,
+}
+
+const ROOM_ICONS: Partial<Record<RoomType, LucideIcon>> = {
+  living_room: Sofa,
+  bedroom: BedDouble,
+  children_room: Baby,
+  kitchen: Utensils,
+  bathroom: Bath,
+  hallway: DoorOpen,
+  office: Briefcase,
+  bureau: Briefcase,
+  basement: Warehouse,
+}
 
 export function Step5HeatTransfer({ data, onChange }: Props) {
   const { t } = useTranslation()
 
   function setTransfer(roomType: string, transfer: HeatTransferType) {
     onChange({
-      rooms: data.rooms.map((r) =>
-        r.type === roomType ? { ...r, heatTransfer: transfer } : r,
-      ),
+      rooms: data.rooms.map((r) => (r.type === roomType ? { ...r, heatTransfer: transfer } : r)),
     })
   }
 
   if (data.rooms.length === 0) {
-    return (
-      <p className="text-sm text-muted">{t('onboarding.step5.noRooms')}</p>
-    )
+    return <p className="text-sm text-muted">{t('onboarding.step5.noRooms')}</p>
   }
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-2.5">
-        <p className="text-sm text-muted">{t('onboarding.step5.subtitle')}</p>
-        {data.rooms.map((room) => (
-          <div
-            key={room.type}
-            className="rounded-2xl glass px-3.5 py-2.5 flex items-center justify-between gap-3"
-          >
-            <p className="text-sm font-medium text-foreground truncate">
-              {t(`onboarding.step3.roomTypes.${room.type}`)}
-              {room.count > 1 && (
-                <span className="text-muted ml-1">×{room.count}</span>
-              )}
-            </p>
-            <div className="flex gap-1.5 shrink-0">
-              {TRANSFER_TYPES.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setTransfer(room.type, type)}
-                  className={`focus-ring px-3 py-1.5 rounded-xl text-xs font-medium transition-[transform,background-color] active:scale-95 ${
-                    room.heatTransfer === type
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-surface-2/70 text-foreground hover:bg-surface-2'
-                  }`}
-                >
-                  {t(`onboarding.step5.${type}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="space-y-6">
+      <Field title={t('onboarding.step5.heatTransferTitle')} hint={t('onboarding.step5.roomsHint')}>
+        <div className="space-y-2">
+          {data.rooms.map((room) => {
+            const RoomIcon = ROOM_ICONS[room.type] ?? DoorOpen
+            return (
+              <div
+                key={room.type}
+                className="glass flex items-center justify-between gap-2 rounded-2xl px-3 py-2"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <RoomIcon className="h-4.5 w-4.5 shrink-0 text-primary" />
+                  <span className="truncate text-sm font-medium text-foreground">
+                    {t(`onboarding.step3.roomTypes.${room.type}`)}
+                    {room.count > 1 && <span className="ml-1 text-muted">×{room.count}</span>}
+                  </span>
+                </span>
+                <div className="flex shrink-0 gap-1">
+                  {TRANSFER_TYPES.map((type) => {
+                    const Icon = TRANSFER_ICONS[type]
+                    const active = room.heatTransfer === type
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setTransfer(room.type, type)}
+                        aria-pressed={active}
+                        className={`focus-ring inline-flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-medium transition-[transform,background-color] active:scale-95 ${
+                          active
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-surface-2/70 text-foreground hover:bg-surface-2'
+                        }`}
+                      >
+                        <Icon className="h-3.5 w-3.5 shrink-0" />
+                        {t(`onboarding.step5.${type}Short`)}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      </Field>
 
-      <div className="space-y-3">
-        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-          {t('onboarding.step5.ventilationType')}
-          <InfoButton text={t('info.ventilation')} />
-        </label>
+      <Field
+        title={t('onboarding.step5.ventilationType')}
+        info={t('info.ventilation')}
+      >
         <div className="flex flex-wrap gap-2">
           {VENTILATION_TYPES.map((type) => (
-            <SelectChip
+            <OptionChip
               key={type}
+              icon={VENTILATION_ICONS[type]}
               label={t(`onboarding.step5.ventilationOptions.${type}`)}
               selected={data.ventilationType === type}
               onClick={() => onChange({ ventilationType: type })}
             />
           ))}
         </div>
-      </div>
+      </Field>
 
-      <div className="space-y-3">
-        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-          {t('onboarding.step5.insulationState')}
-          <InfoButton text={t('info.insulation')} />
-        </label>
+      <Field
+        title={t('onboarding.step5.insulationState')}
+        info={t('info.insulation')}
+        hint={t('onboarding.step5.insulationHint')}
+      >
         <div className="flex flex-wrap gap-2">
           {INSULATION_STATES.map((state) => (
-            <SelectChip
+            <OptionChip
               key={state}
+              icon={INSULATION_ICONS[state]}
               label={t(`onboarding.step5.insulationOptions.${state}`)}
               selected={data.insulationState === state}
               onClick={() => onChange({ insulationState: state })}
             />
           ))}
         </div>
-      </div>
+      </Field>
     </div>
   )
 }

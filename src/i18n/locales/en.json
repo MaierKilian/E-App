@@ -865,7 +865,11 @@
       "occupancyOptions": {
         "tenant": "Tenant",
         "owner": "Owner"
-      }
+      },
+      "profileNameHint": "Free to choose – handy when comparing several homes.",
+      "personsHint": "Affects hot water and electricity use.",
+      "goalsHint": "We prioritise the right measurements and tips. Multiple choice.",
+      "statusHint": "Affects which measures are realistic for you."
     },
     "step2": {
       "title": "Basic Data",
@@ -929,7 +933,9 @@
       },
       "hasExtraFireplace": "Is there an additional fireplace/stove?",
       "yes": "Yes",
-      "no": "No"
+      "no": "No",
+      "generatorsHint": "How is your home heated? Multiple choice.",
+      "hotWaterHint": "Hot water is often a major cost factor."
     },
     "step5": {
       "title": "Building Envelope & Heating",
@@ -951,7 +957,12 @@
         "medium": "Medium",
         "poor": "Poor",
         "unknown": "Unknown"
-      }
+      },
+      "heatTransferTitle": "Heat delivery per room",
+      "roomsHint": "Radiator or underfloor heating? This tailors your heating tips per room.",
+      "insulationHint": "A rough self-assessment is enough.",
+      "radiatorShort": "Radiator",
+      "underfloorShort": "Underfloor"
     },
     "step6": {
       "title": "Measuring Instruments",
