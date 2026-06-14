@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Check, ChevronRight, Lock, X, Info } from 'lucide-react'
+import { Check, ChevronRight, X, Info } from 'lucide-react'
 import { stepHref, type MeasurementStep } from '../tasks'
 import { getMeasurementModule } from '../registry'
 
@@ -10,17 +10,17 @@ interface Props {
   savingsEur: number
 }
 
-/** Hängt `begin=1` an (Intro im Runner überspringen – Info kam im Sheet). */
+/** Hängt `begin=1` an (Intro im Runner überspringen – Info gibt's per „Mehr Infos"). */
 function startHref(step: MeasurementStep): string {
   const href = stepHref(step)
   return `${href}${href.includes('?') ? '&' : '?'}begin=1`
 }
 
 /**
- * Geführter Fokus-Flow: oben eine Schritt-Leiste zum Auswählen, darunter die
- * Vorschau des gewählten Checks. Ein Tipp auf die Leiste wechselt nur die
- * Vorschau (springt nicht in die Messung). Erst über das Info-Bottom-Sheet –
- * das die Kurzbeschreibung zeigt – wird die Messung gestartet.
+ * Geführter Fokus-Flow: oben eine Schritt-Leiste zum Auswählen, darunter eine
+ * kompakte Karte des gewählten Checks (Name, Dauer, „Starten"). Ein Tipp auf die
+ * Leiste wechselt nur die Auswahl. Die ausführliche Beschreibung kommt erst über
+ * „Mehr Infos" als Bottom-Sheet – kein großer Infoscreen beim bloßen Antippen.
  */
 export function MeasurementFlow({ steps, savingsEur }: Props) {
   const { t, i18n } = useTranslation()
@@ -29,7 +29,6 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
   const current = currentIndex === -1 ? undefined : steps[currentIndex]
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
-  // Gewählter Check (Standard: nächster offener; sonst der erste).
   const defaultId = current?.meta.id ?? steps[0]?.meta.id
   const [selectedId, setSelectedId] = useState<string | undefined>(defaultId)
   const [sheetStep, setSheetStep] = useState<MeasurementStep | null>(null)
@@ -47,12 +46,12 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
   return (
     <div className="space-y-4">
       {/* Schritt-Leiste als Auswahl: erledigt · gewählt · offen.
-          Horizontal scrollbar, damit sie mit wachsender Anzahl nicht quetscht. */}
+          Horizontal scrollbar (mit py-Platz, damit Ring/Badge nicht abschneiden). */}
       <div>
-        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+        <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-wide text-muted">
           {t('measurements.flow.allSteps')}
         </p>
-        <div className="-mx-1 flex items-center gap-3 overflow-x-auto px-1 pb-1 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="-mx-2 flex items-center gap-3 overflow-x-auto px-2 py-2 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {steps.map((step) => {
             const Icon = step.meta.icon
             const isSelected = step.meta.id === selectedStep.meta.id
@@ -103,10 +102,10 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
         </div>
       )}
 
-      <SelectedPreview
+      <CompactSelected
         step={selectedStep}
         isNext={Boolean(current && current.meta.id === selectedStep.meta.id)}
-        onOpen={() => setSheetStep(selectedStep)}
+        onInfo={() => setSheetStep(selectedStep)}
       />
 
       {sheetStep && <InfoSheet step={sheetStep} onClose={() => setSheetStep(null)} />}
@@ -114,96 +113,91 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
   )
 }
 
-/** Vorschaukarte des gewählten Checks; öffnet das Info-Sheet. */
-function SelectedPreview({
+/** Kompakte Karte des gewählten Checks: Name, Dauer, „Starten" + „Mehr Infos". */
+function CompactSelected({
   step,
   isNext,
-  onOpen,
+  onInfo,
 }: {
   step: MeasurementStep
   isNext: boolean
-  onOpen: () => void
+  onInfo: () => void
 }) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { meta } = step
   const Icon = meta.icon
-  const metaLine = `${t(`measurements.categories.${meta.category}`)} · ${meta.estimatedMinutes} ${t('measurements.minutesUnit')}`
 
-  const badge = isNext
-    ? t('measurements.flow.recommended')
-    : step.done
-      ? t('measurements.flow.doneBadge')
-      : t('measurements.flow.openBadge')
+  const metaParts = [
+    t(`measurements.categories.${meta.category}`),
+    `${meta.estimatedMinutes} ${t('measurements.minutesUnit')}`,
+  ]
+  if (step.perRoom && !step.done) {
+    metaParts.push(
+      t('measurements.flow.roomProgress', {
+        current: step.roomsDone + 1,
+        total: step.roomsTotal,
+      }),
+    )
+  }
+
+  const cta =
+    step.done && !step.perRoom
+      ? t('measurements.common.again')
+      : step.perRoom && step.nextRoomName
+        ? t('measurements.flow.continueShort')
+        : t('measurements.flow.startShort')
 
   return (
-    <div className="glass relative overflow-hidden rounded-3xl p-5">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-primary opacity-[0.1] blur-3xl"
-      />
-      <div className="relative">
-        <div className="flex items-center justify-between gap-2">
-          <span
-            className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
-              isNext
-                ? 'bg-primary/10 text-primary'
-                : step.done
-                  ? 'bg-emerald-500/15 text-emerald-600'
-                  : 'bg-surface-2/70 text-muted'
-            }`}
-          >
-            {badge}
-          </span>
-          {step.perRoom && (
-            <span className="rounded-full bg-surface-2/70 px-2.5 py-1 text-[11px] font-medium text-muted tabular-nums">
-              {step.done
-                ? t('measurements.flow.rooms', {
-                    done: step.roomsDone,
-                    total: step.roomsTotal,
-                  })
-                : t('measurements.flow.roomProgress', {
-                    current: step.roomsDone + 1,
-                    total: step.roomsTotal,
-                  })}
-            </span>
-          )}
-        </div>
-
-        <div className="mt-4 flex items-start gap-3">
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
-            <Icon className="h-6 w-6" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-xl font-bold leading-tight text-foreground">
+    <div className="glass rounded-3xl p-4">
+      <div className="flex items-center gap-3">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+          <Icon className="h-5.5 w-5.5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2">
+            <p className="truncate font-semibold text-foreground">
               {t(`measurements.${meta.id}.title`)}
             </p>
-            <p className="mt-0.5 text-sm text-muted">{metaLine}</p>
+            {isNext && (
+              <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                {t('measurements.flow.recommended')}
+              </span>
+            )}
           </div>
+          <p className="truncate text-xs text-muted">{metaParts.join(' · ')}</p>
         </div>
-
-        <p className="mt-3 text-sm text-foreground">{t(`measurements.${meta.id}.short`)}</p>
-
         {meta.available ? (
           <button
             type="button"
-            onClick={onOpen}
-            className="mt-5 flex w-full items-center justify-center gap-1.5 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]"
+            onClick={() => navigate(startHref(step))}
+            className="flex shrink-0 items-center gap-1 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.96]"
           >
-            <Info className="h-4 w-4" />
-            {t('measurements.flow.preview')}
+            {cta}
+            <ChevronRight className="h-4 w-4" />
           </button>
         ) : (
-          <div className="mt-5 flex items-center justify-center gap-1.5 rounded-2xl bg-surface-2/60 px-5 py-3.5 text-sm font-medium text-muted">
-            <Lock className="h-4 w-4" />
+          <span className="shrink-0 rounded-2xl bg-surface-2/60 px-3 py-2.5 text-xs font-medium text-muted">
             {t('measurements.status.soon')}
-          </div>
+          </span>
         )}
       </div>
+
+      {meta.available && (
+        <button
+          type="button"
+          onClick={onInfo}
+          className="focus-ring mt-2.5 ml-14 inline-flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
+        >
+          <Info className="h-3.5 w-3.5" />
+          {t('measurements.flow.moreInfo')}
+        </button>
+      )}
     </div>
   )
 }
 
-/** Bottom-Sheet mit der Kurz-Info/Beschreibung der Messung und Start-Aktion. */
+/** Bottom-Sheet mit der ausführlichen Beschreibung der Messung (auf Wunsch). */
 function InfoSheet({ step, onClose }: { step: MeasurementStep; onClose: () => void }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -226,17 +220,14 @@ function InfoSheet({ step, onClose }: { step: MeasurementStep; onClose: () => vo
         className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"
       />
       <div className="glass relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-t-3xl p-5 pb-8 shadow-2xl">
-        <div className="mb-3 flex items-center justify-between">
-          <span aria-hidden="true" className="mx-auto h-1 w-10 rounded-full bg-surface-2" />
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t('common.close')}
-            className="focus-ring absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-xl text-muted transition-colors hover:text-foreground"
-          >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={t('common.close')}
+          className="focus-ring absolute right-4 top-4 grid h-9 w-9 place-items-center rounded-xl text-muted transition-colors hover:text-foreground"
+        >
+          <X className="h-5 w-5" />
+        </button>
 
         {Intro ? <Intro /> : null}
 

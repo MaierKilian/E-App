@@ -578,7 +578,10 @@
       "recommended": "Empfohlen",
       "doneBadge": "Erledigt",
       "openBadge": "Offen",
-      "preview": "Info & starten"
+      "preview": "Info & starten",
+      "startShort": "Starten",
+      "continueShort": "Weiter",
+      "moreInfo": "Mehr Infos"
     },
     "hot_water_wait": {
       "title": "Warmwasser-Wartezeit",
