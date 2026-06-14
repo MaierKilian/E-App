@@ -55,39 +55,41 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
         </div>
       )}
 
-      {/* Schritt-Leiste als Journey: erledigt · aktuell · kommend */}
-      <div className="relative flex items-center justify-between px-2">
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-6 top-1/2 h-0.5 -translate-y-1/2 bg-surface-2"
-        />
-        {steps.map((step, i) => {
-          const Icon = step.meta.icon
-          const isCurrent = i === currentIndex
-          return (
-            <button
-              key={step.meta.id}
-              type="button"
-              onClick={() => navigate(stepHref(step))}
-              aria-label={t(`measurements.${step.meta.id}.title`)}
-              aria-current={isCurrent ? 'step' : undefined}
-              className={`relative grid h-12 w-12 place-items-center rounded-2xl transition-transform active:scale-95 ${
-                step.done
-                  ? 'bg-emerald-500 text-white'
-                  : isCurrent
-                    ? 'bg-primary text-primary-foreground ring-4 ring-primary/25'
-                    : 'border border-border bg-surface text-muted'
-              }`}
-            >
-              <Icon className="h-5 w-5" />
-              {step.done && (
-                <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-emerald-500 text-white ring-2 ring-background">
-                  <Check className="h-2.5 w-2.5" />
-                </span>
-              )}
-            </button>
-          )
-        })}
+      {/* Schritt-Leiste als Journey: erledigt · aktuell · kommend.
+          Horizontal scrollbar, damit sie mit wachsender Anzahl nicht quetscht. */}
+      <div>
+        <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+          {t('measurements.flow.allSteps')}
+        </p>
+        <div className="-mx-1 flex items-center gap-3 overflow-x-auto px-1 pb-1 snap-x [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {steps.map((step, i) => {
+            const Icon = step.meta.icon
+            const isCurrent = i === currentIndex
+            return (
+              <button
+                key={step.meta.id}
+                type="button"
+                onClick={() => navigate(stepHref(step))}
+                aria-label={t(`measurements.${step.meta.id}.title`)}
+                aria-current={isCurrent ? 'step' : undefined}
+                className={`relative grid h-12 w-12 shrink-0 snap-start place-items-center rounded-2xl transition-transform active:scale-95 ${
+                  step.done
+                    ? 'bg-emerald-500 text-white'
+                    : isCurrent
+                      ? 'bg-primary text-primary-foreground ring-4 ring-primary/25'
+                      : 'border border-border bg-surface text-muted'
+                }`}
+              >
+                <Icon className="h-5 w-5" />
+                {step.done && (
+                  <span className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-emerald-500 text-white ring-2 ring-background">
+                    <Check className="h-2.5 w-2.5" />
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

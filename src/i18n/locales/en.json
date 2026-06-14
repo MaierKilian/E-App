@@ -573,7 +573,8 @@
       "savedSavings": "Great! ~{{value}} €/year potential found.",
       "continue": "Continue",
       "continueOverview": "To overview",
-      "roomProgress": "Room {{current}} of {{total}}"
+      "roomProgress": "Room {{current}} of {{total}}",
+      "allSteps": "All checks"
     },
     "hot_water_wait": {
       "title": "Hot water wait",

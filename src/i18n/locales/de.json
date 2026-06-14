@@ -573,7 +573,8 @@
       "savedSavings": "Stark! ~{{value}} €/Jahr Potenzial entdeckt.",
       "continue": "Weiter",
       "continueOverview": "Zur Übersicht",
-      "roomProgress": "Raum {{current}} von {{total}}"
+      "roomProgress": "Raum {{current}} von {{total}}",
+      "allSteps": "Alle Checks"
     },
     "hot_water_wait": {
       "title": "Warmwasser-Wartezeit",
