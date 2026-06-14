@@ -620,6 +620,64 @@
           "high": "Hoch"
         }
       }
+    },
+    "furniture_spacing": {
+      "title": "Möbel-Abstands-Check",
+      "short": "Prüfe, ob Möbel oder Teppiche deine Heizung blockieren.",
+      "intro": {
+        "lead": "Frei stehende Heizflächen geben deutlich mehr Wärme ab. Prüfe Raum für Raum, ob etwas die Wärme blockiert.",
+        "stepsTitle": "So funktioniert’s",
+        "steps": [
+          "Raum wählen",
+          "Kurze Fragen beantworten",
+          "Tipps erhalten"
+        ],
+        "start": "Check starten"
+      },
+      "run": {
+        "radiatorTitle": "Heizkörper im Raum",
+        "underfloorTitle": "Fußbodenheizung im Raum",
+        "radiator": {
+          "q1": "Steht ein großes Möbel (Sofa, Schrank, Regal) direkt vor dem Heizkörper?",
+          "q2": "Ist der Heizkörper durch Verkleidung, Vorhang oder Ablage verdeckt?"
+        },
+        "underfloor": {
+          "q1": "Stehen großflächige Möbel ohne Füße direkt auf dem Boden (Sofa, Bett, Schrank)?",
+          "q2": "Liegt ein großer, dicker Teppich auf der beheizten Fläche?"
+        },
+        "options": {
+          "no": "Nein",
+          "partly": "Teilweise",
+          "yes": "Ja"
+        }
+      },
+      "result": {
+        "ratings": {
+          "good": "Alles frei",
+          "medium": "Kleinigkeit",
+          "elevated": "Teilweise blockiert",
+          "high": "Stark blockiert"
+        },
+        "summary": {
+          "good": "Deine Heizfläche ist frei – so gibt sie die volle Wärme an den Raum ab.",
+          "medium": "Fast alles frei – eine Kleinigkeit lässt sich noch verbessern.",
+          "elevated": "Teile der Heizfläche sind verdeckt – hier geht spürbar Wärme verloren.",
+          "high": "Die Heizfläche ist stark blockiert – ein Großteil der Wärme kommt nicht im Raum an."
+        },
+        "tipsTitle": "Empfehlungen",
+        "tips": {
+          "radiator": [
+            "Heizkörper frei halten – Sofa/Schrank mit etwas Abstand stellen.",
+            "Keine Verkleidung oder langen Vorhänge davor.",
+            "Thermostatventil frei umströmen lassen (nicht zustellen)."
+          ],
+          "underfloor": [
+            "Möbel mit Füßen wählen – ein Luftspalt zum Boden hilft.",
+            "Große, dicke Teppiche auf der beheizten Fläche vermeiden.",
+            "Dünne, für Fußbodenheizung geeignete Teppiche bevorzugen."
+          ]
+        }
+      }
     }
   },
   "monitoring": {

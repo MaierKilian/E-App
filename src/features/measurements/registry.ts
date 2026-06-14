@@ -12,6 +12,9 @@ import { StandbyResult } from './standby/StandbyResult'
 import { RoomTemperatureIntro } from './room_temperature/RoomTemperatureIntro'
 import { RoomTemperatureRun } from './room_temperature/RoomTemperatureRun'
 import { RoomTemperatureResult } from './room_temperature/RoomTemperatureResult'
+import { FurnitureSpacingIntro } from './furniture_spacing/FurnitureSpacingIntro'
+import { FurnitureSpacingRun } from './furniture_spacing/FurnitureSpacingRun'
+import { FurnitureSpacingResult } from './furniture_spacing/FurnitureSpacingResult'
 import { FridgeIntro } from './fridge/FridgeIntro'
 import { FridgeRun } from './fridge/FridgeRun'
 import { FridgeResult } from './fridge/FridgeResult'
@@ -44,6 +47,11 @@ export const MEASUREMENT_MODULES: Partial<Record<MeasurementId, MeasurementModul
     Intro: RoomTemperatureIntro,
     Run: RoomTemperatureRun,
     Result: RoomTemperatureResult,
+  },
+  furniture_spacing: {
+    Intro: FurnitureSpacingIntro,
+    Run: FurnitureSpacingRun,
+    Result: FurnitureSpacingResult,
   },
   fridge: {
     Intro: FridgeIntro,

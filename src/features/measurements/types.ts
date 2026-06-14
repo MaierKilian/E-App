@@ -4,6 +4,7 @@ export type MeasurementId =
   | 'fridge'
   | 'standby'
   | 'room_temperature'
+  | 'furniture_spacing'
   | 'freezer'
 
 /** Bewertungsstufen (vierstufig): gut → mittel → erhöht → hoch. */

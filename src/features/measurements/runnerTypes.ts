@@ -16,6 +16,8 @@ export interface RunOutcome {
 export interface RunProps {
   /** Wird aufgerufen, sobald eine gültige Auswertung vorliegt. */
   onEvaluate: (outcome: RunOutcome) => void
+  /** Raum-Schlüssel bei Pro-Raum-Messungen (z. B. "bedroom#0"). */
+  roomKey?: string
 }
 
 /** Props der messungsspezifischen Result-Komponente. */

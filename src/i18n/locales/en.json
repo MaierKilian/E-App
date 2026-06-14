@@ -620,6 +620,64 @@
           "high": "High"
         }
       }
+    },
+    "furniture_spacing": {
+      "title": "Furniture spacing check",
+      "short": "Check whether furniture or rugs are blocking your heating.",
+      "intro": {
+        "lead": "Unobstructed heating surfaces release much more heat. Check room by room whether anything blocks it.",
+        "stepsTitle": "How it works",
+        "steps": [
+          "Choose a room",
+          "Answer a few questions",
+          "Get tips"
+        ],
+        "start": "Start check"
+      },
+      "run": {
+        "radiatorTitle": "Radiator in the room",
+        "underfloorTitle": "Underfloor heating in the room",
+        "radiator": {
+          "q1": "Is a large piece of furniture (sofa, cabinet, shelf) right in front of the radiator?",
+          "q2": "Is the radiator covered by a cover, curtain or shelf?"
+        },
+        "underfloor": {
+          "q1": "Are large flat furniture pieces without legs sitting directly on the floor (sofa, bed, cabinet)?",
+          "q2": "Is a large, thick rug lying on the heated area?"
+        },
+        "options": {
+          "no": "No",
+          "partly": "Partly",
+          "yes": "Yes"
+        }
+      },
+      "result": {
+        "ratings": {
+          "good": "All clear",
+          "medium": "Minor",
+          "elevated": "Partly blocked",
+          "high": "Heavily blocked"
+        },
+        "summary": {
+          "good": "Your heating surface is clear – it releases its full heat into the room.",
+          "medium": "Almost all clear – one small thing could still be improved.",
+          "elevated": "Parts of the heating surface are blocked – noticeable heat is lost here.",
+          "high": "The heating surface is heavily blocked – much of the heat never reaches the room."
+        },
+        "tipsTitle": "Recommendations",
+        "tips": {
+          "radiator": [
+            "Keep the radiator clear – leave some space around sofas/cabinets.",
+            "Avoid covers or long curtains in front of it.",
+            "Let room air flow freely around the thermostat valve."
+          ],
+          "underfloor": [
+            "Choose furniture with legs – an air gap to the floor helps.",
+            "Avoid large, thick rugs on the heated area.",
+            "Prefer thin rugs suitable for underfloor heating."
+          ]
+        }
+      }
     }
   },
   "onboarding": {

@@ -181,7 +181,7 @@ export function MeasurementRunner() {
         </>
       )}
 
-      {phase === 'run' && <Run onEvaluate={handleEvaluate} />}
+      {phase === 'run' && <Run onEvaluate={handleEvaluate} roomKey={roomKey} />}
 
       {phase === 'result' && outcome && (
         <>
