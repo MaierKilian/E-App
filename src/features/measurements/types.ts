@@ -3,6 +3,8 @@ export type MeasurementId =
   | 'hot_water_wait'
   | 'fridge'
   | 'standby'
+  | 'base_load'
+  | 'lighting'
   | 'room_temperature'
   | 'furniture_spacing'
   | 'freezer'

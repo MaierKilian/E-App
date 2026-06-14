@@ -15,6 +15,12 @@ import { RoomTemperatureResult } from './room_temperature/RoomTemperatureResult'
 import { FurnitureSpacingIntro } from './furniture_spacing/FurnitureSpacingIntro'
 import { FurnitureSpacingRun } from './furniture_spacing/FurnitureSpacingRun'
 import { FurnitureSpacingResult } from './furniture_spacing/FurnitureSpacingResult'
+import { BaseLoadIntro } from './base_load/BaseLoadIntro'
+import { BaseLoadRun } from './base_load/BaseLoadRun'
+import { BaseLoadResult } from './base_load/BaseLoadResult'
+import { LightingIntro } from './lighting/LightingIntro'
+import { LightingRun } from './lighting/LightingRun'
+import { LightingResult } from './lighting/LightingResult'
 import { FridgeIntro } from './fridge/FridgeIntro'
 import { FridgeRun } from './fridge/FridgeRun'
 import { FridgeResult } from './fridge/FridgeResult'
@@ -52,6 +58,16 @@ export const MEASUREMENT_MODULES: Partial<Record<MeasurementId, MeasurementModul
     Intro: FurnitureSpacingIntro,
     Run: FurnitureSpacingRun,
     Result: FurnitureSpacingResult,
+  },
+  base_load: {
+    Intro: BaseLoadIntro,
+    Run: BaseLoadRun,
+    Result: BaseLoadResult,
+  },
+  lighting: {
+    Intro: LightingIntro,
+    Run: LightingRun,
+    Result: LightingResult,
   },
   fridge: {
     Intro: FridgeIntro,

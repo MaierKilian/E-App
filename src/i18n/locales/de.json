@@ -678,6 +678,124 @@
           ]
         }
       }
+    },
+    "base_load": {
+      "title": "Grundlast-Check",
+      "short": "Miss, wie viel Strom dein Zuhause rund um die Uhr zieht.",
+      "intro": {
+        "lead": "Auch wenn nichts aktiv läuft, zieht dein Haushalt dauerhaft Strom – Standby, Kühlgeräte, Router & Co. Diese Grundlast deckt der Check auf.",
+        "stepsTitle": "So funktioniert’s",
+        "steps": [
+          "Stromzähler aufsuchen",
+          "Aktive Geräte ausschalten – Dauerläufer (Kühlschrank, Router) an lassen",
+          "Leistung ablesen oder kurz messen"
+        ],
+        "hint": "Tipp: Am genauesten ist die Messung nachts oder wenn niemand aktiv Strom verbraucht.",
+        "start": "Check starten"
+      },
+      "run": {
+        "meterTitle": "Welcher Zähler?",
+        "modes": {
+          "instant": "Digital (W-Anzeige)",
+          "timed": "Digital (nur kWh)",
+          "ferraris": "Drehscheibe"
+        },
+        "modeHint": {
+          "instant": "Moderne Zähler zeigen die aktuelle Leistung direkt in Watt an – einfach ablesen.",
+          "timed": "Zählerstand ablesen, Stoppuhr starten, ein paar Minuten warten, erneut ablesen.",
+          "ferraris": "Ältere Zähler mit drehender Scheibe: zähle die Umdrehungen in der gemessenen Zeit."
+        },
+        "instantLabel": "Aktuelle Leistung",
+        "startKwh": "Zählerstand Start",
+        "endKwh": "Zählerstand Ende",
+        "constant": "Zählerkonstante",
+        "revolutions": "Umdrehungen",
+        "watchHint": {
+          "timed": "Starten, einige Minuten warten, dann stoppen.",
+          "ferraris": "Starten, Umdrehungen zählen, dann stoppen."
+        },
+        "start": "Start",
+        "stop": "Stopp",
+        "restart": "Neu starten",
+        "reset": "Zurücksetzen",
+        "resultLabel": "Ermittelte Grundlast"
+      },
+      "result": {
+        "ratings": {
+          "good": "Niedrig",
+          "medium": "Okay",
+          "elevated": "Erhöht",
+          "high": "Hoch"
+        },
+        "summary": {
+          "good": "Deine Grundlast ist niedrig – hier läuft kaum unnötiger Dauerverbrauch.",
+          "medium": "Solide Grundlast mit etwas Luft nach unten.",
+          "elevated": "Deine Grundlast ist erhöht – es lohnt sich, die Dauerverbraucher zu prüfen.",
+          "high": "Hohe Grundlast – hier zieht dauerhaft viel Strom. Die Verursacher solltest du aufspüren."
+        },
+        "perYearKwh": "Verbrauch/Jahr",
+        "perYearEur": "Kosten/Jahr",
+        "note": "Orientierungswerte – die Grundlast hängt von Haushaltsgröße und Geräten ab. Dieser Check zählt nicht selbst zum Sparpotenzial; die konkreten Einsparungen liefern die Folge-Checks.",
+        "funnelTitle": "Verursacher finden",
+        "funnelText": "Spüre mit dem Standby-Check die größten Dauerverbraucher auf und sieh, was sich abschalten lässt.",
+        "funnelCta": "Zum Standby-Check"
+      }
+    },
+    "lighting": {
+      "title": "Beleuchtungs-Check",
+      "short": "Finde heraus, wie viel der Umstieg auf LED spart.",
+      "intro": {
+        "lead": "Alte Glüh- und Halogenlampen verbrauchen ein Vielfaches von LEDs. Prüfe Raum für Raum, was sich lohnt.",
+        "stepsTitle": "So funktioniert’s",
+        "steps": [
+          "Raum wählen",
+          "Nicht-LED-Lampen zählen",
+          "Einsparung sehen"
+        ],
+        "start": "Check starten"
+      },
+      "run": {
+        "bulbsTitle": "Lampen, die noch keine LED sind",
+        "bulbsHint": "Zähle pro Typ die Lampen in diesem Raum, die noch nicht auf LED umgestellt sind.",
+        "bulbTypes": {
+          "incandescent": "Glühbirne",
+          "halogen": "Halogen",
+          "spot": "Halogen-Spot"
+        },
+        "bulbExamples": {
+          "incandescent": "klassische Birne, ~40–60 W",
+          "halogen": "Halogenstab/-birne, ~30–50 W",
+          "spot": "Einbau-/Deckenspot, ~35 W"
+        },
+        "hoursTitle": "Brenndauer pro Tag",
+        "hoursHint": "Wie lange brennt das Licht hier im Schnitt?",
+        "hoursUnit": "h/Tag",
+        "hoursValue": "{{hours}} h/Tag",
+        "preview": "Geschätzte Einsparung",
+        "previewValue": "{{value}} €/Jahr"
+      },
+      "result": {
+        "ratings": {
+          "good": "Schon LED",
+          "medium": "Kleines Plus",
+          "elevated": "Lohnt sich",
+          "high": "Großes Plus"
+        },
+        "summary": {
+          "good": "Hier ist schon alles auf LED – top, mehr geht kaum.",
+          "medium": "Ein paar Lampen lassen sich noch günstig auf LED umrüsten.",
+          "elevated": "Ein LED-Umstieg spart hier spürbar Strom.",
+          "high": "Hier steckt viel drin – die Beleuchtung verbraucht unnötig viel."
+        },
+        "bulbsLabel": "Lampen",
+        "kwhLabel": "Ersparnis/Jahr",
+        "tip": {
+          "good": "Achte beim Nachkaufen weiter auf LED mit warmweißem Licht.",
+          "medium": "Tausche die Lampen nach und nach gegen LED – am besten zuerst die, die am längsten brennen.",
+          "elevated": "LED-Umstieg lohnt sich klar. Achte auf die passende Fassung (z. B. GU10, E27) und Lichtfarbe.",
+          "high": "Hier zuerst umrüsten: Der Umstieg auf LED amortisiert sich meist in wenigen Monaten."
+        }
+      }
     }
   },
   "monitoring": {

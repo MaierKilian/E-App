@@ -1,4 +1,4 @@
-import { Droplet, Snowflake, Plug, Thermometer, Hourglass, Sofa } from 'lucide-react'
+import { Droplet, Snowflake, Plug, Thermometer, Hourglass, Sofa, Gauge, Lightbulb } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { MeasurementId } from './types'
 import type { RoomType } from '@/types'
@@ -66,6 +66,24 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'heating',
     estimatedMinutes: 2,
     perRoom: true,
+  },
+  {
+    id: 'lighting',
+    icon: Lightbulb,
+    difficulty: 1,
+    available: true,
+    category: 'electricity',
+    estimatedMinutes: 3,
+    perRoom: true,
+  },
+  {
+    id: 'base_load',
+    icon: Gauge,
+    difficulty: 2,
+    available: true,
+    category: 'electricity',
+    estimatedMinutes: 5,
+    wholeHome: true,
   },
   {
     id: 'standby',

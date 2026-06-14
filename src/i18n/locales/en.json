@@ -678,6 +678,124 @@
           ]
         }
       }
+    },
+    "base_load": {
+      "title": "Base-load check",
+      "short": "Measure how much power your home draws around the clock.",
+      "intro": {
+        "lead": "Even with nothing actively running, your home draws power continuously – standby, fridges, router & co. This check reveals that base load.",
+        "stepsTitle": "How it works",
+        "steps": [
+          "Find your electricity meter",
+          "Switch off active devices – leave always-on ones (fridge, router) running",
+          "Read the power or measure briefly"
+        ],
+        "hint": "Tip: it is most accurate at night or when nobody is actively using power.",
+        "start": "Start check"
+      },
+      "run": {
+        "meterTitle": "Which meter?",
+        "modes": {
+          "instant": "Digital (W display)",
+          "timed": "Digital (kWh only)",
+          "ferraris": "Spinning disc"
+        },
+        "modeHint": {
+          "instant": "Modern meters show the current power directly in watts – just read it off.",
+          "timed": "Read the meter, start the stopwatch, wait a few minutes, read again.",
+          "ferraris": "Older meters with a spinning disc: count the revolutions during the measured time."
+        },
+        "instantLabel": "Current power",
+        "startKwh": "Meter reading start",
+        "endKwh": "Meter reading end",
+        "constant": "Meter constant",
+        "revolutions": "Revolutions",
+        "watchHint": {
+          "timed": "Start, wait a few minutes, then stop.",
+          "ferraris": "Start, count revolutions, then stop."
+        },
+        "start": "Start",
+        "stop": "Stop",
+        "restart": "Restart",
+        "reset": "Reset",
+        "resultLabel": "Measured base load"
+      },
+      "result": {
+        "ratings": {
+          "good": "Low",
+          "medium": "Okay",
+          "elevated": "Elevated",
+          "high": "High"
+        },
+        "summary": {
+          "good": "Your base load is low – barely any unnecessary continuous draw here.",
+          "medium": "Solid base load with a little room to improve.",
+          "elevated": "Your base load is elevated – worth checking the always-on consumers.",
+          "high": "High base load – a lot of power is drawn continuously. You should track down the causes."
+        },
+        "perYearKwh": "Use/year",
+        "perYearEur": "Cost/year",
+        "note": "Orientation values – base load depends on household size and appliances. This check does not count towards savings itself; the follow-up checks quantify the actual savings.",
+        "funnelTitle": "Find the causes",
+        "funnelText": "Use the standby check to track down the biggest continuous consumers and see what can be switched off.",
+        "funnelCta": "Go to standby check"
+      }
+    },
+    "lighting": {
+      "title": "Lighting check",
+      "short": "Find out how much switching to LED saves.",
+      "intro": {
+        "lead": "Old incandescent and halogen bulbs use many times more than LEDs. Check room by room what is worth it.",
+        "stepsTitle": "How it works",
+        "steps": [
+          "Choose a room",
+          "Count non-LED bulbs",
+          "See the savings"
+        ],
+        "start": "Start check"
+      },
+      "run": {
+        "bulbsTitle": "Bulbs that are not LED yet",
+        "bulbsHint": "For each type, count the bulbs in this room that have not been switched to LED yet.",
+        "bulbTypes": {
+          "incandescent": "Incandescent",
+          "halogen": "Halogen",
+          "spot": "Halogen spot"
+        },
+        "bulbExamples": {
+          "incandescent": "classic bulb, ~40–60 W",
+          "halogen": "halogen rod/bulb, ~30–50 W",
+          "spot": "recessed/ceiling spot, ~35 W"
+        },
+        "hoursTitle": "Hours per day",
+        "hoursHint": "How long is the light on here on average?",
+        "hoursUnit": "h/day",
+        "hoursValue": "{{hours}} h/day",
+        "preview": "Estimated savings",
+        "previewValue": "{{value}} €/year"
+      },
+      "result": {
+        "ratings": {
+          "good": "Already LED",
+          "medium": "Small win",
+          "elevated": "Worth it",
+          "high": "Big win"
+        },
+        "summary": {
+          "good": "Everything is already LED here – great, hardly anything more to gain.",
+          "medium": "A few bulbs could still be switched to LED cheaply.",
+          "elevated": "Switching to LED saves noticeable power here.",
+          "high": "Lots to gain here – the lighting uses unnecessarily much."
+        },
+        "bulbsLabel": "Bulbs",
+        "kwhLabel": "Savings/year",
+        "tip": {
+          "good": "Keep choosing warm-white LEDs when you replace bulbs.",
+          "medium": "Swap bulbs for LED step by step – start with the ones that are on the longest.",
+          "elevated": "Switching to LED clearly pays off. Mind the right socket (e.g. GU10, E27) and light colour.",
+          "high": "Convert these first: switching to LED usually pays for itself within a few months."
+        }
+      }
     }
   },
   "onboarding": {

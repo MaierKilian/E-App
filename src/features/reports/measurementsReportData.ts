@@ -13,6 +13,8 @@ const UNIT_FALLBACK: Partial<Record<MeasurementId, string>> = {
   hot_water_wait: 's',
   room_temperature: '°C',
   standby: '€/Jahr',
+  base_load: 'W',
+  lighting: '€/Jahr',
   fridge: '°C',
   freezer: '€/Jahr',
 }
@@ -72,6 +74,24 @@ function readSaving(details: MeasurementResult['details']): number | undefined {
   return undefined
 }
 
+/**
+ * Summiert das Sparpotenzial über ALLE (Raum-)Ergebnisse einer Messung.
+ * Wichtig für Pro-Raum-Messungen mit Sparwert (z. B. Beleuchtung): jeder Raum
+ * liefert ein eigenes Ergebnis unter `id@raum`, die alle zusammenzählen.
+ */
+function sumSavingsForMeasurement(
+  results: Partial<Record<string, MeasurementResult>>,
+  id: string,
+): number {
+  let total = 0
+  const prefix = `${id}@`
+  for (const [key, value] of Object.entries(results)) {
+    if (!value) continue
+    if (key === id || key.startsWith(prefix)) total += readSaving(value.details) ?? 0
+  }
+  return total
+}
+
 export interface BuildMeasurementsArgs {
   results: Partial<Record<MeasurementId, MeasurementResult>>
   /** Optional: nur diese Gewerke berücksichtigen (default: alle). */
@@ -99,16 +119,20 @@ export function buildMeasurementsReportData({
     // Repräsentatives Ergebnis (direkt oder erstes Raum-Ergebnis bei Pro-Raum-Messungen).
     const r = anyResultFor(results, meta.id)
     if (r && Number.isFinite(r.primaryValue)) {
-      const saving = readSaving(r.details)
-      if (saving !== undefined) savingsTotal += saving
+      // Sparpotenzial über alle Räume summieren (relevant bei Pro-Raum mit Sparwert).
+      const saving = sumSavingsForMeasurement(results, meta.id)
+      if (saving > 0) savingsTotal += saving
+      // Bei Pro-Raum-Messungen mit Sparwert die Räume-Summe als Hauptwert zeigen,
+      // sonst das repräsentative Raum-/Direktergebnis.
+      const showSavingAsValue = Boolean(meta.perRoom) && saving > 0
       entries.push({
         id: r.id,
         category: meta.category,
-        primaryValue: r.primaryValue,
+        primaryValue: showSavingAsValue ? saving : r.primaryValue,
         // Einheit aus dem Ergebnis; Fallback je Messung (robust gegen Altdaten).
-        unit: r.unit || UNIT_FALLBACK[r.id] || '',
+        unit: showSavingAsValue ? '€/Jahr' : r.unit || UNIT_FALLBACK[r.id] || '',
         rating: r.rating,
-        yearlySaving: saving,
+        yearlySaving: saving > 0 ? saving : undefined,
       })
     } else {
       open.push({ id: meta.id, category: meta.category, available: meta.available })
