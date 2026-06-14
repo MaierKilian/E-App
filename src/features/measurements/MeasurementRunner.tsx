@@ -38,26 +38,29 @@ export function MeasurementRunner() {
   const { id = '' } = useParams()
   const [searchParams] = useSearchParams()
   const roomKey = searchParams.get('room') ?? undefined
+  // Aus der Vorschau heraus gestartet (Info kam bereits im Bottom-Sheet) →
+  // die Intro-Phase überspringen und direkt mit dem Messen beginnen.
+  const skipIntro = searchParams.get('begin') === '1'
   const saveResult = useMeasurementsStore((s) => s.saveResult)
   const rooms = useOnboardingStore((s) => s.data.rooms)
 
   const meta = getMeasurementMeta(id)
   const mod = getMeasurementModule(id)
 
-  const [phase, setPhase] = useState<RunnerPhase>('intro')
+  const [phase, setPhase] = useState<RunnerPhase>(skipIntro ? 'run' : 'intro')
   // Höchste bereits erreichte Phase – steuert, welche Segmente rückwärts
   // anklickbar sind (man darf nur zu schon erreichten Phasen zurückspringen).
-  const [maxReached, setMaxReached] = useState(0)
+  const [maxReached, setMaxReached] = useState(skipIntro ? 1 : 0)
   const [outcome, setOutcome] = useState<RunOutcome | null>(null)
   const [justSaved, setJustSaved] = useState<SavedState | null>(null)
 
   // Wechselt der Raum (z. B. „auto weiter" durch die Räume), Ablauf zurücksetzen.
   useEffect(() => {
-    setPhase('intro')
-    setMaxReached(0)
+    setPhase(skipIntro ? 'run' : 'intro')
+    setMaxReached(skipIntro ? 1 : 0)
     setOutcome(null)
     setJustSaved(null)
-  }, [roomKey])
+  }, [roomKey, skipIntro])
 
   // Erfolgs-Zwischenschritt: nach kurzer Anzeige automatisch weiter.
   useEffect(() => {

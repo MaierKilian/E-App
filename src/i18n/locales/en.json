@@ -574,7 +574,11 @@
       "continue": "Continue",
       "continueOverview": "To overview",
       "roomProgress": "Room {{current}} of {{total}}",
-      "allSteps": "All checks"
+      "allSteps": "All checks",
+      "recommended": "Recommended",
+      "doneBadge": "Done",
+      "openBadge": "Open",
+      "preview": "Info & start"
     },
     "hot_water_wait": {
       "title": "Hot water wait",

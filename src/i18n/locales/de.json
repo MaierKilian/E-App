@@ -574,7 +574,11 @@
       "continue": "Weiter",
       "continueOverview": "Zur Übersicht",
       "roomProgress": "Raum {{current}} von {{total}}",
-      "allSteps": "Alle Checks"
+      "allSteps": "Alle Checks",
+      "recommended": "Empfohlen",
+      "doneBadge": "Erledigt",
+      "openBadge": "Offen",
+      "preview": "Info & starten"
     },
     "hot_water_wait": {
       "title": "Warmwasser-Wartezeit",
