@@ -19,6 +19,8 @@ export interface TileGroup {
   key: string
   label: string
   icon: LucideIcon
+  /** Akzentfarbe als Hex-String (#rrggbb) – steuert Icon-Tint und aktiven Ring. */
+  color?: string
   items: TileItem[]
 }
 
@@ -33,19 +35,21 @@ export interface SkipConfig {
 interface Props {
   groups: TileGroup[]
   results: Partial<Record<string, MeasurementResult>>
-  /** Wenn gesetzt, erhalten Gruppen eine dezente „Nichts zu messen"-Option. */
+  /** Wenn gesetzt, erhalten Gruppen eine dezente „Nicht berücksichtigen"-Option. */
   skip?: SkipConfig
 }
 
-/** Kleine, horizontal scrollbare Messungs-Kachel innerhalb einer aufgeklappten Gruppe. */
+/** Kompakte Mess-Kachel mit Pfeil oben rechts, ohne „Messung starten"-Text. */
 function MiniCard({
   meta,
   roomKey,
   result,
+  color,
 }: {
   meta: MeasurementMeta
   roomKey?: string
   result?: MeasurementResult
+  color?: string
 }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
@@ -54,6 +58,7 @@ function MiniCard({
   const href = roomKey
     ? `/measurements/${meta.id}?room=${encodeURIComponent(roomKey)}`
     : `/measurements/${meta.id}`
+  const accent = color ?? '#6366f1'
 
   const value =
     result &&
@@ -64,20 +69,28 @@ function MiniCard({
 
   const inner = (
     <>
-      <span
-        className={`grid h-9 w-9 place-items-center rounded-xl ${
-          clickable ? 'bg-primary/10 text-primary' : 'bg-surface-2 text-muted'
-        }`}
-      >
-        <Icon className="h-4.5 w-4.5" />
-      </span>
-      <p className="mt-2 line-clamp-2 text-sm font-semibold leading-tight text-foreground">
+      {/* Icon + Pfeil-Zeile */}
+      <div className="flex items-center justify-between">
+        <span
+          className={`grid h-8 w-8 place-items-center rounded-xl ${
+            clickable ? '' : 'bg-surface-2 text-muted'
+          }`}
+          style={clickable ? { backgroundColor: `${accent}1f`, color: accent } : undefined}
+        >
+          <Icon className="h-4 w-4" />
+        </span>
+        {clickable && <ChevronRight className="h-4 w-4 shrink-0 text-muted" />}
+      </div>
+
+      {/* Titel – bricht an Trennstrichen natürlich um */}
+      <p className="mt-2 text-sm font-semibold leading-tight text-foreground">
         {t(`measurements.${meta.id}.title`)}
       </p>
       <p className="mt-0.5 text-[11px] text-muted">
         {meta.estimatedMinutes} {t('measurements.minutesUnit')}
       </p>
-      <div className="mt-2">
+
+      <div className="mt-1.5">
         {result ? (
           <span
             className="inline-flex items-center gap-1 text-xs font-semibold tabular-nums"
@@ -86,21 +99,16 @@ function MiniCard({
             <Check className="h-3 w-3" />
             {value}
           </span>
-        ) : clickable ? (
-          <span className="inline-flex items-center gap-0.5 text-xs font-medium text-primary">
-            {t('measurements.next.start')}
-            <ChevronRight className="h-3.5 w-3.5" />
-          </span>
-        ) : (
+        ) : !clickable ? (
           <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
             {t('measurements.status.soon')}
           </span>
-        )}
+        ) : null}
       </div>
     </>
   )
 
-  const base = 'glass snap-start shrink-0 w-40 rounded-2xl p-3 text-left'
+  const base = 'glass snap-start shrink-0 w-32 rounded-2xl p-3 text-left'
   if (!clickable) return <div className={`${base} opacity-60`}>{inner}</div>
   return (
     <button
@@ -116,6 +124,7 @@ function MiniCard({
 /**
  * Kachel-Grid für Gewerke-/Raum-Ansicht: 2-spaltige Gruppen-Kacheln; beim Antippen
  * klappt darunter eine horizontal scrollbare Reihe der einzelnen Mess-Kacheln auf.
+ * Jede Gruppe trägt eine Akzentfarbe, die auf Icon und aktiven Ring übertragen wird.
  */
 export function GroupTileGrid({ groups, results, skip }: Props) {
   const { t } = useTranslation()
@@ -128,6 +137,8 @@ export function GroupTileGrid({ groups, results, skip }: Props) {
         const isSkipped = skip?.skipped.has(group.key) ?? false
         const isActive = active === group.key && !isSkipped
         const Icon = group.icon
+        const accent = group.color ?? '#6366f1'
+
         return (
           <Fragment key={group.key}>
             <div className="flex flex-col gap-1.5">
@@ -137,14 +148,24 @@ export function GroupTileGrid({ groups, results, skip }: Props) {
                 aria-expanded={isActive}
                 disabled={isSkipped}
                 className={`glass flex flex-1 flex-col gap-3 rounded-3xl p-4 text-left transition-[transform,opacity] active:scale-[0.99] ${
-                  isActive ? 'ring-2 ring-primary/60' : ''
-                } ${isSkipped ? 'opacity-50' : ''}`}
+                  isSkipped ? 'opacity-50' : ''
+                }`}
+                style={
+                  isActive
+                    ? { outline: `2px solid ${accent}80`, outlineOffset: '2px' }
+                    : undefined
+                }
               >
                 <div className="flex items-center justify-between">
                   <span
                     className={`grid h-11 w-11 place-items-center rounded-2xl ${
-                      isSkipped ? 'bg-surface-2 text-muted' : 'bg-primary/10 text-primary'
+                      isSkipped ? 'bg-surface-2 text-muted' : ''
                     }`}
+                    style={
+                      !isSkipped
+                        ? { backgroundColor: `${accent}1a`, color: accent }
+                        : undefined
+                    }
                   >
                     <Icon className="h-5 w-5" />
                   </span>
@@ -194,6 +215,7 @@ export function GroupTileGrid({ groups, results, skip }: Props) {
                       meta={it.meta}
                       roomKey={it.roomKey}
                       result={results[instanceKey(it.meta.id, it.roomKey)]}
+                      color={group.color}
                     />
                   ))}
                 </div>
