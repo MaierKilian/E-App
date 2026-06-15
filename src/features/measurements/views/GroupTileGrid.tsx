@@ -187,7 +187,7 @@ export function GroupTileGrid({ groups, results, skip }: Props) {
 
             {isActive && (
               <div className="col-span-2">
-                <div className="flex gap-3 overflow-x-auto px-0.5 pb-1 snap-x">
+                <div className="flex gap-3 overflow-x-auto px-1 py-2 snap-x">
                   {group.items.map((it) => (
                     <MiniCard
                       key={instanceKey(it.meta.id, it.roomKey)}

@@ -162,7 +162,7 @@ export function ProfileMenu() {
             <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
           </button>
 
-          <p className="mt-3 text-center text-[10px] text-muted">{t('app.name')} · v1.0</p>
+          <p className="mt-3 text-center text-[10px] text-muted">{t('app.name')} · v0.5.0</p>
         </div>
       )}
     </div>
