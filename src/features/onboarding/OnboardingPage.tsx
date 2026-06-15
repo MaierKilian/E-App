@@ -147,7 +147,7 @@ const SECONDARY_BTN =
 export function OnboardingPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { data, currentStep, flowMode, setStep, updateData, complete, editProfile } =
+  const { data, currentStep, flowMode, editReturnTo, setStep, updateData, complete, editProfile, clearReturnTo } =
     useOnboardingStore()
 
   // Step -1 = mode selection (Step0Mode), steps >= 0 = actual flow steps
@@ -177,7 +177,7 @@ export function OnboardingPage() {
       <div className="pb-24">
         <button
           type="button"
-          onClick={() => setStep(-2)}
+          onClick={() => { clearReturnTo(); setStep(-2) }}
           className="focus-ring inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-foreground transition-colors"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -202,7 +202,15 @@ export function OnboardingPage() {
         <ActionBar>
           <button
             type="button"
-            onClick={() => setStep(-2)}
+            onClick={() => {
+              if (editReturnTo) {
+                const returnPath = editReturnTo
+                clearReturnTo()
+                navigate(returnPath)
+              } else {
+                setStep(-2)
+              }
+            }}
             className={`${PRIMARY_BTN} w-full`}
           >
             {t('onboarding.hub.done')}

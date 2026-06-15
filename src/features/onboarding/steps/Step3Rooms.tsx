@@ -44,9 +44,13 @@ export function Step3Rooms({ data, onChange }: Props) {
   }
 
   function setCount(type: RoomType, count: number) {
-    onChange({
-      rooms: data.rooms.map((r) => (r.type === type ? { ...r, count } : r)),
-    })
+    if (count <= 0) {
+      onChange({ rooms: data.rooms.filter((r) => r.type !== type) })
+    } else {
+      onChange({
+        rooms: data.rooms.map((r) => (r.type === type ? { ...r, count } : r)),
+      })
+    }
   }
 
   return (
@@ -80,7 +84,7 @@ export function Step3Rooms({ data, onChange }: Props) {
                 <div className="mt-2 flex justify-center">
                   <Stepper
                     value={getCount(type)}
-                    min={1}
+                    min={0}
                     max={10}
                     size="sm"
                     onChange={(v) => setCount(type, v)}

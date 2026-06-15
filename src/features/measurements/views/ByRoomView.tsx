@@ -20,7 +20,7 @@ interface ViewProps {
 export function ByRoomView({ results }: ViewProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const editProfile = useOnboardingStore((s) => s.editProfile)
+  const editSection = useOnboardingStore((s) => s.editSection)
   const rooms = useOnboardingStore((s) => s.data.rooms)
   const skippedRooms = useMeasurementsStore((s) => s.skippedRooms)
   const toggleSkippedRoom = useMeasurementsStore((s) => s.toggleSkippedRoom)
@@ -35,7 +35,7 @@ export function ByRoomView({ results }: ViewProps) {
         <button
           type="button"
           onClick={() => {
-            editProfile()
+            editSection(2, '/measurements')
             navigate('/onboarding')
           }}
           className="rounded-2xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]"

@@ -587,7 +587,8 @@
       "nextUp": "Als Nächstes",
       "startMeasurement": "Messung starten",
       "moreSteps": "Weitere Schritte",
-      "completed": "Abgeschlossen"
+      "completed": "Abgeschlossen",
+      "completedSectionTitle": "Abgeschlossen"
     },
     "hot_water_wait": {
       "title": "Warmwasser-Wartezeit",

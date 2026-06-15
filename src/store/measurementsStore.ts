@@ -3,6 +3,8 @@ import { persist } from 'zustand/middleware'
 import type { MeasurementId, MeasurementResult } from '@/features/measurements/types'
 import { instanceKey } from '@/features/measurements/rooms'
 
+export type MeasurementsView = 'recommended' | 'trades' | 'byRoom'
+
 interface MeasurementsState {
   /**
    * Gespeicherte Ergebnisse, je Mess-Instanz (Messung + optional Raum).
@@ -11,9 +13,12 @@ interface MeasurementsState {
   results: Partial<Record<string, MeasurementResult>>
   /** Räume (Instanz-Schlüssel), die als „nichts zu messen" markiert sind. */
   skippedRooms: string[]
+  /** Zuletzt gewählte Ansicht im Messungen-Bereich. */
+  measurementsView: MeasurementsView
   saveResult: (result: MeasurementResult) => void
   clearResult: (id: MeasurementId, roomKey?: string) => void
   toggleSkippedRoom: (roomKey: string) => void
+  setMeasurementsView: (v: MeasurementsView) => void
   resetAll: () => void
 }
 
@@ -28,6 +33,7 @@ export const useMeasurementsStore = create<MeasurementsState>()(
     (set) => ({
       results: defaultResults,
       skippedRooms: [],
+      measurementsView: 'recommended',
       saveResult: (result) =>
         set((state) => ({
           results: { ...state.results, [instanceKey(result.id, result.roomKey)]: result },
@@ -44,7 +50,8 @@ export const useMeasurementsStore = create<MeasurementsState>()(
             ? state.skippedRooms.filter((r) => r !== roomKey)
             : [...state.skippedRooms, roomKey],
         })),
-      resetAll: () => set({ results: {}, skippedRooms: [] }),
+      setMeasurementsView: (v) => set({ measurementsView: v }),
+      resetAll: () => set({ results: {}, skippedRooms: [], measurementsView: 'recommended' }),
     }),
     {
       name: 'eapp-measurements',
@@ -57,6 +64,7 @@ export const useMeasurementsStore = create<MeasurementsState>()(
           ...p,
           results: { ...current.results, ...(p.results ?? {}) },
           skippedRooms: p.skippedRooms ?? current.skippedRooms,
+          measurementsView: p.measurementsView ?? current.measurementsView,
         }
       },
     },

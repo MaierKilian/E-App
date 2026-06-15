@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown } from 'lucide-react'
-import { useMeasurementsStore } from '@/store/measurementsStore'
+import { useMeasurementsStore, type MeasurementsView } from '@/store/measurementsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { InfoButton } from '@/components/ui/InfoButton'
@@ -12,7 +12,7 @@ import { MeasurementFlow } from './views/MeasurementFlow'
 import { TradesView } from './views/TradesView'
 import { ByRoomView } from './views/ByRoomView'
 
-type View = 'recommended' | 'trades' | 'byRoom'
+type View = MeasurementsView
 const VIEWS: View[] = ['recommended', 'trades', 'byRoom']
 
 /** Kleines Ansichts-Menü (Empfohlen im Vordergrund, Rest aufklappbar). */
@@ -74,9 +74,10 @@ function ViewMenu({ view, onChange }: { view: View; onChange: (v: View) => void 
 export function MeasurementsPage() {
   const { t, i18n } = useTranslation()
   const results = useMeasurementsStore((s) => s.results)
+  const view = useMeasurementsStore((s) => s.measurementsView)
+  const setView = useMeasurementsStore((s) => s.setMeasurementsView)
   const rooms = useOnboardingStore((s) => s.data.rooms)
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
-  const [view, setView] = useState<View>('recommended')
 
   const steps = buildSteps(rooms, results, t)
   const done = steps.filter((s) => s.done).length
@@ -86,12 +87,16 @@ export function MeasurementsPage() {
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">{t('measurements.page.title')}</h1>
-        <ViewMenu view={view} onChange={setView} />
+    <div>
+      {/* Sticky Titelzeile: klebt unterhalb des App-Headers beim Scrollen */}
+      <div className="sticky top-14 z-10 -mx-4 px-4 py-3 glass-bar border-b border-border/60 mb-4">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold">{t('measurements.page.title')}</h1>
+          <ViewMenu view={view} onChange={setView} />
+        </div>
       </div>
 
+      <div className="space-y-4">
       {/* Kompakter Kopf: Fortschrittsring + Einsparpotenzial */}
       <div className="glass flex items-center gap-4 rounded-3xl p-4">
         <ProgressRing done={done} total={total} />
@@ -124,6 +129,7 @@ export function MeasurementsPage() {
       {view === 'recommended' && <MeasurementFlow steps={steps} savingsEur={savingsEur} />}
       {view === 'trades' && <TradesView results={results} />}
       {view === 'byRoom' && <ByRoomView results={results} />}
+      </div>
     </div>
   )
 }

@@ -51,10 +51,13 @@ interface OnboardingState {
   data: OnboardingData
   currentStep: number
   flowMode: FlowMode
+  editReturnTo: string | null
   setStep: (step: number) => void
   updateData: (partial: Partial<OnboardingData>) => void
   complete: () => void
   editProfile: () => void
+  editSection: (step: number, returnTo?: string) => void
+  clearReturnTo: () => void
   reset: () => void
 }
 
@@ -64,16 +67,27 @@ export const useOnboardingStore = create<OnboardingState>()(
       data: defaultData,
       currentStep: -1,
       flowMode: 'linear',
+      editReturnTo: null,
       setStep: (step) => set({ currentStep: step }),
       updateData: (partial) =>
         set((state) => ({ data: { ...state.data, ...partial } })),
       complete: () =>
-        set((state) => ({ data: { ...state.data, completed: true }, flowMode: 'linear' })),
+        set((state) => ({ data: { ...state.data, completed: true }, flowMode: 'linear', editReturnTo: null })),
       // Öffnet den Profil-Hub (Übersicht) im Bearbeitungsmodus, ohne vorhandene
       // Antworten zu verlieren. currentStep -2 = Hub.
       editProfile: () =>
         set((state) => ({ data: { ...state.data, completed: false }, flowMode: 'edit', currentStep: -2 })),
-      reset: () => set({ data: defaultData, currentStep: -1, flowMode: 'linear' }),
+      // Öffnet direkt einen bestimmten Abschnitt im Bearbeitungsmodus. Optionaler
+      // returnTo-Pfad: nach "Fertig" wird dorthin navigiert statt zum Hub.
+      editSection: (step, returnTo) =>
+        set((state) => ({
+          data: { ...state.data, completed: false },
+          flowMode: 'edit',
+          currentStep: step,
+          editReturnTo: returnTo ?? null,
+        })),
+      clearReturnTo: () => set({ editReturnTo: null }),
+      reset: () => set({ data: defaultData, currentStep: -1, flowMode: 'linear', editReturnTo: null }),
     }),
     {
       name: 'eapp-onboarding',
@@ -85,6 +99,7 @@ export const useOnboardingStore = create<OnboardingState>()(
           ...current,
           ...p,
           data: { ...current.data, ...(p.data ?? {}) },
+          editReturnTo: null, // Navigationszustand nicht sitzungsübergreifend speichern
         }
       },
     },

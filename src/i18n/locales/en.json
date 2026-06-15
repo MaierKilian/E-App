@@ -587,7 +587,8 @@
       "nextUp": "Up next",
       "startMeasurement": "Start measurement",
       "moreSteps": "More steps",
-      "completed": "Completed"
+      "completed": "Completed",
+      "completedSectionTitle": "Completed"
     },
     "hot_water_wait": {
       "title": "Hot water wait",

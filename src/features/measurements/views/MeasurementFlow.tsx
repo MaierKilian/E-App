@@ -28,8 +28,10 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
     )
   }
 
-  // Liste = alle Schritte außer dem Hero (dem aktuellen nächsten offenen).
-  const restSteps = steps.filter((s) => s.meta.id !== current?.meta.id)
+  // Schritte außer dem Hero aufteilen: noch offen vs. abgeschlossen
+  const otherSteps = steps.filter((s) => s.meta.id !== current?.meta.id)
+  const pendingSteps = otherSteps.filter((s) => !s.done)
+  const doneSteps = otherSteps.filter((s) => s.done)
 
   return (
     <div className="space-y-4">
@@ -62,13 +64,24 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
         </div>
       )}
 
-      {restSteps.length > 0 && (
+      {pendingSteps.length > 0 && (
         <div className="space-y-2">
           <p className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
             {t('measurements.flow.moreSteps')}
           </p>
-          {restSteps.map((step) => (
+          {pendingSteps.map((step) => (
             <StepRow key={step.meta.id} step={step} />
+          ))}
+        </div>
+      )}
+
+      {doneSteps.length > 0 && (
+        <div className="space-y-2">
+          <p className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+            {t('measurements.flow.completedSectionTitle')}
+          </p>
+          {doneSteps.map((step) => (
+            <StepRow key={step.meta.id} step={step} inCompletedSection />
           ))}
         </div>
       )}
@@ -145,7 +158,7 @@ function NextHero({ step }: { step: MeasurementStep }) {
 }
 
 /** Eine Zeile der Messplan-Liste: Icon, Name, Meta, Status. */
-function StepRow({ step }: { step: MeasurementStep }) {
+function StepRow({ step, inCompletedSection = false }: { step: MeasurementStep; inCompletedSection?: boolean }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { meta } = step
@@ -167,9 +180,13 @@ function StepRow({ step }: { step: MeasurementStep }) {
   )
 
   const trailing = step.done ? (
-    <span className="shrink-0 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
-      {t('measurements.flow.completed')}
-    </span>
+    inCompletedSection ? (
+      <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+    ) : (
+      <span className="shrink-0 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
+        {t('measurements.flow.completed')}
+      </span>
+    )
   ) : meta.available ? (
     <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
   ) : (
