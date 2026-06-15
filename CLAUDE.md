@@ -11,8 +11,12 @@
 
 ## Branches
 
-- `main` – Hauptbranch, stabiler Code
-- Feature-Branches werden via Pull Request gemerged
+- `main` – Hauptbranch, stabiler Code, wird automatisch auf GitHub Pages deployt
+- Nach jeder abgeschlossenen Änderung: Feature-Branch in `main` mergen und pushen
+  1. `git checkout main`
+  2. `git merge <feature-branch> --no-edit`
+  3. `git push origin main`
+  4. `git checkout <feature-branch>` (zurück zum Arbeits-Branch)
 
 ## Projekt-Kontext
 
