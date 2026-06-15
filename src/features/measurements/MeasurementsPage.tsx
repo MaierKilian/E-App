@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, ChevronRight, Lightbulb } from 'lucide-react'
 import { useMeasurementsStore, type MeasurementsView } from '@/store/measurementsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { ProgressRing } from '@/components/ui/ProgressRing'
+import { buildTips } from '@/features/tips/buildTips'
 import { buildSteps } from './tasks'
 import { impactSummary } from './impact'
 import { MeasurementFlow } from './views/MeasurementFlow'
@@ -73,15 +75,18 @@ function ViewMenu({ view, onChange }: { view: View; onChange: (v: View) => void 
  */
 export function MeasurementsPage() {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const results = useMeasurementsStore((s) => s.results)
   const view = useMeasurementsStore((s) => s.measurementsView)
   const setView = useMeasurementsStore((s) => s.setMeasurementsView)
-  const rooms = useOnboardingStore((s) => s.data.rooms)
+  const data = useOnboardingStore((s) => s.data)
+  const rooms = data.rooms
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
 
   const steps = buildSteps(rooms, results, t)
   const done = steps.filter((s) => s.done).length
   const total = steps.length
+  const tips = buildTips(data, results)
 
   const { savingsEur, co2Kg } = impactSummary(results, workPriceCt)
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
@@ -125,6 +130,23 @@ export function MeasurementsPage() {
           )}
         </div>
       </div>
+
+      {tips.length > 0 && (
+        <button
+          type="button"
+          onClick={() => navigate('/tipps')}
+          className="glass flex w-full items-center gap-3 rounded-3xl p-4 text-left transition-transform active:scale-[0.99]"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Lightbulb className="h-5 w-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-foreground">{t('tips.entryTitle')}</p>
+            <p className="text-xs text-muted">{t('tips.entryCount', { count: tips.length })}</p>
+          </div>
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+        </button>
+      )}
 
       {view === 'recommended' && <MeasurementFlow steps={steps} savingsEur={savingsEur} />}
       {view === 'trades' && <TradesView results={results} />}

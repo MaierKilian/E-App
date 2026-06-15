@@ -1471,5 +1471,61 @@
         "body": "Starte mit deinem Energieprofil – du kannst jederzeit pausieren und später weitermachen."
       }
     ]
+  },
+  "tips": {
+    "title": "Empfehlungen",
+    "subtitle": "Konkrete Maßnahmen für dein Zuhause – nach Wirkung sortiert.",
+    "empty": "Mach erst ein paar Messungen – dann erscheinen hier passende Tipps.",
+    "savingPerYear": "{{value}} €/Jahr",
+    "worthIt": "Lohnt sich",
+    "entryTitle": "Deine Empfehlungen",
+    "entryCount_one": "{{count}} Maßnahme für dich",
+    "entryCount_other": "{{count}} Maßnahmen für dich",
+    "items": {
+      "standby": {
+        "title": "Standby abschalten",
+        "reason": "Eine schaltbare Steckdosenleiste kappt den Dauerverbrauch."
+      },
+      "showerhead": {
+        "title": "Wasser sparen beim Duschen",
+        "reason": "Ein Sparduschkopf senkt den Warmwasserbedarf deutlich."
+      },
+      "lighting": {
+        "title": "Auf LED umstellen",
+        "reason": "LEDs verbrauchen einen Bruchteil alter Lampen."
+      },
+      "hot_water_wait": {
+        "title": "Warmwasser-Wartezeit senken",
+        "reason": "Kürzere Wege oder gedämmte Leitungen sparen Wasser und Energie."
+      },
+      "fridge": {
+        "title": "Kühlschrank optimieren",
+        "reason": "1–2 °C wärmer einstellen spart Strom – ohne Risiko."
+      },
+      "freezer": {
+        "title": "Gefrierschrank optimieren",
+        "reason": "Richtig einstellen und abtauen spart spürbar Strom."
+      },
+      "room_temperature": {
+        "title": "Raumtemperatur senken",
+        "reason": "Schon 1 °C weniger spart spürbar Heizkosten."
+      },
+      "furniture_spacing": {
+        "title": "Heizkörper frei räumen",
+        "reason": "Frei stehende Heizflächen geben mehr Wärme ab."
+      },
+      "base_load": {
+        "title": "Dauerverbraucher prüfen",
+        "reason": "Deine Grundlast ist erhöht – spür die Verursacher auf."
+      },
+      "smart_thermostat": {
+        "title": "Smarte Heizkörperthermostate",
+        "reason": "Automatische Absenkung und Zeitpläne sparen Heizenergie."
+      },
+      "owner_control": {
+        "title": "Heizungssteuerung nachrüsten",
+        "reason": "Als Eigentümer lohnt sich eine zentrale, smarte Steuerung."
+      }
+    }
   }
 }
