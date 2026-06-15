@@ -9,8 +9,6 @@ import {
   Gauge,
   Hammer,
   MapPin,
-  Cpu,
-  Sparkles,
   Wallet,
   Check,
 } from 'lucide-react'
@@ -22,8 +20,6 @@ import { sectionStatus } from './sectionStatus'
 
 /** Hub-Index des optionalen Preise-Schritts (Detailed-Index 8). */
 export const PRICES_INDEX = 8
-/** Hub-Index für den Gebäudeautomations-Abschnitt (hinter Preisen & Review). */
-export const GA_INDEX = 10
 
 interface ProfileHubProps {
   data: OnboardingData
@@ -193,21 +189,6 @@ export function ProfileHub({ data, onOpenSection, onDone }: ProfileHubProps) {
           accent
           subtitle={t('onboarding.hub.optional')}
           onClick={() => onOpenSection(PRICES_INDEX)}
-        />
-
-        {/* Zusatz-Abschnitt: Gebäudeautomation (optional, „Neu"). */}
-        <HubTile
-          icon={Cpu}
-          title={t('onboarding.hub.gaTitle')}
-          accent
-          subtitle={t('onboarding.hub.optional')}
-          onClick={() => onOpenSection(GA_INDEX)}
-          badge={
-            <span className="inline-flex items-center gap-0.5 rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary">
-              <Sparkles className="h-3 w-3" />
-              {t('onboarding.hub.gaNew')}
-            </span>
-          }
         />
       </div>
     </div>

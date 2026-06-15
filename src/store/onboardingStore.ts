@@ -29,14 +29,6 @@ const defaultData: OnboardingData = {
   energyCostRange: 'unknown',
   lastRenovationYear: 'unknown',
   renovationItems: [],
-  buildingAutomation: {
-    ecosystems: [],
-    hasHub: 'unknown',
-    useCases: [],
-    budget: 'unknown',
-    install: 'unknown',
-    rooms: [],
-  },
 }
 
 /**

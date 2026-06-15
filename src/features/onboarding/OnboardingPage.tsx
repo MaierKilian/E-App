@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { StepIndicator } from './StepIndicator'
-import { ProfileHub, GA_INDEX } from './ProfileHub'
-import { StepBuildingAutomation } from './steps/StepBuildingAutomation'
+import { ProfileHub } from './ProfileHub'
 import { Step0Mode } from './steps/Step0Mode'
 import { Step1Profile } from './steps/Step1Profile'
 import { Step2Building } from './steps/Step2Building'
@@ -56,9 +55,8 @@ function getStepTitle(step: number, mode: 'quick' | 'detailed', t: (key: string)
   return t(keys[step] ?? keys[0])
 }
 
-/** Titel eines Abschnitts im Bearbeitungsmodus (Detailed-Sektionen + GA). */
+/** Titel eines Abschnitts im Bearbeitungsmodus (Detailed-Sektionen). */
 function getSectionTitle(index: number, t: (key: string) => string): string {
-  if (index === GA_INDEX) return t('onboarding.ga.title')
   // Index entspricht den Detailed-Schritten (0..8, inkl. Preise); 9 = Review wird nicht editiert.
   return getStepTitle(index, 'detailed', t)
 }
@@ -98,24 +96,16 @@ function DetailedStepContent({ step, data, onChange }: Omit<StepContentProps, 'm
   }
 }
 
-/**
- * Inhalt eines einzelnen Abschnitts im Bearbeitungsmodus.
- * Nutzt die Detailed-Komponenten (Index 0..7) bzw. den GA-Fragebogen (GA_INDEX).
- */
+/** Inhalt eines einzelnen Abschnitts im Bearbeitungsmodus (Detailed-Sektionen). */
 function EditSectionBody({
   index,
   data,
   onChange,
-  onGoToRooms,
 }: {
   index: number
   data: OnboardingData
   onChange: (partial: Partial<OnboardingData>) => void
-  onGoToRooms: () => void
 }) {
-  if (index === GA_INDEX) {
-    return <StepBuildingAutomation data={data} onChange={onChange} onGoToRooms={onGoToRooms} />
-  }
   return <DetailedStepContent step={index} data={data} onChange={onChange} />
 }
 
@@ -190,12 +180,7 @@ export function OnboardingPage() {
 
         <div key={`edit-${currentStep}`} className="animate-step-in mt-5">
           <Card>
-            <EditSectionBody
-              index={currentStep}
-              data={data}
-              onChange={updateData}
-              onGoToRooms={() => setStep(2)}
-            />
+            <EditSectionBody index={currentStep} data={data} onChange={updateData} />
           </Card>
         </div>
 
