@@ -46,12 +46,18 @@ export function ByRoomView({ results }: ViewProps) {
     )
   }
 
+  const ROOM_PALETTE = [
+    '#6366f1', '#f97316', '#10b981', '#3b82f6',
+    '#a855f7', '#ec4899', '#f59e0b', '#06b6d4',
+  ]
+
   // Eine Gruppe je Raum-Instanz; Pro-Raum-Messungen mit raumspezifischem Schlüssel.
   const roomGroups: TileGroup[] = roomInstances(rooms)
-    .map((inst) => ({
+    .map((inst, idx) => ({
       key: inst.key,
       label: roomLabel(t, inst),
       icon: DoorOpen,
+      color: ROOM_PALETTE[idx % ROOM_PALETTE.length],
       items: MEASUREMENT_CATALOG.filter((m) => appliesToRoom(m, inst.type)).map<TileItem>((meta) => ({
         meta,
         roomKey: meta.perRoom ? inst.key : undefined,
@@ -63,7 +69,7 @@ export function ByRoomView({ results }: ViewProps) {
   const homeItems = MEASUREMENT_CATALOG.filter((m) => m.wholeHome).map<TileItem>((meta) => ({ meta }))
   const homeGroup: TileGroup[] =
     homeItems.length > 0
-      ? [{ key: '__home__', label: t('measurements.byRoom.wholeHome'), icon: Home, items: homeItems }]
+      ? [{ key: '__home__', label: t('measurements.byRoom.wholeHome'), icon: Home, color: '#64748b', items: homeItems }]
       : []
 
   const groups = [...homeGroup, ...roomGroups]

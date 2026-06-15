@@ -19,6 +19,13 @@ const CATEGORY_ICON: Record<MeasurementCategory, LucideIcon> = {
   water: Waves,
 }
 
+const CATEGORY_COLOR: Record<MeasurementCategory, string> = {
+  heating: '#f97316',
+  hot_water: '#3b82f6',
+  electricity: '#eab308',
+  water: '#06b6d4',
+}
+
 /** Gewerke-Ansicht als Kachel-Grid; Tippen klappt die Messungen horizontal scrollbar auf. */
 export function TradesView({ results }: ViewProps) {
   const { t } = useTranslation()
@@ -27,6 +34,7 @@ export function TradesView({ results }: ViewProps) {
     key: category,
     label: t(`measurements.categories.${category}`),
     icon: CATEGORY_ICON[category],
+    color: CATEGORY_COLOR[category],
     items: MEASUREMENT_CATALOG.filter((m) => m.category === category).map<TileItem>((meta) => ({
       meta,
     })),
