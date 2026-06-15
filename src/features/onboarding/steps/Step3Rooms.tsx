@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { Stepper } from '@/components/ui/Stepper'
+import { getRoomIcon } from '../roomIcons'
 import type { OnboardingData, RoomType, RoomEntry } from '@/types'
 
 interface Props {
@@ -54,6 +55,7 @@ export function Step3Rooms({ data, onChange }: Props) {
       <div className="grid grid-cols-2 gap-2.5">
         {ALL_ROOM_TYPES.map((type) => {
           const selected = isSelected(type)
+          const RoomIcon = getRoomIcon(type)
           return (
             <div
               key={type}
@@ -67,11 +69,12 @@ export function Step3Rooms({ data, onChange }: Props) {
                 type="button"
                 onClick={() => toggleRoom(type)}
                 aria-pressed={selected}
-                className={`block w-full text-left text-sm font-medium leading-tight ${
+                className={`flex w-full items-center gap-2 text-left text-sm font-medium leading-tight ${
                   selected ? 'text-primary' : 'text-foreground'
                 }`}
               >
-                {t(`onboarding.step3.roomTypes.${type}`)}
+                <RoomIcon className={`h-4 w-4 shrink-0 ${selected ? 'text-primary' : 'text-muted'}`} />
+                <span className="truncate">{t(`onboarding.step3.roomTypes.${type}`)}</span>
               </button>
               {selected && (
                 <div className="mt-2 flex justify-center">

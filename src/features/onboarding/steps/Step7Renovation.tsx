@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
-import { SelectChip } from '@/components/ui/SelectChip'
-import { InfoButton } from '@/components/ui/InfoButton'
+import { Home, AppWindow, Flame, Building2, Layers, Ban } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { OptionChip } from '@/components/ui/OptionChip'
+import { Field } from '@/components/ui/Field'
 import type { OnboardingData, RenovationYear, RenovationItem } from '@/types'
 
 interface Props {
@@ -25,6 +27,14 @@ const RENOVATION_ITEMS: RenovationItem[] = [
   'basement_ceiling',
   'nothing',
 ]
+const ITEM_ICONS: Record<RenovationItem, LucideIcon> = {
+  roof_insulation: Home,
+  windows: AppWindow,
+  heating_system: Flame,
+  facade: Building2,
+  basement_ceiling: Layers,
+  nothing: Ban,
+}
 
 export function Step7Renovation({ data, onChange }: Props) {
   const { t } = useTranslation()
@@ -44,15 +54,11 @@ export function Step7Renovation({ data, onChange }: Props) {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-3">
-        <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-          {t('onboarding.step7renovation.lastRenovationYear')}
-          <InfoButton text={t('info.renovation')} />
-        </label>
+    <div className="space-y-6">
+      <Field title={t('onboarding.step7renovation.lastRenovationYear')} info={t('info.renovation')}>
         <div className="flex flex-wrap gap-2">
           {RENOVATION_YEARS.map((year) => (
-            <SelectChip
+            <OptionChip
               key={year}
               label={t(`onboarding.step7renovation.renovationYearOptions.${year}`)}
               selected={data.lastRenovationYear === year}
@@ -66,24 +72,25 @@ export function Step7Renovation({ data, onChange }: Props) {
             />
           ))}
         </div>
-      </div>
+      </Field>
 
       {data.lastRenovationYear !== 'never' && (
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-foreground">
-            {t('onboarding.step7renovation.renovationItems')}
-          </label>
+        <Field
+          title={t('onboarding.step7renovation.renovationItems')}
+          hint={t('onboarding.step7renovation.itemsHint')}
+        >
           <div className="flex flex-wrap gap-2">
             {RENOVATION_ITEMS.map((item) => (
-              <SelectChip
+              <OptionChip
                 key={item}
+                icon={ITEM_ICONS[item]}
                 label={t(`onboarding.step7renovation.renovationItemOptions.${item}`)}
                 selected={data.renovationItems.includes(item)}
                 onClick={() => toggleRenovationItem(item)}
               />
             ))}
           </div>
-        </div>
+        </Field>
       )}
     </div>
   )

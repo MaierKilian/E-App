@@ -10,24 +10,16 @@ import {
   Shield,
   ShieldAlert,
   ShieldX,
-  Sofa,
-  BedDouble,
-  Baby,
-  Utensils,
-  Bath,
-  DoorOpen,
-  Briefcase,
-  Warehouse,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { OptionChip } from '@/components/ui/OptionChip'
 import { Field } from '@/components/ui/Field'
+import { getRoomIcon } from '../roomIcons'
 import type {
   OnboardingData,
   HeatTransferType,
   VentilationType,
   InsulationState,
-  RoomType,
 } from '@/types'
 
 interface Props {
@@ -63,18 +55,6 @@ const INSULATION_ICONS: Record<InsulationState, LucideIcon> = {
   unknown: HelpCircle,
 }
 
-const ROOM_ICONS: Partial<Record<RoomType, LucideIcon>> = {
-  living_room: Sofa,
-  bedroom: BedDouble,
-  children_room: Baby,
-  kitchen: Utensils,
-  bathroom: Bath,
-  hallway: DoorOpen,
-  office: Briefcase,
-  bureau: Briefcase,
-  basement: Warehouse,
-}
-
 export function Step5HeatTransfer({ data, onChange }: Props) {
   const { t } = useTranslation()
 
@@ -93,7 +73,7 @@ export function Step5HeatTransfer({ data, onChange }: Props) {
       <Field title={t('onboarding.step5.heatTransferTitle')} hint={t('onboarding.step5.roomsHint')}>
         <div className="space-y-2">
           {data.rooms.map((room) => {
-            const RoomIcon = ROOM_ICONS[room.type] ?? DoorOpen
+            const RoomIcon = getRoomIcon(room.type)
             return (
               <div
                 key={room.type}

@@ -886,7 +886,9 @@
         "2000_2015": "2000–2015",
         "after_2015": "After 2015",
         "unknown": "Unknown"
-      }
+      },
+      "buildingYearHint": "Reveals the insulation standard.",
+      "livingAreaHint": "Heated living area."
     },
     "step3": {
       "title": "Rooms",
@@ -1035,7 +1037,8 @@
         "facade": "Facade",
         "basement_ceiling": "Basement ceiling",
         "nothing": "Nothing known"
-      }
+      },
+      "itemsHint": "Multiple choice."
     },
     "step7": {
       "title": "Location",

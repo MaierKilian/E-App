@@ -1,4 +1,8 @@
 import { useTranslation } from 'react-i18next'
+import { Thermometer, Ruler, Wind, Droplets, Plug, Ban, HelpCircle, ThermometerSun, Gauge } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { OptionChip } from '@/components/ui/OptionChip'
+import { Field } from '@/components/ui/Field'
 import { SelectChip } from '@/components/ui/SelectChip'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { AffiliateRow } from '@/components/AffiliateCard'
@@ -27,8 +31,23 @@ const INSTRUMENT_TYPES: InstrumentType[] = [
   'none',
   'unknown',
 ]
+const INSTRUMENT_ICONS: Record<InstrumentType, LucideIcon> = {
+  temperature_sensor: Thermometer,
+  distance_meter: Ruler,
+  co2_sensor: Wind,
+  humidity_sensor: Droplets,
+  power_meter: Plug,
+  none: Ban,
+  unknown: HelpCircle,
+}
 
 const SMART_HOME_DEVICES: SmartHomeDevice[] = ['smart_thermostat', 'smart_meter', 'smart_plugs', 'none']
+const SMART_HOME_ICONS: Record<SmartHomeDevice, LucideIcon> = {
+  smart_thermostat: ThermometerSun,
+  smart_meter: Gauge,
+  smart_plugs: Plug,
+  none: Ban,
+}
 const ENERGY_COST_RANGES: EnergyCostRange[] = ['under_100', '100_200', '200_350', 'over_350', 'unknown']
 
 /** Aufklappbares Detail-Panel je ausgewähltem Gerät: Subtypen + Empfehlung. */
@@ -46,12 +65,10 @@ function InstrumentPanel({
   const products = getAffiliateProducts(type)
 
   return (
-    <div className="animate-panel-in rounded-2xl glass p-3 space-y-3">
+    <div className="animate-panel-in space-y-3 rounded-2xl glass p-3">
       {models.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted">
-            {t('onboarding.step6.modelTypeLabel')}
-          </p>
+          <p className="text-xs font-medium text-muted">{t('onboarding.step6.modelTypeLabel')}</p>
           <div className="flex flex-wrap gap-2">
             {models.map((model) => (
               <SelectChip
@@ -126,7 +143,7 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <p className="flex items-center gap-1.5 text-sm text-muted">
         {t('onboarding.step6.subtitle')}
         <InfoButton text={t('info.instruments')} />
@@ -134,8 +151,9 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
 
       <div className="flex flex-wrap gap-2">
         {INSTRUMENT_TYPES.map((type) => (
-          <SelectChip
+          <OptionChip
             key={type}
+            icon={INSTRUMENT_ICONS[type]}
             label={t(`onboarding.step6.instruments.${type}`)}
             selected={isSelected(type)}
             onClick={() => toggleInstrument(type)}
@@ -144,44 +162,35 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
       </div>
 
       {/* Detail-Panels nur für ausgewählte Geräte mit Subtypen/Empfehlung. */}
-      {INSTRUMENT_TYPES.filter((type) => isSelected(type) && hasModelTypes(type)).map(
-        (type) => (
-          <InstrumentPanel
-            key={type}
-            type={type}
-            selectedModels={getEntry(type)?.modelTypes ?? []}
-            onToggleModel={(model) => toggleModel(type, model)}
-          />
-        ),
-      )}
+      {INSTRUMENT_TYPES.filter((type) => isSelected(type) && hasModelTypes(type)).map((type) => (
+        <InstrumentPanel
+          key={type}
+          type={type}
+          selectedModels={getEntry(type)?.modelTypes ?? []}
+          onToggleModel={(model) => toggleModel(type, model)}
+        />
+      ))}
 
       {detailed && (
         <>
-          <div className="space-y-2">
-            <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-              {t('onboarding.step6.smartHomeDevices')}
-              <InfoButton text={t('info.smartHome')} />
-            </label>
+          <Field title={t('onboarding.step6.smartHomeDevices')} info={t('info.smartHome')}>
             <div className="flex flex-wrap gap-2">
               {SMART_HOME_DEVICES.map((device) => (
-                <SelectChip
+                <OptionChip
                   key={device}
+                  icon={SMART_HOME_ICONS[device]}
                   label={t(`onboarding.step6.smartHomeOptions.${device}`)}
                   selected={data.smartHomeDevices.includes(device)}
                   onClick={() => toggleSmartHomeDevice(device)}
                 />
               ))}
             </div>
-          </div>
+          </Field>
 
-          <div className="space-y-2">
-            <label className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-              {t('onboarding.step6.energyCostRange')}
-              <InfoButton text={t('info.energyCost')} />
-            </label>
+          <Field title={t('onboarding.step6.energyCostRange')} info={t('info.energyCost')}>
             <div className="flex flex-wrap gap-2">
               {ENERGY_COST_RANGES.map((range) => (
-                <SelectChip
+                <OptionChip
                   key={range}
                   label={t(`onboarding.step6.energyCostOptions.${range}`)}
                   selected={data.energyCostRange === range}
@@ -189,7 +198,7 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
                 />
               ))}
             </div>
-          </div>
+          </Field>
         </>
       )}
     </div>

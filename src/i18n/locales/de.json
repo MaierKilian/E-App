@@ -1006,7 +1006,9 @@
         "2000_2015": "2000–2015",
         "after_2015": "Nach 2015",
         "unknown": "Unbekannt"
-      }
+      },
+      "buildingYearHint": "Verrät den Dämmstandard.",
+      "livingAreaHint": "Beheizte Wohnfläche."
     },
     "step3": {
       "title": "Zimmer",
@@ -1155,7 +1157,8 @@
         "facade": "Fassade",
         "basement_ceiling": "Kellerdecke",
         "nothing": "Nichts bekannt"
-      }
+      },
+      "itemsHint": "Mehrfachauswahl möglich."
     },
     "step7": {
       "title": "Standort",
