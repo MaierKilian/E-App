@@ -1526,6 +1526,10 @@
         "title": "Add heating control",
         "reason": "As an owner, central smart control pays off."
       }
-    }
+    },
+    "potentialLabel": "Potential savings",
+    "countLine_one": "{{count}} measure for your home",
+    "countLine_other": "{{count}} measures for your home",
+    "adNote": "Amazon links are ads (affiliate). Prices may vary."
   }
 }

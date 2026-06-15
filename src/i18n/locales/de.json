@@ -1526,6 +1526,10 @@
         "title": "Heizungssteuerung nachrüsten",
         "reason": "Als Eigentümer lohnt sich eine zentrale, smarte Steuerung."
       }
-    }
+    },
+    "potentialLabel": "Mögliches Sparpotenzial",
+    "countLine_one": "{{count}} Maßnahme für dein Zuhause",
+    "countLine_other": "{{count}} Maßnahmen für dein Zuhause",
+    "adNote": "Amazon-Links sind Werbung (Affiliate). Preise können abweichen."
   }
 }

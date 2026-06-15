@@ -1,26 +1,37 @@
 /**
- * Produkt-Empfehlungen für Tipps (Amazon-Affiliate, vorerst Platzhalter-URL).
- * Bewusst ohne erfundene Sterne-Bewertung – nur Name, Nutzen, Preis.
- * i18n-Schlüssel kommen aus dem bestehenden affiliate.products.*-Baum.
+ * Produkt-Empfehlungen für Tipps als Amazon-Suchlinks (klickbar, führen zum
+ * jeweiligen Suchbegriff). Ein optionaler Partner-Tag kann später ergänzt
+ * werden, um die Links als Affiliate-Links zu monetarisieren.
  */
+
+const AMAZON_DOMAIN = 'https://www.amazon.de'
+
+/** Amazon-Partner-Tag (leer = normaler Suchlink). Später hier eintragen. */
+export const AMAZON_PARTNER_TAG = ''
+
+/** Baut einen Amazon-Such-Link für einen Suchbegriff (optional mit Partner-Tag). */
+export function amazonSearchUrl(query: string): string {
+  const base = `${AMAZON_DOMAIN}/s?k=${encodeURIComponent(query)}`
+  return AMAZON_PARTNER_TAG ? `${base}&tag=${AMAZON_PARTNER_TAG}` : base
+}
+
 export interface TipProduct {
-  nameKey: string
-  benefitKey: string
-  priceKey: string
-  url: string
+  /** Suchbegriff für Amazon. */
+  query: string
+  /** Optionaler Preis-Hinweis (i18n-Schlüssel). */
+  priceKey?: string
 }
 
 export const TIP_PRODUCTS: Record<string, TipProduct> = {
   smart_plug: {
-    nameKey: 'affiliate.products.smart_plug.name',
-    benefitKey: 'affiliate.products.smart_plug.benefit',
+    query: 'schaltbare steckdosenleiste smart',
     priceKey: 'affiliate.products.smart_plug.price',
-    url: '#',
   },
   eco_showerhead: {
-    nameKey: 'affiliate.products.eco_showerhead.name',
-    benefitKey: 'affiliate.products.eco_showerhead.benefit',
+    query: 'sparduschkopf wassersparend',
     priceKey: 'affiliate.products.eco_showerhead.price',
-    url: '#',
   },
+  led: { query: 'led lampe e27 warmweiß' },
+  smart_thermostat: { query: 'heizkörperthermostat smart' },
+  smart_heating: { query: 'smarte heizungssteuerung' },
 }
