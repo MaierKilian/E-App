@@ -122,103 +122,124 @@ function MiniCard({
 }
 
 /**
- * Kachel-Grid für Gewerke-/Raum-Ansicht: 2-spaltige Gruppen-Kacheln; beim Antippen
- * klappt darunter eine horizontal scrollbare Reihe der einzelnen Mess-Kacheln auf.
- * Jede Gruppe trägt eine Akzentfarbe, die auf Icon und aktiven Ring übertragen wird.
+ * Kachel-Grid für Gewerke-/Raum-Ansicht: Gruppen werden paarweise in 2-spaltigen
+ * Zeilen gerendert. Klappt eine Gruppe auf, erscheint die Mess-Kachel-Reihe unterhalb
+ * der gesamten Zeile – die Nachbar-Kachel bleibt an ihrer Position.
  */
 export function GroupTileGrid({ groups, results, skip }: Props) {
   const { t } = useTranslation()
   const [active, setActive] = useState<string | null>(null)
 
+  // Gruppen paarweise zu Zeilen zusammenfassen, damit beim Aufklappen einer Kachel
+  // die Nachbarkachel nicht nach unten rutscht.
+  const rows: TileGroup[][] = []
+  for (let i = 0; i < groups.length; i += 2) {
+    rows.push(groups.slice(i, i + 2))
+  }
+
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {groups.map((group) => {
-        const done = group.items.filter((it) => results[instanceKey(it.meta.id, it.roomKey)]).length
-        const isSkipped = skip?.skipped.has(group.key) ?? false
-        const isActive = active === group.key && !isSkipped
-        const Icon = group.icon
-        const accent = group.color ?? '#6366f1'
+    <div className="flex flex-col gap-3">
+      {rows.map((row) => {
+        const activeGroup = row.find((g) => {
+          const isSkipped = skip?.skipped.has(g.key) ?? false
+          return active === g.key && !isSkipped
+        })
 
         return (
-          <Fragment key={group.key}>
-            <div className="flex flex-col gap-1.5">
-              <button
-                type="button"
-                onClick={() => !isSkipped && setActive(isActive ? null : group.key)}
-                aria-expanded={isActive}
-                disabled={isSkipped}
-                className={`glass flex flex-1 flex-col gap-3 rounded-3xl p-4 text-left transition-[transform,opacity] active:scale-[0.99] ${
-                  isSkipped ? 'opacity-50' : ''
-                }`}
-                style={
-                  isActive
-                    ? { outline: `2px solid ${accent}80`, outlineOffset: '2px' }
-                    : undefined
-                }
-              >
-                <div className="flex items-center justify-between">
-                  <span
-                    className={`grid h-11 w-11 place-items-center rounded-2xl ${
-                      isSkipped ? 'bg-surface-2 text-muted' : ''
-                    }`}
-                    style={
-                      !isSkipped
-                        ? { backgroundColor: `${accent}1a`, color: accent }
-                        : undefined
-                    }
-                  >
-                    <Icon className="h-5 w-5" />
-                  </span>
-                  {!isSkipped && (
-                    <ChevronDown
-                      className={`h-4 w-4 text-muted transition-transform ${isActive ? 'rotate-180' : ''}`}
-                    />
-                  )}
-                </div>
-                <div>
-                  <p className="font-semibold leading-tight text-foreground">{group.label}</p>
-                  <p className="mt-0.5 text-sm tabular-nums text-muted">
-                    {isSkipped
-                      ? t('measurements.byRoom.nothingToMeasure')
-                      : `${done}/${group.items.length}`}
-                  </p>
-                </div>
-              </button>
+          <Fragment key={row[0].key}>
+            <div className="grid grid-cols-2 gap-3">
+              {row.map((group) => {
+                const done = group.items.filter(
+                  (it) => results[instanceKey(it.meta.id, it.roomKey)],
+                ).length
+                const isSkipped = skip?.skipped.has(group.key) ?? false
+                const isActive = active === group.key && !isSkipped
+                const Icon = group.icon
+                const accent = group.color ?? '#6366f1'
 
-              {skip && (
-                <button
-                  type="button"
-                  onClick={() => skip.onToggle(group.key)}
-                  className="focus-ring inline-flex items-center justify-center gap-1 self-center rounded-full px-2 py-1 text-[11px] font-medium text-muted transition-colors hover:text-foreground"
-                >
-                  {isSkipped ? (
-                    <>
-                      <RotateCcw className="h-3 w-3" />
-                      {t('measurements.byRoom.undo')}
-                    </>
-                  ) : (
-                    <>
-                      <Ban className="h-3 w-3" />
-                      {t('measurements.byRoom.markNothing')}
-                    </>
-                  )}
-                </button>
-              )}
+                return (
+                  <div key={group.key} className="flex flex-col gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => !isSkipped && setActive(isActive ? null : group.key)}
+                      aria-expanded={isActive}
+                      disabled={isSkipped}
+                      className={`glass flex flex-1 flex-col gap-3 rounded-3xl p-4 text-left transition-[transform,opacity] active:scale-[0.99] ${
+                        isSkipped ? 'opacity-50' : ''
+                      }`}
+                      style={
+                        isActive
+                          ? { outline: `2px solid ${accent}80`, outlineOffset: '2px' }
+                          : undefined
+                      }
+                    >
+                      <div className="flex items-center justify-between">
+                        <span
+                          className={`grid h-11 w-11 place-items-center rounded-2xl ${
+                            isSkipped ? 'bg-surface-2 text-muted' : ''
+                          }`}
+                          style={
+                            !isSkipped
+                              ? { backgroundColor: `${accent}1a`, color: accent }
+                              : undefined
+                          }
+                        >
+                          <Icon className="h-5 w-5" />
+                        </span>
+                        {!isSkipped && (
+                          <ChevronDown
+                            className={`h-4 w-4 text-muted transition-transform ${isActive ? 'rotate-180' : ''}`}
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold leading-tight text-foreground">{group.label}</p>
+                        <p className="mt-0.5 text-sm tabular-nums text-muted">
+                          {isSkipped
+                            ? t('measurements.byRoom.nothingToMeasure')
+                            : `${done}/${group.items.length}`}
+                        </p>
+                      </div>
+                    </button>
+
+                    {skip && (
+                      <button
+                        type="button"
+                        onClick={() => skip.onToggle(group.key)}
+                        className="focus-ring inline-flex items-center justify-center gap-1 self-center rounded-full px-2 py-1 text-[11px] font-medium text-muted transition-colors hover:text-foreground"
+                      >
+                        {isSkipped ? (
+                          <>
+                            <RotateCcw className="h-3 w-3" />
+                            {t('measurements.byRoom.undo')}
+                          </>
+                        ) : (
+                          <>
+                            <Ban className="h-3 w-3" />
+                            {t('measurements.byRoom.markNothing')}
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
             </div>
 
-            {isActive && (
-              <div className="col-span-2">
-                <div className="flex gap-3 overflow-x-auto px-1 py-2 snap-x">
-                  {group.items.map((it) => (
-                    <MiniCard
-                      key={instanceKey(it.meta.id, it.roomKey)}
-                      meta={it.meta}
-                      roomKey={it.roomKey}
-                      result={results[instanceKey(it.meta.id, it.roomKey)]}
-                      color={group.color}
-                    />
-                  ))}
-                </div>
+            {/* Aufgeklappte MiniCards unterhalb der gesamten Zeile.
+                pb-7 gibt dem backdrop-filter blur genug Luft, damit die
+                overflow-Clipping-Kante nicht sichtbar wird. */}
+            {activeGroup && (
+              <div className="flex gap-3 overflow-x-auto px-1 pt-1 pb-7 snap-x">
+                {activeGroup.items.map((it) => (
+                  <MiniCard
+                    key={instanceKey(it.meta.id, it.roomKey)}
+                    meta={it.meta}
+                    roomKey={it.roomKey}
+                    result={results[instanceKey(it.meta.id, it.roomKey)]}
+                    color={activeGroup.color}
+                  />
+                ))}
               </div>
             )}
           </Fragment>
