@@ -46,10 +46,10 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
         <div className="glass relative overflow-hidden rounded-3xl p-6 text-center">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-emerald-500 opacity-[0.14] blur-3xl"
+            className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-success opacity-[0.14] blur-3xl"
           />
           <div className="relative flex flex-col items-center gap-2">
-            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-emerald-500/15 text-emerald-500">
+            <span className="grid h-14 w-14 place-items-center rounded-2xl bg-success/15 text-success">
               <Check className="h-7 w-7" />
             </span>
             <h3 className="text-lg font-bold text-foreground">
@@ -166,7 +166,7 @@ function StepRow({ step, inCompletedSection = false }: { step: MeasurementStep; 
   const metaLine = useMetaLine(step)
 
   const leading = step.done ? (
-    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-emerald-500">
+    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
       <Check className="h-5 w-5" />
     </span>
   ) : (
@@ -183,7 +183,7 @@ function StepRow({ step, inCompletedSection = false }: { step: MeasurementStep; 
     inCompletedSection ? (
       <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
     ) : (
-      <span className="shrink-0 rounded-full bg-emerald-500/15 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
+      <span className="shrink-0 rounded-full bg-success/15 px-2.5 py-1 text-[11px] font-semibold text-success">
         {t('measurements.flow.completed')}
       </span>
     )

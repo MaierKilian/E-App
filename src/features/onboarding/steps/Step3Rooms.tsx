@@ -56,7 +56,7 @@ export function Step3Rooms({ data, onChange }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted">{t('onboarding.step3.subtitle')}</p>
-      <div className="grid grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 items-start">
         {ALL_ROOM_TYPES.map((type) => {
           const selected = isSelected(type)
           const RoomIcon = getRoomIcon(type)

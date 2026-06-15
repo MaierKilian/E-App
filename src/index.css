@@ -15,6 +15,7 @@
   --color-border: var(--border);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-fg);
+  --color-success: var(--success);
 }
 
 /* Hell (Standard) */
@@ -28,6 +29,7 @@
   --border: #E4E4E7;
   --primary: #18181B;
   --primary-fg: #FFFFFF;
+  --success: #5a8a1b;
   color-scheme: light;
 }
 
@@ -41,6 +43,7 @@
   --border: #27272A;
   --primary: #FAFAFA;
   --primary-fg: #09090B;
+  --success: #10b981;
   color-scheme: dark;
 }
 
@@ -54,6 +57,7 @@
   --border: #d3e2c2;
   --primary: #5a8a1b;
   --primary-fg: #ffffff;
+  --success: #5a8a1b;
   color-scheme: light;
 }
 

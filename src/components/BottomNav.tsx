@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { NAV_ITEMS } from '@/app/navigation'
 import { useOnboardingStore } from '@/store/onboardingStore'
@@ -29,44 +29,58 @@ export function BottomNav() {
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const showDot = item.id === 'monitoring' && monitoringDue
+          const isActive =
+            location.pathname === item.path ||
+            location.pathname.startsWith(item.path + '/')
+
+          const iconEl = (
+            <span
+              className={`relative grid h-8 w-8 place-items-center rounded-xl transition-colors ${
+                isActive ? 'bg-primary/15' : ''
+              }`}
+            >
+              <Icon
+                className="w-[1.15rem] h-[1.15rem]"
+                strokeWidth={isActive ? 2.5 : 1.5}
+              />
+              {showDot && (
+                <span className="absolute top-0.5 right-0.5 w-1.5 h-1.5 rounded-full bg-primary ring-2 ring-surface" />
+              )}
+            </span>
+          )
+
+          const labelEl = (
+            <span
+              className={`transition-colors ${
+                isActive ? 'font-semibold text-primary' : 'font-medium text-muted/60'
+              }`}
+            >
+              {t(item.labelKey)}
+            </span>
+          )
+
+          const baseClass =
+            'flex flex-col items-center gap-0.5 py-2 text-[11px] transition-colors'
 
           if (item.id === 'onboarding' && isEditingSection) {
-            const isActive = location.pathname === item.path
             return (
               <button
                 key={item.id}
                 type="button"
                 onClick={() => setStep(-2)}
-                className={`flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-primary' : 'text-muted'
-                }`}
+                className={baseClass}
               >
-                <span className="relative">
-                  <Icon className="w-5 h-5" />
-                </span>
-                <span>{t(item.labelKey)}</span>
+                {iconEl}
+                {labelEl}
               </button>
             )
           }
 
           return (
-            <NavLink
-              key={item.id}
-              to={item.path}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-primary' : 'text-muted'
-                }`
-              }
-            >
-              <span className="relative">
-                <Icon className="w-5 h-5" />
-                {showDot && (
-                  <span className="absolute -top-0.5 -right-1 w-2 h-2 rounded-full bg-primary ring-2 ring-surface" />
-                )}
-              </span>
-              <span>{t(item.labelKey)}</span>
-            </NavLink>
+            <Link key={item.id} to={item.path} className={baseClass}>
+              {iconEl}
+              {labelEl}
+            </Link>
           )
         })}
       </div>

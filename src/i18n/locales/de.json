@@ -286,8 +286,8 @@
     "byRoom": {
       "noRooms": "Du hast noch keine Zimmer ausgewählt.",
       "selectRooms": "Zimmer auswählen",
-      "nothingToMeasure": "Nichts zu messen",
-      "markNothing": "Nichts zu messen",
+      "nothingToMeasure": "Nicht berücksichtigen",
+      "markNothing": "Nicht berücksichtigen",
       "undo": "Rückgängig",
       "wholeHome": "Ganzes Zuhause"
     },
