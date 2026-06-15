@@ -13,10 +13,12 @@
 
 - `main` – Hauptbranch, stabiler Code, wird automatisch auf GitHub Pages deployt
 - Nach jeder abgeschlossenen Änderung: Feature-Branch in `main` mergen und pushen
-  1. `git checkout main`
-  2. `git merge <feature-branch> --no-edit`
-  3. `git push origin main`
-  4. `git checkout <feature-branch>` (zurück zum Arbeits-Branch)
+  1. `git status` prüfen – Working Tree muss sauber sein (keine uncommitteten Änderungen)
+  2. `git checkout main`
+  3. `git merge <feature-branch> --no-edit`
+  4. `git push origin main`
+  5. `git checkout <feature-branch>` (zurück zum Arbeits-Branch)
+  6. `git push -u origin <feature-branch>` – Feature-Branch ebenfalls pushen
 
 ## Projekt-Kontext
 
