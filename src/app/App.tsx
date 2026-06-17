@@ -8,6 +8,7 @@ import { MonitoringPage } from '@/features/monitoring/MonitoringPage'
 import { MeterDetailPage } from '@/features/monitoring/MeterDetailPage'
 import { ReportsPage } from '@/features/reports/ReportsPage'
 import { EducationPage } from '@/features/education/EducationPage'
+import { TipsPage } from '@/features/tips/TipsPage'
 import { DataResetPage } from '@/features/settings/DataResetPage'
 import { SplashScreen } from '@/components/SplashScreen'
 import { OnboardingIntro } from '@/components/OnboardingIntro'
@@ -29,6 +30,7 @@ export function App() {
             <Route path="/monitoring/:type" element={<MeterDetailPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/education" element={<EducationPage />} />
+            <Route path="/tipps" element={<TipsPage />} />
             <Route path="/einstellungen/daten" element={<DataResetPage />} />
             <Route path="*" element={<Navigate to="/onboarding" replace />} />
           </Route>

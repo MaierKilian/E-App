@@ -5,9 +5,7 @@ import { OptionChip } from '@/components/ui/OptionChip'
 import { Field } from '@/components/ui/Field'
 import { SelectChip } from '@/components/ui/SelectChip'
 import { InfoButton } from '@/components/ui/InfoButton'
-import { AffiliateRow } from '@/components/AffiliateCard'
 import { getModelTypes, hasModelTypes } from '../instrumentOptions'
-import { getAffiliateProducts } from '../affiliateProducts'
 import type {
   OnboardingData,
   InstrumentType,
@@ -62,7 +60,6 @@ function InstrumentPanel({
 }) {
   const { t } = useTranslation()
   const models = getModelTypes(type)
-  const products = getAffiliateProducts(type)
 
   return (
     <div className="animate-panel-in space-y-3 rounded-2xl glass p-3">
@@ -82,8 +79,6 @@ function InstrumentPanel({
           </div>
         </div>
       )}
-
-      {products.length > 0 && <AffiliateRow products={products} />}
     </div>
   )
 }

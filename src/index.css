@@ -183,6 +183,10 @@ body {
   -webkit-backdrop-filter: blur(26px) saturate(180%);
   backdrop-filter: blur(26px) saturate(180%);
   border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  /* Eigene Compositing-Ebene: WebKit/iOS clippt sonst den backdrop-filter nicht
+     an den runden Ecken (rechteckiger Blur-Layer mit spitzen Ecken). */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
   box-shadow:
     0 1px 1px color-mix(in srgb, var(--fg) 5%, transparent),
     0 6px 16px color-mix(in srgb, var(--fg) 7%, transparent),
@@ -236,6 +240,8 @@ body {
   -webkit-backdrop-filter: blur(30px) saturate(190%);
   backdrop-filter: blur(30px) saturate(190%);
   border: 1px solid color-mix(in srgb, var(--border) 65%, transparent);
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
   box-shadow:
     0 1px 1px color-mix(in srgb, var(--fg) 5%, transparent),
     0 10px 30px color-mix(in srgb, var(--fg) 14%, transparent),

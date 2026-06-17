@@ -1215,68 +1215,9 @@
       "subtitle": "Wähle einen Abschnitt, um deine Angaben zu ergänzen oder zu ändern.",
       "sectionOpen": "{{count}} offen",
       "sectionComplete": "vollständig",
-      "gaTitle": "Gebäudeautomation",
-      "gaNew": "Neu",
       "optional": "Optional · Smart Home",
       "backToOverview": "Übersicht",
       "done": "Fertig"
-    },
-    "ga": {
-      "title": "Gebäudeautomation",
-      "subtitle": "Plane dein Smart Home – alle Angaben sind optional.",
-      "ecosystem": "Vorhandene / gewünschte Plattform",
-      "ecosystemOptions": {
-        "homematic_ip": "Homematic IP",
-        "zigbee": "Zigbee",
-        "hue": "Philips Hue",
-        "alexa": "Amazon Alexa",
-        "google_home": "Google Home",
-        "homekit": "Apple HomeKit",
-        "matter": "Matter",
-        "ikea": "IKEA",
-        "none": "Keine"
-      },
-      "hub": "Smart-Home-Zentrale vorhanden?",
-      "hubOptions": {
-        "yes": "Ja",
-        "no": "Nein",
-        "unknown": "Weiß nicht"
-      },
-      "useCases": "Ziele",
-      "useCaseOptions": {
-        "energy": "Energie sparen",
-        "comfort": "Komfort",
-        "security": "Sicherheit",
-        "shading": "Verschattung",
-        "presence": "Anwesenheit"
-      },
-      "budget": "Budget",
-      "budgetOptions": {
-        "under_200": "Unter 200 €",
-        "200_500": "200–500 €",
-        "500_1500": "500–1.500 €",
-        "over_1500": "Über 1.500 €",
-        "unknown": "Weiß nicht"
-      },
-      "install": "Installation",
-      "installOptions": {
-        "diy": "Selbst (DIY)",
-        "professional": "Fachbetrieb",
-        "unknown": "Weiß nicht"
-      },
-      "devices": "Gewerke",
-      "deviceOptions": {
-        "lights": "Leuchten",
-        "switches": "Schalter",
-        "sockets": "Steckdosen",
-        "blinds": "Rollläden",
-        "thermostats": "Thermostate",
-        "sensors": "Sensoren"
-      },
-      "roomsTitle": "Räume smart ausstatten",
-      "noRooms": "Du hast noch keine Zimmer ausgewählt. Lege zuerst deine Räume an.",
-      "selectRoomsCta": "Zuerst Zimmer auswählen",
-      "recommendationNote": "Auf Basis dieser Angaben zeigen wir dir später passende Produktempfehlungen."
     },
     "prices": {
       "title": "Verbrauchspreise",
@@ -1530,5 +1471,65 @@
         "body": "Starte mit deinem Energieprofil – du kannst jederzeit pausieren und später weitermachen."
       }
     ]
+  },
+  "tips": {
+    "title": "Empfehlungen",
+    "subtitle": "Konkrete Maßnahmen für dein Zuhause – nach Wirkung sortiert.",
+    "empty": "Mach erst ein paar Messungen – dann erscheinen hier passende Tipps.",
+    "savingPerYear": "{{value}} €/Jahr",
+    "worthIt": "Lohnt sich",
+    "entryTitle": "Deine Empfehlungen",
+    "entryCount_one": "{{count}} Maßnahme für dich",
+    "entryCount_other": "{{count}} Maßnahmen für dich",
+    "items": {
+      "standby": {
+        "title": "Standby abschalten",
+        "reason": "Eine schaltbare Steckdosenleiste kappt den Dauerverbrauch."
+      },
+      "showerhead": {
+        "title": "Wasser sparen beim Duschen",
+        "reason": "Ein Sparduschkopf senkt den Warmwasserbedarf deutlich."
+      },
+      "lighting": {
+        "title": "Auf LED umstellen",
+        "reason": "LEDs verbrauchen einen Bruchteil alter Lampen."
+      },
+      "hot_water_wait": {
+        "title": "Warmwasser-Wartezeit senken",
+        "reason": "Kürzere Wege oder gedämmte Leitungen sparen Wasser und Energie."
+      },
+      "fridge": {
+        "title": "Kühlschrank optimieren",
+        "reason": "1–2 °C wärmer einstellen spart Strom – ohne Risiko."
+      },
+      "freezer": {
+        "title": "Gefrierschrank optimieren",
+        "reason": "Richtig einstellen und abtauen spart spürbar Strom."
+      },
+      "room_temperature": {
+        "title": "Raumtemperatur senken",
+        "reason": "Schon 1 °C weniger spart spürbar Heizkosten."
+      },
+      "furniture_spacing": {
+        "title": "Heizkörper frei räumen",
+        "reason": "Frei stehende Heizflächen geben mehr Wärme ab."
+      },
+      "base_load": {
+        "title": "Dauerverbraucher prüfen",
+        "reason": "Deine Grundlast ist erhöht – spür die Verursacher auf."
+      },
+      "smart_thermostat": {
+        "title": "Smarte Heizkörperthermostate",
+        "reason": "Automatische Absenkung und Zeitpläne sparen Heizenergie."
+      },
+      "owner_control": {
+        "title": "Heizungssteuerung nachrüsten",
+        "reason": "Als Eigentümer lohnt sich eine zentrale, smarte Steuerung."
+      }
+    },
+    "potentialLabel": "Mögliches Sparpotenzial",
+    "countLine_one": "{{count}} Maßnahme für dein Zuhause",
+    "countLine_other": "{{count}} Maßnahmen für dein Zuhause",
+    "adNote": "Amazon-Links sind Werbung (Affiliate). Preise können abweichen."
   }
 }

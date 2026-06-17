@@ -1095,68 +1095,9 @@
       "subtitle": "Pick a section to complete or change your details.",
       "sectionOpen": "{{count}} open",
       "sectionComplete": "complete",
-      "gaTitle": "Building automation",
-      "gaNew": "New",
       "optional": "Optional · Smart home",
       "backToOverview": "Overview",
       "done": "Done"
-    },
-    "ga": {
-      "title": "Building automation",
-      "subtitle": "Plan your smart home – all fields are optional.",
-      "ecosystem": "Existing / desired platform",
-      "ecosystemOptions": {
-        "homematic_ip": "Homematic IP",
-        "zigbee": "Zigbee",
-        "hue": "Philips Hue",
-        "alexa": "Amazon Alexa",
-        "google_home": "Google Home",
-        "homekit": "Apple HomeKit",
-        "matter": "Matter",
-        "ikea": "IKEA",
-        "none": "None"
-      },
-      "hub": "Do you have a smart home hub?",
-      "hubOptions": {
-        "yes": "Yes",
-        "no": "No",
-        "unknown": "Don't know"
-      },
-      "useCases": "Goals",
-      "useCaseOptions": {
-        "energy": "Save energy",
-        "comfort": "Comfort",
-        "security": "Security",
-        "shading": "Shading",
-        "presence": "Presence"
-      },
-      "budget": "Budget",
-      "budgetOptions": {
-        "under_200": "Under €200",
-        "200_500": "€200–500",
-        "500_1500": "€500–1,500",
-        "over_1500": "Over €1,500",
-        "unknown": "Don't know"
-      },
-      "install": "Installation",
-      "installOptions": {
-        "diy": "Yourself (DIY)",
-        "professional": "Professional",
-        "unknown": "Don't know"
-      },
-      "devices": "Device types",
-      "deviceOptions": {
-        "lights": "Lights",
-        "switches": "Switches",
-        "sockets": "Sockets",
-        "blinds": "Blinds",
-        "thermostats": "Thermostats",
-        "sensors": "Sensors"
-      },
-      "roomsTitle": "Make rooms smart",
-      "noRooms": "You haven't selected any rooms yet. Add your rooms first.",
-      "selectRoomsCta": "Select rooms first",
-      "recommendationNote": "Based on these details we'll later show you matching product recommendations."
     },
     "prices": {
       "title": "Energy prices",
@@ -1530,5 +1471,65 @@
         "body": "Begin with your energy profile – you can pause anytime and continue later."
       }
     ]
+  },
+  "tips": {
+    "title": "Recommendations",
+    "subtitle": "Concrete measures for your home – sorted by impact.",
+    "empty": "Run a few measurements first – matching tips will appear here.",
+    "savingPerYear": "{{value}} €/year",
+    "worthIt": "Worth it",
+    "entryTitle": "Your recommendations",
+    "entryCount_one": "{{count}} measure for you",
+    "entryCount_other": "{{count}} measures for you",
+    "items": {
+      "standby": {
+        "title": "Cut standby",
+        "reason": "A switchable power strip kills the constant draw."
+      },
+      "showerhead": {
+        "title": "Save water in the shower",
+        "reason": "A water-saving showerhead cuts hot water significantly."
+      },
+      "lighting": {
+        "title": "Switch to LED",
+        "reason": "LEDs use a fraction of old bulbs."
+      },
+      "hot_water_wait": {
+        "title": "Reduce hot-water wait",
+        "reason": "Shorter pipes or insulation save water and energy."
+      },
+      "fridge": {
+        "title": "Optimise your fridge",
+        "reason": "Setting it 1–2 °C warmer saves power safely."
+      },
+      "freezer": {
+        "title": "Optimise your freezer",
+        "reason": "Correct setting and defrosting save noticeable power."
+      },
+      "room_temperature": {
+        "title": "Lower room temperature",
+        "reason": "Just 1 °C less saves noticeable heating costs."
+      },
+      "furniture_spacing": {
+        "title": "Clear the radiator",
+        "reason": "Unobstructed heating surfaces release more heat."
+      },
+      "base_load": {
+        "title": "Check always-on consumers",
+        "reason": "Your base load is elevated – track down the causes."
+      },
+      "smart_thermostat": {
+        "title": "Smart radiator thermostats",
+        "reason": "Automatic setback and schedules save heating energy."
+      },
+      "owner_control": {
+        "title": "Add heating control",
+        "reason": "As an owner, central smart control pays off."
+      }
+    },
+    "potentialLabel": "Potential savings",
+    "countLine_one": "{{count}} measure for your home",
+    "countLine_other": "{{count}} measures for your home",
+    "adNote": "Amazon links are ads (affiliate). Prices may vary."
   }
 }

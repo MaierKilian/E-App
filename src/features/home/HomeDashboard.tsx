@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ClipboardList, ChevronDown, ChevronRight } from 'lucide-react'
+import { ClipboardList, ChevronDown, ChevronRight, Lightbulb } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Step8Review } from '@/features/onboarding/steps/Step8Review'
 import { useOnboardingStore } from '@/store/onboardingStore'
+import { useMeasurementsStore } from '@/store/measurementsStore'
+import { buildTips } from '@/features/tips/buildTips'
 import type { OnboardingData } from '@/types'
 import { ProgressRing } from './ProgressRing'
 import { ProfileSnapshot } from './ProfileSnapshot'
@@ -22,11 +25,14 @@ interface HomeDashboardProps {
  */
 export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const reset = useOnboardingStore((s) => s.reset)
+  const results = useMeasurementsStore((s) => s.results)
   const [profileOpen, setProfileOpen] = useState(false)
 
   const completeness = profileCompleteness(data)
   const isComplete = completeness >= 100
+  const tips = buildTips(data, results)
 
   return (
     <div className="space-y-4">
@@ -58,6 +64,24 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
         <ClipboardList className="w-5 h-5" />
         {isComplete ? t('home.questionnaire.review') : t('home.questionnaire.continue')}
       </button>
+
+      {/* 2b. Personalisierte Empfehlungen (nur wenn vorhanden) */}
+      {tips.length > 0 && (
+        <button
+          type="button"
+          onClick={() => navigate('/tipps')}
+          className="focus-ring glass w-full text-left rounded-3xl p-4 flex items-center gap-3 transition-transform active:scale-[0.99]"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+            <Lightbulb className="w-5 h-5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-foreground">{t('tips.entryTitle')}</p>
+            <p className="text-xs text-muted">{t('tips.entryCount', { count: tips.length })}</p>
+          </div>
+          <ChevronRight className="w-5 h-5 text-muted shrink-0" />
+        </button>
+      )}
 
       {/* 3. Energieprofil als prägnanter Snapshot + aufklappbare Details */}
       <Card className="space-y-3">
