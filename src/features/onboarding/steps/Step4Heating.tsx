@@ -83,14 +83,15 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
         info={t('info.heatGenerators')}
         hint={t('onboarding.step4.generatorsHint')}
       >
-        <div className="flex flex-wrap gap-2">
-          {HEAT_GENERATORS.map((type) => (
+        <div className="grid grid-cols-2 gap-2">
+          {HEAT_GENERATORS.map((type, i) => (
             <OptionChip
               key={type}
               icon={GENERATOR_ICONS[type]}
               label={t(`onboarding.step4.generators.${type}`)}
               selected={data.heatGenerators.includes(type)}
               onClick={() => toggleGenerator(type)}
+              className={`w-full${HEAT_GENERATORS.length % 2 === 1 && i === HEAT_GENERATORS.length - 1 ? ' col-span-2' : ''}`}
             />
           ))}
         </div>
@@ -101,14 +102,15 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
         info={t('info.hotWater')}
         hint={t('onboarding.step4.hotWaterHint')}
       >
-        <div className="flex flex-wrap gap-2">
-          {HOT_WATER_TYPES.map((type) => (
+        <div className="grid grid-cols-2 gap-2">
+          {HOT_WATER_TYPES.map((type, i) => (
             <OptionChip
               key={type}
               icon={HOT_WATER_ICONS[type]}
               label={t(`onboarding.step4.hotWaterOptions.${type}`)}
               selected={data.hotWaterType === type}
               onClick={() => onChange({ hotWaterType: type })}
+              className={`w-full${HOT_WATER_TYPES.length % 2 === 1 && i === HOT_WATER_TYPES.length - 1 ? ' col-span-2' : ''}`}
             />
           ))}
         </div>

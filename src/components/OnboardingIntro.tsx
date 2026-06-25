@@ -55,7 +55,7 @@ export function OnboardingIntro() {
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
+      <div className="flex flex-1 flex-col items-center px-8 pt-[15vh] text-center">
         <span className="mb-8 grid h-24 w-24 place-items-center rounded-3xl bg-primary/10 text-primary">
           <Icon className="h-11 w-11" />
         </span>
