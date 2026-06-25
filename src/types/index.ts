@@ -81,17 +81,18 @@ export type HeatTransferType = 'radiator' | 'underfloor'
 
 export type RoomType =
   | 'living_room'
+  | 'dining_room'
   | 'bedroom'
   | 'children_room'
+  | 'office'
   | 'kitchen'
   | 'bathroom'
   | 'toilet'
-  | 'guest_toilet'
   | 'hallway'
-  | 'office'
-  | 'bureau'
-  | 'staircase'
+  | 'utility_room'
   | 'basement'
+  | 'staircase'
+  | 'attic'
 
 export type InstrumentType =
   | 'temperature_sensor'

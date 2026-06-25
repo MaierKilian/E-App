@@ -1014,19 +1014,25 @@
     "step3": {
       "title": "Zimmer",
       "subtitle": "Wähle deine Zimmertypen aus und passe die Anzahl an.",
+      "groups": {
+        "living": "Wohnräume",
+        "functional": "Funktionsräume",
+        "secondary": "Nebenräume"
+      },
       "roomTypes": {
         "living_room": "Wohnzimmer",
+        "dining_room": "Esszimmer",
         "bedroom": "Schlafzimmer",
         "children_room": "Kinderzimmer",
+        "office": "Arbeitszimmer",
         "kitchen": "Küche",
         "bathroom": "Bad",
         "toilet": "WC",
-        "guest_toilet": "Gäste-WC",
         "hallway": "Flur",
-        "office": "Arbeitszimmer",
-        "bureau": "Büro",
+        "utility_room": "Hauswirtschaftsraum",
+        "basement": "Keller",
         "staircase": "Treppenhaus",
-        "basement": "Keller"
+        "attic": "Dachboden"
       }
     },
     "step4": {

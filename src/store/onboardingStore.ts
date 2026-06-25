@@ -1,6 +1,33 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { OnboardingData } from '@/types'
+import type { OnboardingData, RoomEntry, RoomType } from '@/types'
+
+/**
+ * Migriert zusammengeführte Raumtypen aus älteren Profilen:
+ * - 'guest_toilet' → 'toilet' (funktional identisch)
+ * - 'bureau'       → 'office' (Synonym)
+ * Mehrfach vorkommende Typen werden über die Anzahl zusammengeführt.
+ */
+const ROOM_TYPE_RENAMES: Partial<Record<string, RoomType>> = {
+  guest_toilet: 'toilet',
+  bureau: 'office',
+}
+
+function migrateRooms(rooms: unknown): RoomEntry[] | undefined {
+  if (!Array.isArray(rooms)) return undefined
+  const merged = new Map<RoomType, RoomEntry>()
+  for (const entry of rooms as RoomEntry[]) {
+    if (!entry || typeof entry.type !== 'string') continue
+    const type = ROOM_TYPE_RENAMES[entry.type] ?? (entry.type as RoomType)
+    const existing = merged.get(type)
+    if (existing) {
+      existing.count += entry.count ?? 1
+    } else {
+      merged.set(type, { ...entry, type })
+    }
+  }
+  return [...merged.values()]
+}
 
 const defaultData: OnboardingData = {
   profileName: '',
@@ -87,10 +114,13 @@ export const useOnboardingStore = create<OnboardingState>()(
       // einem Update neu hinzugekommene Felder nie fehlen (sonst Laufzeitfehler).
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<OnboardingState>
+        const mergedData = { ...current.data, ...(p.data ?? {}) }
+        const migratedRooms = migrateRooms(mergedData.rooms)
+        if (migratedRooms) mergedData.rooms = migratedRooms
         return {
           ...current,
           ...p,
-          data: { ...current.data, ...(p.data ?? {}) },
+          data: mergedData,
           editReturnTo: null, // Navigationszustand nicht sitzungsübergreifend speichern
         }
       },

@@ -894,19 +894,25 @@
     "step3": {
       "title": "Rooms",
       "subtitle": "Select your room types and adjust the count.",
+      "groups": {
+        "living": "Living Spaces",
+        "functional": "Functional Rooms",
+        "secondary": "Secondary Rooms"
+      },
       "roomTypes": {
         "living_room": "Living Room",
+        "dining_room": "Dining Room",
         "bedroom": "Bedroom",
         "children_room": "Children's Room",
+        "office": "Home Office",
         "kitchen": "Kitchen",
         "bathroom": "Bathroom",
         "toilet": "Toilet",
-        "guest_toilet": "Guest Toilet",
         "hallway": "Hallway",
-        "office": "Home Office",
-        "bureau": "Office",
+        "utility_room": "Utility Room",
+        "basement": "Basement",
         "staircase": "Staircase",
-        "basement": "Basement"
+        "attic": "Attic"
       }
     },
     "step4": {

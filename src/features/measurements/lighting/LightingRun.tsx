@@ -10,17 +10,18 @@ import type { RunProps } from '../runnerTypes'
 /** Typische Brenndauer pro Tag (Stunden) je Raumtyp – nur als Vorbelegung. */
 const HOURS_DEFAULT: Partial<Record<RoomType, number>> = {
   living_room: 4,
-  kitchen: 3,
+  dining_room: 2.5,
   bedroom: 1.5,
   children_room: 2,
+  office: 4,
+  kitchen: 3,
   bathroom: 1.5,
   toilet: 0.5,
-  guest_toilet: 0.5,
   hallway: 1,
-  office: 4,
-  bureau: 4,
-  staircase: 0.5,
+  utility_room: 0.5,
   basement: 0.5,
+  staircase: 0.5,
+  attic: 0.5,
 }
 
 const HOURS_STEP = 0.5
