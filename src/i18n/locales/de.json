@@ -421,10 +421,20 @@
       "intro": {
         "needs": "Du brauchst ein Strommessgerät (Energiekosten-Messgerät).",
         "stepsTitle": "So funktioniert's",
+        "imageAlt": "Illustration: Person misst den Standby-Verbrauch eines Fernsehers",
         "steps": [
           "Messgerät zwischen Steckdose & Gerät",
           "Gerät in Standby, Watt ablesen",
           "Werte eintragen"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Gut zu wissen",
+        "details": [
+          "Für diesen Check brauchst du ein einfaches Strommessgerät (Energiekosten-Messgerät) zum Zwischenstecken.",
+          "Stecke es zwischen Steckdose und Gerät, schalte das Gerät in den Standby und lies die Watt ab.",
+          "Viele Geräte ziehen rund um die Uhr Strom, obwohl sie „aus“ wirken – das summiert sich übers Jahr.",
+          "Eine schaltbare Steckdosenleiste trennt mehrere Geräte auf einmal komplett vom Netz.",
+          "Smartes Messgerät direkt verbinden: in einer kommenden Version geplant."
         ],
         "start": "Test starten",
         "affiliateNote": "Damit spürst du Standby-Verbraucher zuverlässig auf:",
@@ -824,10 +834,20 @@
       "intro": {
         "lead": "Alte Glüh- und Halogenlampen verbrauchen ein Vielfaches von LEDs. Prüfe Raum für Raum, was sich lohnt.",
         "stepsTitle": "So funktioniert’s",
+        "imageAlt": "Illustration: Person zeigt smarte Beleuchtung per App",
         "steps": [
           "Raum wählen",
           "Nicht-LED-Lampen zählen",
           "Einsparung sehen"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Worauf es ankommt",
+        "details": [
+          "Alte Glüh- und Halogenlampen verbrauchen ein Vielfaches von LEDs – bei gleicher Helligkeit.",
+          "Zähle pro Raum die Lampen, die noch keine LED sind (Glüh-, Halogen- oder alte Energiesparlampen).",
+          "LEDs gibt es in allen Fassungen (E27, E14, GU10 …) und Lichtfarben – von warmweiß bis tageslichtweiß.",
+          "Am meisten lohnt sich der Tausch dort, wo das Licht lange brennt (Wohnzimmer, Küche, Flur).",
+          "LEDs halten deutlich länger – das spart neben Strom auch häufiges Wechseln."
         ],
         "start": "Check starten"
       },

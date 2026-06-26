@@ -421,10 +421,20 @@
       "intro": {
         "needs": "You'll need a power meter (energy cost meter).",
         "stepsTitle": "How it works",
+        "imageAlt": "Illustration: person measuring a TV's standby power",
         "steps": [
           "Plug the meter between socket & device",
           "Put device in standby, read the watts",
           "Enter the values"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Good to know",
+        "details": [
+          "For this check you need a simple plug-in power meter (energy cost meter).",
+          "Plug it between the socket and the device, put the device into standby and read the watts.",
+          "Many devices draw power around the clock even though they seem \"off\" – it adds up over the year.",
+          "A switchable power strip fully disconnects several devices at once.",
+          "Connecting a smart meter directly is planned for a future version."
         ],
         "start": "Start test",
         "affiliateNote": "It reliably tracks down standby drains:",
@@ -824,10 +834,20 @@
       "intro": {
         "lead": "Old incandescent and halogen bulbs use many times more than LEDs. Check room by room what is worth it.",
         "stepsTitle": "How it works",
+        "imageAlt": "Illustration: person showing smart lighting via app",
         "steps": [
           "Choose a room",
           "Count non-LED bulbs",
           "See the savings"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "What matters",
+        "details": [
+          "Old incandescent and halogen bulbs use many times more energy than LEDs – at the same brightness.",
+          "Per room, count the bulbs that are not yet LED (incandescent, halogen or old energy-saving lamps).",
+          "LEDs come in every socket (E27, E14, GU10 …) and light colour – from warm white to daylight.",
+          "The switch pays off most where lights burn longest (living room, kitchen, hallway).",
+          "LEDs last far longer – saving electricity and frequent bulb changes."
         ],
         "start": "Start check"
       },
