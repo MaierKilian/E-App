@@ -21,11 +21,12 @@ export function RoomTemperatureIntro() {
   return (
     <div className="space-y-3">
       <IntroHeroImage
+        variant="photo"
         srcLight="measurements/room-climate-light.webp"
         srcDark="measurements/room-climate-dark.webp"
         label={t('measurements.room_temperature.intro.imageAlt')}
-        ratio="941 / 875"
-        widthClassName="max-w-[248px]"
+        ratio="1443 / 934"
+        widthClassName="max-w-[330px]"
       />
 
       <div className="glass rounded-3xl p-4">
