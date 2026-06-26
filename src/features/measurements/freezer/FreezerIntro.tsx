@@ -19,8 +19,8 @@ export function FreezerIntro() {
       <IntroHeroPhoto
         src="measurements/freezer.webp"
         label={t('measurements.freezer.intro.imageAlt')}
-        ratio="941 / 1672"
-        widthClassName="max-w-[196px]"
+        ratio="936 / 974"
+        widthClassName="max-w-[224px]"
       />
 
       <div className="glass rounded-3xl p-4">

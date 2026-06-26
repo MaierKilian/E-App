@@ -20,6 +20,8 @@ export function FurnitureSpacingIntro() {
         srcLight="measurements/furniture-spacing-light.webp"
         srcDark="measurements/furniture-spacing-dark.webp"
         label={t('measurements.furniture_spacing.intro.imageAlt')}
+        ratio="1086 / 1281"
+        widthClassName="max-w-[196px]"
       />
 
       <div className="glass rounded-3xl p-4">

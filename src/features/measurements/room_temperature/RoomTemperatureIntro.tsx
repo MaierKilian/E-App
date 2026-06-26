@@ -24,8 +24,8 @@ export function RoomTemperatureIntro() {
         srcLight="measurements/room-climate-light.webp"
         srcDark="measurements/room-climate-dark.webp"
         label={t('measurements.room_temperature.intro.imageAlt')}
-        ratio="941 / 1672"
-        widthClassName="max-w-[196px]"
+        ratio="941 / 875"
+        widthClassName="max-w-[248px]"
       />
 
       <div className="glass rounded-3xl p-4">

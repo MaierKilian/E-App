@@ -18,9 +18,11 @@ interface IntroHeroVideoProps {
   src: string
   /** Beschreibung für Screenreader. Fehlt sie, gilt das Video als dekorativ. */
   label?: string
+  /** Tailwind-Breitenbegrenzung (zentriert) – steuert indirekt die Höhe. */
+  widthClassName?: string
 }
 
-export function IntroHeroVideo({ src, label }: IntroHeroVideoProps) {
+export function IntroHeroVideo({ src, label, widthClassName = 'max-w-[184px]' }: IntroHeroVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   // Einmalig beim Mounten auslesen (kein Effekt nötig → keine Folge-Renders).
   const [reduceMotion] = useState(
@@ -32,7 +34,7 @@ export function IntroHeroVideo({ src, label }: IntroHeroVideoProps) {
   const url = `${import.meta.env.BASE_URL}${src}`
 
   return (
-    <div className="relative mx-auto w-full max-w-[248px]">
+    <div className={`relative mx-auto w-full ${widthClassName}`}>
       <video
         ref={videoRef}
         className="hero-video block w-full"
