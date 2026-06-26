@@ -540,7 +540,7 @@
       "short": "Check ice build-up and temperature to avoid wasted electricity.",
       "intro": {
         "stepsTitle": "How it works",
-        "imageAlt": "Illustration: person measuring the temperature inside the freezer",
+        "imageAlt": "Illustration: person checking the iced-up freezer",
         "steps": [
           "Open the freezer",
           "Assess the ice build-up",
@@ -638,10 +638,20 @@
       "intro": {
         "lead": "Until hot water arrives, cold water often runs off unused. Find out how much.",
         "stepsTitle": "How it works",
+        "imageAlt": "Illustration: person timing how long until hot water arrives",
         "steps": [
           "Choose a tap",
           "Turn fully to hot & start",
           "Stop once it is clearly warm"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Measurement tips",
+        "details": [
+          "Until hot water arrives, cold water often runs off unused – this check measures that wait.",
+          "Turn the tap fully to hot and start the stopwatch at the same moment.",
+          "Stop as soon as the water feels clearly warm.",
+          "Measure at the tap you use most often (e.g. shower or kitchen).",
+          "Long waits point to long pipe runs – a circulation line or pipe insulation can help."
         ],
         "start": "Start check"
       },

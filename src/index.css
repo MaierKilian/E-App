@@ -364,14 +364,21 @@ body {
   mix-blend-mode: lighten;
 }
 
-/* --- Intro-Hero-Foto: einzelnes, farbiges Motiv (kein Schwarz/Weiß-Blend) ---
- * Hier lässt sich der Hintergrund nicht per Blend entfernen, daher werden die
- * Kanten weich ausgeblendet, damit das Bild rahmenlos in den Hintergrund
- * übergeht. Im Dark-Mode wird das helle Motiv dezent abgedunkelt, damit es
- * nicht grell wirkt. Gleiche Ken-Burns-Belebung wie die Illustrationen. */
-.hero-photo {
+@keyframes hero-kenburns {
+  from {
+    transform: scale(1) translateY(0);
+  }
+  to {
+    transform: scale(1.06) translateY(-2%);
+  }
+}
+
+/* --- Intro-Hero-Foto-Paar: farbiges Motiv mit eigener Hell- UND Dunkel-Version.
+ * Kein Blend (Farben bleiben), stattdessen je Theme die passende Version + weiche
+ * Kanten, damit es rahmenlos in den Hintergrund übergeht. */
+.hero-photopair {
   border-radius: 1.5rem;
-  transform-origin: 50% 42%;
+  transform-origin: 50% 45%;
   animation: hero-kenburns 11s ease-in-out infinite alternate;
   will-change: transform;
   -webkit-mask-image:
@@ -383,17 +390,14 @@ body {
   -webkit-mask-composite: source-in;
   mask-composite: intersect;
 }
-[data-theme='dark'] .hero-photo {
-  filter: brightness(0.62) contrast(1.04);
+.hero-photopair-dark {
+  display: none;
 }
-
-@keyframes hero-kenburns {
-  from {
-    transform: scale(1) translateY(0);
-  }
-  to {
-    transform: scale(1.06) translateY(-2%);
-  }
+[data-theme='dark'] .hero-photopair-light {
+  display: none;
+}
+[data-theme='dark'] .hero-photopair-dark {
+  display: block;
 }
 
 /* Lightbox: groß und klar (kein Blend). Theme-Variante per Anzeige-Toggle. */
@@ -411,7 +415,7 @@ body {
   .animate-step-in,
   .animate-panel-in,
   .hero-illustration,
-  .hero-photo {
+  .hero-photopair {
     animation: none;
   }
   .app-backdrop::before,

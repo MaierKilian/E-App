@@ -26,6 +26,12 @@ interface IntroHeroImageProps {
   ratio?: string
   /** Tailwind-Breitenbegrenzung (zentriert). Hohe Motive schmaler halten. */
   widthClassName?: string
+  /**
+   * `lineart` (Default): Schwarz/Weiß-Strichzeichnung – Hintergrund wird per
+   * Blend (darken/lighten) entfernt. `photo`: farbiges Motiv mit echter Hell-
+   * und Dunkel-Version – kein Blend, nur Theme-Swap + weiche Kanten.
+   */
+  variant?: 'lineart' | 'photo'
 }
 
 export function IntroHeroImage({
@@ -34,12 +40,14 @@ export function IntroHeroImage({
   label,
   ratio = '1086 / 1449',
   widthClassName = 'max-w-[248px]',
+  variant = 'lineart',
 }: IntroHeroImageProps) {
   const { t } = useTranslation()
   const [zoom, setZoom] = useState(false)
   const base = import.meta.env.BASE_URL
   const urlLight = `${base}${srcLight}`
   const urlDark = `${base}${srcDark}`
+  const cls = variant === 'photo' ? 'hero-photopair' : 'hero-illustration'
 
   return (
     <>
@@ -53,14 +61,14 @@ export function IntroHeroImage({
           src={urlLight}
           alt=""
           aria-hidden="true"
-          className="hero-illustration hero-illustration-light block w-full"
+          className={`${cls} ${cls}-light block w-full`}
           style={{ aspectRatio: ratio }}
         />
         <img
           src={urlDark}
           alt=""
           aria-hidden="true"
-          className="hero-illustration hero-illustration-dark block w-full"
+          className={`${cls} ${cls}-dark block w-full`}
           style={{ aspectRatio: ratio }}
         />
       </button>

@@ -540,7 +540,7 @@
       "short": "Prüfe Vereisung und Temperatur und spare unnötigen Stromverbrauch.",
       "intro": {
         "stepsTitle": "So funktioniert's",
-        "imageAlt": "Illustration: Person misst die Temperatur im Gefrierschrank",
+        "imageAlt": "Illustration: Person prüft den vereisten Gefrierschrank",
         "steps": [
           "Gefrierschrank öffnen",
           "Vereisung einschätzen",
@@ -638,10 +638,20 @@
       "intro": {
         "lead": "Bis warmes Wasser ankommt, fließt oft kaltes Wasser ungenutzt ab. Finde heraus, wie viel.",
         "stepsTitle": "So funktioniert’s",
+        "imageAlt": "Illustration: Person stoppt die Zeit, bis warmes Wasser kommt",
         "steps": [
           "Entnahmestelle wählen",
           "Voll auf warm stellen & Start",
           "Bei warmem Wasser stoppen"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Tipps zur Messung",
+        "details": [
+          "Bis warmes Wasser ankommt, fließt oft kaltes Wasser ungenutzt ab – diese Wartezeit misst der Check.",
+          "Stelle den Hahn voll auf warm und starte die Stoppuhr im selben Moment.",
+          "Stoppe, sobald das Wasser spürbar warm ist.",
+          "Miss an der Stelle, die du am häufigsten nutzt (z. B. Dusche oder Küche).",
+          "Lange Wartezeiten deuten auf weite Leitungswege hin – eine Zirkulationsleitung oder Dämmung kann helfen."
         ],
         "start": "Check starten"
       },
