@@ -28,7 +28,7 @@ export function StandbyIntro() {
         srcDark="measurements/standby-dark.webp"
         label={t('measurements.standby.intro.imageAlt')}
         ratio="1453 / 922"
-        widthClassName="max-w-[330px]"
+        reservePx={636}
       />
 
       <div className="glass rounded-3xl p-4">

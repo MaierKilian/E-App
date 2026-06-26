@@ -13,7 +13,10 @@ import { MediaLightbox } from './MediaLightbox'
  * Ken-Burns-Animation lässt das Standbild „leben"; `prefers-reduced-motion`
  * wird respektiert (Animation aus).
  *
- * Tippen öffnet das Motiv groß in einer Lightbox.
+ * Die Größe passt sich der Displayhöhe an: Hero-Höhe = clamp(min, 100dvh −
+ * Reserve, max). Auf großen Screens groß, auf kleinen automatisch kleiner –
+ * immer ohne Scrollen. Die Breite folgt dem Seitenverhältnis (object-contain,
+ * daher nie verzerrt). Tippen öffnet das Motiv groß in einer Lightbox.
  */
 interface IntroHeroImageProps {
   /** Helle Variante (heller Hintergrund) – Light/HTW. Relativ zur BASE_URL. */
@@ -22,16 +25,20 @@ interface IntroHeroImageProps {
   srcDark: string
   /** Beschreibung für Screenreader. Fehlt sie, gilt das Bild als dekorativ. */
   label?: string
-  /** Seitenverhältnis "B / H" des Motivs. Default 3:4-artig. */
+  /** Seitenverhältnis "B / H" des Motivs. */
   ratio?: string
-  /** Tailwind-Breitenbegrenzung (zentriert). Hohe Motive schmaler halten. */
-  widthClassName?: string
   /**
    * `lineart` (Default): Schwarz/Weiß-Strichzeichnung – Hintergrund wird per
    * Blend (darken/lighten) entfernt. `photo`: farbiges Motiv mit echter Hell-
    * und Dunkel-Version – kein Blend, nur Theme-Swap + weiche Kanten.
    */
   variant?: 'lineart' | 'photo'
+  /** Fixe Chrome-Höhe (Titel, Schritte, Button, Tab-Leiste …), die von 100dvh
+   *  abgezogen wird. Größer = kleineres Hero (z. B. wenn zusätzlich ein
+   *  Affiliate-Block darunter steht). */
+  reservePx?: number
+  /** Maximale Hero-Breite auf großen Displays (begrenzt indirekt die Höhe). */
+  maxWidthPx?: number
 }
 
 export function IntroHeroImage({
@@ -39,8 +46,9 @@ export function IntroHeroImage({
   srcDark,
   label,
   ratio = '1086 / 1449',
-  widthClassName = 'max-w-[248px]',
   variant = 'lineart',
+  reservePx = 548,
+  maxWidthPx = 360,
 }: IntroHeroImageProps) {
   const { t } = useTranslation()
   const [zoom, setZoom] = useState(false)
@@ -48,6 +56,17 @@ export function IntroHeroImage({
   const urlLight = `${base}${srcLight}`
   const urlDark = `${base}${srcDark}`
   const cls = variant === 'photo' ? 'hero-photopair' : 'hero-illustration'
+  // Höhe richtet sich nach der Displayhöhe (100dvh − Reserve), gedeckelt so,
+  // dass die Breite maxWidthPx nicht übersteigt. Breite folgt dem Verhältnis.
+  const [rw, rh] = ratio.split('/').map((n) => parseFloat(n))
+  const maxHeightPx = Math.round(maxWidthPx / (rw / rh))
+  const height = `clamp(140px, calc(100dvh - ${reservePx}px), ${maxHeightPx}px)`
+  const imgStyle = {
+    aspectRatio: ratio,
+    height,
+    width: 'auto',
+    maxWidth: `min(${maxWidthPx}px, 86vw)`,
+  } as const
 
   return (
     <>
@@ -55,21 +74,21 @@ export function IntroHeroImage({
         type="button"
         onClick={() => setZoom(true)}
         aria-label={label ?? t('common.enlarge')}
-        className={`focus-ring relative mx-auto block w-full cursor-zoom-in overflow-hidden rounded-3xl ${widthClassName}`}
+        className={`focus-ring mx-auto block w-fit max-w-full cursor-zoom-in overflow-hidden rounded-3xl`}
       >
         <img
           src={urlLight}
           alt=""
           aria-hidden="true"
-          className={`${cls} ${cls}-light block w-full`}
-          style={{ aspectRatio: ratio }}
+          className={`${cls} ${cls}-light block`}
+          style={imgStyle}
         />
         <img
           src={urlDark}
           alt=""
           aria-hidden="true"
-          className={`${cls} ${cls}-dark block w-full`}
-          style={{ aspectRatio: ratio }}
+          className={`${cls} ${cls}-dark block`}
+          style={imgStyle}
         />
       </button>
 

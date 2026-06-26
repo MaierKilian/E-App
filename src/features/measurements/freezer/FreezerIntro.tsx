@@ -22,7 +22,6 @@ export function FreezerIntro() {
         srcDark="measurements/freezer-dark.webp"
         label={t('measurements.freezer.intro.imageAlt')}
         ratio="1387 / 925"
-        widthClassName="max-w-[330px]"
       />
 
       <div className="glass rounded-3xl p-4">
