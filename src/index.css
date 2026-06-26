@@ -330,6 +330,7 @@ body {
  *       hue-rotate erhalten), dann screen blendet das Schwarz weg. */
 .hero-video {
   border-radius: 1.5rem;
+  object-fit: contain;
   mix-blend-mode: multiply;
 }
 
@@ -344,6 +345,8 @@ body {
  * leichtem Schweben lässt das Standbild lebendig wirken. */
 .hero-illustration {
   border-radius: 1.5rem;
+  /* Seitenverhältnis immer wahren – nie verzerren. */
+  object-fit: contain;
   transform-origin: 50% 42%;
   animation: hero-kenburns 11s ease-in-out infinite alternate;
   will-change: transform;
@@ -378,6 +381,8 @@ body {
  * Kanten, damit es rahmenlos in den Hintergrund übergeht. */
 .hero-photopair {
   border-radius: 1.5rem;
+  /* Seitenverhältnis immer wahren – nie verzerren. */
+  object-fit: contain;
   transform-origin: 50% 45%;
   animation: hero-kenburns 11s ease-in-out infinite alternate;
   will-change: transform;
