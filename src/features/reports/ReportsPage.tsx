@@ -53,10 +53,12 @@ export function ReportsPage() {
   )
 }
 
-const TYPE_META: Record<ReportType, LucideIcon> = {
-  measurements: Ruler,
-  monitoring: Gauge,
-  total: Layers,
+/** Je Berichtstyp ein eigenes Icon und ein eigener Akzentton – damit auf den
+ *  ersten Blick erkennbar ist, welche Karte welcher Bericht ist. */
+const TYPE_META: Record<ReportType, { icon: LucideIcon; accent: string }> = {
+  measurements: { icon: Ruler, accent: '#0ea5e9' },
+  monitoring: { icon: Gauge, accent: '#8b5cf6' },
+  total: { icon: Layers, accent: 'var(--color-primary)' },
 }
 
 const TYPE_ORDER: ReportType[] = ['measurements', 'monitoring', 'total']
@@ -65,9 +67,33 @@ interface OverviewProps {
   onSelect: (type: ReportType) => void
 }
 
-/** Stilisiertes Mini-Vorschau-„Seitenbild" je Berichtstyp (kein echtes PDF). */
-function ReportThumb({ type, dim }: { type: ReportType; dim?: boolean }) {
-  const isChart = type === 'monitoring' || type === 'total'
+/** Stilisiertes Mini-Vorschau-„Seitenbild" je Berichtstyp (kein echtes PDF).
+ *  Jeder Typ zeigt ein eigenes Motiv im jeweiligen Akzentton: Messungen Balken,
+ *  Monitoring eine Linie, Gesamt beides – so sind die Karten unterscheidbar. */
+function ReportThumb({ type, accent, dim }: { type: ReportType; accent: string; dim?: boolean }) {
+  const line = (
+    <svg viewBox="0 0 40 16" className="h-4 w-full">
+      <polyline
+        points="0,12 8,8 16,10 24,4 32,6 40,2"
+        fill="none"
+        stroke={accent}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+  const bars = (
+    <div className="flex h-4 items-end gap-0.5">
+      {[7, 11, 5, 9].map((h, i) => (
+        <span
+          key={i}
+          className="w-1.5 rounded-sm"
+          style={{ height: h, background: accent, opacity: 0.6 }}
+        />
+      ))}
+    </div>
+  )
   return (
     <div
       aria-hidden="true"
@@ -75,28 +101,18 @@ function ReportThumb({ type, dim }: { type: ReportType; dim?: boolean }) {
         dim ? 'opacity-50' : ''
       }`}
     >
-      <div className="h-3 w-full bg-primary/80" />
+      <div className="h-3 w-full" style={{ background: accent, opacity: 0.85 }} />
       <div className="space-y-1 p-1.5">
-        {isChart ? (
-          <svg viewBox="0 0 40 16" className="h-4 w-full">
-            <polyline
-              points="0,12 8,8 16,10 24,4 32,6 40,2"
-              fill="none"
-              stroke="var(--color-primary)"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        ) : (
-          <div className="flex h-4 items-end gap-0.5">
-            {[7, 11, 5, 9].map((h, i) => (
-              <span key={i} className="w-1.5 rounded-sm bg-primary/60" style={{ height: h }} />
-            ))}
-          </div>
+        {type === 'measurements' && bars}
+        {type === 'monitoring' && line}
+        {type === 'total' && (
+          <>
+            {line}
+            {bars}
+          </>
         )}
         <div className="h-1 w-10 rounded bg-surface-2" />
-        <div className="h-1 w-8 rounded bg-surface-2" />
+        {type !== 'total' && <div className="h-1 w-8 rounded bg-surface-2" />}
         <div className="h-1 w-9 rounded bg-surface-2" />
       </div>
     </div>
@@ -140,22 +156,20 @@ function ReportOverview({ onSelect }: OverviewProps) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted">{t('report.overview.hint')}</p>
-
       {TYPE_ORDER.map((type) => {
-        const Icon = TYPE_META[type]
+        const { icon: Icon, accent } = TYPE_META[type]
         const recommended = type === 'total'
         const enabled = enabledFor(type)
-        const tags = t(`report.types.${type}.tags`, { returnObjects: true }) as string[]
 
         const inner = (
-          <div className="flex items-start gap-4">
+          <div className="flex items-center gap-4">
             <span
-              className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${
-                recommended ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'
+              className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${
+                recommended ? 'bg-primary text-primary-foreground' : ''
               }`}
+              style={recommended ? undefined : { background: `${accent}1a`, color: accent }}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-6 w-6" />
             </span>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
@@ -169,20 +183,9 @@ function ReportOverview({ onSelect }: OverviewProps) {
                   </span>
                 )}
               </div>
-              <p className="mt-0.5 text-sm text-muted">{t(`report.types.${type}.description`)}</p>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-surface-2/70 px-2 py-0.5 text-[11px] font-medium text-muted"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <p className="mt-2 text-xs text-muted">{statusFor(type)}</p>
+              <p className="mt-1 text-sm text-muted">{statusFor(type)}</p>
             </div>
-            <ReportThumb type={type} dim={!enabled} />
+            <ReportThumb type={type} accent={accent} dim={!enabled} />
           </div>
         )
 

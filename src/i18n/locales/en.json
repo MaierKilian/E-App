@@ -236,12 +236,12 @@
     "overview": {
       "hint": "You set scope and time range in the next step.",
       "recommended": "Recommended",
-      "measStatus": "{{done}} of {{total}} checks recorded",
-      "measEmpty": "No checks yet – report would be empty",
+      "measStatus": "{{done}} / {{total}} checks",
+      "measEmpty": "No checks yet",
       "monStatus": "{{count}} meters with data",
-      "monEmpty": "No readings yet – report would be empty",
-      "totalReady": "Profile, measurements & monitoring combined",
-      "totalEmpty": "Profile is included – add measurement/monitoring data"
+      "monEmpty": "No readings yet",
+      "totalReady": "Profile · Measurements · Monitoring",
+      "totalEmpty": "Profile only – add data"
     }
   },
   "measurements": {

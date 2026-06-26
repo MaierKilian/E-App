@@ -236,12 +236,12 @@
     "overview": {
       "hint": "Umfang und Zeitraum legst du im nächsten Schritt fest.",
       "recommended": "Empfohlen",
-      "measStatus": "{{done}} von {{total}} Checks erfasst",
-      "measEmpty": "Noch keine Checks – Bericht bliebe leer",
+      "measStatus": "{{done}} / {{total}} Checks",
+      "measEmpty": "Noch keine Checks",
       "monStatus": "{{count}} Zähler mit Daten",
-      "monEmpty": "Noch keine Ablesungen – Bericht bliebe leer",
-      "totalReady": "Profil, Messungen & Monitoring zusammengefasst",
-      "totalEmpty": "Profil ist enthalten – Mess-/Monitoring-Daten ergänzen"
+      "monEmpty": "Noch keine Ablesungen",
+      "totalReady": "Profil · Messungen · Monitoring",
+      "totalEmpty": "Nur Profil – Daten ergänzen"
     }
   },
   "measurements": {
