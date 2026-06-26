@@ -1,22 +1,44 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Gauge, PowerOff, Timer } from 'lucide-react'
+import { Gauge, PowerOff, Timer, Info } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
+import { IntroHeroImage } from '../IntroHeroImage'
 
 const STEP_ICONS: LucideIcon[] = [Gauge, PowerOff, Timer]
 
-/** Kurzer Erklär-Schritt des Grundlast-Checks. */
+/** Intro des Grundlast-Checks: Hero-Motiv + kompakte 1-2-3-Anleitung. */
 export function BaseLoadIntro() {
   const { t } = useTranslation()
   const steps = t('measurements.base_load.intro.steps', { returnObjects: true }) as string[]
+  const details = t('measurements.base_load.intro.details', { returnObjects: true }) as string[]
+  const [detailsOpen, setDetailsOpen] = useState(false)
 
   return (
     <div className="space-y-3">
-      <p className="px-1 text-sm text-muted">{t('measurements.base_load.intro.lead')}</p>
+      <IntroHeroImage
+        variant="photo"
+        srcLight="measurements/base-load-light.webp"
+        srcDark="measurements/base-load-dark.webp"
+        label={t('measurements.base_load.intro.imageAlt')}
+        ratio="1455 / 884"
+        widthClassName="max-w-[320px]"
+      />
 
       <div className="glass rounded-3xl p-4">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-          {t('measurements.base_load.intro.stepsTitle')}
-        </h3>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
+            {t('measurements.base_load.intro.stepsTitle')}
+          </h3>
+          <button
+            type="button"
+            onClick={() => setDetailsOpen(true)}
+            className="focus-ring inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+          >
+            <Info className="h-3.5 w-3.5" />
+            {t('measurements.base_load.intro.detailsButton')}
+          </button>
+        </div>
         <ol className="space-y-2">
           {steps.map((step, i) => {
             const Icon = STEP_ICONS[i] ?? Gauge
@@ -32,7 +54,20 @@ export function BaseLoadIntro() {
         </ol>
       </div>
 
-      <p className="px-1 text-xs text-muted">{t('measurements.base_load.intro.hint')}</p>
+      <Modal
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        title={t('measurements.base_load.intro.detailsTitle')}
+      >
+        <ul className="space-y-3">
+          {details.map((tip, i) => (
+            <li key={i} className="flex gap-2.5 text-sm text-muted">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+              <span>{tip}</span>
+            </li>
+          ))}
+        </ul>
+      </Modal>
     </div>
   )
 }

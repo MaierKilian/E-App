@@ -17,11 +17,12 @@ export function FurnitureSpacingIntro() {
   return (
     <div className="space-y-3">
       <IntroHeroImage
+        variant="photo"
         srcLight="measurements/furniture-spacing-light.webp"
         srcDark="measurements/furniture-spacing-dark.webp"
         label={t('measurements.furniture_spacing.intro.imageAlt')}
-        ratio="1086 / 1281"
-        widthClassName="max-w-[196px]"
+        ratio="1468 / 1020"
+        widthClassName="max-w-[320px]"
       />
 
       <div className="glass rounded-3xl p-4">

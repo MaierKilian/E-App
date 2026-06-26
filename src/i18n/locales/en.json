@@ -772,12 +772,22 @@
       "intro": {
         "lead": "Even with nothing actively running, your home draws power continuously – standby, fridges, router & co. This check reveals that base load.",
         "stepsTitle": "How it works",
+        "imageAlt": "Illustration: person reading the base load on the electricity meter",
         "steps": [
           "Find your electricity meter",
           "Switch off active devices – leave always-on ones (fridge, router) running",
           "Read the power or measure briefly"
         ],
         "hint": "Tip: it is most accurate at night or when nobody is actively using power.",
+        "detailsButton": "Details",
+        "detailsTitle": "What is base load?",
+        "details": [
+          "Even with nothing actively running, your home draws power continuously – standby, fridges, router & co.",
+          "For the measurement, switch off all actively used devices but leave always-on ones like the fridge and router running.",
+          "Then read the power at the meter (digital meters show watts directly).",
+          "It is most accurate at night or when nobody is actively using power.",
+          "Even 20–30 watts of constant load add up to noticeable costs over the year."
+        ],
         "start": "Start check"
       },
       "run": {
