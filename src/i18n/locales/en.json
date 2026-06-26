@@ -375,10 +375,20 @@
       "short": "Check the temperature and energy use of your fridge.",
       "intro": {
         "stepsTitle": "How it works",
+        "imageAlt": "Illustration: person measuring the temperature inside the fridge",
         "steps": [
           "Put a thermometer in the fridge",
           "Close the door, wait briefly",
           "Read & enter the temperature"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Measurement tips",
+        "details": [
+          "Place the thermometer in the middle of the fridge – ideally in a glass of water, which shows the real storage temperature.",
+          "Close the door and wait several hours (overnight is best) before reading it.",
+          "Recommended: 5–7 °C in the fridge and about −18 °C in the freezer compartment.",
+          "Every degree colder than necessary noticeably increases electricity use.",
+          "While you're at it, check the door seal – if it no longer closes tightly, the appliance cools far more than needed."
         ],
         "start": "Start check"
       },
