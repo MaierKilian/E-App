@@ -30,7 +30,8 @@
     "edit": "Edit",
     "step": "Step",
     "info": "Info",
-    "close": "Close"
+    "close": "Close",
+    "enlarge": "Enlarge"
   },
   "info": {
     "buildingYear": "The year of construction reveals the typical insulation standard and helps estimate the energy demand.",
