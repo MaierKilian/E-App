@@ -653,10 +653,20 @@
       "intro": {
         "lead": "Frei stehende Heizflächen geben deutlich mehr Wärme ab. Prüfe Raum für Raum, ob etwas die Wärme blockiert.",
         "stepsTitle": "So funktioniert’s",
+        "imageAlt": "Illustration: Abstand zwischen Heizkörper und Sofa wird gemessen",
         "steps": [
           "Raum wählen",
           "Kurze Fragen beantworten",
           "Tipps erhalten"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Warum der Abstand zählt",
+        "details": [
+          "Frei stehende Heizflächen geben spürbar mehr Wärme an den Raum ab – verdeckte verlieren einen Teil davon.",
+          "Vor Heizkörpern sollten möglichst rund 10 cm Luft bleiben, damit die Wärme frei zirkulieren kann.",
+          "Sofas, Schränke, lange Vorhänge oder Verkleidungen direkt davor bremsen die Wärmeabgabe.",
+          "Bei Fußbodenheizung behindern großflächige Möbel ohne Füße und dicke Teppiche die Abgabe.",
+          "Prüfe jeden Raum einzeln – oft verbessert schon eine kleine Umstellung die Heizleistung."
         ],
         "start": "Check starten"
       },

@@ -653,10 +653,20 @@
       "intro": {
         "lead": "Unobstructed heating surfaces release much more heat. Check room by room whether anything blocks it.",
         "stepsTitle": "How it works",
+        "imageAlt": "Illustration: measuring the distance between a radiator and a sofa",
         "steps": [
           "Choose a room",
           "Answer a few questions",
           "Get tips"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Why spacing matters",
+        "details": [
+          "Unobstructed heating surfaces release noticeably more heat into the room – blocked ones lose part of it.",
+          "Aim to keep roughly 10 cm of clearance in front of radiators so the heat can circulate freely.",
+          "Sofas, cabinets, long curtains or covers placed right in front slow down heat output.",
+          "With underfloor heating, large flat furniture without legs and thick rugs hinder the output.",
+          "Check each room individually – often a small rearrangement already improves heating performance."
         ],
         "start": "Start check"
       },
