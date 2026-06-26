@@ -376,9 +376,12 @@ body {
   }
 }
 
-/* --- Intro-Hero-Foto-Paar: farbiges Motiv mit eigener Hell- UND Dunkel-Version.
- * Kein Blend (Farben bleiben), stattdessen je Theme die passende Version + weiche
- * Kanten, damit es rahmenlos in den Hintergrund übergeht. */
+/* --- Intro-Hero-Foto-Paar: flache Illustration mit eigener Hell- UND
+ * Dunkel-Version. Wie die Strich-Illustration wird der einheitliche Eigen-
+ * Hintergrund (weiß bzw. schwarz) per Blend restlos entfernt, sodass das Motiv
+ * den Theme-Hintergrund annimmt und sich an dessen Farbton anpasst (z. B. das
+ * Grün im HTW-Theme) – kein sichtbarer weißer/schwarzer Kasten mehr.
+ * Light & HTW: darken blendet den hellen Grund weg. Dark: lighten den dunklen. */
 .hero-photopair {
   border-radius: 1.5rem;
   /* Seitenverhältnis immer wahren – nie verzerren. */
@@ -386,14 +389,9 @@ body {
   transform-origin: 50% 45%;
   animation: hero-kenburns 11s ease-in-out infinite alternate;
   will-change: transform;
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 9%, #000 91%, transparent),
-    linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
-  mask-image:
-    linear-gradient(to right, transparent, #000 9%, #000 91%, transparent),
-    linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
+}
+.hero-photopair-light {
+  mix-blend-mode: darken;
 }
 .hero-photopair-dark {
   display: none;
@@ -403,6 +401,7 @@ body {
 }
 [data-theme='dark'] .hero-photopair-dark {
   display: block;
+  mix-blend-mode: lighten;
 }
 
 /* Lightbox: groß und klar (kein Blend). Theme-Variante per Anzeige-Toggle. */

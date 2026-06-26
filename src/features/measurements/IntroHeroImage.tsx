@@ -28,9 +28,10 @@ interface IntroHeroImageProps {
   /** Seitenverhältnis "B / H" des Motivs. */
   ratio?: string
   /**
-   * `lineart` (Default): Schwarz/Weiß-Strichzeichnung – Hintergrund wird per
-   * Blend (darken/lighten) entfernt. `photo`: farbiges Motiv mit echter Hell-
-   * und Dunkel-Version – kein Blend, nur Theme-Swap + weiche Kanten.
+   * Beide Varianten entfernen ihren Eigen-Hintergrund per Blend (darken/lighten),
+   * sodass das Motiv den Theme-Hintergrund annimmt und sich dessen Farbton
+   * anpasst. `lineart` (Default): reine Schwarz/Weiß-Strichzeichnung. `photo`:
+   * flache Illustration mit grünen Akzenten und eigener Hell-/Dunkel-Version.
    */
   variant?: 'lineart' | 'photo'
   /** Fixe Chrome-Höhe (Titel, Schritte, Button, Tab-Leiste …), die von 100dvh
