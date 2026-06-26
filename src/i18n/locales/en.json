@@ -539,10 +539,20 @@
       "short": "Check ice build-up and temperature to avoid wasted electricity.",
       "intro": {
         "stepsTitle": "How it works",
+        "imageAlt": "Illustration: person measuring the temperature inside the freezer",
         "steps": [
           "Open the freezer",
           "Assess the ice build-up",
           "Optionally measure temperature"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Measurement tips",
+        "details": [
+          "Estimate the ice layer on the inner wall: from about 5 mm onwards, electricity use rises noticeably.",
+          "For the temperature, place the thermometer in the middle between the frozen items and close the door again.",
+          "Recommended is around −18 °C – colder brings hardly any benefit but costs more electricity.",
+          "Defrosting regularly saves energy and frees up space again.",
+          "Check the door seal – if it no longer closes tightly, the appliance ices up faster."
         ],
         "start": "Start check"
       },
