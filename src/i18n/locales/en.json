@@ -312,6 +312,7 @@
       "short": "Measure your shower's water flow and uncover savings potential.",
       "intro": {
         "stepsTitle": "How it works",
+        "videoAlt": "Animation: water filling a measuring cup under a showerhead",
         "steps": [
           "Mark 5 L",
           "Let water run & time it",

@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Beaker, Timer, PencilLine } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { IntroHeroVideo } from '../IntroHeroVideo'
 
 const STEP_ICONS: LucideIcon[] = [Beaker, Timer, PencilLine]
 
@@ -11,6 +12,11 @@ export function ShowerheadIntro() {
 
   return (
     <div className="space-y-4">
+      <IntroHeroVideo
+        src="measurements/showerhead.mp4"
+        label={t('measurements.showerhead.intro.videoAlt')}
+      />
+
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-primary">
           {t('measurements.categories.hot_water')}
