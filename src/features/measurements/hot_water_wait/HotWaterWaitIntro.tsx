@@ -1,22 +1,44 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { MousePointerClick, Play, Square } from 'lucide-react'
+import { MousePointerClick, Play, Square, Info } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { Modal } from '@/components/ui/Modal'
+import { IntroHeroImage } from '../IntroHeroImage'
 
 const STEP_ICONS: LucideIcon[] = [MousePointerClick, Play, Square]
 
-/** Kurzer Erklär-Schritt des Warmwasser-Wartezeit-Checks (1-2-3). */
+/** Intro des Warmwasser-Wartezeit-Checks: Hero-Motiv + kompakte 1-2-3-Anleitung. */
 export function HotWaterWaitIntro() {
   const { t } = useTranslation()
   const steps = t('measurements.hot_water_wait.intro.steps', { returnObjects: true }) as string[]
+  const details = t('measurements.hot_water_wait.intro.details', { returnObjects: true }) as string[]
+  const [detailsOpen, setDetailsOpen] = useState(false)
 
   return (
     <div className="space-y-3">
-      <p className="px-1 text-sm text-muted">{t('measurements.hot_water_wait.intro.lead')}</p>
+      <IntroHeroImage
+        variant="photo"
+        srcLight="measurements/hot-water-light.webp"
+        srcDark="measurements/hot-water-dark.webp"
+        label={t('measurements.hot_water_wait.intro.imageAlt')}
+        ratio="1430 / 1067"
+        widthClassName="max-w-[300px]"
+      />
 
       <div className="glass rounded-3xl p-4">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-          {t('measurements.hot_water_wait.intro.stepsTitle')}
-        </h3>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
+            {t('measurements.hot_water_wait.intro.stepsTitle')}
+          </h3>
+          <button
+            type="button"
+            onClick={() => setDetailsOpen(true)}
+            className="focus-ring inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
+          >
+            <Info className="h-3.5 w-3.5" />
+            {t('measurements.hot_water_wait.intro.detailsButton')}
+          </button>
+        </div>
         <ol className="space-y-2">
           {steps.map((step, i) => {
             const Icon = STEP_ICONS[i] ?? Play
@@ -31,6 +53,21 @@ export function HotWaterWaitIntro() {
           })}
         </ol>
       </div>
+
+      <Modal
+        open={detailsOpen}
+        onClose={() => setDetailsOpen(false)}
+        title={t('measurements.hot_water_wait.intro.detailsTitle')}
+      >
+        <ul className="space-y-3">
+          {details.map((tip, i) => (
+            <li key={i} className="flex gap-2.5 text-sm text-muted">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+              <span>{tip}</span>
+            </li>
+          ))}
+        </ul>
+      </Modal>
     </div>
   )
 }

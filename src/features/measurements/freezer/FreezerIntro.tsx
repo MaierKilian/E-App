@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Snowflake, Eye, PencilLine, Info } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
-import { IntroHeroPhoto } from '../IntroHeroPhoto'
+import { IntroHeroImage } from '../IntroHeroImage'
 
 const STEP_ICONS: LucideIcon[] = [Snowflake, Eye, PencilLine]
 
@@ -16,11 +16,13 @@ export function FreezerIntro() {
 
   return (
     <div className="space-y-3">
-      <IntroHeroPhoto
-        src="measurements/freezer.webp"
+      <IntroHeroImage
+        variant="photo"
+        srcLight="measurements/freezer-light.webp"
+        srcDark="measurements/freezer-dark.webp"
         label={t('measurements.freezer.intro.imageAlt')}
-        ratio="936 / 974"
-        widthClassName="max-w-[224px]"
+        ratio="1387 / 925"
+        widthClassName="max-w-[330px]"
       />
 
       <div className="glass rounded-3xl p-4">
