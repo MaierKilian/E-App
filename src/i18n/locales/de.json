@@ -375,10 +375,20 @@
       "short": "Prüfe die Temperatur und den Energieverbrauch deines Kühlschranks.",
       "intro": {
         "stepsTitle": "So funktioniert's",
+        "imageAlt": "Illustration: Person misst die Temperatur im Kühlschrank",
         "steps": [
           "Thermometer in den Kühlschrank",
           "Tür zu, kurz warten",
           "Temperatur ablesen & eingeben"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Tipps zur Messung",
+        "details": [
+          "Lege das Thermometer in die Mitte des Kühlschranks – idealerweise in ein Glas Wasser, das zeigt die echte Lagertemperatur.",
+          "Tür schließen und mehrere Stunden (am besten über Nacht) warten, bevor du abliest.",
+          "Empfohlen sind 5–7 °C im Kühlschrank, etwa −18 °C im Gefrierfach.",
+          "Jedes Grad kälter als nötig erhöht den Stromverbrauch spürbar.",
+          "Prüfe nebenbei die Türdichtung – zieht sie nicht mehr richtig, kühlt das Gerät unnötig viel."
         ],
         "start": "Check starten"
       },
