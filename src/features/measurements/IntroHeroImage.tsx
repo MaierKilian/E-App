@@ -1,3 +1,7 @@
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { MediaLightbox } from './MediaLightbox'
+
 /**
  * Immersive Hero-Illustration für die Intro-Phase einer Messung – das Pendant
  * zu {@link IntroHeroVideo} für statische Bilder.
@@ -8,6 +12,8 @@
  * Illustration nahtlos auf dem App-Hintergrund schwebt. Eine dezente
  * Ken-Burns-Animation lässt das Standbild „leben"; `prefers-reduced-motion`
  * wird respektiert (Animation aus).
+ *
+ * Tippen öffnet das Motiv groß in einer Lightbox.
  */
 interface IntroHeroImageProps {
   /** Helle Variante (heller Hintergrund) – Light/HTW. Relativ zur BASE_URL. */
@@ -29,24 +35,48 @@ export function IntroHeroImage({
   ratio = '1086 / 1449',
   widthClassName = 'max-w-[248px]',
 }: IntroHeroImageProps) {
+  const { t } = useTranslation()
+  const [zoom, setZoom] = useState(false)
   const base = import.meta.env.BASE_URL
+  const urlLight = `${base}${srcLight}`
+  const urlDark = `${base}${srcDark}`
 
   return (
-    <div className={`relative mx-auto w-full overflow-hidden rounded-3xl ${widthClassName}`}>
-      <img
-        src={`${base}${srcLight}`}
-        alt={label ?? ''}
-        aria-hidden={label ? undefined : true}
-        className="hero-illustration hero-illustration-light block w-full"
-        style={{ aspectRatio: ratio }}
-      />
-      <img
-        src={`${base}${srcDark}`}
-        alt=""
-        aria-hidden="true"
-        className="hero-illustration hero-illustration-dark block w-full"
-        style={{ aspectRatio: ratio }}
-      />
-    </div>
+    <>
+      <button
+        type="button"
+        onClick={() => setZoom(true)}
+        aria-label={label ?? t('common.enlarge')}
+        className={`focus-ring relative mx-auto block w-full cursor-zoom-in overflow-hidden rounded-3xl ${widthClassName}`}
+      >
+        <img
+          src={urlLight}
+          alt=""
+          aria-hidden="true"
+          className="hero-illustration hero-illustration-light block w-full"
+          style={{ aspectRatio: ratio }}
+        />
+        <img
+          src={urlDark}
+          alt=""
+          aria-hidden="true"
+          className="hero-illustration hero-illustration-dark block w-full"
+          style={{ aspectRatio: ratio }}
+        />
+      </button>
+
+      <MediaLightbox open={zoom} onClose={() => setZoom(false)}>
+        <img
+          src={urlLight}
+          alt={label ?? ''}
+          className="lightbox-img-light max-h-[88vh] w-auto max-w-full rounded-2xl"
+        />
+        <img
+          src={urlDark}
+          alt={label ?? ''}
+          className="lightbox-img-dark max-h-[88vh] w-auto max-w-full rounded-2xl"
+        />
+      </MediaLightbox>
+    </>
   )
 }

@@ -396,6 +396,17 @@ body {
   }
 }
 
+/* Lightbox: groß und klar (kein Blend). Theme-Variante per Anzeige-Toggle. */
+.lightbox-img-dark {
+  display: none;
+}
+[data-theme='dark'] .lightbox-img-light {
+  display: none;
+}
+[data-theme='dark'] .lightbox-img-dark {
+  display: block;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-step-in,
   .animate-panel-in,
