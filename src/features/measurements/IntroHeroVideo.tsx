@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 
 /**
- * Dezent gerahmtes Hero-Video für die Intro-Phase einer Messung.
+ * Immersives Hero-Video für die Intro-Phase einer Messung.
  *
- * Das Video sitzt in einem theme-adaptiven Glas-Rahmen (passt sich automatisch
- * an Light / Dark / HTW an), hinterlegt mit einem weichen Eco-Grün-Glow im Stil
- * der App-Hintergrund-„Blobs". So wirkt jede Media-Quelle – unabhängig von ihrem
- * eigenen Hintergrund – in allen Themes wie ein bewusst platziertes Element.
+ * Kein sichtbarer Rahmen: Die Kanten werden weich ausgeblendet (Masken-Fade),
+ * sodass das Video nahtlos mit dem App-Hintergrund verschmilzt. Im Dark-Mode
+ * wird die Animation in der Helligkeit invertiert (`invert` + `hue-rotate`),
+ * damit der helle Hintergrund dunkel wird und die Strichzeichnung hell – die
+ * Grün-Akzente bleiben dabei erhalten. So wirkt es in Light / Dark / HTW
+ * gleichermaßen eingebettet.
  *
  * `prefers-reduced-motion` wird respektiert: Dann läuft das Video nicht
  * automatisch, sondern zeigt nur das erste Bild.
@@ -29,32 +31,20 @@ export function IntroHeroVideo({ src, label }: IntroHeroVideoProps) {
   const url = `${import.meta.env.BASE_URL}${src}`
 
   return (
-    <div className="relative mx-auto w-full max-w-[280px]">
-      {/* Weicher, theme-adaptiver Eco-Glow hinter der Karte. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -inset-5 -z-10 rounded-[2.5rem] blur-2xl"
-        style={{
-          background:
-            'radial-gradient(60% 55% at 50% 35%, color-mix(in srgb, var(--success) 32%, transparent), transparent 70%)',
-        }}
+    <div className="relative mx-auto w-full max-w-[210px]">
+      <video
+        ref={videoRef}
+        className="hero-video block w-full"
+        style={{ aspectRatio: '768 / 972' }}
+        src={url}
+        muted
+        loop
+        playsInline
+        autoPlay={!reduceMotion}
+        preload="auto"
+        aria-label={label}
+        aria-hidden={label ? undefined : true}
       />
-      {/* Glas-Rahmen: passt Rand/Tönung automatisch ans aktive Theme an. */}
-      <div className="glass overflow-hidden rounded-3xl p-1.5">
-        <video
-          ref={videoRef}
-          className="block w-full rounded-[1.35rem] object-cover"
-          style={{ aspectRatio: '768 / 972' }}
-          src={url}
-          muted
-          loop
-          playsInline
-          autoPlay={!reduceMotion}
-          preload="auto"
-          aria-label={label}
-          aria-hidden={label ? undefined : true}
-        />
-      </div>
     </div>
   )
 }
