@@ -469,10 +469,20 @@
       "short": "Measure room temperature and find your heating savings potential.",
       "intro": {
         "stepsTitle": "How it works",
+        "imageAlt": "Illustration: person measuring the room climate with a thermometer",
         "steps": [
           "Place a thermometer in the room",
           "Read the values",
           "Enter & evaluate"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Measurement tips",
+        "details": [
+          "Place the thermometer in the middle of the room at about sitting height – not right next to a radiator, window or external wall.",
+          "Wait a few minutes for the reading to stabilise before noting it.",
+          "As a guide: about 20 °C in the living room, 18 °C in the kitchen and 16–18 °C in the bedroom.",
+          "A comfortable humidity is around 40–60 %.",
+          "Every degree less saves noticeable heating energy – without becoming uncomfortable."
         ],
         "start": "Start check"
       },

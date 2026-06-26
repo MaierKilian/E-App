@@ -16,28 +16,36 @@ interface IntroHeroImageProps {
   srcDark: string
   /** Beschreibung für Screenreader. Fehlt sie, gilt das Bild als dekorativ. */
   label?: string
+  /** Seitenverhältnis "B / H" des Motivs. Default 3:4-artig. */
+  ratio?: string
+  /** Tailwind-Breitenbegrenzung (zentriert). Hohe Motive schmaler halten. */
+  widthClassName?: string
 }
 
-const RATIO = '1086 / 1449'
-
-export function IntroHeroImage({ srcLight, srcDark, label }: IntroHeroImageProps) {
+export function IntroHeroImage({
+  srcLight,
+  srcDark,
+  label,
+  ratio = '1086 / 1449',
+  widthClassName = 'max-w-[248px]',
+}: IntroHeroImageProps) {
   const base = import.meta.env.BASE_URL
 
   return (
-    <div className="relative mx-auto w-full max-w-[248px] overflow-hidden rounded-3xl">
+    <div className={`relative mx-auto w-full overflow-hidden rounded-3xl ${widthClassName}`}>
       <img
         src={`${base}${srcLight}`}
         alt={label ?? ''}
         aria-hidden={label ? undefined : true}
         className="hero-illustration hero-illustration-light block w-full"
-        style={{ aspectRatio: RATIO }}
+        style={{ aspectRatio: ratio }}
       />
       <img
         src={`${base}${srcDark}`}
         alt=""
         aria-hidden="true"
         className="hero-illustration hero-illustration-dark block w-full"
-        style={{ aspectRatio: RATIO }}
+        style={{ aspectRatio: ratio }}
       />
     </div>
   )
