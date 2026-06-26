@@ -7,9 +7,9 @@ import { getAffiliateProducts } from '@/features/onboarding/affiliateProducts'
 const STEP_ICONS: LucideIcon[] = [Plug, Power, PencilLine]
 
 /**
- * Intro des Standby-Checks: Gewerk-Label, Hinweis auf das benötigte
- * Strommessgerät, kompakte 1-2-3-Anleitung, dezente Affiliate-Empfehlung und
- * ein deaktivierter Teaser für ein künftiges smartes Messgerät.
+ * Intro des Standby-Checks: Hinweis auf das benötigte Strommessgerät, kompakte
+ * 1-2-3-Anleitung, dezente Affiliate-Empfehlung und ein deaktivierter Teaser
+ * für ein künftiges smartes Messgerät.
  */
 export function StandbyIntro() {
   const { t } = useTranslation()
@@ -17,30 +17,22 @@ export function StandbyIntro() {
   const product = getAffiliateProducts('power_meter')[0]
 
   return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-          {t('measurements.categories.electricity')}
-        </p>
-        <h2 className="mt-1 text-xl font-bold text-foreground">
-          {t('measurements.standby.title')}
-        </h2>
-        <p className="mt-2 text-sm text-muted">{t('measurements.standby.intro.needs')}</p>
-      </div>
+    <div className="space-y-3">
+      <p className="px-1 text-sm text-muted">{t('measurements.standby.intro.needs')}</p>
 
-      <div className="glass rounded-3xl p-5">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted">
+      <div className="glass rounded-3xl p-4">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
           {t('measurements.standby.intro.stepsTitle')}
         </h3>
-        <ol className="space-y-4">
+        <ol className="space-y-2">
           {steps.map((step, i) => {
             const Icon = STEP_ICONS[i] ?? Plug
             return (
               <li key={i} className="flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
-                  <Icon className="h-5 w-5" />
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                  <Icon className="h-4 w-4" />
                 </span>
-                <span className="text-foreground">{step}</span>
+                <span className="text-sm text-foreground">{step}</span>
               </li>
             )
           })}
@@ -54,10 +46,10 @@ export function StandbyIntro() {
         type="button"
         disabled
         aria-disabled="true"
-        className="glass flex w-full items-center gap-3 rounded-2xl p-4 text-left opacity-60"
+        className="glass flex w-full items-center gap-3 rounded-2xl p-3 text-left opacity-60"
       >
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-surface-2 text-muted">
-          <Wifi className="h-5 w-5" />
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface-2 text-muted">
+          <Wifi className="h-4 w-4" />
         </span>
         <span className="min-w-0 flex-1 text-sm font-medium text-foreground">
           {t('measurements.standby.intro.smartTeaser')}

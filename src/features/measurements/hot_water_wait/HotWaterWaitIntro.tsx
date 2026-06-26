@@ -10,30 +10,22 @@ export function HotWaterWaitIntro() {
   const steps = t('measurements.hot_water_wait.intro.steps', { returnObjects: true }) as string[]
 
   return (
-    <div className="space-y-4">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-          {t('measurements.categories.hot_water')}
-        </p>
-        <h2 className="mt-1 text-xl font-bold text-foreground">
-          {t('measurements.hot_water_wait.title')}
-        </h2>
-        <p className="mt-2 text-sm text-muted">{t('measurements.hot_water_wait.intro.lead')}</p>
-      </div>
+    <div className="space-y-3">
+      <p className="px-1 text-sm text-muted">{t('measurements.hot_water_wait.intro.lead')}</p>
 
-      <div className="glass rounded-3xl p-5">
-        <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted">
+      <div className="glass rounded-3xl p-4">
+        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
           {t('measurements.hot_water_wait.intro.stepsTitle')}
         </h3>
-        <ol className="space-y-4">
+        <ol className="space-y-2">
           {steps.map((step, i) => {
             const Icon = STEP_ICONS[i] ?? Play
             return (
               <li key={i} className="flex items-center gap-3">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
-                  <Icon className="h-5 w-5" />
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                  <Icon className="h-4 w-4" />
                 </span>
-                <span className="text-foreground">{step}</span>
+                <span className="text-sm text-foreground">{step}</span>
               </li>
             )
           })}

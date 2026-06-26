@@ -469,10 +469,20 @@
       "short": "Miss die Raumtemperatur und finde dein Sparpotenzial beim Heizen.",
       "intro": {
         "stepsTitle": "So funktioniert's",
+        "imageAlt": "Illustration: Person misst das Raumklima mit einem Thermometer",
         "steps": [
           "Thermometer im Raum platzieren",
           "Werte ablesen",
           "Eingeben & auswerten"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Tipps zur Messung",
+        "details": [
+          "Lege das Thermometer etwa auf Sitzhöhe in die Raummitte – nicht direkt an Heizung, Fenster oder Außenwand.",
+          "Warte einige Minuten, bis sich der Wert stabilisiert, bevor du ihn abliest.",
+          "Als Richtwerte gelten ca. 20 °C im Wohnzimmer, 18 °C in der Küche und 16–18 °C im Schlafzimmer.",
+          "Eine angenehme Luftfeuchte liegt bei rund 40–60 %.",
+          "Jedes Grad weniger spart spürbar Heizenergie – ohne dass es ungemütlich wird."
         ],
         "start": "Check starten"
       },
