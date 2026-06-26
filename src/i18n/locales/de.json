@@ -772,12 +772,22 @@
       "intro": {
         "lead": "Auch wenn nichts aktiv läuft, zieht dein Haushalt dauerhaft Strom – Standby, Kühlgeräte, Router & Co. Diese Grundlast deckt der Check auf.",
         "stepsTitle": "So funktioniert’s",
+        "imageAlt": "Illustration: Person liest die Grundlast am Stromzähler ab",
         "steps": [
           "Stromzähler aufsuchen",
           "Aktive Geräte ausschalten – Dauerläufer (Kühlschrank, Router) an lassen",
           "Leistung ablesen oder kurz messen"
         ],
         "hint": "Tipp: Am genauesten ist die Messung nachts oder wenn niemand aktiv Strom verbraucht.",
+        "detailsButton": "Details",
+        "detailsTitle": "Was ist die Grundlast?",
+        "details": [
+          "Auch wenn nichts aktiv läuft, zieht dein Haushalt dauerhaft Strom – Standby, Kühlgeräte, Router & Co.",
+          "Schalte für die Messung alle aktiv genutzten Geräte aus, lass aber Dauerläufer wie Kühlschrank und Router an.",
+          "Lies dann die Leistung am Zähler ab (digitale Zähler zeigen Watt direkt an).",
+          "Am genauesten ist die Messung nachts oder wenn niemand aktiv Strom verbraucht.",
+          "Schon 20–30 Watt Dauerlast summieren sich über das Jahr zu spürbaren Kosten."
+        ],
         "start": "Check starten"
       },
       "run": {
