@@ -22,7 +22,6 @@ export function BaseLoadIntro() {
         srcDark="measurements/base-load-dark.webp"
         label={t('measurements.base_load.intro.imageAlt')}
         ratio="1455 / 884"
-        widthClassName="max-w-[320px]"
       />
 
       <div className="glass rounded-3xl p-4">

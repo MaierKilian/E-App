@@ -22,7 +22,6 @@ export function LightingIntro() {
         srcDark="measurements/lighting-dark.webp"
         label={t('measurements.lighting.intro.imageAlt')}
         ratio="1403 / 1082"
-        widthClassName="max-w-[290px]"
       />
 
       <div className="glass rounded-3xl p-4">

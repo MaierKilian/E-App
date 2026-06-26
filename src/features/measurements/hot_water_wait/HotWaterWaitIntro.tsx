@@ -22,7 +22,6 @@ export function HotWaterWaitIntro() {
         srcDark="measurements/hot-water-dark.webp"
         label={t('measurements.hot_water_wait.intro.imageAlt')}
         ratio="1430 / 1067"
-        widthClassName="max-w-[300px]"
       />
 
       <div className="glass rounded-3xl p-4">

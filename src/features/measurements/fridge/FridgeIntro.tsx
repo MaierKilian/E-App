@@ -21,7 +21,6 @@ export function FridgeIntro() {
         srcDark="measurements/fridge-dark.webp"
         label={t('measurements.fridge.intro.imageAlt')}
         ratio="931 / 868"
-        widthClassName="max-w-[248px]"
       />
 
       <div className="glass rounded-3xl p-4">

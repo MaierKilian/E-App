@@ -19,11 +19,18 @@ interface IntroHeroVideoProps {
   src: string
   /** Beschreibung für Screenreader. Fehlt sie, gilt das Video als dekorativ. */
   label?: string
-  /** Tailwind-Breitenbegrenzung (zentriert) – steuert indirekt die Höhe. */
-  widthClassName?: string
+  /** Fixe Chrome-Höhe, die von 100dvh abgezogen wird. */
+  reservePx?: number
+  /** Maximale Hero-Höhe auf großen Displays. */
+  maxHeightPx?: number
 }
 
-export function IntroHeroVideo({ src, label, widthClassName = 'max-w-[184px]' }: IntroHeroVideoProps) {
+export function IntroHeroVideo({
+  src,
+  label,
+  reservePx = 548,
+  maxHeightPx = 300,
+}: IntroHeroVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const { t } = useTranslation()
   const [zoom, setZoom] = useState(false)
@@ -35,6 +42,8 @@ export function IntroHeroVideo({ src, label, widthClassName = 'max-w-[184px]' }:
   )
 
   const url = `${import.meta.env.BASE_URL}${src}`
+  // Höhe richtet sich nach der Displayhöhe; Breite folgt dem Verhältnis.
+  const height = `clamp(140px, calc(100dvh - ${reservePx}px), ${maxHeightPx}px)`
 
   return (
     <>
@@ -42,12 +51,12 @@ export function IntroHeroVideo({ src, label, widthClassName = 'max-w-[184px]' }:
         type="button"
         onClick={() => setZoom(true)}
         aria-label={label ?? t('common.enlarge')}
-        className={`focus-ring relative mx-auto block w-full cursor-zoom-in ${widthClassName}`}
+        className="focus-ring mx-auto block w-fit max-w-full cursor-zoom-in"
       >
         <video
           ref={videoRef}
-          className="hero-video block w-full"
-          style={{ aspectRatio: '768 / 972' }}
+          className="hero-video block"
+          style={{ aspectRatio: '768 / 972', height, width: 'auto', maxWidth: '86vw' }}
           src={url}
           muted
           loop
