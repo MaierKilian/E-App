@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 /**
  * Immersives Hero-Video für die Intro-Phase einer Messung.
@@ -22,11 +22,12 @@ interface IntroHeroVideoProps {
 
 export function IntroHeroVideo({ src, label }: IntroHeroVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [reduceMotion, setReduceMotion] = useState(false)
-
-  useEffect(() => {
-    setReduceMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
-  }, [])
+  // Einmalig beim Mounten auslesen (kein Effekt nötig → keine Folge-Renders).
+  const [reduceMotion] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  )
 
   const url = `${import.meta.env.BASE_URL}${src}`
 

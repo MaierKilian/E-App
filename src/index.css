@@ -338,9 +338,45 @@ body {
   mix-blend-mode: screen;
 }
 
+/* --- Intro-Hero-Illustration: zwei Theme-Varianten, dezent „belebt" ---
+ * Helles Motiv für Light/HTW (weißer Grund per multiply weg), dunkles Motiv
+ * für Dark (schwarzer Grund per screen weg). Ein langsamer Ken-Burns-Zoom mit
+ * leichtem Schweben lässt das Standbild lebendig wirken. */
+.hero-illustration {
+  border-radius: 1.5rem;
+  transform-origin: 50% 42%;
+  animation: hero-kenburns 11s ease-in-out infinite alternate;
+  will-change: transform;
+}
+/* darken/lighten entfernen einen einheitlichen, sehr hellen bzw. sehr dunklen
+   Hintergrund restlos (kein Tönungs-Rest wie bei multiply/screen). */
+.hero-illustration-light {
+  mix-blend-mode: darken;
+}
+.hero-illustration-dark {
+  display: none;
+}
+[data-theme='dark'] .hero-illustration-light {
+  display: none;
+}
+[data-theme='dark'] .hero-illustration-dark {
+  display: block;
+  mix-blend-mode: lighten;
+}
+
+@keyframes hero-kenburns {
+  from {
+    transform: scale(1) translateY(0);
+  }
+  to {
+    transform: scale(1.06) translateY(-2%);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-step-in,
-  .animate-panel-in {
+  .animate-panel-in,
+  .hero-illustration {
     animation: none;
   }
   .app-backdrop::before,
