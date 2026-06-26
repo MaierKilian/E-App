@@ -318,6 +318,16 @@
           "Wasser laufen lassen & Zeit stoppen",
           "Werte eingeben"
         ],
+        "detailsButton": "Details",
+        "detailsTitle": "Durchführung im Detail",
+        "details": [
+          "Nimm ein Gefäß mit bekanntem Volumen – z. B. einen Messbecher oder Eimer mit 5-Liter-Markierung.",
+          "Drehe die Dusche so auf, wie du normalerweise duschst (gewohnte Temperatur und Stärke).",
+          "Halte das Gefäß vollständig unter den Wasserstrahl und starte gleichzeitig die Stoppuhr.",
+          "Stoppe die Zeit genau dann, wenn das Wasser die Markierung erreicht.",
+          "Tipp: Miss zwei- bis dreimal und nimm den Mittelwert für ein genaueres Ergebnis.",
+          "Bei einem Durchlauferhitzer: erst kurz laufen lassen, bis die Temperatur stabil ist."
+        ],
         "start": "Test starten"
       },
       "run": {
