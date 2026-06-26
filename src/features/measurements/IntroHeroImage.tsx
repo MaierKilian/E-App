@@ -47,8 +47,8 @@ export function IntroHeroImage({
   label,
   ratio = '1086 / 1449',
   variant = 'lineart',
-  reservePx = 548,
-  maxWidthPx = 360,
+  reservePx = 500,
+  maxWidthPx = 400,
 }: IntroHeroImageProps) {
   const { t } = useTranslation()
   const [zoom, setZoom] = useState(false)
@@ -59,7 +59,9 @@ export function IntroHeroImage({
   // Höhe richtet sich nach der Displayhöhe (100dvh − Reserve), gedeckelt so,
   // dass die Breite maxWidthPx nicht übersteigt. Breite folgt dem Verhältnis.
   const [rw, rh] = ratio.split('/').map((n) => parseFloat(n))
-  const maxHeightPx = Math.round(maxWidthPx / (rw / rh))
+  // Höhe durch Breiten-Deckel begrenzt, aber zusätzlich absolut gedeckelt, damit
+  // nahezu quadratische Motive nicht zu hoch werden.
+  const maxHeightPx = Math.min(Math.round(maxWidthPx / (rw / rh)), 330)
   const height = `clamp(140px, calc(100dvh - ${reservePx}px), ${maxHeightPx}px)`
   const imgStyle = {
     aspectRatio: ratio,

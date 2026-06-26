@@ -28,8 +28,8 @@ interface IntroHeroVideoProps {
 export function IntroHeroVideo({
   src,
   label,
-  reservePx = 548,
-  maxHeightPx = 300,
+  reservePx = 500,
+  maxHeightPx = 340,
 }: IntroHeroVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const { t } = useTranslation()
