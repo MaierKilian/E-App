@@ -539,10 +539,20 @@
       "short": "Prüfe Vereisung und Temperatur und spare unnötigen Stromverbrauch.",
       "intro": {
         "stepsTitle": "So funktioniert's",
+        "imageAlt": "Illustration: Person misst die Temperatur im Gefrierschrank",
         "steps": [
           "Gefrierschrank öffnen",
           "Vereisung einschätzen",
           "Optional Temperatur messen"
+        ],
+        "detailsButton": "Details",
+        "detailsTitle": "Tipps zur Messung",
+        "details": [
+          "Schätze die Eisschicht an der Innenwand ab: Schon ab etwa 5 mm steigt der Stromverbrauch deutlich.",
+          "Für die Temperatur das Thermometer mittig zwischen das Gefriergut legen und die Tür wieder schließen.",
+          "Empfohlen sind rund −18 °C – kälter bringt kaum Vorteile, kostet aber mehr Strom.",
+          "Regelmäßiges Abtauen spart Energie und schafft wieder Platz.",
+          "Prüfe die Türdichtung – zieht sie nicht mehr richtig, vereist das Gerät schneller."
         ],
         "start": "Check starten"
       },

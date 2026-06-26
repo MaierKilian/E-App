@@ -364,6 +364,29 @@ body {
   mix-blend-mode: lighten;
 }
 
+/* --- Intro-Hero-Foto: einzelnes, farbiges Motiv (kein Schwarz/Weiß-Blend) ---
+ * Hier lässt sich der Hintergrund nicht per Blend entfernen, daher werden die
+ * Kanten weich ausgeblendet, damit das Bild rahmenlos in den Hintergrund
+ * übergeht. Im Dark-Mode wird das helle Motiv dezent abgedunkelt, damit es
+ * nicht grell wirkt. Gleiche Ken-Burns-Belebung wie die Illustrationen. */
+.hero-photo {
+  border-radius: 1.5rem;
+  transform-origin: 50% 42%;
+  animation: hero-kenburns 11s ease-in-out infinite alternate;
+  will-change: transform;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 9%, #000 91%, transparent),
+    linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+  mask-image:
+    linear-gradient(to right, transparent, #000 9%, #000 91%, transparent),
+    linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+[data-theme='dark'] .hero-photo {
+  filter: brightness(0.62) contrast(1.04);
+}
+
 @keyframes hero-kenburns {
   from {
     transform: scale(1) translateY(0);
@@ -376,7 +399,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-step-in,
   .animate-panel-in,
-  .hero-illustration {
+  .hero-illustration,
+  .hero-photo {
     animation: none;
   }
   .app-backdrop::before,
