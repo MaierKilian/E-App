@@ -321,26 +321,21 @@ body {
   display: none;
 }
 
-/* --- Intro-Hero-Video: rahmenlos, Kanten weich ausgeblendet (immersiv) --- */
+/* --- Intro-Hero-Video: rahmenlos & nahtlos in den Hintergrund eingeblendet ---
+ * Der (helle) Eigen-Hintergrund der Animation wird per Blend-Mode komplett
+ * entfernt, sodass nur die Illustration auf dem echten Theme-Hintergrund
+ * „schwebt" – kein sichtbarer Kasten.
+ * Light & HTW: multiply blendet Weiß weg (dunkle Linien bleiben).
+ * Dark: erst Helligkeit invertieren (Weiß→Schwarz, Linien→hell, Grün via
+ *       hue-rotate erhalten), dann screen blendet das Schwarz weg. */
 .hero-video {
   border-radius: 1.5rem;
-  /* Beide Verläufe schneiden sich (intersect) → an allen vier Seiten ein
-     weicher Fade in den Hintergrund, Mitte bleibt voll sichtbar. */
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent),
-    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
-  mask-image:
-    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent),
-    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-composite: intersect;
+  mix-blend-mode: multiply;
 }
 
-/* Dark-Mode: Helligkeit invertieren (Weiß↔Schwarz) – heller Animations-
-   Hintergrund wird dunkel, Strichzeichnung hell. hue-rotate(180) bewahrt die
-   Grün-Akzente. */
 [data-theme='dark'] .hero-video {
   filter: invert(1) hue-rotate(180deg);
+  mix-blend-mode: screen;
 }
 
 @media (prefers-reduced-motion: reduce) {

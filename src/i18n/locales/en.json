@@ -318,6 +318,16 @@
           "Let water run & time it",
           "Enter the values"
         ],
+        "detailsButton": "Details",
+        "detailsTitle": "How to measure in detail",
+        "details": [
+          "Use a container of known volume – e.g. a measuring cup or bucket with a 5-litre mark.",
+          "Turn on the shower the way you normally shower (usual temperature and strength).",
+          "Hold the container fully under the stream and start the stopwatch at the same time.",
+          "Stop the time exactly when the water reaches the mark.",
+          "Tip: measure two or three times and take the average for a more accurate result.",
+          "With an instantaneous water heater: let it run briefly until the temperature is stable."
+        ],
         "start": "Start test"
       },
       "run": {

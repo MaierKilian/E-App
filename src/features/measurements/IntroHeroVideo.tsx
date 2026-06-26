@@ -31,7 +31,7 @@ export function IntroHeroVideo({ src, label }: IntroHeroVideoProps) {
   const url = `${import.meta.env.BASE_URL}${src}`
 
   return (
-    <div className="relative mx-auto w-full max-w-[210px]">
+    <div className="relative mx-auto w-full max-w-[248px]">
       <video
         ref={videoRef}
         className="hero-video block w-full"
