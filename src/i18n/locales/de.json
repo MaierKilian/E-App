@@ -1004,7 +1004,8 @@
       "allReadings": "Alle Ablesungen",
       "delete": "Löschen",
       "chartTitle": "Verbrauch je Intervall",
-      "consumptionUnit": "kWh"
+      "consumptionUnit": "kWh",
+      "scrubLabel": "Verlauf abtasten"
     },
     "reminder": {
       "title": "Ablese-Erinnerung",

@@ -1311,7 +1311,8 @@
       "allReadings": "All readings",
       "delete": "Delete",
       "chartTitle": "Consumption per interval",
-      "consumptionUnit": "kWh"
+      "consumptionUnit": "kWh",
+      "scrubLabel": "Scrub the trend"
     },
     "reminder": {
       "title": "Reading reminder",
