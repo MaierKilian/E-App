@@ -8,6 +8,7 @@ import { useTariffStore } from '@/store/tariffStore'
 import { calcRoomClimate, calcRoomTempSaving } from './roomClimate'
 import type { DraftLevel } from './roomClimate'
 import { annualHeatingCostEur, WARM_WATER_SHARE } from './heatingCost'
+import { resolveRoomArea } from './roomAreas'
 import { parseRoomKey } from '../rooms'
 import type { RunProps } from '../runnerTypes'
 
@@ -60,11 +61,13 @@ export function RoomTemperatureRun({ onEvaluate, roomKey }: RunProps) {
       useTariffStore.getState(),
     )
     const roomType = roomKey ? parseRoomKey(roomKey)?.type : undefined
-    const roomEntry = roomType ? profile.rooms.find((r) => r.type === roomType) : undefined
+    const area = roomType
+      ? resolveRoomArea(profile.rooms, profile.livingArea, roomType)
+      : { areaSqm: 0, estimated: true }
     const saving = calcRoomTempSaving({
       temp: temperature,
-      roomType,
-      areaSqm: roomEntry?.areaSqm,
+      roomAreaSqm: area.areaSqm,
+      areaEstimated: area.estimated,
       livingArea: profile.livingArea,
       heatingOnlyCostEur:
         heating !== undefined ? heating.costEur * (1 - WARM_WATER_SHARE) : undefined,

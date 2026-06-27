@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Stepper } from '@/components/ui/Stepper'
 import { getRoomIcon } from '../roomIcons'
-import { TYPICAL_AREA_SQM } from '@/features/measurements/room_temperature/roomAreas'
+import { resolveRoomArea } from '@/features/measurements/room_temperature/roomAreas'
 import type { OnboardingData, RoomType, RoomEntry } from '@/types'
 
 interface Props {
@@ -106,7 +106,9 @@ export function Step3Rooms({ data, onChange }: Props) {
                           min={1}
                           max={200}
                           value={getArea(type) ?? ''}
-                          placeholder={String(TYPICAL_AREA_SQM[type])}
+                          placeholder={String(
+                            Math.round(resolveRoomArea(data.rooms, data.livingArea, type).areaSqm),
+                          )}
                           onChange={(e) => setArea(type, e.target.value)}
                           aria-label={t('onboarding.step3.areaLabel')}
                           className="w-14 rounded-lg border border-border bg-surface px-2 py-1 text-center text-sm text-foreground focus-ring"

@@ -1,6 +1,4 @@
 import type { MeasurementRating } from '../types'
-import type { RoomType } from '@/types'
-import { TYPICAL_AREA_SQM } from './roomAreas'
 
 /**
  * Reine Berechnungslogik für den Raumklima-Check.
@@ -133,10 +131,10 @@ export const PERCENT_PER_DEGREE = 0.06
 export interface RoomTempSavingInput {
   /** Gemessene Raumtemperatur in °C. */
   temp: number
-  /** Raumtyp (für die Fallback-Fläche, falls keine eigene hinterlegt ist). */
-  roomType?: RoomType
-  /** Vom Nutzer hinterlegte Fläche dieses Raums in m² (optional). */
-  areaSqm?: number
+  /** Effektive Fläche dieses Raums in m² (eigene Angabe oder verteilter Wert). */
+  roomAreaSqm: number
+  /** true, wenn `roomAreaSqm` aus der Verteilung stammt (keine eigene Angabe). */
+  areaEstimated: boolean
   /** Gesamt-Wohnfläche in m² (Nenner für den Flächenanteil). */
   livingArea: number
   /**
@@ -165,13 +163,7 @@ export interface RoomTempSaving {
  */
 export function calcRoomTempSaving(input: RoomTempSavingInput): RoomTempSaving {
   const deltaT = Math.max(0, input.temp - TARGET_TEMP)
-  const hasOwnArea = Number.isFinite(input.areaSqm) && (input.areaSqm as number) > 0
-  const areaEstimated = !hasOwnArea
-  const roomArea = hasOwnArea
-    ? (input.areaSqm as number)
-    : input.roomType
-      ? TYPICAL_AREA_SQM[input.roomType]
-      : 0
+  const roomArea = Number.isFinite(input.roomAreaSqm) && input.roomAreaSqm > 0 ? input.roomAreaSqm : 0
   const living = Number.isFinite(input.livingArea) && input.livingArea > 0 ? input.livingArea : 0
   const share = living > 0 ? Math.min(1, roomArea / living) : 0
   const percent = deltaT * PERCENT_PER_DEGREE
@@ -181,5 +173,5 @@ export function calcRoomTempSaving(input: RoomTempSavingInput): RoomTempSaving {
     yearlySaving = input.heatingOnlyCostEur * share * percent
   }
 
-  return { deltaT, share, percent, yearlySaving, areaEstimated }
+  return { deltaT, share, percent, yearlySaving, areaEstimated: input.areaEstimated }
 }
