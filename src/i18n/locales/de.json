@@ -1259,25 +1259,37 @@
       "modelTypeLabel": "Typ / Modell",
       "modelTypes": {
         "temperature_sensor": {
-          "contact": "Kontaktfühler",
-          "room": "Raumtemperatur",
-          "infrared": "Infrarot"
-        },
-        "distance_meter": {
-          "laser": "Laser",
-          "ultrasonic": "Ultraschall"
-        },
-        "co2_sensor": {
-          "portable": "Mobil",
-          "stationary": "Stationär"
+          "room_thermometer": "Raumthermometer",
+          "room_thermostat": "Raumthermostat",
+          "mercury_thermometer": "Quecksilberthermometer",
+          "infrared_surface": "Infrarot-Oberflächenthermometer",
+          "digital_thermometer": "Digital-/Funkthermometer"
         },
         "humidity_sensor": {
-          "hygrometer": "Hygrometer",
-          "combined": "Kombigerät"
+          "analog_hygrometer": "Analoges Hygrometer",
+          "digital_hygrometer": "Digitales Hygrometer",
+          "thermo_hygrometer": "Thermo-Hygrometer (kombiniert)",
+          "data_logger": "Datenlogger",
+          "smart_sensor": "Smart-Home-Sensor"
+        },
+        "distance_meter": {
+          "folding_rule": "Meterstab / Zollstock",
+          "ruler": "Lineal",
+          "tape_measure": "Maßband",
+          "laser_distance": "Laser-/Infrarot-Distanzmesser",
+          "ultrasonic": "Ultraschall-Distanzmesser"
         },
         "power_meter": {
-          "plug": "Steckdosen-Messer",
-          "clamp": "Strommesszange"
+          "plug_meter": "Steckdosen-Energiemessgerät",
+          "clamp_meter": "Strommesszange",
+          "multimeter": "Multimeter",
+          "electricity_meter": "Stromzähler (ablesen)"
+        },
+        "co2_sensor": {
+          "portable_monitor": "Mobiles CO₂-Messgerät",
+          "stationary_monitor": "Stationäres CO₂-Messgerät",
+          "traffic_light": "CO₂-Ampel",
+          "smart_sensor": "Smart-Home-CO₂-Sensor"
         }
       },
       "smartHomeDevices": "Smart-Home-Geräte vorhanden?",
