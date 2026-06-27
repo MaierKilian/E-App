@@ -1,11 +1,22 @@
 import { useTranslation } from 'react-i18next'
-import { Thermometer, Ruler, Wind, Droplets, Plug, Ban, HelpCircle, ThermometerSun, Gauge } from 'lucide-react'
+import {
+  Thermometer,
+  Ruler,
+  Wind,
+  Droplets,
+  Plug,
+  Ban,
+  HelpCircle,
+  ThermometerSun,
+  Gauge,
+  Check,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { OptionChip } from '@/components/ui/OptionChip'
 import { Field } from '@/components/ui/Field'
 import { SelectChip } from '@/components/ui/SelectChip'
 import { InfoButton } from '@/components/ui/InfoButton'
-import { getModelTypes, hasModelTypes } from '../instrumentOptions'
+import { getModelTypes } from '../instrumentOptions'
 import type {
   OnboardingData,
   InstrumentType,
@@ -20,15 +31,17 @@ interface Props {
   detailed?: boolean
 }
 
-const INSTRUMENT_TYPES: InstrumentType[] = [
+// Die vier Hauptkategorien zuerst, CO₂ als ergänzende Kategorie zuletzt.
+const DEVICE_TYPES: InstrumentType[] = [
   'temperature_sensor',
-  'distance_meter',
-  'co2_sensor',
   'humidity_sensor',
+  'distance_meter',
   'power_meter',
-  'none',
-  'unknown',
+  'co2_sensor',
 ]
+// "Keines" / "Nicht bekannt" sind exklusive Antworten, keine Geräte.
+const SPECIAL_TYPES: InstrumentType[] = ['none', 'unknown']
+
 const INSTRUMENT_ICONS: Record<InstrumentType, LucideIcon> = {
   temperature_sensor: Thermometer,
   distance_meter: Ruler,
@@ -48,24 +61,66 @@ const SMART_HOME_ICONS: Record<SmartHomeDevice, LucideIcon> = {
 }
 const ENERGY_COST_RANGES: EnergyCostRange[] = ['under_100', '100_200', '200_350', 'over_350', 'unknown']
 
-/** Aufklappbares Detail-Panel je ausgewähltem Gerät: Subtypen + Empfehlung. */
-function InstrumentPanel({
+/**
+ * Eine Geräte-Zeile (Checklist-Stil): Icon + Name + Auswahl-Haken. Ist das Gerät
+ * ausgewählt, klappen die passenden Subtypen direkt darunter auf – so bleibt der
+ * Bezug "Subtyp gehört zu diesem Gerät" immer sichtbar.
+ */
+function InstrumentRow({
   type,
+  selected,
   selectedModels,
+  onToggle,
   onToggleModel,
 }: {
   type: InstrumentType
+  selected: boolean
   selectedModels: string[]
+  onToggle: () => void
   onToggleModel: (model: string) => void
 }) {
   const { t } = useTranslation()
+  const Icon = INSTRUMENT_ICONS[type]
   const models = getModelTypes(type)
+  const hasModels = models.length > 0
 
   return (
-    <div className="animate-panel-in space-y-3 rounded-2xl glass p-3">
-      {models.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs font-medium text-muted">{t('onboarding.step6.modelTypeLabel')}</p>
+    <div
+      className={`overflow-hidden rounded-2xl border transition-colors duration-200 ${
+        selected ? 'border-primary/40 bg-primary/[0.05]' : 'border-border/60 bg-surface/40'
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-pressed={selected}
+        className="focus-ring flex w-full items-center gap-3 px-3.5 py-3 text-left transition-transform active:scale-[0.99]"
+      >
+        <span
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl transition-colors ${
+            selected ? 'bg-primary text-primary-foreground' : 'bg-surface-2 text-muted'
+          }`}
+        >
+          <Icon className="h-[18px] w-[18px]" />
+        </span>
+        <span className="flex-1 text-sm font-semibold text-foreground">
+          {t(`onboarding.step6.instruments.${type}`)}
+        </span>
+        <span
+          className={`flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border transition-colors ${
+            selected ? 'border-primary bg-primary text-primary-foreground' : 'border-border bg-surface/60'
+          }`}
+        >
+          {selected && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+        </span>
+      </button>
+
+      {selected && hasModels && (
+        <div className="animate-panel-in border-t border-border/50 px-3.5 pb-3.5 pt-3">
+          <p className="mb-2 text-xs font-medium text-muted">
+            {t('onboarding.step6.modelTypeLabel')}
+            <span className="ml-1 font-normal opacity-70">· {t('onboarding.step6.modelTypeHint')}</span>
+          </p>
           <div className="flex flex-wrap gap-2">
             {models.map((model) => (
               <SelectChip
@@ -144,27 +199,35 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
         <InfoButton text={t('info.instruments')} />
       </p>
 
-      <div className="flex flex-wrap gap-2">
-        {INSTRUMENT_TYPES.map((type) => (
-          <OptionChip
+      {/* Geräte-Checkliste: kompakte Zeilen, Subtypen klappen je Gerät auf. */}
+      <div className="space-y-2">
+        {DEVICE_TYPES.map((type) => (
+          <InstrumentRow
             key={type}
-            icon={INSTRUMENT_ICONS[type]}
-            label={t(`onboarding.step6.instruments.${type}`)}
+            type={type}
             selected={isSelected(type)}
-            onClick={() => toggleInstrument(type)}
+            selectedModels={getEntry(type)?.modelTypes ?? []}
+            onToggle={() => toggleInstrument(type)}
+            onToggleModel={(model) => toggleModel(type, model)}
           />
         ))}
       </div>
 
-      {/* Detail-Panels nur für ausgewählte Geräte mit Subtypen/Empfehlung. */}
-      {INSTRUMENT_TYPES.filter((type) => isSelected(type) && hasModelTypes(type)).map((type) => (
-        <InstrumentPanel
-          key={type}
-          type={type}
-          selectedModels={getEntry(type)?.modelTypes ?? []}
-          onToggleModel={(model) => toggleModel(type, model)}
-        />
-      ))}
+      {/* Exklusive Antworten: kein Gerät vorhanden / nicht bekannt. */}
+      <div className="flex items-center gap-2.5">
+        <span className="text-xs font-medium text-muted">{t('onboarding.step6.orNone')}</span>
+        <div className="flex flex-wrap gap-2">
+          {SPECIAL_TYPES.map((type) => (
+            <OptionChip
+              key={type}
+              icon={INSTRUMENT_ICONS[type]}
+              label={t(`onboarding.step6.instruments.${type}`)}
+              selected={isSelected(type)}
+              onClick={() => toggleInstrument(type)}
+            />
+          ))}
+        </div>
+      </div>
 
       {detailed && (
         <>

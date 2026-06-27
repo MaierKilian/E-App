@@ -1132,6 +1132,8 @@
         "unknown": "Unknown"
       },
       "modelTypeLabel": "Type / model",
+      "modelTypeHint": "Multiple selection possible",
+      "orNone": "or",
       "modelTypes": {
         "temperature_sensor": {
           "room_thermometer": "Room thermometer",
