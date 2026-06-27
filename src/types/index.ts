@@ -109,6 +109,9 @@ export interface RoomEntry {
   type: RoomType
   count: number
   heatTransfer: HeatTransferType
+  /** Optionale Wohnfläche dieses Raumtyps in m² (gilt je Raum-Instanz). Fehlt
+   *  sie, greift ein typischer Fallback-Wert je Raumtyp. */
+  areaSqm?: number
 }
 
 export interface InstrumentEntry {

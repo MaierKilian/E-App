@@ -2,8 +2,13 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Stepper } from '@/components/ui/Stepper'
 import { SelectChip } from '@/components/ui/SelectChip'
-import { calcRoomClimate } from './roomClimate'
+import { useOnboardingStore } from '@/store/onboardingStore'
+import { useReadingsStore } from '@/store/readingsStore'
+import { useTariffStore } from '@/store/tariffStore'
+import { calcRoomClimate, calcRoomTempSaving } from './roomClimate'
 import type { DraftLevel } from './roomClimate'
+import { annualHeatingCostEur, WARM_WATER_SHARE } from './heatingCost'
+import { parseRoomKey } from '../rooms'
 import type { RunProps } from '../runnerTypes'
 
 const TEMP_MIN = 10
@@ -22,7 +27,7 @@ const DRAFT_LEVELS: DraftLevel[] = ['none', 'noticeable', 'strong']
  * Durchführungs-Phase des Raumklima-Checks: Temperatur per Stepper (Pflicht),
  * Luftfeuchte optional über einen Toggle, Zugluft als Chip-Auswahl.
  */
-export function RoomTemperatureRun({ onEvaluate }: RunProps) {
+export function RoomTemperatureRun({ onEvaluate, roomKey }: RunProps) {
   const { t, i18n } = useTranslation()
 
   const [temperature, setTemperature] = useState(TEMP_DEFAULT)
@@ -46,6 +51,33 @@ export function RoomTemperatureRun({ onEvaluate }: RunProps) {
       draft: DRAFT_LEVELS.indexOf(draft),
     }
     if (humidityOn) details.humidity = humidity
+
+    // Anteilige Heiz-Einsparung dieses Raums (nur sinnvoll, wenn zu warm).
+    const profile = useOnboardingStore.getState().data
+    const heating = annualHeatingCostEur(
+      profile.heatGenerators,
+      useReadingsStore.getState().readings,
+      useTariffStore.getState(),
+    )
+    const roomType = roomKey ? parseRoomKey(roomKey)?.type : undefined
+    const roomEntry = roomType ? profile.rooms.find((r) => r.type === roomType) : undefined
+    const saving = calcRoomTempSaving({
+      temp: temperature,
+      roomType,
+      areaSqm: roomEntry?.areaSqm,
+      livingArea: profile.livingArea,
+      heatingOnlyCostEur:
+        heating !== undefined ? heating.costEur * (1 - WARM_WATER_SHARE) : undefined,
+    })
+    if (saving.deltaT > 0) {
+      details.savingDeltaT = saving.deltaT
+      details.savingPercent = Math.round(saving.percent * 100)
+      if (saving.yearlySaving !== undefined && saving.yearlySaving >= 1) {
+        details.yearlySaving = Math.round(saving.yearlySaving)
+        details.savingEstimated = saving.areaEstimated || (heating?.estimated ?? true) ? 1 : 0
+      }
+    }
+
     onEvaluate({
       result: {
         id: 'room_temperature',

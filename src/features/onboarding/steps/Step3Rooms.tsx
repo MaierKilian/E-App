@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import { Stepper } from '@/components/ui/Stepper'
 import { getRoomIcon } from '../roomIcons'
+import { TYPICAL_AREA_SQM } from '@/features/measurements/room_temperature/roomAreas'
 import type { OnboardingData, RoomType, RoomEntry } from '@/types'
 
 interface Props {
@@ -45,6 +46,18 @@ export function Step3Rooms({ data, onChange }: Props) {
     }
   }
 
+  function getArea(type: RoomType): number | undefined {
+    return data.rooms.find((r) => r.type === type)?.areaSqm
+  }
+
+  function setArea(type: RoomType, raw: string) {
+    const value = Number(raw.replace(',', '.'))
+    const areaSqm = Number.isFinite(value) && value > 0 ? value : undefined
+    onChange({
+      rooms: data.rooms.map((r) => (r.type === type ? { ...r, areaSqm } : r)),
+    })
+  }
+
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted">{t('onboarding.step3.subtitle')}</p>
@@ -78,7 +91,7 @@ export function Step3Rooms({ data, onChange }: Props) {
                     <span className="truncate">{t(`onboarding.step3.roomTypes.${type}`)}</span>
                   </button>
                   {selected && (
-                    <div className="mt-2 flex justify-center">
+                    <div className="mt-2 flex flex-col items-center gap-2">
                       <Stepper
                         value={getCount(type)}
                         min={0}
@@ -86,6 +99,20 @@ export function Step3Rooms({ data, onChange }: Props) {
                         size="sm"
                         onChange={(v) => setCount(type, v)}
                       />
+                      <label className="flex items-center gap-1.5 text-xs text-muted">
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          min={1}
+                          max={200}
+                          value={getArea(type) ?? ''}
+                          placeholder={String(TYPICAL_AREA_SQM[type])}
+                          onChange={(e) => setArea(type, e.target.value)}
+                          aria-label={t('onboarding.step3.areaLabel')}
+                          className="w-14 rounded-lg border border-border bg-surface px-2 py-1 text-center text-sm text-foreground focus-ring"
+                        />
+                        {t('onboarding.step3.areaUnit')}
+                      </label>
                     </div>
                   )}
                 </div>

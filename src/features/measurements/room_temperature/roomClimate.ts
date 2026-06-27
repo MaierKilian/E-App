@@ -1,4 +1,6 @@
 import type { MeasurementRating } from '../types'
+import type { RoomType } from '@/types'
+import { TYPICAL_AREA_SQM } from './roomAreas'
 
 /**
  * Reine Berechnungslogik für den Raumklima-Check.
@@ -120,4 +122,64 @@ export function calcRoomClimate(input: RoomClimateInput): RoomClimateResult {
     humidityStatus: humStatus,
     draftStatus,
   }
+}
+
+// --- Geldeinsparung durch niedrigere Raumtemperatur ---------------------------
+// Faustregel: ~6 % Heizenergie pro 1 °C unter dem bisherigen Niveau (breiter
+// Konsens; Hochschule Biberach 2011 maß real 7–8 %). Wir rechnen konservativ.
+export const TARGET_TEMP = 20
+export const PERCENT_PER_DEGREE = 0.06
+
+export interface RoomTempSavingInput {
+  /** Gemessene Raumtemperatur in °C. */
+  temp: number
+  /** Raumtyp (für die Fallback-Fläche, falls keine eigene hinterlegt ist). */
+  roomType?: RoomType
+  /** Vom Nutzer hinterlegte Fläche dieses Raums in m² (optional). */
+  areaSqm?: number
+  /** Gesamt-Wohnfläche in m² (Nenner für den Flächenanteil). */
+  livingArea: number
+  /**
+   * Reine Heiz-Jahreskosten in € (Warmwasser bereits herausgerechnet). Fehlt
+   * der Wert (keine Ablesungen), wird nur die %/°C-Aussage geliefert, kein €.
+   */
+  heatingOnlyCostEur?: number
+}
+
+export interface RoomTempSaving {
+  /** Grad über der Zieltemperatur (0, wenn nicht zu warm). */
+  deltaT: number
+  /** Flächenanteil des Raums an der Wohnung (0..1). */
+  share: number
+  /** Relative Heizenergie-Einsparung (z. B. 0,18 = 18 %). */
+  percent: number
+  /** Jährliche €-Einsparung; undefined ohne Heizkosten oder ohne ΔT. */
+  yearlySaving?: number
+  /** true, wenn die Fläche aus dem Fallback (typischer Wert) stammt. */
+  areaEstimated: boolean
+}
+
+/**
+ * Anteilige Jahres-Einsparung eines Raums durch Absenken auf die Zieltemperatur.
+ * `yearlySaving = heizkostenOhneWarmwasser × Flächenanteil × 6 % × ΔT`.
+ */
+export function calcRoomTempSaving(input: RoomTempSavingInput): RoomTempSaving {
+  const deltaT = Math.max(0, input.temp - TARGET_TEMP)
+  const hasOwnArea = Number.isFinite(input.areaSqm) && (input.areaSqm as number) > 0
+  const areaEstimated = !hasOwnArea
+  const roomArea = hasOwnArea
+    ? (input.areaSqm as number)
+    : input.roomType
+      ? TYPICAL_AREA_SQM[input.roomType]
+      : 0
+  const living = Number.isFinite(input.livingArea) && input.livingArea > 0 ? input.livingArea : 0
+  const share = living > 0 ? Math.min(1, roomArea / living) : 0
+  const percent = deltaT * PERCENT_PER_DEGREE
+
+  let yearlySaving: number | undefined
+  if (deltaT > 0 && share > 0 && input.heatingOnlyCostEur !== undefined) {
+    yearlySaving = input.heatingOnlyCostEur * share * percent
+  }
+
+  return { deltaT, share, percent, yearlySaving, areaEstimated }
 }

@@ -542,7 +542,15 @@
           "noticeable": "Spürbare Zugluft – Fenster/Türen abdichten.",
           "strong": "Starke Zugluft – Dichtungen prüfen lohnt sich."
         },
-        "affiliateNote": "Ein Thermo-Hygrometer behält Temperatur und Feuchte im Blick:"
+        "affiliateNote": "Ein Thermo-Hygrometer behält Temperatur und Feuchte im Blick:",
+        "saving": {
+          "title": "Mögliche Ersparnis",
+          "perYear": "/ Jahr",
+          "percentUnit": "Heizenergie",
+          "context": "{{percent}} % weniger Heizenergie bei {{delta}} °C über 20 °C – anteilig für diesen Raum. Orientierungswert (≈6 % je °C).",
+          "estimated": "geschätzt",
+          "cta": "Heizverbrauch & Preis eintragen"
+        }
       }
     },
     "freezer": {
@@ -1110,7 +1118,9 @@
     },
     "step3": {
       "title": "Zimmer",
-      "subtitle": "Wähle deine Zimmertypen aus und passe die Anzahl an.",
+      "subtitle": "Wähle deine Zimmertypen aus und passe Anzahl und Fläche (m², optional) an.",
+      "areaLabel": "Fläche pro Raum",
+      "areaUnit": "m²",
       "groups": {
         "living": "Wohnräume",
         "functional": "Funktionsräume",

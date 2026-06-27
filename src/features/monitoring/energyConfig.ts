@@ -41,7 +41,7 @@ const ORDER: EnergyType[] = [
 ]
 
 /** Wärmeerzeuger des Profils → zugehöriger Energieträger. */
-const HEAT_GENERATOR_MAP: Partial<Record<string, EnergyType>> = {
+export const HEAT_GENERATOR_MAP: Partial<Record<string, EnergyType>> = {
   gas_boiler: 'gas',
   oil_boiler: 'oil',
   pellets: 'pellets',

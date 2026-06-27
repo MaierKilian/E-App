@@ -542,7 +542,15 @@
           "noticeable": "Noticeable draft – seal windows/doors.",
           "strong": "Strong draft – checking the seals pays off."
         },
-        "affiliateNote": "A thermo-hygrometer keeps temperature and humidity in view:"
+        "affiliateNote": "A thermo-hygrometer keeps temperature and humidity in view:",
+        "saving": {
+          "title": "Potential saving",
+          "perYear": "/ year",
+          "percentUnit": "heating energy",
+          "context": "{{percent}}% less heating energy at {{delta}} °C above 20 °C – proportional for this room. Rule of thumb (≈6% per °C).",
+          "estimated": "estimated",
+          "cta": "Add heating usage & price"
+        }
       }
     },
     "freezer": {
@@ -985,7 +993,9 @@
     },
     "step3": {
       "title": "Rooms",
-      "subtitle": "Select your room types and adjust the count.",
+      "subtitle": "Select your room types and adjust count and area (m², optional).",
+      "areaLabel": "Area per room",
+      "areaUnit": "m²",
       "groups": {
         "living": "Living Spaces",
         "functional": "Functional Rooms",
