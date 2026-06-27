@@ -394,14 +394,30 @@
         "start": "Start check"
       },
       "run": {
-        "tempLabel": "Inside temperature",
+        "tempLabel": "Current inside temperature",
         "tempUnit": "°C",
-        "tempStandard": "Recommended 5–7 °C"
+        "tempStandard": "Recommended 5–7 °C",
+        "hint": "Rule of thumb: each 1 °C warmer (towards 7 °C) saves ~6% electricity. Turn the dial down and re-measure after a few hours.",
+        "afterToggle": "Lowered the setting & re-measured",
+        "energyToggle": "Measured with a power meter",
+        "energyHint": "Plug an energy-cost meter between socket and fridge: read the accumulated kWh and runtime (hours) before and after the change.",
+        "before": "Before",
+        "after": "After",
+        "hoursUnit": "h",
+        "labelLabel": "Annual use per label",
+        "preview": "Potential saving: ≈ {{value}}/year"
       },
       "result": {
         "costPerYear": "€/year",
-        "perYear": "≈ {{value}} €/year",
+        "perYear": "{{value}} €/year",
         "savingLabel": "Savings ≈ {{value}}",
+        "savingTitle": "Potential saving",
+        "estimated": "estimated",
+        "method": {
+          "measured": "From your before/after power measurement.",
+          "delta": "From the achieved temperature difference (~6% per °C).",
+          "estimate": "Potential of setting it to 7 °C (~6% per °C) – not adjusted yet."
+        },
         "affiliateNote": "An infrared thermometer measures the temperature contact-free:",
         "status": {
           "tooCold": "Set too cold – this wastes electricity.",
@@ -582,12 +598,31 @@
           "light": "light frost",
           "heavy": "heavy frost"
         },
+        "icedLabel": "Is the freezer iced up?",
+        "iced": {
+          "yes": "Yes, iced up",
+          "no": "No, ice-free"
+        },
+        "noFrostHint": "Great – ice-free means it runs efficiently, nothing to do.",
+        "severityLabel": "How heavy is the ice? (for the estimate)",
+        "energyToggle": "Measured with a power meter",
+        "energyHint": "Run an energy-cost meter for a few hours before defrosting (read kWh + hours), defrost, then measure again.",
+        "before": "Before defrosting",
+        "after": "After defrosting",
+        "hoursUnit": "h",
+        "labelLabel": "Annual use per label",
+        "preview": "Potential saving: ≈ {{value}}/year",
         "tempToggle": "Temperature measured",
         "tempUnit": "°C"
       },
       "result": {
         "costPerYear": "avoidable/year",
         "allGood": "All good",
+        "estimated": "estimated",
+        "method": {
+          "measured": "From your before/after defrost measurement.",
+          "estimate": "Estimated from the ice build-up level."
+        },
         "summary": {
           "good": "Ice-free – your freezer runs efficiently.",
           "medium": "Light frost – defrosting lowers consumption.",

@@ -40,6 +40,8 @@ export function FreezerResult({ result }: ResultProps) {
   const frostIndex = result.details?.frost ?? 0
   const frost = FROST_LEVELS[frostIndex] ?? 'none'
   const hasFrost = frost !== 'none'
+  const methodIdx = result.details?.method ?? 0
+  const estimated = (result.details?.savingEstimated ?? 0) === 1
 
   const hasTemp = Number.isFinite(result.details?.temperature)
   const temperature = result.details?.temperature ?? 0
@@ -74,6 +76,18 @@ export function FreezerResult({ result }: ResultProps) {
           <p className="mt-1 text-sm text-muted">
             {t(`measurements.freezer.result.summary.${result.rating}`)}
           </p>
+          {hasFrost && avoidable > 0 && (
+            <>
+              <p className="text-xs text-muted">
+                {t(`measurements.freezer.result.method.${methodIdx === 2 ? 'measured' : 'estimate'}`)}
+              </p>
+              {estimated && (
+                <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
+                  {t('measurements.freezer.result.estimated')}
+                </span>
+              )}
+            </>
+          )}
         </div>
       </div>
 

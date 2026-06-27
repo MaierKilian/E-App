@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Check, ChevronRight, DoorOpen } from 'lucide-react'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
+import { useMeasurementDraftStore } from '@/store/measurementDraftStore'
 import { getMeasurementMeta } from './catalog'
 import { getMeasurementModule } from './registry'
 import { roomInstances, roomLabel, instanceKey } from './rooms'
@@ -42,6 +43,7 @@ export function MeasurementRunner() {
   // die Intro-Phase überspringen und direkt mit dem Messen beginnen.
   const skipIntro = searchParams.get('begin') === '1'
   const saveResult = useMeasurementsStore((s) => s.saveResult)
+  const clearDraft = useMeasurementDraftStore((s) => s.clearDraft)
   const rooms = useOnboardingStore((s) => s.data.rooms)
 
   const meta = getMeasurementMeta(id)
@@ -105,6 +107,8 @@ export function MeasurementRunner() {
     // sonst greift der Raum aus der URL.
     const full = { ...result, roomKey: result.roomKey ?? roomKey }
     saveResult(full)
+    // Zwischenspeicher dieser Messung verwerfen (Ablauf abgeschlossen).
+    clearDraft(instanceKey(id, full.roomKey))
     // Nächstes Ziel bestimmen: bei Pro-Raum der nächste offene Raum, sonst Übersicht.
     let nextHref = '/measurements'
     let nextRoomName: string | undefined

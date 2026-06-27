@@ -37,7 +37,10 @@ export function FridgeResult({ result }: ResultProps) {
   const temp = result.primaryValue
   const status = fridgeStatus(temp)
   const yearlySaving = result.details?.yearlySaving ?? 0
-  const showSaving = status === 'tooCold' && yearlySaving > 0
+  const showSaving = yearlySaving > 0
+  const methodIdx = result.details?.method ?? 0
+  const methodKey = methodIdx === 2 ? 'measured' : methodIdx === 1 ? 'delta' : 'estimate'
+  const estimated = (result.details?.savingEstimated ?? 0) === 1
 
   return (
     <div className="space-y-4">
@@ -72,18 +75,25 @@ export function FridgeResult({ result }: ResultProps) {
       </div>
 
       {showSaving && (
-        <div className="space-y-2">
-          <p className="text-sm font-semibold text-primary">
-            {t('measurements.fridge.result.savingLabel', {
-              value: t('measurements.fridge.result.perYear', { value: fmt(yearlySaving) }),
-            })}
+        <div className="glass rounded-3xl p-5">
+          <p className="text-xs uppercase tracking-wide text-muted">
+            {t('measurements.fridge.result.savingTitle')}
           </p>
-          <p className="text-sm text-muted">{t('measurements.fridge.result.affiliateNote')}</p>
-          <AffiliateLink product={INFRARED_THERMOMETER_PRODUCT} />
+          <p className="text-2xl font-bold tabular-nums leading-tight text-foreground">
+            ≈ {t('measurements.fridge.result.perYear', { value: fmt(yearlySaving) })}
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-muted">
+            {t(`measurements.fridge.result.method.${methodKey}`)}
+          </p>
+          {estimated && (
+            <span className="mt-2 inline-block rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
+              {t('measurements.fridge.result.estimated')}
+            </span>
+          )}
         </div>
       )}
 
-      {status === 'tooWarm' && (
+      {(showSaving || status === 'tooWarm') && (
         <div className="space-y-2">
           <p className="text-sm text-muted">{t('measurements.fridge.result.affiliateNote')}</p>
           <AffiliateLink product={INFRARED_THERMOMETER_PRODUCT} />

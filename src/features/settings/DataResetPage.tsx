@@ -18,6 +18,7 @@ import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { useProgressStore } from '@/store/progressStore'
 import { useSettingsStore } from '@/store/settingsStore'
+import { useMeasurementDraftStore } from '@/store/measurementDraftStore'
 
 /** Setzt alle Nutzerdaten zurück (App-Einstellungen wie Theme/Sprache bleiben). */
 function resetAllUserData() {
@@ -26,6 +27,7 @@ function resetAllUserData() {
   useReadingsStore.getState().resetReadings()
   useTariffStore.getState().resetTariff()
   useProgressStore.getState().resetProgress()
+  useMeasurementDraftStore.getState().resetDrafts()
   // Einführung wieder anzeigen (wie ein frischer Start).
   useSettingsStore.getState().setIntroSeen(false)
 }

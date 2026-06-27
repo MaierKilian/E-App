@@ -394,14 +394,30 @@
         "start": "Check starten"
       },
       "run": {
-        "tempLabel": "Innentemperatur",
+        "tempLabel": "Aktuelle Innentemperatur",
         "tempUnit": "°C",
-        "tempStandard": "Empfohlen 5–7 °C"
+        "tempStandard": "Empfohlen 5–7 °C",
+        "hint": "Faustregel: Pro 1 °C wärmer (Richtung 7 °C) sparst du ca. 6 % Strom. Senke die Stufe und miss nach ein paar Stunden erneut.",
+        "afterToggle": "Stufe gesenkt & neu gemessen",
+        "energyToggle": "Mit Strommessgerät gemessen",
+        "energyHint": "Energiekostenmessgerät zwischen Steckdose und Kühlschrank: aufsummierte kWh und Laufzeit (Stunden) vor und nach der Anpassung ablesen.",
+        "before": "Vorher",
+        "after": "Nachher",
+        "hoursUnit": "Std.",
+        "labelLabel": "Jahresverbrauch lt. Label",
+        "preview": "Mögliche Ersparnis: ≈ {{value}}/Jahr"
       },
       "result": {
         "costPerYear": "€/Jahr",
-        "perYear": "≈ {{value}} €/Jahr",
+        "perYear": "{{value}} €/Jahr",
         "savingLabel": "Ersparnis ≈ {{value}}",
+        "savingTitle": "Mögliche Ersparnis",
+        "estimated": "geschätzt",
+        "method": {
+          "measured": "Aus deiner Strommessung vorher/nachher.",
+          "delta": "Aus der erreichten Temperaturdifferenz (≈6 % je °C).",
+          "estimate": "Potenzial bis 7 °C (≈6 % je °C) – noch nicht angepasst."
+        },
         "affiliateNote": "Ein Infrarot-Thermometer misst die Temperatur berührungslos:",
         "status": {
           "tooCold": "Zu kalt eingestellt – das kostet unnötig Strom.",
@@ -582,12 +598,31 @@
           "light": "leichte Vereisung",
           "heavy": "starke Vereisung"
         },
+        "icedLabel": "Ist die Gefriertruhe vereist?",
+        "iced": {
+          "yes": "Ja, vereist",
+          "no": "Nein, eisfrei"
+        },
+        "noFrostHint": "Top – eisfrei läuft die Truhe effizient, nichts weiter zu tun.",
+        "severityLabel": "Wie stark ist die Vereisung? (für die Schätzung)",
+        "energyToggle": "Mit Strommessgerät gemessen",
+        "energyHint": "Energiekostenmessgerät vor dem Abtauen einige Stunden laufen lassen (kWh + Stunden ablesen), abtauen, danach erneut messen.",
+        "before": "Vor dem Abtauen",
+        "after": "Nach dem Abtauen",
+        "hoursUnit": "Std.",
+        "labelLabel": "Jahresverbrauch lt. Label",
+        "preview": "Mögliche Ersparnis: ≈ {{value}}/Jahr",
         "tempToggle": "Temperatur gemessen",
         "tempUnit": "°C"
       },
       "result": {
         "costPerYear": "vermeidbar/Jahr",
         "allGood": "Alles gut",
+        "estimated": "geschätzt",
+        "method": {
+          "measured": "Aus deiner Strommessung vor/nach dem Abtauen.",
+          "estimate": "Geschätzt über den Vereisungsgrad."
+        },
         "summary": {
           "good": "Eisfrei – dein Gefrierschrank läuft effizient.",
           "medium": "Leichte Vereisung – Abtauen senkt den Verbrauch.",
