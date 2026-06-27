@@ -341,12 +341,21 @@
         "secondsUnit": "s",
         "secondsManual": "Manual (s)",
         "secondsPlaceholder": "e.g. 30",
-        "secondsInfo": "The time in seconds until the container was full."
+        "secondsInfo": "The time in seconds until the container was full.",
+        "sourceLabel": "Hot water via",
+        "sources": {
+          "electric": "Electric / on-demand heater",
+          "gas": "Gas",
+          "heat_pump": "Heat pump",
+          "oil": "Oil",
+          "pellets": "Pellets"
+        }
       },
       "result": {
         "flowUnit": "L/min",
         "perYear": "€{{value}}/year",
         "savingLabel": "Savings ≈ {{value}}",
+        "sourceNote": "Estimated for hot water via {{source}}. More accurate with your price set.",
         "affiliateNote": "A water-saving showerhead cuts usage without losing comfort:",
         "mini": {
           "liters": "Fill volume",

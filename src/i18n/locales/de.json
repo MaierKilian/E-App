@@ -341,12 +341,21 @@
         "secondsUnit": "s",
         "secondsManual": "Manuell (s)",
         "secondsPlaceholder": "z. B. 30",
-        "secondsInfo": "Die Zeit in Sekunden, bis das Gefäß voll war."
+        "secondsInfo": "Die Zeit in Sekunden, bis das Gefäß voll war.",
+        "sourceLabel": "Warmwasser über",
+        "sources": {
+          "electric": "Strom / Durchlauferhitzer",
+          "gas": "Gas",
+          "heat_pump": "Wärmepumpe",
+          "oil": "Öl",
+          "pellets": "Pellets"
+        }
       },
       "result": {
         "flowUnit": "L/min",
         "perYear": "{{value}} €/Jahr",
         "savingLabel": "Ersparnis ≈ {{value}}",
+        "sourceNote": "Geschätzt für Warmwasser per {{source}}. Genauer mit hinterlegtem Preis.",
         "affiliateNote": "Ein Sparduschkopf senkt den Verbrauch ohne Komfortverlust:",
         "mini": {
           "liters": "Füllmenge",

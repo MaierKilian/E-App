@@ -19,8 +19,8 @@ export interface ShowerheadInput {
   seconds: number
   /** Personen im Haushalt (aus dem Onboarding). */
   persons: number
-  /** Arbeitspreis Strom in ct/kWh (aus dem Tarif-Store). */
-  workPriceCt: number
+  /** Effektiver Warmwasserpreis in € je kWh nutzbarer Wärme. */
+  eurPerKwh: number
 }
 
 export interface ShowerheadResult {
@@ -40,13 +40,14 @@ export interface ShowerheadResult {
 const GOOD_MAX = 9
 const MEDIUM_MAX = 12
 
-// Annahmen für die Warmwasser-Kostenschätzung.
+// Annahmen für die Warmwasser-Kostenschätzung. Kalibriert: 1 Dusche/Tag à 5 min,
+// 9 L/min, ΔT 27 K → ~516 kWh/Person·Jahr (deckt sich mit Quellen: ~500–600
+// kWh/Person für die Warmwasserbereitung).
 const SHOWERS_PER_PERSON_PER_DAY = 1
 const MINUTES_PER_SHOWER = 5
 const DAYS_PER_YEAR = 365
-const HOT_WATER_SHARE = 0.6 // Anteil Warmwasser am Durchfluss
-const DELTA_T = 25 // K Temperaturanstieg (Kaltwasser → Duschtemperatur)
-const WH_PER_LITER_PER_K = 1.16 // Energie, um 1 L um 1 K zu erwärmen
+const DELTA_T = 27 // K Temperaturanstieg (Kaltwasser ~11 °C → Dusche ~38 °C)
+const WH_PER_LITER_PER_K = 1.163 // Energie, um 1 L um 1 K zu erwärmen
 const EFFICIENT_FLOW_LPM = 8 // Referenz-Durchfluss eines Sparduschkopfes
 
 export function rateFlow(flowLpm: number): MeasurementRating {
@@ -64,13 +65,12 @@ export function rateFlow(flowLpm: number): MeasurementRating {
  * Strom-Arbeitspreis (Näherung – die tatsächliche Warmwasserquelle kann
  * abweichen).
  */
-function yearlyCostForFlow(flowLpm: number, persons: number, workPriceCt: number): number {
+function yearlyCostForFlow(flowLpm: number, persons: number, eurPerKwh: number): number {
   const showerMinutesPerYear =
     persons * SHOWERS_PER_PERSON_PER_DAY * MINUTES_PER_SHOWER * DAYS_PER_YEAR
   const litersPerYear = flowLpm * showerMinutesPerYear
-  const warmLitersPerYear = litersPerYear * HOT_WATER_SHARE
-  const kWhPerYear = (warmLitersPerYear * DELTA_T * WH_PER_LITER_PER_K) / 1000
-  return (kWhPerYear * workPriceCt) / 100
+  const kWhPerYear = (litersPerYear * DELTA_T * WH_PER_LITER_PER_K) / 1000
+  return kWhPerYear * Math.max(0, eurPerKwh)
 }
 
 export function calcShowerhead(input: ShowerheadInput): ShowerheadResult {
@@ -78,11 +78,11 @@ export function calcShowerhead(input: ShowerheadInput): ShowerheadResult {
   const flowLpm = Math.round((input.liters / input.seconds) * 60 * 10) / 10
   const rating = rateFlow(flowLpm)
 
-  const yearlyCost = yearlyCostForFlow(flowLpm, persons, input.workPriceCt)
+  const yearlyCost = yearlyCostForFlow(flowLpm, persons, input.eurPerKwh)
 
   let yearlySaving = 0
   if (flowLpm > GOOD_MAX) {
-    const efficientCost = yearlyCostForFlow(EFFICIENT_FLOW_LPM, persons, input.workPriceCt)
+    const efficientCost = yearlyCostForFlow(EFFICIENT_FLOW_LPM, persons, input.eurPerKwh)
     yearlySaving = Math.max(0, yearlyCost - efficientCost)
   }
 

@@ -3,6 +3,7 @@ import { AffiliateLink } from '@/components/AffiliateLink'
 import { SHOWERHEAD_PRODUCT } from '@/features/onboarding/affiliateProducts'
 import { RatingBadge } from '../RatingBadge'
 import { RATING_COLOR } from '../rating'
+import { HOT_WATER_SOURCES } from './hotWaterEnergy'
 import type { ResultProps } from '../runnerTypes'
 
 /** Formatiert eine Zahl in der aktuellen Sprache. */
@@ -100,11 +101,20 @@ export function ShowerheadResult({ result }: ResultProps) {
       {!isGood && (
         <div className="space-y-2">
           {showSaving && (
-            <p className="text-sm font-semibold text-primary">
-              {t('measurements.showerhead.result.savingLabel', {
-                value: t('measurements.showerhead.result.perYear', { value: fmt(yearlySaving) }),
-              })}
-            </p>
+            <>
+              <p className="text-sm font-semibold text-primary">
+                {t('measurements.showerhead.result.savingLabel', {
+                  value: t('measurements.showerhead.result.perYear', { value: fmt(yearlySaving) }),
+                })}
+              </p>
+              <p className="text-xs text-muted">
+                {t('measurements.showerhead.result.sourceNote', {
+                  source: t(
+                    `measurements.showerhead.run.sources.${HOT_WATER_SOURCES[result.details?.hwSource ?? 0] ?? 'electric'}`,
+                  ),
+                })}
+              </p>
+            </>
           )}
           <p className="text-sm text-muted">{t('measurements.showerhead.result.affiliateNote')}</p>
           <AffiliateLink product={SHOWERHEAD_PRODUCT} />

@@ -3,22 +3,35 @@ import { useTranslation } from 'react-i18next'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { Stopwatch } from '@/components/ui/Stopwatch'
+import { SelectChip } from '@/components/ui/SelectChip'
 import { calcShowerhead } from './showerhead'
+import {
+  HOT_WATER_SOURCES,
+  eurPerKwhHeat,
+  defaultHotWaterSource,
+  type HotWaterSource,
+} from './hotWaterEnergy'
 import type { RunProps } from '../runnerTypes'
 
 const DEFAULT_LITERS = 5
 
 /**
  * Minimale Durchführungs-Phase: Füllmenge fein justieren, Zeit per Stoppuhr oder
- * manuell. Stoppuhr und manuelle Eingabe teilen denselben Sekundenwert.
+ * manuell. Stoppuhr und manuelle Eingabe teilen denselben Sekundenwert. Zusätzlich
+ * wählbar: die Warmwasserquelle (für den korrekten €/kWh-Preis).
  */
 export function ShowerheadRun({ onEvaluate }: RunProps) {
   const { t, i18n } = useTranslation()
-  const persons = useOnboardingStore((s) => s.data.personsCount)
-  const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
+  const profile = useOnboardingStore((s) => s.data)
+  const persons = profile.personsCount
+  const tariff = useTariffStore()
 
   const [liters, setLiters] = useState(DEFAULT_LITERS)
   const [seconds, setSeconds] = useState(0)
+  const [source, setSource] = useState<HotWaterSource>(() =>
+    defaultHotWaterSource(profile.hotWaterType, profile.heatGenerators),
+  )
+  const eurPerKwh = eurPerKwhHeat(source, tariff)
 
   const canEvaluate = liters > 0 && seconds > 0
 
@@ -38,7 +51,7 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
 
   function handleEvaluate() {
     if (!canEvaluate) return
-    const calc = calcShowerhead({ liters, seconds, persons, workPriceCt })
+    const calc = calcShowerhead({ liters, seconds, persons, eurPerKwh })
     onEvaluate({
       result: {
         id: 'showerhead',
@@ -46,7 +59,14 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
         primaryValue: calc.flowLpm,
         unit: 'L/min',
         completedAt: new Date().toISOString(),
-        details: { liters, seconds, yearlyCost: calc.yearlyCost, yearlySaving: calc.yearlySaving },
+        details: {
+          liters,
+          seconds,
+          yearlyCost: calc.yearlyCost,
+          yearlySaving: calc.yearlySaving,
+          hwSource: HOT_WATER_SOURCES.indexOf(source),
+          savingEstimated: 1,
+        },
       },
     })
   }
@@ -98,6 +118,23 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
           >
             +1
           </button>
+        </div>
+      </div>
+
+      {/* Warmwasserquelle (für den €/kWh-Preis) */}
+      <div className="glass rounded-3xl p-5">
+        <span className="font-medium text-foreground">
+          {t('measurements.showerhead.run.sourceLabel')}
+        </span>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {HOT_WATER_SOURCES.map((s) => (
+            <SelectChip
+              key={s}
+              label={t(`measurements.showerhead.run.sources.${s}`)}
+              selected={source === s}
+              onClick={() => setSource(s)}
+            />
+          ))}
         </div>
       </div>
 
