@@ -136,7 +136,16 @@ export function MeterDetailPage() {
                 {lastText && <p className="text-xs text-muted">{lastText}</p>}
               </div>
             </div>
-            {trend && <TrendBadge trend={trend} />}
+            {trend && (
+              <div className="flex shrink-0 flex-col items-end gap-0.5">
+                <TrendBadge trend={trend} />
+                {trend.changePct !== undefined && (
+                  <span className="text-[10px] leading-tight text-muted">
+                    {t('monitoring.detail.trendCaption')}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="mt-4">
@@ -165,6 +174,11 @@ export function MeterDetailPage() {
                     ? `${numFmt.format(s.lastConsumptionKwh)} ${unit}`
                     : '–'}
                 </p>
+                <p className="mt-0.5 text-[11px] leading-tight text-muted tabular-nums">
+                  {s.lastConsumptionDays !== undefined
+                    ? t('monitoring.detail.consumptionDays', { count: s.lastConsumptionDays })
+                    : ' '}
+                </p>
               </div>
               <div className="rounded-2xl bg-surface-2/60 px-3 py-2.5">
                 <p className="text-[11px] uppercase tracking-wide text-muted">
@@ -172,8 +186,13 @@ export function MeterDetailPage() {
                 </p>
                 <p className="mt-0.5 font-semibold tabular-nums text-foreground">
                   {s.projectedYearCostEur !== undefined
-                    ? eurFmt.format(s.projectedYearCostEur)
+                    ? `≈ ${eurFmt.format(s.projectedYearCostEur)}`
                     : '–'}
+                </p>
+                <p className="mt-0.5 text-[11px] leading-tight text-muted">
+                  {s.projectedYearCostEur !== undefined
+                    ? t('monitoring.detail.costProjected')
+                    : ' '}
                 </p>
               </div>
             </div>

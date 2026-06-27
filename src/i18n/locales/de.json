@@ -961,7 +961,11 @@
       "addReading": "Zählerstand eintragen",
       "history": "Historie",
       "consumption": "Verbrauch",
+      "consumptionDays_one": "in {{count}} Tag",
+      "consumptionDays_other": "in {{count}} Tagen",
       "cost": "Kosten / Jahr",
+      "costProjected": "hochgerechnet",
+      "trendCaption": "Ø/Tag ggü. Vorzeitraum",
       "price": "Strompreis",
       "reminder": "Erinnerung",
       "noReadings": "Noch keine Ablesung erfasst."

@@ -1268,7 +1268,11 @@
       "addReading": "Enter reading",
       "history": "History",
       "consumption": "Consumption",
+      "consumptionDays_one": "in {{count}} day",
+      "consumptionDays_other": "in {{count}} days",
       "cost": "Cost / year",
+      "costProjected": "projected",
+      "trendCaption": "avg/day vs. previous",
       "price": "Electricity price",
       "reminder": "Reminder",
       "noReadings": "No reading recorded yet."

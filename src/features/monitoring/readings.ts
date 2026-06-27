@@ -23,6 +23,8 @@ export interface ConsumptionSegment {
 export interface ReadingStats {
   /** Verbrauch im letzten Abschnitt (kWh) oder undefined bei < 2 Ablesungen. */
   lastConsumptionKwh?: number
+  /** Dauer des letzten Abschnitts in Tagen (Zeitbezug für den Verbrauch). */
+  lastConsumptionDays?: number
   /** Durchschnittlicher Verbrauch pro Tag (kWh) über den letzten Abschnitt. */
   perDayKwh?: number
   /** Hochrechnung auf ein Jahr (365 Tage) in kWh. */
@@ -122,6 +124,7 @@ export function stats(readings: MeterReading[], eurPerUnit?: number): ReadingSta
 
   const last = segments[segments.length - 1]
   const lastConsumptionKwh = last.kwh
+  const lastConsumptionDays = last.days
   const perDayKwh = last.days > 0 ? last.kwh / last.days : undefined
   const projectedYearKwh = perDayKwh !== undefined ? perDayKwh * 365 : undefined
 
@@ -136,6 +139,7 @@ export function stats(readings: MeterReading[], eurPerUnit?: number): ReadingSta
 
   return {
     lastConsumptionKwh,
+    lastConsumptionDays,
     perDayKwh,
     projectedYearKwh,
     lastCostEur,

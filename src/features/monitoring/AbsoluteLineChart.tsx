@@ -64,7 +64,19 @@ export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartPro
   }
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
-  const axisDateFmt = new Intl.DateTimeFormat(i18n.language, { day: '2-digit', month: '2-digit' })
+  // Jahr in die Achsen-Labels aufnehmen, sobald die Daten über mehrere Jahre
+  // gehen – sonst ist „20.01." ohne Jahr mehrdeutig. Kurze Zeiträume (7/30 Tage,
+  // selbes Jahr) bleiben schlank ohne Jahr.
+  const pointYears = points
+    .map((p) => new Date(`${p.date}T00:00:00`).getFullYear())
+    .filter((y) => Number.isFinite(y))
+  const multiYear = pointYears.length > 0 && Math.min(...pointYears) !== Math.max(...pointYears)
+  const axisDateFmt = new Intl.DateTimeFormat(
+    i18n.language,
+    multiYear
+      ? { day: '2-digit', month: '2-digit', year: '2-digit' }
+      : { day: '2-digit', month: '2-digit' },
+  )
   const bubbleDateFmt = new Intl.DateTimeFormat(i18n.language, {
     day: '2-digit',
     month: '2-digit',
@@ -117,16 +129,18 @@ export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartPro
       : ''
 
   // Zeit-proportionale x-Achsen-Labels ohne Überlappung: erstes & letztes immer,
-  // dazwischen nur, wenn weit genug entfernt (Greedy nach Position).
+  // dazwischen nur, wenn weit genug entfernt (Greedy nach Position). Mit Jahr
+  // sind die Labels breiter → größerer Mindestabstand.
+  const minGapPct = multiYear ? 26 : 18
   const axisLabels: { i: number; pct: number }[] = []
   let lastPct = -Infinity
   points.forEach((_, i) => {
     const pct = leftPct(i)
     const isEdge = i === 0 || i === points.length - 1
-    const farEnough = pct - lastPct >= 18 && pct <= 82
+    const farEnough = pct - lastPct >= minGapPct && pct <= 100 - minGapPct
     if (isEdge || farEnough) {
       // Mittel-Label fallen lassen, falls es dem letzten Label zu nahe käme.
-      if (i === points.length - 1 && axisLabels.length > 0 && pct - lastPct < 16) {
+      if (i === points.length - 1 && axisLabels.length > 0 && pct - lastPct < minGapPct - 2) {
         axisLabels.pop()
       }
       axisLabels.push({ i, pct })
