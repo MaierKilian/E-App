@@ -9,6 +9,7 @@ import {
 } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { auth } from '@/lib/firebase'
+import { track } from '@/features/analytics/analytics'
 
 const googleProvider = new GoogleAuthProvider()
 
@@ -22,18 +23,21 @@ export async function registerWithEmail(
   if (displayName) {
     await updateProfile(cred.user, { displayName })
   }
+  void track('sign_up', { method: 'password' })
   return cred.user
 }
 
 /** Mit bestehendem E-Mail-Konto anmelden. */
 export async function loginWithEmail(email: string, password: string) {
   const cred = await signInWithEmailAndPassword(auth, email, password)
+  void track('login', { method: 'password' })
   return cred.user
 }
 
 /** Anmeldung über das Google-Konto (Popup). */
 export async function loginWithGoogle() {
   const cred = await signInWithPopup(auth, googleProvider)
+  void track('login', { method: 'google' })
   return cred.user
 }
 

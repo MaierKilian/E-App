@@ -12,6 +12,7 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
+import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyCf52jDrugmsralbzLMIoqZZ1FIniA-ZHw',
@@ -26,3 +27,9 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
 export const db = getFirestore(app)
+
+// Analytics nur dort initialisieren, wo es unterstützt wird (Browser, kein
+// SSR/Worker). Liefert das Analytics-Objekt – oder null, wenn nicht verfügbar.
+export const analyticsReady: Promise<Analytics | null> = isSupported().then(
+  (ok) => (ok ? getAnalytics(app) : null),
+)

@@ -1,6 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Layout } from './Layout'
 import { useApplyTheme } from './useApplyTheme'
+import { track } from '@/features/analytics/analytics'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { MeasurementsPage } from '@/features/measurements/MeasurementsPage'
 import { MeasurementRunner } from '@/features/measurements/MeasurementRunner'
@@ -15,12 +17,25 @@ import { SplashScreen } from '@/components/SplashScreen'
 import { OnboardingIntro } from '@/components/OnboardingIntro'
 import { LoginGate } from '@/components/LoginGate'
 
+/**
+ * Meldet jeden Seitenwechsel als Analytics-Ereignis „page_view".
+ * Muss innerhalb des Routers stehen (nutzt useLocation).
+ */
+function RouteTracker() {
+  const location = useLocation()
+  useEffect(() => {
+    void track('page_view', { page_path: location.pathname })
+  }, [location.pathname])
+  return null
+}
+
 export function App() {
   useApplyTheme()
 
   return (
     <>
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+        <RouteTracker />
         <OnboardingIntro />
         <Routes>
           <Route element={<Layout />}>
