@@ -45,7 +45,8 @@ export function OnboardingIntro() {
       aria-modal="true"
       aria-label={slide.title}
     >
-      <div className="flex justify-end p-4">
+      {/* Fixe Kopfzeile – immer gleich hoch */}
+      <div className="flex h-14 shrink-0 items-center justify-end px-4">
         <button
           type="button"
           onClick={() => finish(false)}
@@ -55,15 +56,20 @@ export function OnboardingIntro() {
         </button>
       </div>
 
-      <div className="flex flex-1 flex-col items-center px-8 pt-[15vh] text-center">
-        <span className="mb-8 grid h-24 w-24 place-items-center rounded-3xl bg-primary/10 text-primary">
-          <Icon className="h-11 w-11" />
-        </span>
-        <h2 className="text-2xl font-bold leading-tight text-foreground">{slide.title}</h2>
-        <p className="mt-3 max-w-sm text-muted">{slide.body}</p>
+      {/* Inhaltsbereich: absolute Positionierung damit Icon + Titel auf allen
+          Slides exakt auf derselben Höhe stehen, unabhängig von Textlänge. */}
+      <div className="relative flex-1">
+        <div className="absolute inset-x-8 top-[14vh] flex flex-col items-center text-center">
+          <span className="mb-8 grid h-24 w-24 place-items-center rounded-3xl bg-primary/10 text-primary">
+            <Icon className="h-11 w-11" />
+          </span>
+          <h2 className="text-2xl font-bold leading-tight text-foreground">{slide.title}</h2>
+          <p className="mt-3 max-w-sm text-muted">{slide.body}</p>
+        </div>
       </div>
 
-      <div className="px-8 pb-10">
+      {/* Fixe Fußzeile – Punkte + Buttons */}
+      <div className="shrink-0 px-8 pb-10">
         <div className="mb-6 flex justify-center gap-2">
           {slides.map((_, idx) => (
             <span
