@@ -72,23 +72,29 @@ Im Code (erledigt):
 
 ## Phase D – Backend / Cloud-Speicher (Firestore)
 
-In der Console:
+Im Code (ERLEDIGT ✅):
+
+- [x] `src/features/sync/cloudSync.ts` – spiegelt die Nutzer-Stores nach Firestore
+      (`users/{uid}`), lädt beim Login, lädt lokale Daten beim Erststart hoch,
+      schreibt Änderungen verzögert. Theme/Sprache bleiben lokal.
+- [x] In `main.tsx` via `initCloudSync()` gestartet
+- [x] `firestore.rules` – jeder Nutzer nur auf sein eigenes Dokument
+- [x] `firebase.json` um den Firestore-Abschnitt ergänzt
+
+**DU in der Console (einmalig, ~2 Min):**
 
 1. Linkes Menü → **Build → Firestore Database** → **„Datenbank erstellen"**
-2. Region **`eur3` / `europe-west`** wählen (Datenschutz / DSGVO) → wichtig,
-   Region lässt sich später **nicht** ändern.
-3. Im **Produktionsmodus** starten (Regeln setzt Claude danach passend).
-
-Im Code (übernimmt Claude):
-
-- Sicherheitsregeln: jeder Nutzer sieht nur seine eigenen Daten
-- App-Daten (Messungen, Zählerstände, Einstellungen) zusätzlich in Firestore
-  speichern/laden → gerätübergreifend
+2. Region **`eur3` (europe-west)** wählen (Datenschutz / DSGVO).
+   ⚠️ Region lässt sich später **nicht** mehr ändern.
+3. Im **Produktionsmodus** starten.
+4. Tab **Regeln (Rules)** → den Inhalt von `firestore.rules` (siehe Repo)
+   einfügen → **Veröffentlichen**.
+   *(Alternativ später automatisch per `firebase deploy --only firestore:rules`.)*
 
 > **Checkliste Phase D**
-> - [ ] Firestore erstellt (Region europe-west)
-> - [ ] Sicherheitsregeln (Claude)
-> - [ ] Daten-Synchronisation (Claude)
+> - [ ] Firestore-Datenbank erstellt (Region europe-west)
+> - [ ] Sicherheitsregeln veröffentlicht
+> - [x] Code-Synchronisation (erledigt)
 
 ---
 
