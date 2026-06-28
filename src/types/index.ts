@@ -122,6 +122,8 @@ export interface InstrumentEntry {
 
 export interface OnboardingData {
   profileName: string
+  /** Optionales Profilbild als heruntergerechnetes Data-URL (localStorage + Firestore-Sync). */
+  profileImage?: string
   personsCount: number
   roomsCount: number
   buildingYear: number
