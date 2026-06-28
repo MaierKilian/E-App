@@ -14,6 +14,7 @@ import { Stepper } from '@/components/ui/Stepper'
 import { OptionChip } from '@/components/ui/OptionChip'
 import { Field } from '@/components/ui/Field'
 import { InfoButton } from '@/components/ui/InfoButton'
+import { AvatarPicker } from '@/components/AvatarPicker'
 import type { OnboardingData, UserGoal, OccupancyStatus } from '@/types'
 
 interface Props {
@@ -49,6 +50,14 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
 
   return (
     <div className="space-y-6">
+      <div className="pt-1">
+        <AvatarPicker
+          value={data.profileImage}
+          name={data.profileName}
+          onChange={(profileImage) => onChange({ profileImage })}
+        />
+      </div>
+
       <div className="space-y-2">
         <Field title={t('onboarding.step1.profileName')} hint={t('onboarding.step1.profileNameHint')}>
           <div className="relative">

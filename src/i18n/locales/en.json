@@ -1036,6 +1036,8 @@
       "title": "Home Profile",
       "profileName": "Profile name",
       "profileNamePlaceholder": "e.g. Apartment Berlin",
+      "profileImageAdd": "Add profile picture",
+      "profileImageRemove": "Remove picture",
       "persons": "Number of people in household",
       "rooms": "Number of rooms",
       "goals": "Your goal / motivation",

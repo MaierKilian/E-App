@@ -1,16 +1,20 @@
+import type { ReactNode } from 'react'
+
 interface ProgressRingProps {
   /** Fortschritt in Prozent (0..100). */
   value: number
   size?: number
   stroke?: number
   label?: string
+  /** Optionaler Inhalt in der Mitte (z. B. Avatar). Ersetzt die Prozentzahl. */
+  children?: ReactNode
 }
 
 /**
  * Dezenter, kreisförmiger Fortschrittsring für die Profil-Vollständigkeit.
  * Reines SVG – keine zusätzlichen Abhängigkeiten.
  */
-export function ProgressRing({ value, size = 56, stroke = 5, label }: ProgressRingProps) {
+export function ProgressRing({ value, size = 56, stroke = 5, label, children }: ProgressRingProps) {
   const clamped = Math.max(0, Math.min(100, value))
   const radius = (size - stroke) / 2
   const circumference = 2 * Math.PI * radius
@@ -40,7 +44,7 @@ export function ProgressRing({ value, size = 56, stroke = 5, label }: ProgressRi
         />
       </svg>
       <div className="absolute inset-0 grid place-items-center">
-        <span className="text-sm font-semibold text-foreground">{clamped}%</span>
+        {children ?? <span className="text-sm font-semibold text-foreground">{clamped}%</span>}
       </div>
       {label && <span className="sr-only">{label}</span>}
     </div>
