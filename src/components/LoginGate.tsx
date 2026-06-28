@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Lock, Sparkles } from 'lucide-react'
-import { useIsAuthenticated } from '@/store/authStore'
+import { useAuthStore } from '@/store/authStore'
 import { Card } from './ui/Card'
 
 interface LoginGateProps {
@@ -21,12 +21,18 @@ interface LoginGateProps {
  *   <LoginGate><MeineFunktion /></LoginGate>
  */
 export function LoginGate({ children, message }: LoginGateProps) {
-  const authenticated = useIsAuthenticated()
+  const user = useAuthStore((s) => s.user)
+  const initializing = useAuthStore((s) => s.initializing)
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
 
-  if (authenticated) return <>{children}</>
+  // Solange Firebase den Status prüft: nichts anzeigen (kein Aufblitzen der Sperre).
+  if (initializing) {
+    return <div className="grid min-h-40 place-items-center text-muted" aria-busy="true" />
+  }
+
+  if (user) return <>{children}</>
 
   return (
     <Card className="text-center">

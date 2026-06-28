@@ -64,8 +64,9 @@ Im Code (erledigt):
       zum Registrieren); Nutzung: `<LoginGate><Funktion /></LoginGate>`
 - [x] Profilmenü zeigt Konto + Abmelden (bzw. „Anmelden" für Gäste)
 
-**Offen / Produktentscheidung:** Welche Funktionen sollen nur mit Login nutzbar
-sein? Sobald das feststeht, wird `<LoginGate>` an den jeweiligen Stellen gesetzt.
+**Gast-Einschränkung (umgesetzt):** Nur mit Login nutzbar sind **Messungen**,
+**Monitoring** und **Berichte**. Frei bleiben **Zuhause/Onboarding** und
+**Wissen**. Umgesetzt über `<LoginGate>` in `src/app/App.tsx`.
 
 ---
 

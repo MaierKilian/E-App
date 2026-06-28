@@ -13,6 +13,7 @@ import { DataResetPage } from '@/features/settings/DataResetPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { SplashScreen } from '@/components/SplashScreen'
 import { OnboardingIntro } from '@/components/OnboardingIntro'
+import { LoginGate } from '@/components/LoginGate'
 
 export function App() {
   useApplyTheme()
@@ -25,11 +26,11 @@ export function App() {
           <Route element={<Layout />}>
             <Route index element={<Navigate to="/onboarding" replace />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route path="/measurements" element={<MeasurementsPage />} />
-            <Route path="/measurements/:id" element={<MeasurementRunner />} />
-            <Route path="/monitoring" element={<MonitoringPage />} />
-            <Route path="/monitoring/:type" element={<MeterDetailPage />} />
-            <Route path="/reports" element={<ReportsPage />} />
+            <Route path="/measurements" element={<LoginGate><MeasurementsPage /></LoginGate>} />
+            <Route path="/measurements/:id" element={<LoginGate><MeasurementRunner /></LoginGate>} />
+            <Route path="/monitoring" element={<LoginGate><MonitoringPage /></LoginGate>} />
+            <Route path="/monitoring/:type" element={<LoginGate><MeterDetailPage /></LoginGate>} />
+            <Route path="/reports" element={<LoginGate><ReportsPage /></LoginGate>} />
             <Route path="/education" element={<EducationPage />} />
             <Route path="/tipps" element={<TipsPage />} />
             <Route path="/einstellungen/daten" element={<DataResetPage />} />
