@@ -1161,6 +1161,8 @@
       "title": "Wohnprofil",
       "profileName": "Profilname",
       "profileNamePlaceholder": "z. B. Wohnung Berlin",
+      "profileImageAdd": "Profilbild hinzufügen",
+      "profileImageRemove": "Bild entfernen",
       "persons": "Personen im Haushalt",
       "rooms": "Anzahl der Zimmer",
       "goals": "Dein Ziel / Motivation",

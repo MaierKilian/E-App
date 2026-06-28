@@ -31,6 +31,7 @@ function migrateRooms(rooms: unknown): RoomEntry[] | undefined {
 
 const defaultData: OnboardingData = {
   profileName: '',
+  profileImage: '',
   personsCount: 2,
   roomsCount: 3,
   buildingYear: 1990,

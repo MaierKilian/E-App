@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ClipboardList, ChevronDown, ChevronRight, Lightbulb } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { Avatar } from '@/components/ui/Avatar'
 import { Step8Review } from '@/features/onboarding/steps/Step8Review'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
@@ -42,7 +43,9 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
         onClick={onEdit}
         className="focus-ring glass w-full text-left rounded-3xl p-5 flex items-center gap-4 transition-transform duration-200 active:scale-[0.99]"
       >
-        <ProgressRing value={completeness} size={72} stroke={6} />
+        <ProgressRing value={completeness} size={72} stroke={6}>
+          <Avatar src={data.profileImage || undefined} name={data.profileName} size={56} />
+        </ProgressRing>
         <div className="min-w-0 flex-1">
           <p className="text-sm text-muted">{t('home.greeting')}</p>
           <h1 className="text-xl font-bold text-foreground truncate">

@@ -5,6 +5,8 @@ import { User, Palette, Globe, PlayCircle, ChevronRight, Sun, Moon, Leaf, Trash2
 import type { LucideIcon } from 'lucide-react'
 import { useSettingsStore, THEMES, type Theme } from '@/store/settingsStore'
 import { useUser } from '@/store/authStore'
+import { useOnboardingStore } from '@/store/onboardingStore'
+import { Avatar } from '@/components/ui/Avatar'
 import { logout } from '@/features/auth/auth'
 import { SUPPORTED_LANGUAGES } from '@/i18n'
 
@@ -26,9 +28,13 @@ export function ProfileMenu() {
   const setTheme = useSettingsStore((s) => s.setTheme)
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
   const user = useUser()
+  const profileName = useOnboardingStore((s) => s.data.profileName)
+  const profileImage = useOnboardingStore((s) => s.data.profileImage)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const currentLang = i18n.resolvedLanguage
+  // Name für Initialen/Alt: bevorzugt der Firebase-Anzeigename, sonst der Profilname.
+  const avatarName = user?.displayName || profileName
 
   useEffect(() => {
     if (!open) return
@@ -54,9 +60,9 @@ export function ProfileMenu() {
         aria-label={t('settings.open')}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="grid h-9 w-9 place-items-center rounded-lg border border-border text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
+        className="focus-ring grid h-9 w-9 place-items-center overflow-hidden rounded-full border border-border transition-transform hover:scale-105 active:scale-95"
       >
-        <User className="h-4.5 w-4.5" />
+        <Avatar src={profileImage || undefined} name={avatarName} size={34} />
       </button>
 
       {open && (
@@ -68,9 +74,7 @@ export function ProfileMenu() {
           {user ? (
             <div className="mb-3 rounded-xl border border-border bg-surface-2/50 p-2.5">
               <div className="flex items-center gap-3">
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-                  <User className="h-5 w-5" />
-                </span>
+                <Avatar src={profileImage || undefined} name={user.displayName || undefined} size={36} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-foreground">
                     {user.displayName || t('settings.account')}
