@@ -12,6 +12,16 @@ dist
 dist-ssr
 *.local
 
+# Lokale Umgebungsvariablen (Firebase-Config etc.) – nicht einchecken.
+.env
+.env.*
+!.env.example
+
+# Firebase-Admin-Schlüssel (Service Account) NIEMALS einchecken!
+*serviceAccount*.json
+*service-account*.json
+firebase-adminsdk*.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
