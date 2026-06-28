@@ -21,6 +21,46 @@
     "de": "Deutsch",
     "en": "Englisch"
   },
+  "auth": {
+    "backToApp": "Zurück zur App",
+    "loginTitle": "Willkommen zurück",
+    "loginSubtitle": "Melde dich an, um deine Daten überall zu nutzen.",
+    "registerTitle": "Konto erstellen",
+    "registerSubtitle": "Sichere deine Daten und nutze alle Funktionen.",
+    "tabLogin": "Anmelden",
+    "tabRegister": "Registrieren",
+    "namePlaceholder": "Name (optional)",
+    "emailPlaceholder": "E-Mail-Adresse",
+    "passwordPlaceholder": "Passwort",
+    "loginButton": "Anmelden",
+    "registerButton": "Konto erstellen",
+    "forgotPassword": "Passwort vergessen?",
+    "resetSent": "E-Mail zum Zurücksetzen wurde gesendet. Bitte prüfe dein Postfach.",
+    "or": "oder",
+    "continueWithGoogle": "Mit Google anmelden",
+    "gate": {
+      "title": "Mit Konto freischalten",
+      "message": "Diese Funktion ist nur mit einem kostenlosen Konto verfügbar. Melde dich an, um sie zu nutzen.",
+      "benefits": [
+        "Daten geräteübergreifend speichern",
+        "Automatisches Backup in der Cloud",
+        "Zugriff auf alle Funktionen"
+      ],
+      "cta": "Anmelden / Registrieren"
+    },
+    "errors": {
+      "invalidEmail": "Bitte gib eine gültige E-Mail-Adresse ein.",
+      "missingPassword": "Bitte gib ein Passwort ein.",
+      "missingEmailForReset": "Bitte gib zuerst deine E-Mail-Adresse ein.",
+      "weakPassword": "Das Passwort muss mindestens 6 Zeichen lang sein.",
+      "emailInUse": "Für diese E-Mail existiert bereits ein Konto.",
+      "invalidCredential": "E-Mail oder Passwort ist falsch.",
+      "tooManyRequests": "Zu viele Versuche. Bitte später erneut probieren.",
+      "popupClosed": "Anmeldung abgebrochen.",
+      "network": "Netzwerkfehler. Bitte prüfe deine Verbindung.",
+      "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
+    }
+  },
   "common": {
     "comingSoon": "In Arbeit",
     "plannedFeatures": "Das ist hier geplant",
@@ -1574,6 +1614,7 @@
     "signIn": "Anmelden / Registrieren",
     "accountHint": "Daten geräteübergreifend speichern",
     "soon": "Bald",
+    "logout": "Abmelden",
     "appearance": "Darstellung",
     "help": "Hilfe",
     "replayIntro": "Einführung erneut ansehen",
@@ -1614,6 +1655,8 @@
     "next": "Weiter",
     "back": "Zurück",
     "start": "Los geht's",
+    "signIn": "Anmelden / Registrieren",
+    "guest": "Als Gast fortfahren",
     "slides": [
       {
         "title": "Spare Energie und Geld",

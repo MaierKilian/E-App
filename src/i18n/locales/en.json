@@ -21,6 +21,46 @@
     "de": "German",
     "en": "English"
   },
+  "auth": {
+    "backToApp": "Back to app",
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to use your data everywhere.",
+    "registerTitle": "Create account",
+    "registerSubtitle": "Back up your data and unlock all features.",
+    "tabLogin": "Sign in",
+    "tabRegister": "Register",
+    "namePlaceholder": "Name (optional)",
+    "emailPlaceholder": "Email address",
+    "passwordPlaceholder": "Password",
+    "loginButton": "Sign in",
+    "registerButton": "Create account",
+    "forgotPassword": "Forgot password?",
+    "resetSent": "Password reset email sent. Please check your inbox.",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
+    "gate": {
+      "title": "Unlock with an account",
+      "message": "This feature requires a free account. Sign in to use it.",
+      "benefits": [
+        "Save your data across devices",
+        "Automatic cloud backup",
+        "Access to all features"
+      ],
+      "cta": "Sign in / Register"
+    },
+    "errors": {
+      "invalidEmail": "Please enter a valid email address.",
+      "missingPassword": "Please enter a password.",
+      "missingEmailForReset": "Please enter your email address first.",
+      "weakPassword": "The password must be at least 6 characters long.",
+      "emailInUse": "An account already exists for this email.",
+      "invalidCredential": "Email or password is incorrect.",
+      "tooManyRequests": "Too many attempts. Please try again later.",
+      "popupClosed": "Sign-in cancelled.",
+      "network": "Network error. Please check your connection.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
   "common": {
     "comingSoon": "In progress",
     "plannedFeatures": "Planned for this area",
@@ -1574,6 +1614,7 @@
     "signIn": "Sign in / Register",
     "accountHint": "Save your data across devices",
     "soon": "Soon",
+    "logout": "Sign out",
     "appearance": "Appearance",
     "help": "Help",
     "replayIntro": "Replay introduction",
@@ -1614,6 +1655,8 @@
     "next": "Next",
     "back": "Back",
     "start": "Let's go",
+    "signIn": "Sign in / Register",
+    "guest": "Continue as guest",
     "slides": [
       {
         "title": "Save energy and money",
