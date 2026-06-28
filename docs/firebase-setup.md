@@ -31,34 +31,20 @@ Wurde bereits umgesetzt:
 - [x] Build-Pfad konfigurierbar gemacht (`vite.config.ts`)
   - `npm run build` → Pfad `/E-App/` (GitHub Pages, unverändert)
   - `npm run build:firebase` → Pfad `/` (Firebase Hosting)
-- [x] `src/lib/firebase.ts` – zentrale Firebase-Initialisierung
-- [x] `.env.example` als Vorlage für die Web-Config
-- [x] `.gitignore` schützt `.env` und Admin-Schlüssel
+- [x] `src/lib/firebase.ts` – zentrale Firebase-Initialisierung mit Web-Config
+- [x] Web-App in der Firebase Console registriert
+- [x] `.gitignore` schützt Admin-Schlüssel (Service Account)
 
 ---
 
-## Phase B – Web-App in Firebase registrieren (DU, ~5 Min)
+## Phase B – Web-App in Firebase registrieren (ERLEDIGT ✅)
 
-1. Firebase Console öffnen → Projekt **E-App** (`e-app-info`)
-2. Oben links auf das **Zahnrad** ⚙️ → **Projekteinstellungen**
-3. Tab **Allgemein** → ganz unten **„Deine Apps"**
-4. Falls noch keine **Web-App** (`</>`-Symbol) existiert: auf **`</>`** klicken,
-   einen Namen vergeben (z. B. „E-App Web"), **registrieren**.
-   (Häkchen „Firebase Hosting einrichten" ist optional – kann an bleiben.)
-5. Es erscheint ein `firebaseConfig`-Objekt. Diese Werte brauchen wir.
+- [x] Web-App in der Console registriert
+- [x] `firebaseConfig` fest in `src/lib/firebase.ts` eingetragen
 
-Dann lokal im Projekt:
-
-6. `.env.example` nach `.env` kopieren:
-   ```bash
-   cp .env.example .env        # Windows: copy .env.example .env
-   ```
-7. In `.env` die Werte aus dem `firebaseConfig`-Objekt eintragen
-   (`apiKey`, `messagingSenderId`, `appId` – Rest ist schon vorausgefüllt).
-
-> **Checkliste Phase B**
-> - [ ] Web-App in Console registriert
-> - [ ] `.env` lokal angelegt und ausgefüllt
+> Die Web-Config ist nicht geheim und liegt deshalb direkt im Code. So
+> funktioniert die App ohne zusätzliche `.env` überall (lokal, GitHub Pages,
+> Firebase).
 
 ---
 

@@ -1,43 +1,28 @@
 // Zentrale Firebase-Initialisierung für die Web-App.
 //
-// Die Werte stammen aus der "Web-App"-Konfiguration in der Firebase Console
+// Diese Konfiguration stammt aus der Firebase Console
 // (Projekteinstellungen → Allgemein → Deine Apps → SDK-Konfiguration).
-// Diese Werte sind KEINE Geheimnisse – sie dürfen öffentlich im Browser stehen.
-// Trotzdem legen wir sie in einer .env-Datei ab, damit sie leicht austauschbar
-// bleiben. Siehe .env.example.
+//
+// WICHTIG: Diese Werte sind KEINE Geheimnisse. Bei jeder Firebase-Web-App
+// liegen sie offen im Browser – das ist so vorgesehen. Die eigentliche
+// Sicherheit entsteht über die Firestore-/Storage-Sicherheitsregeln und die
+// Liste der autorisierten Domains in der Authentication-Konfiguration.
+// Deshalb dürfen sie bedenkenlos im Code (und im Repo) stehen.
 
-import { initializeApp, type FirebaseApp } from 'firebase/app'
-import { getAuth, type Auth } from 'firebase/auth'
-import { getFirestore, type Firestore } from 'firebase/firestore'
+import { initializeApp } from 'firebase/app'
+import { getAuth } from 'firebase/auth'
+import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: 'AIzaSyCf52jDrugmsralbzLMIoqZZ1FIniA-ZHw',
+  authDomain: 'e-app-info.firebaseapp.com',
+  projectId: 'e-app-info',
+  storageBucket: 'e-app-info.firebasestorage.app',
+  messagingSenderId: '379772614513',
+  appId: '1:379772614513:web:01f63efc811c4fe621e8d0',
+  measurementId: 'G-63T81J9E5B',
 }
 
-// true, sobald alle nötigen Werte in der .env stehen.
-export const isFirebaseConfigured = Boolean(
-  firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.appId,
-)
-
-let app: FirebaseApp | undefined
-let authInstance: Auth | undefined
-let dbInstance: Firestore | undefined
-
-if (isFirebaseConfigured) {
-  app = initializeApp(firebaseConfig)
-  authInstance = getAuth(app)
-  dbInstance = getFirestore(app)
-} else if (import.meta.env.DEV) {
-  // Hinweis während der Entwicklung, falls die .env noch nicht gefüllt ist.
-  console.warn(
-    '[firebase] Keine Konfiguration gefunden. Lege eine .env-Datei nach dem ' +
-      'Vorbild von .env.example an, damit Login und Backend funktionieren.',
-  )
-}
-
-export { app, authInstance as auth, dbInstance as db }
+export const app = initializeApp(firebaseConfig)
+export const auth = getAuth(app)
+export const db = getFirestore(app)
