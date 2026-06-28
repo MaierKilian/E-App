@@ -48,25 +48,24 @@ Wurde bereits umgesetzt:
 
 ---
 
-## Phase C – Login aktivieren (DU in Console + Claude im Code)
+## Phase C – Login (ERLEDIGT ✅)
 
-In der Console:
+In der Console (erledigt):
 
-1. Linkes Menü → **Build → Authentication** → **„Get started"**
-2. Tab **Sign-in method** → Anbieter aktivieren:
-   - **E-Mail/Passwort** → aktivieren → speichern
-   - (optional) **Google** → aktivieren → Support-E-Mail wählen → speichern
+- [x] **E-Mail/Passwort** aktiviert
+- [x] **Google** aktiviert
 
-Im Code (übernimmt Claude, sobald Phase B steht):
+Im Code (erledigt):
 
-- Login-/Registrieren-Seite
-- „Eingeloggt"-Status global verfügbar machen
-- Logout-Knopf im Profilmenü
+- [x] `src/store/authStore.ts` – globaler Anmeldestatus (live über Tabs)
+- [x] `src/features/auth/auth.ts` – Login/Registrieren/Google/Logout/Reset
+- [x] `src/features/auth/LoginPage.tsx` – Anmelde-/Registrierseite unter `/login`
+- [x] `src/components/LoginGate.tsx` – sperrt Funktionen für Gäste (motiviert
+      zum Registrieren); Nutzung: `<LoginGate><Funktion /></LoginGate>`
+- [x] Profilmenü zeigt Konto + Abmelden (bzw. „Anmelden" für Gäste)
 
-> **Checkliste Phase C**
-> - [ ] E-Mail/Passwort aktiviert
-> - [ ] (optional) Google aktiviert
-> - [ ] Login-UI im Code (Claude)
+**Offen / Produktentscheidung:** Welche Funktionen sollen nur mit Login nutzbar
+sein? Sobald das feststeht, wird `<LoginGate>` an den jeweiligen Stellen gesetzt.
 
 ---
 

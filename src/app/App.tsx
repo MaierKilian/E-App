@@ -10,6 +10,7 @@ import { ReportsPage } from '@/features/reports/ReportsPage'
 import { EducationPage } from '@/features/education/EducationPage'
 import { TipsPage } from '@/features/tips/TipsPage'
 import { DataResetPage } from '@/features/settings/DataResetPage'
+import { LoginPage } from '@/features/auth/LoginPage'
 import { SplashScreen } from '@/components/SplashScreen'
 import { OnboardingIntro } from '@/components/OnboardingIntro'
 
@@ -32,6 +33,7 @@ export function App() {
             <Route path="/education" element={<EducationPage />} />
             <Route path="/tipps" element={<TipsPage />} />
             <Route path="/einstellungen/daten" element={<DataResetPage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="*" element={<Navigate to="/onboarding" replace />} />
           </Route>
         </Routes>
