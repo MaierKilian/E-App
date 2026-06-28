@@ -1655,6 +1655,8 @@
     "next": "Weiter",
     "back": "Zurück",
     "start": "Los geht's",
+    "signIn": "Anmelden / Registrieren",
+    "guest": "Als Gast fortfahren",
     "slides": [
       {
         "title": "Spare Energie und Geld",

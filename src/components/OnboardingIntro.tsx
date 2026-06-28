@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { PiggyBank, ListChecks, Rocket, ChevronRight, ChevronLeft } from 'lucide-react'
+import { PiggyBank, ListChecks, Rocket, ChevronRight, ChevronLeft, UserPlus } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
+import { useUser } from '@/store/authStore'
 
 const SLIDE_ICONS: LucideIcon[] = [PiggyBank, ListChecks, Rocket]
 
@@ -23,6 +24,7 @@ export function OnboardingIntro() {
   const navigate = useNavigate()
   const introSeen = useSettingsStore((s) => s.introSeen)
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
+  const user = useUser()
   const [index, setIndex] = useState(0)
 
   if (introSeen) return null
@@ -37,6 +39,15 @@ export function OnboardingIntro() {
     setIntroSeen(true)
     if (goToProfile) navigate('/onboarding')
   }
+
+  function goToLogin() {
+    setIntroSeen(true)
+    navigate('/login', { state: { from: '/onboarding' } })
+  }
+
+  // Auf dem letzten Slide bekommt ein noch nicht angemeldeter Nutzer die Wahl
+  // zwischen Anmelden/Registrieren und „als Gast fortfahren".
+  const showAuthChoice = isLast && !user
 
   return (
     <div
@@ -81,26 +92,55 @@ export function OnboardingIntro() {
           ))}
         </div>
 
-        <div className="flex items-center gap-3">
-          {index > 0 && (
+        {showAuthChoice ? (
+          <div className="space-y-2.5">
             <button
               type="button"
-              onClick={() => setIndex((i) => i - 1)}
-              aria-label={t('onboardingIntro.back')}
-              className="focus-ring grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-border bg-surface text-foreground transition-transform active:scale-[0.97]"
+              onClick={goToLogin}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]"
             >
-              <ChevronLeft className="h-5 w-5" />
+              <UserPlus className="h-4 w-4" />
+              {t('onboardingIntro.signIn')}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={() => (isLast ? finish(true) : setIndex((i) => i + 1))}
-            className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]"
-          >
-            {isLast ? t('onboardingIntro.start') : t('onboardingIntro.next')}
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => finish(true)}
+              className="focus-ring w-full rounded-2xl border border-border bg-surface px-5 py-3.5 text-sm font-medium text-foreground transition-transform active:scale-[0.98]"
+            >
+              {t('onboardingIntro.guest')}
+            </button>
+            {index > 0 && (
+              <button
+                type="button"
+                onClick={() => setIndex((i) => i - 1)}
+                className="focus-ring mx-auto block rounded-lg px-3 py-1.5 text-sm text-muted transition-colors hover:text-foreground"
+              >
+                {t('onboardingIntro.back')}
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            {index > 0 && (
+              <button
+                type="button"
+                onClick={() => setIndex((i) => i - 1)}
+                aria-label={t('onboardingIntro.back')}
+                className="focus-ring grid h-12 w-12 shrink-0 place-items-center rounded-2xl border border-border bg-surface text-foreground transition-transform active:scale-[0.97]"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => (isLast ? finish(true) : setIndex((i) => i + 1))}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]"
+            >
+              {isLast ? t('onboardingIntro.start') : t('onboardingIntro.next')}
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )
