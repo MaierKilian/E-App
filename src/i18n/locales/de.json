@@ -1616,6 +1616,7 @@
       "location": "PLZ"
     },
     "completenessLabel": "Profil zu {{value}} % vollständig",
+    "profileComplete": "Profil vollständig",
     "hero": {
       "title": "Geschätzte Energiekosten",
       "label": "Geschätzte Energiekosten / Jahr",

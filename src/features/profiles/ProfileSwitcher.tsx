@@ -38,6 +38,18 @@ export function ProfileSwitcher() {
   const active = profiles.find((p) => p.id === activeId)
   const atProfileLimit = !canCreateProfile()
 
+  // Spaltenzahl dynamisch an die Anzahl der Kacheln anpassen (Wohnungen + „Neu"),
+  // damit bis zu vier Wohnungen kompakt und ohne Scrollen auf den Screen passen.
+  const tileCount = profiles.length + (atProfileLimit ? 0 : 1)
+  const columnsClass =
+    tileCount <= 2
+      ? 'grid-cols-2'
+      : tileCount === 3
+        ? 'grid-cols-3'
+        : tileCount === 4
+          ? 'grid-cols-2'
+          : 'grid-cols-3'
+
   async function handleSwitch(id: string) {
     if (id === activeId || busy) return
     setBusy(true)
@@ -89,7 +101,7 @@ export function ProfileSwitcher() {
       <p className="mb-2 px-1 text-xs font-semibold uppercase tracking-wide text-muted">
         {t('profiles.sectionTitle')}
       </p>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+      <div className={`grid gap-2.5 ${columnsClass}`}>
         {profiles.map((p) => {
           const isActive = p.id === activeId
           return (
@@ -99,25 +111,25 @@ export function ProfileSwitcher() {
               onClick={() => handleSwitch(p.id)}
               disabled={busy}
               aria-pressed={isActive}
-              className={`focus-ring glass relative flex flex-col items-center gap-2 rounded-2xl p-4 text-center transition-transform active:scale-[0.98] disabled:opacity-60 ${
+              className={`focus-ring glass relative flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-transform active:scale-[0.98] disabled:opacity-60 ${
                 isActive ? 'ring-2 ring-primary' : ''
               }`}
             >
               {isActive && (
-                <span className="absolute right-2 top-2 grid h-5 w-5 place-items-center rounded-full bg-primary text-primary-foreground">
+                <span className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-primary-foreground">
                   <Check className="h-3 w-3" />
                 </span>
               )}
               {p.memberCount > 1 && (
                 <span
-                  className="absolute left-2 top-2 inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium text-primary"
+                  className="absolute left-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium text-primary"
                   title={t('profiles.sharedBadge', { count: p.memberCount })}
                 >
                   <Users className="h-3 w-3" />
                   {p.memberCount}
                 </span>
               )}
-              <Avatar src={p.image || undefined} name={p.name} size={48} />
+              <Avatar src={p.image || undefined} name={p.name} size={44} />
               <span className="line-clamp-1 w-full text-sm font-medium text-foreground">
                 {p.name.trim() || t('home.profileNameFallback')}
               </span>
@@ -125,18 +137,19 @@ export function ProfileSwitcher() {
           )
         })}
 
-        <button
-          type="button"
-          onClick={handleCreate}
-          disabled={busy || atProfileLimit}
-          title={atProfileLimit ? t('profiles.limitReached') : undefined}
-          className="focus-ring flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border p-4 text-center text-muted transition-colors hover:text-foreground hover:border-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-muted disabled:hover:border-border"
-        >
-          <span className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
-            <Plus className="h-5 w-5" />
-          </span>
-          <span className="text-sm font-medium">{t('profiles.addNew')}</span>
-        </button>
+        {!atProfileLimit && (
+          <button
+            type="button"
+            onClick={handleCreate}
+            disabled={busy}
+            className="focus-ring flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border p-3 text-center text-muted transition-colors hover:text-foreground hover:border-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-muted disabled:hover:border-border"
+          >
+            <span className="grid h-11 w-11 place-items-center rounded-full bg-primary/10 text-primary">
+              <Plus className="h-5 w-5" />
+            </span>
+            <span className="text-sm font-medium">{t('profiles.addNew')}</span>
+          </button>
+        )}
       </div>
 
       {atProfileLimit && (

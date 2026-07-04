@@ -1616,6 +1616,7 @@
       "location": "Postal code"
     },
     "completenessLabel": "Profile {{value}} % complete",
+    "profileComplete": "Profile complete",
     "hero": {
       "title": "Estimated energy costs",
       "label": "Estimated energy costs / year",
