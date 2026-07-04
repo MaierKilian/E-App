@@ -1562,6 +1562,9 @@
     "leaveActive": "Wohnung verlassen",
     "leaveConfirm": "Diese Wohnung wirklich verlassen?",
     "leaveYes": "Verlassen",
+    "deleteActive": "Wohnung löschen",
+    "deleteConfirm": "Diese Wohnung endgültig löschen? Alle Messungen, Zählerstände und Bewohner-Zugänge gehen unwiderruflich verloren.",
+    "deleteYes": "Endgültig löschen",
     "share": {
       "title": "Wohnung teilen",
       "explainer": "Schicke diesen Link an deine Mitbewohner. Wer ihn öffnet und sich anmeldet, sieht und bearbeitet diese Wohnung gemeinsam mit dir.",

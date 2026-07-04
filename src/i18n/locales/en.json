@@ -1562,6 +1562,9 @@
     "leaveActive": "Leave home",
     "leaveConfirm": "Really leave this home?",
     "leaveYes": "Leave",
+    "deleteActive": "Delete home",
+    "deleteConfirm": "Permanently delete this home? All measurements, meter readings and resident access will be lost for good.",
+    "deleteYes": "Delete permanently",
     "share": {
       "title": "Share home",
       "explainer": "Send this link to your housemates. Anyone who opens it and signs in will see and edit this home together with you.",

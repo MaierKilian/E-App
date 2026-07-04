@@ -5,6 +5,7 @@ import { useProfilesStore } from '@/store/profilesStore'
 import { STORES, snapshot, hydrate, resetAllStores, metaFromState } from './stores'
 import {
   createProfile,
+  deleteProfile,
   getProfile,
   joinProfile,
   listProfiles,
@@ -280,6 +281,25 @@ export async function leaveProfile(pid: string) {
   if (!uid) return
   await flushPending()
   await removeMember(pid, uid)
+  await handleAccessLost(pid)
+}
+
+/**
+ * Löscht eine Wohnung endgültig (nur der Besitzer darf das laut Sicherheitsregeln).
+ * Damit verschwindet sie für alle Bewohner. Danach wird auf eine verbleibende
+ * Wohnung gewechselt – oder eine neue leere angelegt, wenn keine übrig bleibt.
+ */
+export async function deleteActiveProfile(pid: string) {
+  const uid = currentUid
+  if (!uid) return
+  // Ausstehende Schreibvorgänge/Listener auf dieses Dokument stoppen, bevor es weg ist.
+  if (currentPid === pid) teardownProfile()
+  try {
+    await deleteProfile(pid)
+  } catch (e) {
+    console.warn('[cloudSync] Wohnung löschen fehlgeschlagen:', e)
+    throw e
+  }
   await handleAccessLost(pid)
 }
 
