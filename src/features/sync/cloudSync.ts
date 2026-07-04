@@ -6,8 +6,10 @@ import { STORES, snapshot, hydrate, resetAllStores, metaFromState } from './stor
 import {
   createProfile,
   getProfile,
+  joinProfile,
   listProfiles,
   readLegacyState,
+  removeMember,
   writeProfileState,
 } from '@/features/profiles/profiles'
 
@@ -65,6 +67,7 @@ async function pushNow(pid: string) {
       image: meta.image,
       ownerUid: existing?.ownerUid ?? currentUid ?? '',
       role: existing?.role ?? 'owner',
+      memberCount: existing?.memberCount ?? 1,
       updatedAt: Date.now(),
     })
   } catch (e) {
@@ -130,7 +133,14 @@ async function activateProfile(pid: string) {
       const state = snap.data()?.state as Record<string, unknown> | undefined
       if (state) applyRemote(state)
     },
-    (e) => console.warn('[cloudSync] Live-Listener-Fehler:', e),
+    (e) => {
+      console.warn('[cloudSync] Live-Listener-Fehler:', e)
+      // Zugriff verloren (z. B. aus der Wohnung entfernt)? Profile neu laden
+      // und auf eine verbleibende Wohnung ausweichen.
+      if ((e as { code?: string }).code === 'permission-denied' && currentUid) {
+        void handleAccessLost(pid)
+      }
+    },
   )
 
   // 3. Auf künftige lokale Änderungen hören und verzögert in die Cloud schreiben.
@@ -164,7 +174,7 @@ async function onUserChange(uid: string | null) {
     if (metas.length === 0) {
       const legacy = await readLegacyState(uid)
       const seedState = legacy ?? snapshot()
-      const created = await createProfile(uid, seedState)
+      const created = await createProfile(uid, seedState, displayNameOf(uid))
       metas = [created]
     }
 
@@ -215,13 +225,81 @@ export async function createNewProfile(): Promise<string | null> {
   }
 
   try {
-    const created = await createProfile(uid, snapshot())
+    const created = await createProfile(uid, snapshot(), displayNameOf(uid))
     useProfilesStore.getState().upsertProfile(created)
     await activateProfile(created.id)
     return created.id
   } catch (e) {
     console.warn('[cloudSync] Neues Profil anlegen fehlgeschlagen:', e)
     return null
+  }
+}
+
+/** Anzeigename des angemeldeten Nutzers (für die Mitgliederliste beim Teilen). */
+function displayNameOf(uid: string): string | undefined {
+  const user = useAuthStore.getState().user
+  return user?.uid === uid ? (user.displayName ?? user.email ?? undefined) : undefined
+}
+
+/** Lädt die Profilliste neu (z. B. nach Beitritt oder Mitglieder-Änderungen). */
+export async function refreshProfiles() {
+  const uid = currentUid
+  if (!uid) return
+  try {
+    const metas = await listProfiles(uid)
+    if (currentUid === uid) useProfilesStore.getState().setProfiles(metas)
+  } catch (e) {
+    console.warn('[cloudSync] Profile neu laden fehlgeschlagen:', e)
+  }
+}
+
+/**
+ * Tritt einer geteilten Wohnung per Einladung bei und wechselt direkt dorthin.
+ * Wirft bei ungültiger/widerrufener Einladung (permission-denied).
+ */
+export async function joinSharedProfile(pid: string, inviteId: string) {
+  const uid = currentUid
+  if (!uid) throw new Error('not-signed-in')
+
+  // Bereits Mitglied? (Profil lesbar) → nur wechseln.
+  const already = useProfilesStore.getState().profiles.some((p) => p.id === pid)
+  if (!already) {
+    await joinProfile(pid, inviteId, uid, displayNameOf(uid))
+    await refreshProfiles()
+  }
+  await switchProfile(pid)
+}
+
+/**
+ * Verlässt eine geteilte Wohnung (bzw. entfernt als Besitzer ein Mitglied).
+ * Wechselt danach bei Bedarf auf eine verbleibende Wohnung – oder legt eine
+ * neue leere an, wenn keine übrig bleibt.
+ */
+export async function leaveProfile(pid: string) {
+  const uid = currentUid
+  if (!uid) return
+  await flushPending()
+  await removeMember(pid, uid)
+  await handleAccessLost(pid)
+}
+
+/** Reagiert auf verlorenen Zugriff: Liste aktualisieren, Ausweich-Profil aktivieren. */
+async function handleAccessLost(pid: string) {
+  const uid = currentUid
+  if (!uid) return
+  if (currentPid === pid) {
+    teardownProfile()
+    currentPid = null
+  }
+  useProfilesStore.getState().removeProfile(pid)
+  await refreshProfiles()
+  if (currentUid !== uid) return
+
+  const remaining = useProfilesStore.getState().profiles.filter((p) => p.id !== pid)
+  if (remaining.length > 0) {
+    await activateProfile(remaining[0].id)
+  } else {
+    await createNewProfile()
   }
 }
 

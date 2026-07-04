@@ -11,6 +11,8 @@ export interface ProfileMeta {
   image: string
   ownerUid: string
   role: ProfileRole
+  /** Anzahl der Mitglieder (1 = nicht geteilt). */
+  memberCount: number
   updatedAt: number
 }
 

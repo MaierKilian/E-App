@@ -1542,7 +1542,39 @@
   "profiles": {
     "sectionTitle": "My homes",
     "addNew": "New home",
-    "hint": "Tap a home to switch, or add a new one."
+    "hint": "Tap a home to switch, or add a new one.",
+    "sharedBadge": "{{count}} residents",
+    "shareActive": "Share home",
+    "leaveActive": "Leave home",
+    "leaveConfirm": "Really leave this home?",
+    "leaveYes": "Leave",
+    "share": {
+      "title": "Share home",
+      "explainer": "Send this link to your housemates. Anyone who opens it and signs in will see and edit this home together with you.",
+      "shareTitle": "Invitation to an E-App home",
+      "copy": "Copy link",
+      "copied": "Copied!",
+      "shareButton": "Share …",
+      "rotate": "Generate new link",
+      "rotateHint": "\"Generate new link\" immediately invalidates the old link – housemates who already joined will stay.",
+      "membersTitle": "Residents ({{count}})",
+      "you": "You",
+      "memberFallback": "Housemate",
+      "roleOwner": "Owner",
+      "remove": "Remove",
+      "error": "That didn't work, unfortunately. Please try again later."
+    },
+    "join": {
+      "title": "Invitation to a home",
+      "loginPrompt": "You've been invited to a shared home. Sign in (or register for free) to join.",
+      "loginButton": "Sign in & join",
+      "joining": "One moment – joining the home …",
+      "successTitle": "Welcome to the home!",
+      "successMessage": "You now see the same measurements, meter readings and reports as your housemates.",
+      "invalidTitle": "Invitation invalid",
+      "invalidMessage": "This invitation link is invalid or has been revoked. Please ask for a new link.",
+      "goHome": "Go to Home"
+    }
   },
   "home": {
     "greeting": "Welcome back",

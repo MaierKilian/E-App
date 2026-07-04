@@ -13,6 +13,7 @@ import { EducationPage } from '@/features/education/EducationPage'
 import { TipsPage } from '@/features/tips/TipsPage'
 import { DataResetPage } from '@/features/settings/DataResetPage'
 import { LoginPage } from '@/features/auth/LoginPage'
+import { JoinProfilePage } from '@/features/profiles/JoinProfilePage'
 import { SplashScreen } from '@/components/SplashScreen'
 import { OnboardingIntro } from '@/components/OnboardingIntro'
 import { LoginGate } from '@/components/LoginGate'
@@ -50,6 +51,7 @@ export function App() {
             <Route path="/tipps" element={<TipsPage />} />
             <Route path="/einstellungen/daten" element={<DataResetPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/join/:pid/:inviteId" element={<JoinProfilePage />} />
             <Route path="*" element={<Navigate to="/onboarding" replace />} />
           </Route>
         </Routes>

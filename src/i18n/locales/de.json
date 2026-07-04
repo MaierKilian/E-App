@@ -1542,7 +1542,39 @@
   "profiles": {
     "sectionTitle": "Meine Wohnungen",
     "addNew": "Neue Wohnung",
-    "hint": "Tippe eine Wohnung an, um zu wechseln, oder lege eine neue an."
+    "hint": "Tippe eine Wohnung an, um zu wechseln, oder lege eine neue an.",
+    "sharedBadge": "{{count}} Bewohner",
+    "shareActive": "Wohnung teilen",
+    "leaveActive": "Wohnung verlassen",
+    "leaveConfirm": "Diese Wohnung wirklich verlassen?",
+    "leaveYes": "Verlassen",
+    "share": {
+      "title": "Wohnung teilen",
+      "explainer": "Schicke diesen Link an deine Mitbewohner. Wer ihn öffnet und sich anmeldet, sieht und bearbeitet diese Wohnung gemeinsam mit dir.",
+      "shareTitle": "Einladung zur E-App-Wohnung",
+      "copy": "Link kopieren",
+      "copied": "Kopiert!",
+      "shareButton": "Teilen …",
+      "rotate": "Link neu erzeugen",
+      "rotateHint": "„Link neu erzeugen“ macht den alten Link sofort ungültig – bereits beigetretene Mitbewohner bleiben.",
+      "membersTitle": "Bewohner ({{count}})",
+      "you": "Du",
+      "memberFallback": "Mitbewohner",
+      "roleOwner": "Besitzer",
+      "remove": "Entfernen",
+      "error": "Das hat leider nicht geklappt. Bitte versuche es später erneut."
+    },
+    "join": {
+      "title": "Einladung zu einer Wohnung",
+      "loginPrompt": "Du wurdest zu einer gemeinsamen Wohnung eingeladen. Melde dich an (oder registriere dich kostenlos), um beizutreten.",
+      "loginButton": "Anmelden & beitreten",
+      "joining": "Einen Moment – du trittst der Wohnung bei …",
+      "successTitle": "Willkommen in der Wohnung!",
+      "successMessage": "Du siehst jetzt dieselben Messungen, Zählerstände und Berichte wie deine Mitbewohner.",
+      "invalidTitle": "Einladung ungültig",
+      "invalidMessage": "Dieser Einladungslink ist ungültig oder wurde zurückgezogen. Bitte lass dir einen neuen Link schicken.",
+      "goHome": "Zum Zuhause-Bereich"
+    }
   },
   "home": {
     "greeting": "Willkommen zurück",
