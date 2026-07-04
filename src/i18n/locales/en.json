@@ -1562,6 +1562,9 @@
       "memberFallback": "Housemate",
       "roleOwner": "Owner",
       "remove": "Remove",
+      "transfer": "Transfer ownership",
+      "transferYes": "Transfer",
+      "transferHint": "The selected resident becomes the new owner of this home. You become an editor and can leave the home afterwards.",
       "error": "That didn't work, unfortunately. Please try again later."
     },
     "join": {

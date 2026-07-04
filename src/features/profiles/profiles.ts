@@ -228,6 +228,23 @@ export async function joinProfile(
 }
 
 /**
+ * Überträgt den Besitz der Wohnung an ein bestehendes Mitglied.
+ * Der bisherige Besitzer wird Editor (und kann die Wohnung danach verlassen).
+ * Nur der aktuelle Besitzer darf das (Sicherheitsregeln).
+ */
+export async function transferOwnership(
+  pid: string,
+  currentOwnerUid: string,
+  newOwnerUid: string,
+) {
+  await updateDoc(doc(db, COLLECTION, pid), {
+    ownerUid: newOwnerUid,
+    [`roles.${newOwnerUid}`]: 'owner',
+    [`roles.${currentOwnerUid}`]: 'editor',
+  })
+}
+
+/**
  * Entfernt ein Mitglied aus der Wohnung. Wird sowohl vom Besitzer
  * (Mitglied entfernen) als auch vom Mitglied selbst (Wohnung verlassen) genutzt.
  */

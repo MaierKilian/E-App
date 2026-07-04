@@ -12,6 +12,7 @@ import {
   getProfile,
   removeMember,
   rotateInvite,
+  transferOwnership,
   type ProfileMember,
 } from './profiles'
 
@@ -33,12 +34,12 @@ export function ShareProfileDialog({ profile, open, onClose }: ShareProfileDialo
   const { t } = useTranslation()
   return (
     <Modal open={open} onClose={onClose} title={t('profiles.share.title')}>
-      {open && <ShareDialogBody profile={profile} />}
+      {open && <ShareDialogBody profile={profile} onClose={onClose} />}
     </Modal>
   )
 }
 
-function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
+function ShareDialogBody({ profile, onClose }: { profile: ProfileMeta; onClose: () => void }) {
   const { t } = useTranslation()
   const user = useUser()
   const [link, setLink] = useState<string | null>(null)
@@ -46,6 +47,7 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState(false)
+  const [transferTarget, setTransferTarget] = useState<string | null>(null)
 
   // Beim Öffnen (Mount): Einladung laden/erstellen und Mitglieder anzeigen.
   useEffect(() => {
@@ -113,6 +115,23 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
       void refreshProfiles()
     } catch (e) {
       console.warn('[share] Mitglied entfernen fehlgeschlagen:', e)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleTransfer(memberUid: string) {
+    if (!user || busy) return
+    setBusy(true)
+    try {
+      await transferOwnership(profile.id, user.uid, memberUid)
+      await refreshProfiles()
+      // Nach der Übertragung ist man selbst nur noch Bearbeiter –
+      // der Dialog gehört ab jetzt dem neuen Besitzer.
+      onClose()
+    } catch (e) {
+      console.warn('[share] Besitz übertragen fehlgeschlagen:', e)
+      setError(true)
     } finally {
       setBusy(false)
     }
@@ -196,21 +215,56 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
                           <Crown className="h-3 w-3" />
                           {t('profiles.share.roleOwner')}
                         </span>
+                      ) : transferTarget === m.uid ? (
+                        <span className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setTransferTarget(null)}
+                            className="rounded-lg border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface-2"
+                          >
+                            {t('settings.data.cancel')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleTransfer(m.uid)}
+                            disabled={busy}
+                            className="rounded-lg bg-amber-600 px-2 py-1 text-xs font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                          >
+                            {t('profiles.share.transferYes')}
+                          </button>
+                        </span>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleRemove(m.uid)}
-                          disabled={busy}
-                          className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
-                        >
-                          <UserMinus className="h-3.5 w-3.5" />
-                          {t('profiles.share.remove')}
-                        </button>
+                        <span className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setTransferTarget(m.uid)}
+                            disabled={busy}
+                            title={t('profiles.share.transfer')}
+                            className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-medium text-amber-600 transition-colors hover:bg-amber-500/10 disabled:opacity-60"
+                          >
+                            <Crown className="h-3.5 w-3.5" />
+                            {t('profiles.share.transfer')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemove(m.uid)}
+                            disabled={busy}
+                            className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
+                          >
+                            <UserMinus className="h-3.5 w-3.5" />
+                            {t('profiles.share.remove')}
+                          </button>
+                        </span>
                       )}
                     </li>
                   )
                 })}
               </ul>
+              {transferTarget && (
+                <p className="mt-2 text-[11px] leading-snug text-muted">
+                  {t('profiles.share.transferHint')}
+                </p>
+              )}
             </div>
         </>
       )}

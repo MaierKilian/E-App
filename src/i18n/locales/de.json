@@ -1562,6 +1562,9 @@
       "memberFallback": "Mitbewohner",
       "roleOwner": "Besitzer",
       "remove": "Entfernen",
+      "transfer": "Besitz übertragen",
+      "transferYes": "Übertragen",
+      "transferHint": "Der ausgewählte Bewohner wird neuer Besitzer der Wohnung. Du wirst Bearbeiter und kannst die Wohnung danach verlassen.",
       "error": "Das hat leider nicht geklappt. Bitte versuche es später erneut."
     },
     "join": {

@@ -43,6 +43,18 @@ service cloud.firestore {
       allow update: if isMember()
         && request.resource.data.ownerUid == resource.data.ownerUid;
 
+      // Besitz übertragen: Nur der aktuelle Besitzer, nur an ein bestehendes
+      // Mitglied. Der neue Besitzer wird 'owner', der bisherige 'editor' –
+      // andere Felder dürfen sich dabei nicht ändern.
+      allow update: if isSignedIn()
+        && request.auth.uid == resource.data.ownerUid
+        && request.resource.data.ownerUid != request.auth.uid
+        && request.resource.data.ownerUid in resource.data.memberUids
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['ownerUid', 'roles'])
+        && request.resource.data.roles[request.resource.data.ownerUid] == 'owner'
+        && request.resource.data.roles[request.auth.uid] == 'editor';
+
       // Beitritt per Einladungslink: Ein Nicht-Mitglied darf sich selbst als
       // Editor hinzufügen – ausschließlich die Mitgliedschaftsfelder, und nur
       // wenn die im Schreibvorgang genannte Einladung existiert und aktiv ist.
