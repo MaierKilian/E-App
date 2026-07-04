@@ -1,10 +1,16 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Check, Home, Share2, LogOut, Users } from 'lucide-react'
+import { Plus, Check, Home, Share2, LogOut, Users, Trash2 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { useProfilesStore } from '@/store/profilesStore'
 import { useIsAuthenticated } from '@/store/authStore'
-import { switchProfile, createNewProfile, leaveProfile } from '@/features/sync/cloudSync'
+import {
+  switchProfile,
+  createNewProfile,
+  leaveProfile,
+  deleteActiveProfile,
+  canCreateProfile,
+} from '@/features/sync/cloudSync'
 import { ShareProfileDialog } from './ShareProfileDialog'
 
 /**
@@ -24,16 +30,19 @@ export function ProfileSwitcher() {
   const [busy, setBusy] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [confirmLeave, setConfirmLeave] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   // Nur für angemeldete Nutzer mit geladenen Profilen anzeigen.
   if (!isAuthenticated || status !== 'ready' || profiles.length === 0) return null
 
   const active = profiles.find((p) => p.id === activeId)
+  const atProfileLimit = !canCreateProfile()
 
   async function handleSwitch(id: string) {
     if (id === activeId || busy) return
     setBusy(true)
     setConfirmLeave(false)
+    setConfirmDelete(false)
     try {
       await switchProfile(id)
     } finally {
@@ -45,8 +54,20 @@ export function ProfileSwitcher() {
     if (busy) return
     setBusy(true)
     setConfirmLeave(false)
+    setConfirmDelete(false)
     try {
       await createNewProfile()
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function handleDelete() {
+    if (!active || busy) return
+    setBusy(true)
+    try {
+      await deleteActiveProfile(active.id)
+      setConfirmDelete(false)
     } finally {
       setBusy(false)
     }
@@ -107,8 +128,9 @@ export function ProfileSwitcher() {
         <button
           type="button"
           onClick={handleCreate}
-          disabled={busy}
-          className="focus-ring flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border p-4 text-center text-muted transition-colors hover:text-foreground hover:border-primary disabled:opacity-60"
+          disabled={busy || atProfileLimit}
+          title={atProfileLimit ? t('profiles.limitReached') : undefined}
+          className="focus-ring flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border p-4 text-center text-muted transition-colors hover:text-foreground hover:border-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-muted disabled:hover:border-border"
         >
           <span className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
             <Plus className="h-5 w-5" />
@@ -117,19 +139,55 @@ export function ProfileSwitcher() {
         </button>
       </div>
 
+      {atProfileLimit && (
+        <p className="mt-2 px-1 text-xs text-muted">{t('profiles.limitReached')}</p>
+      )}
+
       {/* Aktionen für die aktive Wohnung: Teilen (Besitzer) / Verlassen (Mitglied) */}
       {active && (
         <div className="mt-3 flex flex-wrap items-center gap-2">
           {active.role === 'owner' ? (
-            <button
-              type="button"
-              onClick={() => setShareOpen(true)}
-              disabled={busy}
-              className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2 disabled:opacity-60"
-            >
-              <Share2 className="h-4 w-4" />
-              {t('profiles.shareActive')}
-            </button>
+            confirmDelete ? (
+              <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface-2/40 p-2">
+                <p className="text-xs text-muted">{t('profiles.deleteConfirm')}</p>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(false)}
+                  className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+                >
+                  {t('settings.data.cancel')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={busy}
+                  className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+                >
+                  {t('profiles.deleteYes')}
+                </button>
+              </div>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShareOpen(true)}
+                  disabled={busy}
+                  className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2 disabled:opacity-60"
+                >
+                  <Share2 className="h-4 w-4" />
+                  {t('profiles.shareActive')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  disabled={busy}
+                  className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {t('profiles.deleteActive')}
+                </button>
+              </>
+            )
           ) : confirmLeave ? (
             <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface-2/40 p-2">
               <p className="text-xs text-muted">{t('profiles.leaveConfirm')}</p>

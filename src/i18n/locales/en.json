@@ -1174,27 +1174,41 @@
         "unknown": "Unknown"
       },
       "modelTypeLabel": "Type / model",
+      "modelTypeHint": "Multiple selection possible",
+      "orNone": "or",
       "modelTypes": {
         "temperature_sensor": {
-          "contact": "Contact probe",
-          "room": "Room temperature",
-          "infrared": "Infrared"
-        },
-        "distance_meter": {
-          "laser": "Laser",
-          "ultrasonic": "Ultrasonic"
-        },
-        "co2_sensor": {
-          "portable": "Portable",
-          "stationary": "Stationary"
+          "room_thermometer": "Room thermometer",
+          "room_thermostat": "Room thermostat",
+          "mercury_thermometer": "Mercury thermometer",
+          "infrared_surface": "Infrared surface thermometer",
+          "digital_thermometer": "Digital / wireless thermometer"
         },
         "humidity_sensor": {
-          "hygrometer": "Hygrometer",
-          "combined": "Combined device"
+          "analog_hygrometer": "Analog hygrometer",
+          "digital_hygrometer": "Digital hygrometer",
+          "thermo_hygrometer": "Thermo-hygrometer (combined)",
+          "data_logger": "Data logger",
+          "smart_sensor": "Smart home sensor"
+        },
+        "distance_meter": {
+          "folding_rule": "Folding rule",
+          "ruler": "Ruler",
+          "tape_measure": "Tape measure",
+          "laser_distance": "Laser / infrared distance meter",
+          "ultrasonic": "Ultrasonic distance meter"
         },
         "power_meter": {
-          "plug": "Plug-in meter",
-          "clamp": "Clamp meter"
+          "plug_meter": "Plug-in energy meter",
+          "clamp_meter": "Clamp meter",
+          "multimeter": "Multimeter",
+          "electricity_meter": "Electricity meter (manual reading)"
+        },
+        "co2_sensor": {
+          "portable_monitor": "Portable CO₂ monitor",
+          "stationary_monitor": "Stationary CO₂ monitor",
+          "traffic_light": "CO₂ traffic light",
+          "smart_sensor": "Smart home CO₂ sensor"
         }
       },
       "smartHomeDevices": "Smart home devices available?",
@@ -1548,6 +1562,10 @@
     "leaveActive": "Leave home",
     "leaveConfirm": "Really leave this home?",
     "leaveYes": "Leave",
+    "deleteActive": "Delete home",
+    "deleteConfirm": "Permanently delete this home? All measurements, meter readings and resident access will be lost for good.",
+    "deleteYes": "Delete permanently",
+    "limitReached": "Home limit reached.",
     "share": {
       "title": "Share home",
       "explainer": "Send this link to your housemates. Anyone who opens it and signs in will see and edit this home together with you.",
@@ -1562,6 +1580,10 @@
       "memberFallback": "Housemate",
       "roleOwner": "Owner",
       "remove": "Remove",
+      "makeOwner": "Make owner",
+      "transferConfirm": "Make “{{name}}” the owner? You will become an editor and can no longer manage or delete this home.",
+      "transferYes": "Transfer",
+      "memberLimit": "Member limit reached ({{max}}). An upgrade is required to add more residents.",
       "error": "That didn't work, unfortunately. Please try again later."
     },
     "join": {

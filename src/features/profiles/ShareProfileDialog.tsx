@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check, Copy, Crown, Loader2, RefreshCw, Share2, UserMinus, Users } from 'lucide-react'
+import { ArrowUpCircle, Check, Copy, Crown, Loader2, RefreshCw, Share2, UserMinus, Users } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { Avatar } from '@/components/ui/Avatar'
 import { useUser } from '@/store/authStore'
 import type { ProfileMeta } from '@/store/profilesStore'
-import { refreshProfiles } from '@/features/sync/cloudSync'
+import { refreshProfiles, transferProfileOwnership } from '@/features/sync/cloudSync'
+import { getEntitlements } from '@/features/billing/entitlements'
 import {
   buildInviteLink,
   getOrCreateInvite,
@@ -46,6 +47,10 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState(false)
+  const [confirmTransferUid, setConfirmTransferUid] = useState<string | null>(null)
+
+  const { maxMembersPerProfile } = getEntitlements()
+  const atMemberLimit = members.length >= maxMembersPerProfile
 
   // Beim Öffnen (Mount): Einladung laden/erstellen und Mitglieder anzeigen.
   useEffect(() => {
@@ -118,6 +123,29 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
     }
   }
 
+  async function handleTransfer(memberUid: string) {
+    if (busy) return
+    setBusy(true)
+    try {
+      await transferProfileOwnership(profile.id, memberUid)
+      // Rollen lokal spiegeln (der Dialog wird i. d. R. gleich vom Elternteil
+      // ausgeblendet, da man nun Editor ist).
+      setMembers((prev) =>
+        prev.map((m) => {
+          if (m.uid === memberUid) return { ...m, role: 'owner' }
+          if (m.uid === user?.uid) return { ...m, role: 'editor' }
+          return m
+        }),
+      )
+      setConfirmTransferUid(null)
+    } catch (e) {
+      console.warn('[share] Eigentumsübertragung fehlgeschlagen:', e)
+      setError(true)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const canNativeShare = typeof navigator !== 'undefined' && 'share' in navigator
 
   return (
@@ -137,11 +165,17 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
             {/* Einladungslink */}
             <div className="rounded-xl border border-border bg-surface-2/40 p-3">
               <p className="break-all text-xs text-muted">{link}</p>
+              {atMemberLimit && (
+                <p className="mt-2 rounded-lg bg-amber-500/10 px-2.5 py-1.5 text-[11px] leading-snug text-amber-700">
+                  {t('profiles.share.memberLimit', { max: maxMembersPerProfile })}
+                </p>
+              )}
               <div className="mt-2 flex flex-wrap gap-2">
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                  disabled={atMemberLimit}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
                 >
                   {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
                   {copied ? t('profiles.share.copied') : t('profiles.share.copy')}
@@ -150,7 +184,8 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
                   <button
                     type="button"
                     onClick={handleNativeShare}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+                    disabled={atMemberLimit}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-2 disabled:opacity-50"
                   >
                     <Share2 className="h-4 w-4" />
                     {t('profiles.share.shareButton')}
@@ -184,8 +219,9 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
                   const label =
                     m.name.trim() ||
                     (isSelf ? t('profiles.share.you') : t('profiles.share.memberFallback'))
+                  const confirming = confirmTransferUid === m.uid
                   return (
-                    <li key={m.uid} className="flex items-center gap-2.5">
+                    <li key={m.uid} className="flex flex-wrap items-center gap-2.5">
                       <Avatar name={label} size={32} />
                       <span className="min-w-0 flex-1 truncate text-sm text-foreground">
                         {label}
@@ -196,16 +232,50 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
                           <Crown className="h-3 w-3" />
                           {t('profiles.share.roleOwner')}
                         </span>
+                      ) : confirming ? (
+                        <div className="flex w-full flex-wrap items-center gap-2 rounded-lg border border-border bg-surface-2/40 p-2">
+                          <p className="text-[11px] leading-snug text-muted">
+                            {t('profiles.share.transferConfirm', { name: label })}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmTransferUid(null)}
+                            className="rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface-2"
+                          >
+                            {t('settings.data.cancel')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleTransfer(m.uid)}
+                            disabled={busy}
+                            className="rounded-lg bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-60"
+                          >
+                            {t('profiles.share.transferYes')}
+                          </button>
+                        </div>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => handleRemove(m.uid)}
-                          disabled={busy}
-                          className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
-                        >
-                          <UserMinus className="h-3.5 w-3.5" />
-                          {t('profiles.share.remove')}
-                        </button>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setConfirmTransferUid(m.uid)}
+                            disabled={busy}
+                            title={t('profiles.share.makeOwner')}
+                            className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-surface-2 disabled:opacity-60"
+                          >
+                            <ArrowUpCircle className="h-3.5 w-3.5" />
+                            {t('profiles.share.makeOwner')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemove(m.uid)}
+                            disabled={busy}
+                            title={t('profiles.share.remove')}
+                            className="inline-flex items-center gap-1 rounded-lg border border-border px-2 py-1 text-xs font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
+                          >
+                            <UserMinus className="h-3.5 w-3.5" />
+                            {t('profiles.share.remove')}
+                          </button>
+                        </div>
                       )}
                     </li>
                   )

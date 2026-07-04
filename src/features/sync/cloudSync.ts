@@ -5,13 +5,26 @@ import { useProfilesStore } from '@/store/profilesStore'
 import { STORES, snapshot, hydrate, resetAllStores, metaFromState } from './stores'
 import {
   createProfile,
+  deleteProfile,
   getProfile,
   joinProfile,
   listProfiles,
   readLegacyState,
   removeMember,
+  transferOwnership,
   writeProfileState,
 } from '@/features/profiles/profiles'
+import { getEntitlements } from '@/features/billing/entitlements'
+
+/**
+ * Ob der Nutzer laut Tarif noch eine weitere Wohnung anlegen darf.
+ * Gilt nur für die bewusste „+"-Aktion – der interne Fallback (immer mind. eine
+ * Wohnung) in `handleAccessLost` umgeht das Limit absichtlich.
+ */
+export function canCreateProfile(): boolean {
+  const { maxProfiles } = getEntitlements()
+  return useProfilesStore.getState().profiles.length < maxProfiles
+}
 
 /**
  * Cloud-Synchronisation der Wohnprofile über Firestore.
@@ -281,6 +294,37 @@ export async function leaveProfile(pid: string) {
   await flushPending()
   await removeMember(pid, uid)
   await handleAccessLost(pid)
+}
+
+/**
+ * Löscht eine Wohnung endgültig (nur der Besitzer darf das laut Sicherheitsregeln).
+ * Damit verschwindet sie für alle Bewohner. Danach wird auf eine verbleibende
+ * Wohnung gewechselt – oder eine neue leere angelegt, wenn keine übrig bleibt.
+ */
+export async function deleteActiveProfile(pid: string) {
+  const uid = currentUid
+  if (!uid) return
+  // Ausstehende Schreibvorgänge/Listener auf dieses Dokument stoppen, bevor es weg ist.
+  if (currentPid === pid) teardownProfile()
+  try {
+    await deleteProfile(pid)
+  } catch (e) {
+    console.warn('[cloudSync] Wohnung löschen fehlgeschlagen:', e)
+    throw e
+  }
+  await handleAccessLost(pid)
+}
+
+/**
+ * Übergibt die Besitzerrolle der Wohnung an ein Mitglied. Danach ist der
+ * bisherige Besitzer nur noch Editor – die Profilliste wird neu geladen, damit
+ * die geänderten Rollen (und die verfügbaren Aktionen) sofort stimmen.
+ */
+export async function transferProfileOwnership(pid: string, newOwnerUid: string) {
+  const uid = currentUid
+  if (!uid) return
+  await transferOwnership(pid, newOwnerUid, uid)
+  await refreshProfiles()
 }
 
 /** Reagiert auf verlorenen Zugriff: Liste aktualisieren, Ausweich-Profil aktivieren. */
