@@ -4,7 +4,13 @@ import { Plus, Check, Home, Share2, LogOut, Users, Trash2 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { useProfilesStore } from '@/store/profilesStore'
 import { useIsAuthenticated } from '@/store/authStore'
-import { switchProfile, createNewProfile, leaveProfile, deleteActiveProfile } from '@/features/sync/cloudSync'
+import {
+  switchProfile,
+  createNewProfile,
+  leaveProfile,
+  deleteActiveProfile,
+  canCreateProfile,
+} from '@/features/sync/cloudSync'
 import { ShareProfileDialog } from './ShareProfileDialog'
 
 /**
@@ -30,6 +36,7 @@ export function ProfileSwitcher() {
   if (!isAuthenticated || status !== 'ready' || profiles.length === 0) return null
 
   const active = profiles.find((p) => p.id === activeId)
+  const atProfileLimit = !canCreateProfile()
 
   async function handleSwitch(id: string) {
     if (id === activeId || busy) return
@@ -121,8 +128,9 @@ export function ProfileSwitcher() {
         <button
           type="button"
           onClick={handleCreate}
-          disabled={busy}
-          className="focus-ring flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border p-4 text-center text-muted transition-colors hover:text-foreground hover:border-primary disabled:opacity-60"
+          disabled={busy || atProfileLimit}
+          title={atProfileLimit ? t('profiles.limitReached') : undefined}
+          className="focus-ring flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border p-4 text-center text-muted transition-colors hover:text-foreground hover:border-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-muted disabled:hover:border-border"
         >
           <span className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
             <Plus className="h-5 w-5" />
@@ -130,6 +138,10 @@ export function ProfileSwitcher() {
           <span className="text-sm font-medium">{t('profiles.addNew')}</span>
         </button>
       </div>
+
+      {atProfileLimit && (
+        <p className="mt-2 px-1 text-xs text-muted">{t('profiles.limitReached')}</p>
+      )}
 
       {/* Aktionen für die aktive Wohnung: Teilen (Besitzer) / Verlassen (Mitglied) */}
       {active && (

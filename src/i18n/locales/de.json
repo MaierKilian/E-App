@@ -1565,6 +1565,7 @@
     "deleteActive": "Wohnung löschen",
     "deleteConfirm": "Diese Wohnung endgültig löschen? Alle Messungen, Zählerstände und Bewohner-Zugänge gehen unwiderruflich verloren.",
     "deleteYes": "Endgültig löschen",
+    "limitReached": "Limit an Wohnungen erreicht.",
     "share": {
       "title": "Wohnung teilen",
       "explainer": "Schicke diesen Link an deine Mitbewohner. Wer ihn öffnet und sich anmeldet, sieht und bearbeitet diese Wohnung gemeinsam mit dir.",
@@ -1579,6 +1580,10 @@
       "memberFallback": "Mitbewohner",
       "roleOwner": "Besitzer",
       "remove": "Entfernen",
+      "makeOwner": "Zum Besitzer",
+      "transferConfirm": "„{{name}}“ zum Besitzer machen? Du wirst danach Editor und kannst die Wohnung nicht mehr verwalten oder löschen.",
+      "transferYes": "Übergeben",
+      "memberLimit": "Mitglieder-Limit erreicht ({{max}}). Zum Aufnehmen weiterer Bewohner ist ein Upgrade nötig.",
       "error": "Das hat leider nicht geklappt. Bitte versuche es später erneut."
     },
     "join": {

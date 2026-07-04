@@ -1565,6 +1565,7 @@
     "deleteActive": "Delete home",
     "deleteConfirm": "Permanently delete this home? All measurements, meter readings and resident access will be lost for good.",
     "deleteYes": "Delete permanently",
+    "limitReached": "Home limit reached.",
     "share": {
       "title": "Share home",
       "explainer": "Send this link to your housemates. Anyone who opens it and signs in will see and edit this home together with you.",
@@ -1579,6 +1580,10 @@
       "memberFallback": "Housemate",
       "roleOwner": "Owner",
       "remove": "Remove",
+      "makeOwner": "Make owner",
+      "transferConfirm": "Make “{{name}}” the owner? You will become an editor and can no longer manage or delete this home.",
+      "transferYes": "Transfer",
+      "memberLimit": "Member limit reached ({{max}}). An upgrade is required to add more residents.",
       "error": "That didn't work, unfortunately. Please try again later."
     },
     "join": {

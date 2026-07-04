@@ -11,8 +11,20 @@ import {
   listProfiles,
   readLegacyState,
   removeMember,
+  transferOwnership,
   writeProfileState,
 } from '@/features/profiles/profiles'
+import { getEntitlements } from '@/features/billing/entitlements'
+
+/**
+ * Ob der Nutzer laut Tarif noch eine weitere Wohnung anlegen darf.
+ * Gilt nur für die bewusste „+"-Aktion – der interne Fallback (immer mind. eine
+ * Wohnung) in `handleAccessLost` umgeht das Limit absichtlich.
+ */
+export function canCreateProfile(): boolean {
+  const { maxProfiles } = getEntitlements()
+  return useProfilesStore.getState().profiles.length < maxProfiles
+}
 
 /**
  * Cloud-Synchronisation der Wohnprofile über Firestore.
@@ -301,6 +313,18 @@ export async function deleteActiveProfile(pid: string) {
     throw e
   }
   await handleAccessLost(pid)
+}
+
+/**
+ * Übergibt die Besitzerrolle der Wohnung an ein Mitglied. Danach ist der
+ * bisherige Besitzer nur noch Editor – die Profilliste wird neu geladen, damit
+ * die geänderten Rollen (und die verfügbaren Aktionen) sofort stimmen.
+ */
+export async function transferProfileOwnership(pid: string, newOwnerUid: string) {
+  const uid = currentUid
+  if (!uid) return
+  await transferOwnership(pid, newOwnerUid, uid)
+  await refreshProfiles()
 }
 
 /** Reagiert auf verlorenen Zugriff: Liste aktualisieren, Ausweich-Profil aktivieren. */

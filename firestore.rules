@@ -66,6 +66,18 @@ service cloud.firestore {
       allow update: if isOwner()
         && request.resource.data.ownerUid == resource.data.ownerUid;
 
+      // (a2) Eigentumsübertragung: NUR der aktuelle Besitzer darf den Besitzer
+      // wechseln – auf ein bestehendes Mitglied. Es ändern sich ausschließlich
+      // ownerUid und roles (neuer Besitzer → 'owner', alter → 'editor').
+      allow update: if isOwner()
+        && request.resource.data.ownerUid != resource.data.ownerUid
+        && request.resource.data.ownerUid in resource.data.memberUids
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['ownerUid', 'roles'])
+        && request.resource.data.roles.diff(resource.data.roles).affectedKeys()
+             .hasOnly([resource.data.ownerUid, request.resource.data.ownerUid])
+        && request.resource.data.roles[request.resource.data.ownerUid] == 'owner'
+        && request.resource.data.roles[resource.data.ownerUid] == 'editor';
+
       // (b) Mitglieder (Editoren): dürfen nur die App-Daten schreiben, NICHT die
       // Mitgliederliste – das verhindert, dass ein Editor andere Bewohner oder den
       // Besitzer aussperrt.

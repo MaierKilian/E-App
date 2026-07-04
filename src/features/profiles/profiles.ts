@@ -238,3 +238,16 @@ export async function removeMember(pid: string, memberUid: string) {
     [`memberNames.${memberUid}`]: deleteField(),
   })
 }
+
+/**
+ * Übergibt die Besitzerrolle an ein bestehendes Mitglied: Der neue Besitzer wird
+ * `owner`, der bisherige Besitzer wird `editor`. Nur der aktuelle Besitzer darf
+ * das (Sicherheitsregeln). Die Mitgliederliste selbst bleibt unverändert.
+ */
+export async function transferOwnership(pid: string, newOwnerUid: string, oldOwnerUid: string) {
+  await updateDoc(doc(db, COLLECTION, pid), {
+    ownerUid: newOwnerUid,
+    [`roles.${newOwnerUid}`]: 'owner',
+    [`roles.${oldOwnerUid}`]: 'editor',
+  })
+}
