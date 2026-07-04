@@ -1539,6 +1539,11 @@
       "hard": "Advanced"
     }
   },
+  "profiles": {
+    "sectionTitle": "My homes",
+    "addNew": "New home",
+    "hint": "Tap a home to switch, or add a new one."
+  },
   "home": {
     "greeting": "Welcome back",
     "profileNameFallback": "your home",

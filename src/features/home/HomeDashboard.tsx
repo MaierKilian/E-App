@@ -12,6 +12,7 @@ import type { OnboardingData } from '@/types'
 import { ProgressRing } from './ProgressRing'
 import { ProfileSnapshot } from './ProfileSnapshot'
 import { profileCompleteness } from './estimateEnergy'
+import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
 
 interface HomeDashboardProps {
   data: OnboardingData
@@ -128,6 +129,9 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
           </div>
         )}
       </Card>
+
+      {/* 4. Wohnprofile: zwischen mehreren Wohnungen wechseln / neue anlegen */}
+      <ProfileSwitcher />
     </div>
   )
 }

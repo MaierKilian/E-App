@@ -1539,6 +1539,11 @@
       "hard": "Anspruchsvoll"
     }
   },
+  "profiles": {
+    "sectionTitle": "Meine Wohnungen",
+    "addNew": "Neue Wohnung",
+    "hint": "Tippe eine Wohnung an, um zu wechseln, oder lege eine neue an."
+  },
   "home": {
     "greeting": "Willkommen zurück",
     "profileNameFallback": "dein Zuhause",
