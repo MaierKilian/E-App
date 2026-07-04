@@ -1556,6 +1556,8 @@
   "profiles": {
     "sectionTitle": "Meine Wohnungen",
     "addNew": "Neue Wohnung",
+    "addAnother": "Weitere Wohnung hinzufügen",
+    "manage": "Verwalten",
     "hint": "Tippe eine Wohnung an, um zu wechseln, oder lege eine neue an.",
     "sharedBadge": "{{count}} Bewohner",
     "shareActive": "Wohnung teilen",
@@ -1617,6 +1619,13 @@
     },
     "completenessLabel": "Profil zu {{value}} % vollständig",
     "profileComplete": "Profil vollständig",
+    "profileMissing_one": "Noch {{count}} Angabe offen",
+    "profileMissing_other": "Noch {{count}} Angaben offen",
+    "completeCta": "Vervollständigen",
+    "energy": {
+      "title": "{{type}} · hochgerechnet / Jahr",
+      "perYear": "≈ {{kwh}} kWh / Jahr"
+    },
     "hero": {
       "title": "Geschätzte Energiekosten",
       "label": "Geschätzte Energiekosten / Jahr",

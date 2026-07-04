@@ -1556,6 +1556,8 @@
   "profiles": {
     "sectionTitle": "My homes",
     "addNew": "New home",
+    "addAnother": "Add another home",
+    "manage": "Manage",
     "hint": "Tap a home to switch, or add a new one.",
     "sharedBadge": "{{count}} residents",
     "shareActive": "Share home",
@@ -1617,6 +1619,13 @@
     },
     "completenessLabel": "Profile {{value}} % complete",
     "profileComplete": "Profile complete",
+    "profileMissing_one": "{{count}} detail left",
+    "profileMissing_other": "{{count}} details left",
+    "completeCta": "Complete",
+    "energy": {
+      "title": "{{type}} · projected / year",
+      "perYear": "≈ {{kwh}} kWh / year"
+    },
     "hero": {
       "title": "Estimated energy costs",
       "label": "Estimated energy costs / year",

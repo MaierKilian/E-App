@@ -42,11 +42,11 @@ export function estimateAnnualCo2Kg(kwh: number): number {
 }
 
 /**
- * Schätzt, wie vollständig das Haushaltsprofil ausgefüllt ist (0..100).
- * Einfache, robuste Heuristik: Anteil sinnvoll befüllter / nicht-"unknown" Felder.
+ * Einzel-Prüfungen für die Profil-Vollständigkeit (true = sinnvoll befüllt).
+ * Gemeinsame Basis für `profileCompleteness` und `profileMissingCount`.
  */
-export function profileCompleteness(data: OnboardingData): number {
-  const checks: boolean[] = [
+function profileChecks(data: OnboardingData): boolean[] {
+  return [
     (data.profileName ?? '').trim().length > 0,
     data.personsCount > 0,
     data.livingArea > 0,
@@ -64,7 +64,19 @@ export function profileCompleteness(data: OnboardingData): number {
     data.lastRenovationYear !== 'unknown',
     (data.postalCode ?? '').trim().length > 0,
   ]
+}
 
+/**
+ * Schätzt, wie vollständig das Haushaltsprofil ausgefüllt ist (0..100).
+ * Einfache, robuste Heuristik: Anteil sinnvoll befüllter / nicht-"unknown" Felder.
+ */
+export function profileCompleteness(data: OnboardingData): number {
+  const checks = profileChecks(data)
   const filled = checks.filter(Boolean).length
   return Math.round((filled / checks.length) * 100)
+}
+
+/** Anzahl noch offener Profil-Angaben (für „Noch N Angaben"). */
+export function profileMissingCount(data: OnboardingData): number {
+  return profileChecks(data).filter((ok) => !ok).length
 }
