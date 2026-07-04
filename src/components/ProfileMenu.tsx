@@ -1,9 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { User, Palette, Globe, PlayCircle, ChevronRight, Sun, Moon, Leaf, Trash2 } from 'lucide-react'
+import { User, Palette, Globe, PlayCircle, ChevronRight, Sun, Moon, Leaf, Trash2, LogOut, Camera } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useSettingsStore, THEMES, type Theme } from '@/store/settingsStore'
+import { useUser } from '@/store/authStore'
+import { useOnboardingStore } from '@/store/onboardingStore'
+import { Avatar } from '@/components/ui/Avatar'
+import { fileToAvatarDataUrl } from '@/lib/image'
+import { logout } from '@/features/auth/auth'
 import { SUPPORTED_LANGUAGES } from '@/i18n'
 
 const THEME_ICONS: Record<Theme, LucideIcon> = {
@@ -23,9 +28,29 @@ export function ProfileMenu() {
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
+  const user = useUser()
+  const profileName = useOnboardingStore((s) => s.data.profileName)
+  const profileImage = useOnboardingStore((s) => s.data.profileImage)
+  const updateData = useOnboardingStore((s) => s.updateData)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
   const currentLang = i18n.resolvedLanguage
+  // Name für Initialen/Alt: bevorzugt der Firebase-Anzeigename, sonst der Profilname.
+  const avatarName = user?.displayName || profileName
+
+  // Profilbild direkt aus dem Konto-Menü auswählen: Datei einlesen, herunter-
+  // rechnen und in den (cloud-synchronisierten) Onboarding-Store schreiben.
+  async function handleAvatarFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    try {
+      updateData({ profileImage: await fileToAvatarDataUrl(file) })
+    } catch {
+      // Fehler beim Einlesen ignorieren – einfach erneut versuchen.
+    }
+  }
 
   useEffect(() => {
     if (!open) return
@@ -51,9 +76,9 @@ export function ProfileMenu() {
         aria-label={t('settings.open')}
         aria-haspopup="menu"
         aria-expanded={open}
-        className="grid h-9 w-9 place-items-center rounded-lg border border-border text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
+        className="focus-ring grid h-9 w-9 place-items-center overflow-hidden rounded-full border border-border transition-transform hover:scale-105 active:scale-95"
       >
-        <User className="h-4.5 w-4.5" />
+        <Avatar src={profileImage || undefined} name={avatarName} size={34} />
       </button>
 
       {open && (
@@ -61,19 +86,77 @@ export function ProfileMenu() {
           role="menu"
           className="absolute right-0 z-30 mt-2 w-72 rounded-2xl border border-border bg-surface p-3 shadow-xl"
         >
-          {/* Konto - Platzhalter fuers kuenftige Accountsystem */}
-          <div className="mb-3 flex items-center gap-3 rounded-xl border border-border bg-surface-2/50 p-2.5">
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
-              <User className="h-5 w-5" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-foreground">{t('settings.signIn')}</p>
-              <p className="text-[11px] text-muted">{t('settings.accountHint')}</p>
+          {/* Konto */}
+          {user ? (
+            <div className="mb-3 rounded-xl border border-border bg-surface-2/50 p-2.5">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarFile}
+                className="hidden"
+              />
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => fileRef.current?.click()}
+                  aria-label={t('onboarding.step1.profileImageAdd')}
+                  className="focus-ring relative shrink-0 rounded-full transition-transform active:scale-95"
+                >
+                  <Avatar src={profileImage || undefined} name={user.displayName || undefined} size={40} />
+                  <span className="absolute -bottom-0.5 -right-0.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-primary-foreground ring-2 ring-surface-2">
+                    <Camera className="h-3 w-3" />
+                  </span>
+                </button>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-foreground">
+                    {user.displayName || t('settings.account')}
+                  </p>
+                  <p className="truncate text-[11px] text-muted">{user.email}</p>
+                  <button
+                    type="button"
+                    onClick={() => (profileImage ? updateData({ profileImage: '' }) : fileRef.current?.click())}
+                    className="mt-0.5 text-[11px] font-medium text-primary hover:underline"
+                  >
+                    {profileImage
+                      ? t('onboarding.step1.profileImageRemove')
+                      : t('onboarding.step1.profileImageAdd')}
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setOpen(false)
+                  void logout()
+                }}
+                className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-border py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+              >
+                <LogOut className="h-4 w-4" />
+                {t('settings.logout')}
+              </button>
             </div>
-            <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-medium text-muted">
-              {t('settings.soon')}
-            </span>
-          </div>
+          ) : (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false)
+                navigate('/login')
+              }}
+              className="mb-3 flex w-full items-center gap-3 rounded-xl border border-border bg-surface-2/50 p-2.5 text-left transition-colors hover:bg-surface-2"
+            >
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+                <User className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-foreground">{t('settings.signIn')}</p>
+                <p className="text-[11px] text-muted">{t('settings.accountHint')}</p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
+            </button>
+          )}
 
           {/* Design */}
           <p className="mb-1.5 flex items-center gap-1.5 px-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted">
