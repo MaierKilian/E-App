@@ -7,7 +7,6 @@ import { activeEnergyTypes, ENERGY_META } from '@/features/monitoring/energyConf
 import { PRICE_META, isPriceable } from '@/features/monitoring/priceConfig'
 import { sortByDate, stats, consumptionTrend } from '@/features/monitoring/readings'
 import { TrendBadge } from '@/features/monitoring/MeterTrend'
-import { Sparkline } from '@/features/monitoring/Sparkline'
 import type { OnboardingData } from '@/types'
 
 /**
@@ -40,7 +39,6 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
 
   const meta = ENERGY_META[heroType]
   const trend = consumptionTrend(readings)
-  const series = readings.map((r) => r.value)
 
   const eurFmt = new Intl.NumberFormat(i18n.language, {
     style: 'currency',
@@ -80,12 +78,6 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
         <p className="mt-1.5 text-xs text-muted">
           {t('home.energy.perYear', { kwh: kwhFmt.format(s.projectedYearKwh) })}
         </p>
-
-        {series.length > 0 && (
-          <div className="mt-3">
-            <Sparkline values={series} color={meta.accent} height={40} />
-          </div>
-        )}
       </div>
     </button>
   )
