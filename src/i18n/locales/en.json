@@ -1370,7 +1370,9 @@
       "readToday": "read today",
       "readDaysAgo_one": "read {{count}} day ago",
       "readDaysAgo_other": "read {{count}} days ago",
-      "trackHint": "Log readings regularly to see your trend."
+      "trackHint": "Log readings regularly to see your trend.",
+      "exampleBadge": "Example",
+      "ghostHint": "This is how your trend will look once you enter two meter readings."
     },
     "detail": {
       "back": "Monitoring",

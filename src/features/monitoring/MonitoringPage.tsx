@@ -12,6 +12,12 @@ import { TrendBadge, useLastReadingText } from './MeterTrend'
 import { AddReadingScreen } from './AddReadingScreen'
 
 /**
+ * Beispiel-Verlauf (monoton steigende Zählerstände) für die Ghost-Vorschau im
+ * Leerzustand – rein illustrativ, klar als „Beispiel" gekennzeichnet.
+ */
+const EXAMPLE_SERIES = [100, 128, 151, 179, 206, 234]
+
+/**
  * Monitoring-Übersicht (Dashboard): prägnanter Kopf, eine Hero-Karte für den
  * wichtigsten Zähler (mit Verlaufskurve und Trend) sowie ein Kachel-Grid der
  * übrigen Energieträger. Jede Karte zeigt Stand, Mini-Verlauf und Trend;
@@ -157,12 +163,19 @@ function HeroMeter({ type, due, now, onAdd }: MeterProps & { onAdd: () => void }
           </div>
 
           <div className="mt-4">
-            {series.length > 0 ? (
+            {series.length >= 2 ? (
               <Sparkline values={series} color={meta.accent} height={48} />
             ) : (
-              <div className="flex items-center gap-3 rounded-2xl bg-surface-2/50 px-3 py-2.5">
-                <Sparkline values={[]} color={meta.accent} height={28} className="max-w-[88px]" />
-                <p className="text-xs text-muted">{t('monitoring.overview.trackHint')}</p>
+              // Ghost-Vorschau: dezente Beispiel-Kurve zeigt, wie der Verlauf
+              // aussehen wird, sobald zwei echte Ablesungen vorliegen.
+              <div className="relative overflow-hidden rounded-2xl bg-surface-2/40 px-3.5 py-3">
+                <span className="absolute right-2.5 top-2.5 rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+                  {t('monitoring.overview.exampleBadge')}
+                </span>
+                <div className="pointer-events-none opacity-40">
+                  <Sparkline values={EXAMPLE_SERIES} color={meta.accent} height={44} />
+                </div>
+                <p className="mt-2 text-xs text-muted">{t('monitoring.overview.ghostHint')}</p>
               </div>
             )}
           </div>

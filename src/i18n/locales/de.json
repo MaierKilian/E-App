@@ -1045,7 +1045,9 @@
       "readToday": "heute abgelesen",
       "readDaysAgo_one": "vor {{count}} Tag abgelesen",
       "readDaysAgo_other": "vor {{count}} Tagen abgelesen",
-      "trackHint": "Erfasse regelmäßig, um deinen Verlauf zu sehen."
+      "trackHint": "Erfasse regelmäßig, um deinen Verlauf zu sehen.",
+      "exampleBadge": "Beispiel",
+      "ghostHint": "So sieht dein Verlauf aus, sobald du zwei Zählerstände einträgst."
     },
     "detail": {
       "back": "Monitoring",
