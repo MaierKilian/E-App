@@ -1730,18 +1730,28 @@
     "start": "Let's go",
     "signIn": "Sign in / Register",
     "guest": "Continue as guest",
+    "example": "Example",
+    "showerTitle": "Showerhead",
+    "lpm": "L/min",
+    "showerYou": "Your head",
+    "showerEco": "Eco showerhead",
+    "showerSave": "≈ €120/year savable",
+    "chartMeter": "Electricity",
+    "savingsLabel": "Savings potential / year",
+    "savings": "≈ €1,240",
+    "measures": "4 measures for you",
     "slides": [
       {
-        "title": "Save energy and money",
-        "body": "In just a few minutes, find out where your home loses energy – and what is really worth it."
+        "title": "How much really flows through?",
+        "body": "The showerhead test works out litres per minute in 30 seconds – and what an eco showerhead saves."
       },
       {
-        "title": "How it works",
-        "body": "Set up your profile, run simple measurements and see your personal savings potential in euros."
+        "title": "Your consumption becomes visible",
+        "body": "Enter meter readings – just two readings reveal your consumption and trend."
       },
       {
-        "title": "Get started",
-        "body": "Begin with your energy profile – you can pause anytime and continue later."
+        "title": "See your savings potential",
+        "body": "Your profile and real measurements turn into your personal savings target in euros."
       }
     ]
   },

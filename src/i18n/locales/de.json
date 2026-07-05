@@ -1730,18 +1730,28 @@
     "start": "Los geht's",
     "signIn": "Anmelden / Registrieren",
     "guest": "Als Gast fortfahren",
+    "example": "Beispiel",
+    "showerTitle": "Duschkopf",
+    "lpm": "L/min",
+    "showerYou": "Dein Kopf",
+    "showerEco": "Sparduschkopf",
+    "showerSave": "≈ 120 €/Jahr sparbar",
+    "chartMeter": "Strom",
+    "savingsLabel": "Sparpotenzial / Jahr",
+    "savings": "≈ 1.240 €",
+    "measures": "4 Maßnahmen für dich",
     "slides": [
       {
-        "title": "Spare Energie und Geld",
-        "body": "Finde in wenigen Minuten heraus, wo dein Zuhause Energie verliert – und was sich konkret lohnt."
+        "title": "Wie viel läuft wirklich durch?",
+        "body": "Der Duschkopftest rechnet in 30 Sekunden Liter pro Minute aus – und was ein Sparduschkopf bringt."
       },
       {
-        "title": "So funktioniert's",
-        "body": "Profil anlegen, einfache Messungen durchführen und dein persönliches Sparpotenzial in Euro sehen."
+        "title": "Dein Verbrauch wird sichtbar",
+        "body": "Zählerstände eintragen – schon zwei Ablesungen zeigen deinen Verbrauch und Trend."
       },
       {
-        "title": "Leg direkt los",
-        "body": "Starte mit deinem Energieprofil – du kannst jederzeit pausieren und später weitermachen."
+        "title": "Sieh dein Sparpotenzial",
+        "body": "Aus deinem Profil und echten Messungen wird dein persönliches Sparziel in Euro."
       }
     ]
   },

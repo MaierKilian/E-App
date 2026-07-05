@@ -1,12 +1,9 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { PiggyBank, ListChecks, Rocket, ChevronRight, ChevronLeft, UserPlus } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { Droplet, TrendingUp, Lightbulb, ChevronRight, ChevronLeft, UserPlus, TrendingDown } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUser } from '@/store/authStore'
-
-const SLIDE_ICONS: LucideIcon[] = [PiggyBank, ListChecks, Rocket]
 
 interface Slide {
   title: string
@@ -14,10 +11,11 @@ interface Slide {
 }
 
 /**
- * Kurze Erst-Einführung (Value-Onboarding) beim allererste Start: 3 Screens
- * mit dem Nutzen der App, dann Übergang ins Energieprofil. Überspringbar und
- * über das Einstellungs-Menü ("Einführung erneut ansehen") wiederholbar.
- * Solides Vollbild-Overlay (kein fragiles Glass-Overlay).
+ * Erst-Einführung beim allerersten Start („Value-Onboarding"): drei Wert-Beats,
+ * die den Nutzen *zeigen* statt ihn nur zu behaupten – Beispiel-Duschkopftest,
+ * eine entstehende Verbrauchskurve und das Sparpotenzial. Alle Beispiel-Werte
+ * sind klar als „Beispiel" gekennzeichnet. Überspringbar und über das
+ * Einstellungs-Menü wiederholbar. Solides Vollbild-Overlay.
  */
 export function OnboardingIntro() {
   const { t } = useTranslation()
@@ -33,7 +31,6 @@ export function OnboardingIntro() {
   const total = slides.length
   const isLast = index === total - 1
   const slide = slides[index]
-  const Icon = SLIDE_ICONS[index] ?? PiggyBank
 
   function finish(goToProfile: boolean) {
     setIntroSeen(true)
@@ -56,7 +53,7 @@ export function OnboardingIntro() {
       aria-modal="true"
       aria-label={slide.title}
     >
-      {/* Fixe Kopfzeile – immer gleich hoch */}
+      {/* Fixe Kopfzeile */}
       <div className="flex h-14 shrink-0 items-center justify-end px-4">
         <button
           type="button"
@@ -67,15 +64,14 @@ export function OnboardingIntro() {
         </button>
       </div>
 
-      {/* Inhaltsbereich: absolute Positionierung damit Icon + Titel auf allen
-          Slides exakt auf derselben Höhe stehen, unabhängig von Textlänge. */}
-      <div className="relative flex-1">
-        <div className="absolute inset-x-8 top-[14vh] flex flex-col items-center text-center">
-          <span className="mb-8 grid h-24 w-24 place-items-center rounded-3xl bg-primary/10 text-primary">
-            <Icon className="h-11 w-11" />
-          </span>
-          <h2 className="text-2xl font-bold leading-tight text-foreground">{slide.title}</h2>
-          <p className="mt-3 max-w-sm text-muted">{slide.body}</p>
+      {/* Inhalt: Wert-Illustration + Titel + Text, mittig */}
+      <div className="flex flex-1 flex-col items-center justify-center gap-6 px-8 text-center">
+        <BeatIllustration index={index} />
+        <div>
+          <h2 className="text-2xl font-bold leading-tight text-foreground text-balance">
+            {slide.title}
+          </h2>
+          <p className="mx-auto mt-3 max-w-sm text-muted">{slide.body}</p>
         </div>
       </div>
 
@@ -142,6 +138,113 @@ export function OnboardingIntro() {
           </div>
         )}
       </div>
+    </div>
+  )
+}
+
+/** „Beispiel"-Pille für die illustrativen Werte. */
+function ExampleBadge() {
+  const { t } = useTranslation()
+  return (
+    <span className="rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+      {t('onboardingIntro.example')}
+    </span>
+  )
+}
+
+/** Wert-Illustration je Beat (0 Duschkopf, 1 Verlaufskurve, 2 Sparpotenzial). */
+function BeatIllustration({ index }: { index: number }) {
+  const { t } = useTranslation()
+
+  if (index === 1) {
+    return (
+      <div className="glass w-full max-w-[17rem] rounded-3xl p-5 text-left">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            <span className="grid h-6 w-6 place-items-center rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400">
+              <TrendingUp className="h-3.5 w-3.5" />
+            </span>
+            {t('onboardingIntro.chartMeter')}
+          </span>
+          <ExampleBadge />
+        </div>
+        <svg viewBox="0 0 240 96" fill="none" preserveAspectRatio="none" className="h-24 w-full">
+          <defs>
+            <linearGradient id="introArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#f59e0b" stopOpacity="0.28" />
+              <stop offset="1" stopColor="#f59e0b" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M6 74 L60 62 L114 66 L168 40 L234 20 L234 90 L6 90 Z" fill="url(#introArea)" />
+          <path
+            d="M6 74 L60 62 L114 66 L168 40 L234 20"
+            stroke="#f59e0b"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle cx="234" cy="20" r="4.5" fill="#f59e0b" />
+        </svg>
+      </div>
+    )
+  }
+
+  if (index === 2) {
+    return (
+      <div className="glass w-full max-w-[17rem] rounded-3xl p-5 text-center">
+        <div className="mb-2 flex justify-center">
+          <ExampleBadge />
+        </div>
+        <p className="text-xs uppercase tracking-wide text-muted">
+          {t('onboardingIntro.savingsLabel')}
+        </p>
+        <p className="mt-1 text-4xl font-bold tabular-nums text-foreground">
+          {t('onboardingIntro.savings')}
+        </p>
+        <div className="mt-4 flex items-center gap-2.5 rounded-2xl bg-surface-2/50 p-2.5 text-left">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            <Lightbulb className="h-4 w-4" />
+          </span>
+          <p className="text-xs font-semibold text-foreground">{t('onboardingIntro.measures')}</p>
+        </div>
+      </div>
+    )
+  }
+
+  // index 0 – Duschkopftest
+  return (
+    <div className="glass w-full max-w-[17rem] rounded-3xl p-5 text-left">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+          <span className="grid h-6 w-6 place-items-center rounded-lg bg-sky-500/15 text-sky-600 dark:text-sky-400">
+            <Droplet className="h-3.5 w-3.5" />
+          </span>
+          {t('onboardingIntro.showerTitle')}
+        </span>
+        <ExampleBadge />
+      </div>
+      <div className="flex items-end gap-2">
+        <span className="text-4xl font-bold leading-none tabular-nums text-foreground">12</span>
+        <span className="mb-1 text-sm text-muted">{t('onboardingIntro.lpm')}</span>
+      </div>
+      <div className="mt-3 space-y-2">
+        <div className="flex items-center gap-2 text-[11px] text-muted">
+          <span className="w-20 shrink-0">{t('onboardingIntro.showerYou')}</span>
+          <span className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
+            <span className="block h-full w-full rounded-full bg-rose-500" />
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[11px] text-muted">
+          <span className="w-20 shrink-0">{t('onboardingIntro.showerEco')}</span>
+          <span className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
+            <span className="block h-full w-1/2 rounded-full bg-emerald-500" />
+          </span>
+        </div>
+      </div>
+      <p className="mt-3 flex items-center gap-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+        <TrendingDown className="h-4 w-4" />
+        {t('onboardingIntro.showerSave')}
+      </p>
     </div>
   )
 }
