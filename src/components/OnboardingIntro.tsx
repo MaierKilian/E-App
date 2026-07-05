@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Droplet, TrendingUp, Lightbulb, ChevronRight, ChevronLeft, UserPlus, TrendingDown } from 'lucide-react'
@@ -24,6 +24,13 @@ export function OnboardingIntro() {
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
   const user = useUser()
   const [index, setIndex] = useState(0)
+
+  // Die Komponente bleibt dauerhaft gemountet (rendert nur `null`, wenn gesehen).
+  // Beim (Wieder-)Öffnen – auch über „Einführung erneut ansehen" in den
+  // Einstellungen – immer beim ersten Beat starten statt beim zuletzt gezeigten.
+  useEffect(() => {
+    if (!introSeen) setIndex(0)
+  }, [introSeen])
 
   if (introSeen) return null
 
