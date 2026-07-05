@@ -103,10 +103,112 @@ export function ProfileSwitcher() {
     }
   }
 
+  // Aktionen der aktiven Wohnung (Teilen/Löschen bzw. Verlassen) – gemeinsam für
+  // den Ein- und Mehr-Wohnungs-Fall, aufgeklappt über „Verwalten".
+  const manageActions = active ? (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {active.role === 'owner' ? (
+        confirmDelete ? (
+          <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface-2/40 p-2">
+            <p className="text-xs text-muted">{t('profiles.deleteConfirm')}</p>
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(false)}
+              className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+            >
+              {t('settings.data.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={busy}
+              className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {t('profiles.deleteYes')}
+            </button>
+          </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => setShareOpen(true)}
+              disabled={busy}
+              className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2 disabled:opacity-60"
+            >
+              <Share2 className="h-4 w-4" />
+              {t('profiles.shareActive')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              disabled={busy}
+              className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
+            >
+              <Trash2 className="h-4 w-4" />
+              {t('profiles.deleteActive')}
+            </button>
+          </>
+        )
+      ) : confirmLeave ? (
+        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface-2/40 p-2">
+          <p className="text-xs text-muted">{t('profiles.leaveConfirm')}</p>
+          <button
+            type="button"
+            onClick={() => setConfirmLeave(false)}
+            className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+          >
+            {t('settings.data.cancel')}
+          </button>
+          <button
+            type="button"
+            onClick={handleLeave}
+            disabled={busy}
+            className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            {t('profiles.leaveYes')}
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setConfirmLeave(true)}
+          disabled={busy}
+          className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
+        >
+          <LogOut className="h-4 w-4" />
+          {t('profiles.leaveActive')}
+        </button>
+      )}
+    </div>
+  ) : null
+
   return (
     <div>
+      {/* Kopfzeile mit „Verwalten" – immer sichtbar, sobald es eine aktive
+          Wohnung gibt. So ist Teilen/Löschen auch bei nur einer Wohnung
+          erreichbar (vorher erst ab zwei). */}
+      {active && (
+        <div className="mb-2 flex items-center justify-between px-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+            {t('profiles.sectionTitle')}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setManageOpen((open) => !open)
+              resetConfirms()
+            }}
+            aria-expanded={manageOpen}
+            className="focus-ring inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            {t('profiles.manage')}
+          </button>
+        </div>
+      )}
+
       {single ? (
-        // Eine Wohnung: nur eine schlanke Zeile zum Hinzufügen.
+        // Eine Wohnung: schlanke Zeile zum Hinzufügen (Aktionen liegen hinter „Verwalten").
         <button
           type="button"
           onClick={handleCreate}
@@ -120,26 +222,6 @@ export function ProfileSwitcher() {
         </button>
       ) : (
         <>
-          <div className="mb-2 flex items-center justify-between px-1">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-              {t('profiles.sectionTitle')}
-            </p>
-            {active && (
-              <button
-                type="button"
-                onClick={() => {
-                  setManageOpen((open) => !open)
-                  resetConfirms()
-                }}
-                aria-expanded={manageOpen}
-                className="focus-ring inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
-              >
-                <SlidersHorizontal className="h-3.5 w-3.5" />
-                {t('profiles.manage')}
-              </button>
-            )}
-          </div>
-
           <div className={`grid gap-2.5 ${columnsClass}`}>
             {profiles.map((p) => {
               const isActive = p.id === activeId
@@ -194,90 +276,18 @@ export function ProfileSwitcher() {
           {atProfileLimit && (
             <p className="mt-2 px-1 text-xs text-muted">{t('profiles.limitReached')}</p>
           )}
-
-          {/* Aktionen für die aktive Wohnung – hinter „Verwalten" versteckt. */}
-          {active && manageOpen && (
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              {active.role === 'owner' ? (
-                confirmDelete ? (
-                  <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface-2/40 p-2">
-                    <p className="text-xs text-muted">{t('profiles.deleteConfirm')}</p>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDelete(false)}
-                      className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
-                    >
-                      {t('settings.data.cancel')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleDelete}
-                      disabled={busy}
-                      className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                    >
-                      {t('profiles.deleteYes')}
-                    </button>
-                  </div>
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      onClick={() => setShareOpen(true)}
-                      disabled={busy}
-                      className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2 disabled:opacity-60"
-                    >
-                      <Share2 className="h-4 w-4" />
-                      {t('profiles.shareActive')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setConfirmDelete(true)}
-                      disabled={busy}
-                      className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      {t('profiles.deleteActive')}
-                    </button>
-                  </>
-                )
-              ) : confirmLeave ? (
-                <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface-2/40 p-2">
-                  <p className="text-xs text-muted">{t('profiles.leaveConfirm')}</p>
-                  <button
-                    type="button"
-                    onClick={() => setConfirmLeave(false)}
-                    className="rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
-                  >
-                    {t('settings.data.cancel')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleLeave}
-                    disabled={busy}
-                    className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-                  >
-                    {t('profiles.leaveYes')}
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setConfirmLeave(true)}
-                  disabled={busy}
-                  className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
-                >
-                  <LogOut className="h-4 w-4" />
-                  {t('profiles.leaveActive')}
-                </button>
-              )}
-            </div>
-          )}
-
-          <p className="mt-2 flex items-center gap-1.5 px-1 text-xs text-muted">
-            <Home className="h-3.5 w-3.5 shrink-0" />
-            {t('profiles.hint')}
-          </p>
         </>
+      )}
+
+      {/* Aktionen der aktiven Wohnung – hinter „Verwalten", in beiden Fällen. */}
+      {manageOpen && manageActions}
+
+      {/* Hinweis zum Wechseln nur bei mehreren Wohnungen. */}
+      {!single && (
+        <p className="mt-2 flex items-center gap-1.5 px-1 text-xs text-muted">
+          <Home className="h-3.5 w-3.5 shrink-0" />
+          {t('profiles.hint')}
+        </p>
       )}
 
       {active && active.role === 'owner' && (
