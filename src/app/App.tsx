@@ -16,6 +16,7 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { JoinProfilePage } from '@/features/profiles/JoinProfilePage'
 import { SplashScreen } from '@/components/SplashScreen'
 import { OnboardingIntro } from '@/components/OnboardingIntro'
+import { DemoLoader } from '@/features/demo/DemoLoader'
 import { LoginGate } from '@/components/LoginGate'
 
 /**
@@ -37,6 +38,7 @@ export function App() {
     <>
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <RouteTracker />
+        <DemoLoader />
         <OnboardingIntro />
         <Routes>
           <Route element={<Layout />}>

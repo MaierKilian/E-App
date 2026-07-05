@@ -1723,6 +1723,15 @@
       }
     }
   },
+  "demo": {
+    "title": "Beispiel-Wohnung ansehen",
+    "body": "Wir laden eine fertig eingerichtete Muster-Wohnung mit vielen durchgeführten Messungen und regelmäßigen Zählerständen. Deine aktuelle lokale Ansicht wird dafür ersetzt.",
+    "load": "Beispiel laden",
+    "cancel": "Abbrechen",
+    "ok": "Verstanden",
+    "loggedInTitle": "Für die Demo bitte abmelden",
+    "loggedInBody": "Damit deine eigenen Daten unberührt bleiben, ist die Beispiel-Wohnung nur in der abgemeldeten Ansicht verfügbar. Melde dich ab und öffne den Link erneut."
+  },
   "onboardingIntro": {
     "skip": "Überspringen",
     "next": "Weiter",

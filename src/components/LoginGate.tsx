@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Lock, Sparkles } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { Card } from './ui/Card'
 
 interface LoginGateProps {
@@ -23,6 +24,7 @@ interface LoginGateProps {
 export function LoginGate({ children, message }: LoginGateProps) {
   const user = useAuthStore((s) => s.user)
   const initializing = useAuthStore((s) => s.initializing)
+  const demoMode = useSettingsStore((s) => s.demoMode)
   const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
@@ -32,7 +34,8 @@ export function LoginGate({ children, message }: LoginGateProps) {
     return <div className="grid min-h-40 place-items-center text-muted" aria-busy="true" />
   }
 
-  if (user) return <>{children}</>
+  // Angemeldet ODER Demo-Modus (Beispiel-Wohnung) → Inhalt zeigen.
+  if (user || demoMode) return <>{children}</>
 
   return (
     <Card className="text-center">

@@ -30,6 +30,8 @@ function resetAllUserData() {
   useMeasurementDraftStore.getState().resetDrafts()
   // Einführung wieder anzeigen (wie ein frischer Start).
   useSettingsStore.getState().setIntroSeen(false)
+  // Demo-Modus (Beispiel-Wohnung) beenden.
+  useSettingsStore.getState().setDemoMode(false)
 }
 
 /** Karte für einen einzelnen Reset mit zweistufiger Inline-Bestätigung. */

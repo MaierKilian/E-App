@@ -19,6 +19,13 @@ interface SettingsState {
   /** Wurde die Erst-Einführung (Walkthrough) bereits gesehen/abgeschlossen? */
   introSeen: boolean
   setIntroSeen: (seen: boolean) => void
+  /**
+   * Demo-Modus aktiv (über `?demo` geladene Beispiel-Wohnung). Erlaubt es
+   * abgemeldeten Betrachtern, auch die sonst angemeldeten Bereiche (Monitoring,
+   * Messungen, Berichte) anzusehen. Wird beim Datenreset zurückgesetzt.
+   */
+  demoMode: boolean
+  setDemoMode: (on: boolean) => void
 }
 
 /**
@@ -34,6 +41,8 @@ export const useSettingsStore = create<SettingsState>()(
       setTheme: (theme) => set({ theme }),
       introSeen: false,
       setIntroSeen: (introSeen) => set({ introSeen }),
+      demoMode: false,
+      setDemoMode: (demoMode) => set({ demoMode }),
     }),
     { name: 'eapp-settings' },
   ),

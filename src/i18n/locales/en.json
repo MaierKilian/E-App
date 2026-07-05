@@ -1723,6 +1723,15 @@
       }
     }
   },
+  "demo": {
+    "title": "View the example home",
+    "body": "We'll load a fully set-up sample home with lots of completed measurements and regular meter readings. Your current local view will be replaced.",
+    "load": "Load example",
+    "cancel": "Cancel",
+    "ok": "Got it",
+    "loggedInTitle": "Please sign out for the demo",
+    "loggedInBody": "So your own data stays untouched, the example home is only available in the signed-out view. Sign out and open the link again."
+  },
   "onboardingIntro": {
     "skip": "Skip",
     "next": "Next",
