@@ -2,6 +2,7 @@ import { doc, onSnapshot } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useAuthStore } from '@/store/authStore'
 import { useProfilesStore } from '@/store/profilesStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { STORES, snapshot, hydrate, resetAllStores, metaFromState } from './stores'
 import {
   createProfile,
@@ -55,8 +56,19 @@ let currentUid: string | null = null
 let currentPid: string | null = null
 let started = false
 
+/**
+ * Im Demo-Modus (über `?demo` geladene Beispiel-Wohnung) wird die Cloud-Sync
+ * in beide Richtungen pausiert: Es wird weder aus der Cloud in die Stores
+ * eingespielt noch etwas geschrieben. So bleibt das echte Profil eines
+ * angemeldeten Nutzers unberührt, während er die Demo ansieht.
+ */
+function demoActive(): boolean {
+  return useSettingsStore.getState().demoMode
+}
+
 /** Spielt einen Cloud-Zustand ein, ohne dabei einen Rück-Schreibvorgang auszulösen. */
 function applyRemote(state: Record<string, unknown>) {
+  if (demoActive()) return
   isHydrating = true
   try {
     resetAllStores()
@@ -68,6 +80,7 @@ function applyRemote(state: Record<string, unknown>) {
 
 /** Schreibt den aktuellen Stand des aktiven Profils sofort in die Cloud. */
 async function pushNow(pid: string) {
+  if (demoActive()) return
   const state = snapshot()
   try {
     await writeProfileState(pid, state)
@@ -160,7 +173,7 @@ async function activateProfile(pid: string) {
   for (const store of Object.values(STORES)) {
     storeUnsubs.push(
       store.subscribe(() => {
-        if (!isHydrating) scheduleWrite(pid)
+        if (!isHydrating && !demoActive()) scheduleWrite(pid)
       }),
     )
   }

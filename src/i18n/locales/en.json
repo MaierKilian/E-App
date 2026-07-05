@@ -1725,12 +1725,11 @@
   },
   "demo": {
     "title": "View the example home",
-    "body": "We'll load a fully set-up sample home with lots of completed measurements and regular meter readings. Your current local view will be replaced.",
+    "body": "We'll load a fully set-up sample home with lots of measurements and regular meter readings. Your current view will be replaced. Signed in? Your real home stays untouched and comes back once you leave the demo.",
     "load": "Load example",
     "cancel": "Cancel",
-    "ok": "Got it",
-    "loggedInTitle": "Please sign out for the demo",
-    "loggedInBody": "So your own data stays untouched, the example home is only available in the signed-out view. Sign out and open the link again."
+    "bannerLabel": "Demo home",
+    "exit": "Leave"
   },
   "onboardingIntro": {
     "skip": "Skip",

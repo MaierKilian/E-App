@@ -4,6 +4,7 @@ import { Plus, Check, Home, Share2, LogOut, Users, Trash2, SlidersHorizontal } f
 import { Avatar } from '@/components/ui/Avatar'
 import { useProfilesStore } from '@/store/profilesStore'
 import { useIsAuthenticated } from '@/store/authStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import {
   switchProfile,
   createNewProfile,
@@ -26,6 +27,7 @@ import { ShareProfileDialog } from './ShareProfileDialog'
 export function ProfileSwitcher() {
   const { t } = useTranslation()
   const isAuthenticated = useIsAuthenticated()
+  const demoMode = useSettingsStore((s) => s.demoMode)
   const profiles = useProfilesStore((s) => s.profiles)
   const activeId = useProfilesStore((s) => s.activeProfileId)
   const status = useProfilesStore((s) => s.status)
@@ -35,8 +37,9 @@ export function ProfileSwitcher() {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  // Nur für angemeldete Nutzer mit geladenen Profilen anzeigen.
-  if (!isAuthenticated || status !== 'ready' || profiles.length === 0) return null
+  // Nur für angemeldete Nutzer mit geladenen Profilen anzeigen – und nicht in
+  // der Demo (dort geht es um die Beispiel-Wohnung, nicht um echte Profile).
+  if (demoMode || !isAuthenticated || status !== 'ready' || profiles.length === 0) return null
 
   const active = profiles.find((p) => p.id === activeId)
   const atProfileLimit = !canCreateProfile()
