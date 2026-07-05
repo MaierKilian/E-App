@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sparkles } from 'lucide-react'
-import { useAuthStore } from '@/store/authStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { resetAllStores, hydrate } from '@/features/sync/stores'
 import { buildDemoSnapshot } from './demoProfile'
@@ -14,30 +13,37 @@ import { buildDemoSnapshot } from './demoProfile'
  *
  * Auch für angemeldete Nutzer sicher: Solange der Demo-Modus aktiv ist, pausiert
  * die Cloud-Synchronisation (siehe cloudSync), sodass das echte Profil weder
- * überschrieben noch hochgeladen wird. Über „Demo verlassen" kommt man zurück.
+ * überschrieben noch hochgeladen wird. Über „Verlassen" kommt man zurück.
  */
 export function DemoLoader() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [params, setParams] = useSearchParams()
-  const initializing = useAuthStore((s) => s.initializing)
+  const [, setParams] = useSearchParams()
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
   const setDemoMode = useSettingsStore((s) => s.setDemoMode)
+  // Den ?demo-Wunsch beim allerersten Render festhalten: die Index-Weiterleitung
+  // (/ → /onboarding) verwirft den Query-Parameter, bevor wir sonst reagieren
+  // könnten. Deshalb einmalig einlesen und merken.
+  const [wantsDemo] = useState(() => new URLSearchParams(window.location.search).has('demo'))
   const [dismissed, setDismissed] = useState(false)
 
-  const wantsDemo = params.has('demo')
-  // Warten bis der Auth-Status feststeht, damit die Cloud-Sync sauber pausiert.
-  if (!wantsDemo || initializing || dismissed) return null
+  if (!wantsDemo || dismissed) return null
 
-  function clearParam() {
-    const next = new URLSearchParams(params)
-    next.delete('demo')
-    setParams(next, { replace: true })
+  function finish() {
+    setDismissed(true)
+    // Falls der Parameter noch in der URL steht, entfernen.
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete('demo')
+        return next
+      },
+      { replace: true },
+    )
   }
 
   function cancel() {
-    setDismissed(true)
-    clearParam()
+    finish()
   }
 
   function loadDemo() {
@@ -47,8 +53,7 @@ export function DemoLoader() {
     resetAllStores()
     hydrate(buildDemoSnapshot())
     setIntroSeen(true) // Beispiel direkt zeigen, ohne Einführung
-    setDismissed(true)
-    clearParam()
+    finish()
     navigate('/onboarding', { replace: true })
   }
 
