@@ -73,7 +73,9 @@ export function OnboardingIntro() {
 
       {/* Inhalt: Wert-Illustration + Titel + Text, mittig */}
       <div className="flex flex-1 flex-col items-center justify-center gap-6 px-8 text-center">
-        <BeatIllustration index={index} />
+        {/* key={index} erzwingt einen frischen Mount pro Beat, damit die
+            Aufbau-Animationen bei jedem Wechsel (und beim Replay) neu spielen. */}
+        <BeatIllustration key={index} index={index} />
         <div>
           <h2 className="text-2xl font-bold leading-tight text-foreground text-balance">
             {slide.title}
@@ -165,7 +167,7 @@ function BeatIllustration({ index }: { index: number }) {
 
   if (index === 1) {
     return (
-      <div className="glass w-full max-w-[17rem] rounded-3xl p-5 text-left">
+      <div className="intro-rise glass w-full max-w-[17rem] rounded-3xl p-5 text-left">
         <div className="mb-3 flex items-center justify-between">
           <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
             <span className="grid h-6 w-6 place-items-center rounded-lg bg-amber-500/15 text-amber-600 dark:text-amber-400">
@@ -182,15 +184,22 @@ function BeatIllustration({ index }: { index: number }) {
               <stop offset="1" stopColor="#f59e0b" stopOpacity="0" />
             </linearGradient>
           </defs>
-          <path d="M6 74 L60 62 L114 66 L168 40 L234 20 L234 90 L6 90 Z" fill="url(#introArea)" />
           <path
+            className="intro-area"
+            style={{ animationDelay: '0.55s' }}
+            d="M6 74 L60 62 L114 66 L168 40 L234 20 L234 90 L6 90 Z"
+            fill="url(#introArea)"
+          />
+          <path
+            className="intro-draw"
+            style={{ animationDelay: '0.2s' }}
             d="M6 74 L60 62 L114 66 L168 40 L234 20"
             stroke="#f59e0b"
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
-          <circle cx="234" cy="20" r="4.5" fill="#f59e0b" />
+          <circle className="intro-dot" style={{ animationDelay: '0.95s' }} cx="234" cy="20" r="4.5" fill="#f59e0b" />
         </svg>
       </div>
     )
@@ -198,17 +207,23 @@ function BeatIllustration({ index }: { index: number }) {
 
   if (index === 2) {
     return (
-      <div className="glass w-full max-w-[17rem] rounded-3xl p-5 text-center">
+      <div className="intro-rise glass w-full max-w-[17rem] rounded-3xl p-5 text-center">
         <div className="mb-2 flex justify-center">
           <ExampleBadge />
         </div>
         <p className="text-xs uppercase tracking-wide text-muted">
           {t('onboardingIntro.savingsLabel')}
         </p>
-        <p className="mt-1 text-4xl font-bold tabular-nums text-foreground">
+        <p
+          className="intro-pop mt-1 text-4xl font-bold tabular-nums text-foreground"
+          style={{ animationDelay: '0.2s' }}
+        >
           {t('onboardingIntro.savings')}
         </p>
-        <div className="mt-4 flex items-center gap-2.5 rounded-2xl bg-surface-2/50 p-2.5 text-left">
+        <div
+          className="intro-rise mt-4 flex items-center gap-2.5 rounded-2xl bg-surface-2/50 p-2.5 text-left"
+          style={{ animationDelay: '0.4s' }}
+        >
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
             <Lightbulb className="h-4 w-4" />
           </span>
@@ -220,7 +235,7 @@ function BeatIllustration({ index }: { index: number }) {
 
   // index 0 – Duschkopftest
   return (
-    <div className="glass w-full max-w-[17rem] rounded-3xl p-5 text-left">
+    <div className="intro-rise glass w-full max-w-[17rem] rounded-3xl p-5 text-left">
       <div className="mb-3 flex items-center justify-between">
         <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
           <span className="grid h-6 w-6 place-items-center rounded-lg bg-sky-500/15 text-sky-600 dark:text-sky-400">
@@ -238,17 +253,26 @@ function BeatIllustration({ index }: { index: number }) {
         <div className="flex items-center gap-2 text-[11px] text-muted">
           <span className="w-20 shrink-0">{t('onboardingIntro.showerYou')}</span>
           <span className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
-            <span className="block h-full w-full rounded-full bg-rose-500" />
+            <span
+              className="intro-bar block h-full w-full rounded-full bg-rose-500"
+              style={{ animationDelay: '0.2s' }}
+            />
           </span>
         </div>
         <div className="flex items-center gap-2 text-[11px] text-muted">
           <span className="w-20 shrink-0">{t('onboardingIntro.showerEco')}</span>
           <span className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
-            <span className="block h-full w-1/2 rounded-full bg-emerald-500" />
+            <span
+              className="intro-bar block h-full w-1/2 rounded-full bg-emerald-500"
+              style={{ animationDelay: '0.35s' }}
+            />
           </span>
         </div>
       </div>
-      <p className="mt-3 flex items-center gap-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+      <p
+        className="intro-rise mt-3 flex items-center gap-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-400"
+        style={{ animationDelay: '0.5s' }}
+      >
         <TrendingDown className="h-4 w-4" />
         {t('onboardingIntro.showerSave')}
       </p>

@@ -291,6 +291,62 @@ body {
   animation: panel-in 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Gezielte Aufbau-Animationen der Onboarding-Beats (Diagramm zeichnet sich,
+   Balken wachsen, Zahl „ploppt"). Bewusst dezent; per Inline-`animation-delay`
+   gestaffelt. Werden bei reduzierter Bewegung deaktiviert (Endzustand bleibt). */
+@keyframes intro-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes intro-fade {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes intro-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes intro-grow-x {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.intro-draw {
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+  animation: intro-draw 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.intro-area {
+  opacity: 0;
+  animation: intro-fade 0.6s ease forwards;
+}
+.intro-dot {
+  opacity: 0;
+  animation: intro-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.intro-bar {
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: intro-grow-x 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.intro-pop {
+  opacity: 0;
+  animation: intro-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+.intro-rise {
+  opacity: 0;
+  animation: step-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 /* Premium Fokus-Ring für interaktive Glass-Elemente. */
 .focus-ring:focus-visible {
   outline: none;
@@ -420,6 +476,22 @@ body {
   .animate-panel-in,
   .hero-illustration,
   .hero-photopair {
+    animation: none;
+  }
+  /* Onboarding-Beats: keine Bewegung, Endzustand direkt zeigen. */
+  .intro-draw {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+  .intro-area,
+  .intro-dot,
+  .intro-pop,
+  .intro-rise {
+    opacity: 1;
+    animation: none;
+  }
+  .intro-bar {
+    transform: none;
     animation: none;
   }
   .app-backdrop::before,
