@@ -1775,47 +1775,67 @@
     "items": {
       "standby": {
         "title": "Cut standby",
-        "reason": "A switchable power strip kills the constant draw."
+        "reason": "Biggest standby item: your $t(measurements.standby.deviceTypes.{{deviceType}}) at {{watts}} W. A switchable power strip kills the constant draw."
       },
       "showerhead": {
         "title": "Save water in the shower",
-        "reason": "A water-saving showerhead cuts hot water significantly."
+        "reason": "Your showerhead delivers {{flow}} L/min. A water-saving head (~8 L/min) cuts hot water noticeably – with full comfort."
       },
       "lighting": {
         "title": "Switch to LED",
-        "reason": "LEDs use a fraction of old bulbs."
+        "reason": "{{count}} bulbs still aren't LED. Switching pays off fast, especially where lights burn for hours."
       },
       "hot_water_wait": {
         "title": "Reduce hot-water wait",
-        "reason": "Shorter pipes or insulation save water and energy."
+        "reason": "About {{seconds}} s until warm water arrives – it runs off unused all that time. Insulated pipes or shorter runs help."
       },
       "fridge": {
-        "title": "Optimise your fridge",
-        "reason": "Setting it 1–2 °C warmer saves power safely."
+        "title": "Set the fridge warmer",
+        "reason": "{{temp}} °C is colder than needed. 7 °C is plenty – every degree warmer saves around 6 % power, safely."
+      },
+      "fridge_warm": {
+        "title": "Set the fridge colder",
+        "reason": "{{temp}} °C is too warm for safe storage. Set it to 5–7 °C – cold enough without needless icing."
       },
       "freezer": {
-        "title": "Optimise your freezer",
-        "reason": "Correct setting and defrosting save noticeable power."
+        "title": "Defrost the freezer",
+        "reason": "A layer of ice drives up consumption. Defrosting costs nothing and saves noticeable power."
       },
       "room_temperature": {
         "title": "Lower room temperature",
-        "reason": "Just 1 °C less saves noticeable heating costs."
+        "reason": "Just 1 °C less saves around 6 % heating energy – usually without any real loss of comfort."
+      },
+      "room_cold": {
+        "title": "Don't let rooms cool down",
+        "reason": "Persistently cold, damp rooms invite mould. Steady, moderate heating is healthier and often more efficient than constant reheating."
+      },
+      "humidity_high": {
+        "title": "Ventilate against damp",
+        "reason": "Humidity is too high – short bursts of ventilation several times a day prevent mould. A hygrometer keeps it in view."
+      },
+      "humidity_low": {
+        "title": "Air is too dry",
+        "reason": "Very dry air irritates airways. Don't overheat and ventilate briefly – a hygrometer shows when it's right."
+      },
+      "draft": {
+        "title": "Seal draughts",
+        "reason": "Noticeable draughts at windows or doors waste heat. Self-adhesive sealing strips close the gaps in minutes."
       },
       "furniture_spacing": {
         "title": "Clear the radiator",
-        "reason": "Unobstructed heating surfaces release more heat."
+        "reason": "Unobstructed heating surfaces release more heat. Reflective foil behind them puts extra degrees into the room, not the wall."
       },
       "base_load": {
-        "title": "Check always-on consumers",
-        "reason": "Your base load is elevated – track down the causes."
+        "title": "Track down always-on consumers",
+        "reason": "Your base load is {{watts}} W (~€{{eur}}/year). A plug-in meter helps you find the hidden consumers."
       },
       "smart_thermostat": {
         "title": "Smart radiator thermostats",
-        "reason": "Automatic setback and schedules save heating energy."
+        "reason": "Automatic setback and schedules save heating energy without you having to think about it."
       },
       "owner_control": {
         "title": "Add heating control",
-        "reason": "As an owner, central smart control pays off."
+        "reason": "As an owner, central smart control pays off – schedules and setback for the whole home."
       }
     },
     "potentialLabel": "Potential savings",

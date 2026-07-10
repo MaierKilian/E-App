@@ -34,4 +34,16 @@ export const TIP_PRODUCTS: Record<string, TipProduct> = {
   led: { query: 'led lampe e27 warmweiß' },
   smart_thermostat: { query: 'heizkörperthermostat smart' },
   smart_heating: { query: 'smarte heizungssteuerung' },
+  hygrometer: {
+    query: 'thermo hygrometer luftfeuchtigkeit innen',
+    priceKey: 'affiliate.products.humidity_hygro.price',
+  },
+  power_meter: {
+    query: 'energiekosten messgerät strom',
+    priceKey: 'affiliate.products.power_plug.price',
+  },
+  draft_seal: { query: 'fenster dichtungsband selbstklebend' },
+  fridge_thermometer: { query: 'kühlschrankthermometer digital' },
+  pipe_insulation: { query: 'rohrisolierung warmwasser' },
+  radiator_reflector: { query: 'heizkörper reflektorfolie' },
 }

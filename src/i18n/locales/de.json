@@ -1775,47 +1775,67 @@
     "items": {
       "standby": {
         "title": "Standby abschalten",
-        "reason": "Eine schaltbare Steckdosenleiste kappt den Dauerverbrauch."
+        "reason": "Größter Standby-Posten: $t(measurements.standby.deviceTypes.{{deviceType}}) mit {{watts}} W. Eine schaltbare Steckdosenleiste kappt den Dauerverbrauch."
       },
       "showerhead": {
         "title": "Wasser sparen beim Duschen",
-        "reason": "Ein Sparduschkopf senkt den Warmwasserbedarf deutlich."
+        "reason": "Dein Duschkopf liefert {{flow}} L/min. Ein Sparduschkopf (~8 L/min) senkt den Warmwasserbedarf spürbar – bei vollem Komfort."
       },
       "lighting": {
         "title": "Auf LED umstellen",
-        "reason": "LEDs verbrauchen einen Bruchteil alter Lampen."
+        "reason": "{{count}} Lampen laufen noch ohne LED. Der Umstieg amortisiert sich schnell, gerade bei langer Brenndauer."
       },
       "hot_water_wait": {
         "title": "Warmwasser-Wartezeit senken",
-        "reason": "Kürzere Wege oder gedämmte Leitungen sparen Wasser und Energie."
+        "reason": "Rund {{seconds}} s bis warmes Wasser kommt – so lange läuft es ungenutzt weg. Gedämmte Leitungen oder kürzere Wege helfen."
       },
       "fridge": {
-        "title": "Kühlschrank optimieren",
-        "reason": "1–2 °C wärmer einstellen spart Strom – ohne Risiko."
+        "title": "Kühlschrank wärmer stellen",
+        "reason": "{{temp}} °C ist kälter als nötig. 7 °C reichen – jedes Grad wärmer spart rund 6 % Strom, ohne Risiko."
+      },
+      "fridge_warm": {
+        "title": "Kühlschrank kälter stellen",
+        "reason": "{{temp}} °C ist zu warm für sichere Lagerung. Stell ihn auf 5–7 °C – kühl genug, ohne unnötig zu vereisen."
       },
       "freezer": {
-        "title": "Gefrierschrank optimieren",
-        "reason": "Richtig einstellen und abtauen spart spürbar Strom."
+        "title": "Gefrierfach abtauen",
+        "reason": "Eine Eisschicht treibt den Verbrauch nach oben. Abtauen kostet nichts und spart spürbar Strom."
       },
       "room_temperature": {
         "title": "Raumtemperatur senken",
-        "reason": "Schon 1 °C weniger spart spürbar Heizkosten."
+        "reason": "Schon 1 °C weniger spart rund 6 % Heizenergie – meist ohne echten Komfortverlust."
+      },
+      "room_cold": {
+        "title": "Räume nicht auskühlen lassen",
+        "reason": "Dauerhaft kühle, feuchte Räume fördern Schimmel. Gleichmäßig mäßig heizen ist gesünder und oft effizienter als ständiges Aufheizen."
+      },
+      "humidity_high": {
+        "title": "Richtig lüften gegen Feuchte",
+        "reason": "Die Luftfeuchte ist zu hoch – mehrmals täglich stoßlüften beugt Schimmel vor. Ein Hygrometer behält sie im Blick."
+      },
+      "humidity_low": {
+        "title": "Luft ist zu trocken",
+        "reason": "Sehr trockene Luft reizt die Atemwege. Nicht überheizen und kürzer lüften – ein Hygrometer zeigt, wann es passt."
+      },
+      "draft": {
+        "title": "Zugluft abdichten",
+        "reason": "Spürbare Zugluft an Fenstern oder Türen kostet Wärme. Selbstklebende Dichtungsbänder schließen die Ritzen in Minuten."
       },
       "furniture_spacing": {
         "title": "Heizkörper frei räumen",
-        "reason": "Frei stehende Heizflächen geben mehr Wärme ab."
+        "reason": "Frei stehende Heizflächen geben mehr Wärme ab. Reflektorfolie dahinter bringt zusätzlich Grad ins Zimmer statt in die Wand."
       },
       "base_load": {
-        "title": "Dauerverbraucher prüfen",
-        "reason": "Deine Grundlast ist erhöht – spür die Verursacher auf."
+        "title": "Dauerverbraucher aufspüren",
+        "reason": "Deine Grundlast liegt bei {{watts}} W (~{{eur}} €/Jahr). Mit einem Messgerät spürst du die heimlichen Verbraucher auf."
       },
       "smart_thermostat": {
         "title": "Smarte Heizkörperthermostate",
-        "reason": "Automatische Absenkung und Zeitpläne sparen Heizenergie."
+        "reason": "Automatische Absenkung und Zeitpläne sparen Heizenergie, ohne dass du dran denken musst."
       },
       "owner_control": {
         "title": "Heizungssteuerung nachrüsten",
-        "reason": "Als Eigentümer lohnt sich eine zentrale, smarte Steuerung."
+        "reason": "Als Eigentümer lohnt sich eine zentrale, smarte Steuerung – Zeitpläne und Absenkung fürs ganze Zuhause."
       }
     },
     "potentialLabel": "Mögliches Sparpotenzial",

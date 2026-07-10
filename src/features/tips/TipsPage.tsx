@@ -52,7 +52,7 @@ function TipCard({ tip }: { tip: Tip }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <p className="font-semibold leading-tight text-foreground">
-              {t(`tips.items.${tip.id}.title`)}
+              {t(`tips.items.${tip.id}.title`, tip.params)}
             </p>
             {tip.savingEur ? (
               <span className="shrink-0 rounded-full bg-success/15 px-2.5 py-1 text-[11px] font-bold tabular-nums text-success">
@@ -65,7 +65,7 @@ function TipCard({ tip }: { tip: Tip }) {
             )}
           </div>
           <p className="mt-0.5 text-sm leading-snug text-muted">
-            {t(`tips.items.${tip.id}.reason`)}
+            {t(`tips.items.${tip.id}.reason`, tip.params)}
           </p>
         </div>
       </div>
