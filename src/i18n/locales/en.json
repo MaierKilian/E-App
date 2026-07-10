@@ -92,62 +92,6 @@
     "renovation": "Renovations improve the insulation standard and reduce the energy demand.",
     "location": "Your postal code lets regional climate and weather data flow in later."
   },
-  "affiliate": {
-    "adLabel": "Ad",
-    "cta": "View on Amazon",
-    "products": {
-      "temp_infrared_pro": {
-        "name": "Infrared Thermometer Pro",
-        "benefit": "Measure surface temperatures contactlessly in seconds.",
-        "price": "from €24.99"
-      },
-      "temp_room_smart": {
-        "name": "Smart Room Thermometer",
-        "benefit": "Keep room temperature in view, with app connectivity.",
-        "price": "from €19.99"
-      },
-      "distance_laser": {
-        "name": "Laser Distance Meter",
-        "benefit": "Measure rooms and areas quickly and precisely.",
-        "price": "from €29.99"
-      },
-      "co2_monitor": {
-        "name": "CO₂ Monitor",
-        "benefit": "Monitor air quality and ventilate in good time.",
-        "price": "from €59.99"
-      },
-      "humidity_hygro": {
-        "name": "Digital Hygrometer",
-        "benefit": "Measure humidity and prevent mould.",
-        "price": "from €14.99"
-      },
-      "power_plug": {
-        "name": "Energy Cost Meter",
-        "benefit": "Easily track down power hogs in your home.",
-        "price": "from €17.99"
-      },
-      "eco_showerhead": {
-        "name": "Water-Saving Showerhead",
-        "benefit": "Up to 50% less hot water with full shower comfort.",
-        "price": "from €29.99"
-      },
-      "smart_plug": {
-        "name": "Smart Power Strip",
-        "benefit": "Cut standby completely via switch or app.",
-        "price": "from €24.99"
-      },
-      "hygrometer": {
-        "name": "Thermo-Hygrometer",
-        "benefit": "Keep temperature and humidity precisely in view.",
-        "price": "ab 14,99 €"
-      },
-      "infrared": {
-        "name": "Infrared Thermometer",
-        "benefit": "Measure temperatures contact-free in seconds.",
-        "price": "ab 19,99 €"
-      }
-    }
-  },
   "report": {
     "title": "Reports",
     "subtitle": "Profile, measurements and monitoring as PDF.",
@@ -296,7 +240,6 @@
     },
     "difficultyLabel": "Difficulty",
     "minutesUnit": "min",
-    "affiliateLink": "View {{name}}",
     "ratings": {
       "good": "efficient",
       "medium": "medium",
@@ -396,7 +339,6 @@
         "perYear": "€{{value}}/year",
         "savingLabel": "Savings ≈ {{value}}",
         "sourceNote": "Estimated for hot water via {{source}}. More accurate with your price set.",
-        "affiliateNote": "A water-saving showerhead cuts usage without losing comfort:",
         "mini": {
           "liters": "Fill volume",
           "seconds": "Time",
@@ -467,7 +409,6 @@
           "delta": "From the achieved temperature difference (~6% per °C).",
           "estimate": "Potential of setting it to 7 °C (~6% per °C) – not adjusted yet."
         },
-        "affiliateNote": "An infrared thermometer measures the temperature contact-free:",
         "status": {
           "tooCold": "Set too cold – this wastes electricity.",
           "optimal": "Optimally set – efficient and safe.",
@@ -502,7 +443,6 @@
           "Connecting a smart meter directly is planned for a future version."
         ],
         "start": "Start test",
-        "affiliateNote": "It reliably tracks down standby drains:",
         "smartTeaser": "Connect smart meter",
         "smartSoon": "soon"
       },
@@ -528,7 +468,6 @@
         "perYear": "≈ {{value}} €/year",
         "breakdownTitle": "Breakdown",
         "avoidable": "Avoidable ≈ {{value}}",
-        "affiliateNote": "A switchable power strip nearly eliminates standby:",
         "summary": {
           "good": "Very efficient – barely any standby use.",
           "medium": "Moderate standby use – savings potential here.",
@@ -607,7 +546,6 @@
           "noticeable": "Noticeable draft – seal windows/doors.",
           "strong": "Strong draft – checking the seals pays off."
         },
-        "affiliateNote": "A thermo-hygrometer keeps temperature and humidity in view:",
         "saving": {
           "title": "Potential saving",
           "perYear": "/ year",
@@ -690,8 +628,7 @@
           "optimal": "optimally set",
           "tooWarm": "too warm – set colder",
           "tooCold": "too cold – setting warmer saves power"
-        },
-        "affiliateNote": "An infrared thermometer helps you check quickly:"
+        }
       }
     },
     "impact": {
@@ -1827,7 +1764,7 @@
       },
       "base_load": {
         "title": "Track down always-on consumers",
-        "reason": "Your base load is {{watts}} W (~€{{eur}}/year). A plug-in meter helps you find the hidden consumers."
+        "reason": "Your base load is {{watts}} W – even with nothing actively on. A plug-in meter helps you find the hidden always-on consumers."
       },
       "smart_thermostat": {
         "title": "Smart radiator thermostats",
@@ -1841,6 +1778,13 @@
     "potentialLabel": "Potential savings",
     "countLine_one": "{{count}} measure for your home",
     "countLine_other": "{{count}} measures for your home",
-    "adNote": "Amazon links are ads (affiliate). Prices may vary."
+    "markDone": "Done",
+    "reopen": "Reopen",
+    "dismiss": "Hide",
+    "restore": "Show again",
+    "doneSection": "Done",
+    "hiddenSection": "Hidden",
+    "doneLine": "{{count}} done",
+    "allHandled": "All handled – nice! New measurements will surface fresh recommendations here."
   }
 }

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Lightbulb, CheckCircle2 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { useMeasurementsStore } from '@/store/measurementsStore'
+import { useTipsStore } from '@/store/tipsStore'
 import { buildTips } from '@/features/tips/buildTips'
 import type { OnboardingData } from '@/types'
 import { ProgressRing } from './ProgressRing'
@@ -29,11 +30,17 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const results = useMeasurementsStore((s) => s.results)
+  const doneIds = useTipsStore((s) => s.doneIds)
+  const dismissedIds = useTipsStore((s) => s.dismissedIds)
 
   const completeness = profileCompleteness(data)
   const isComplete = completeness >= 100
   const missing = profileMissingCount(data)
-  const tips = buildTips(data, results)
+  // Auf dem Zuhause-Einstieg nur offene Empfehlungen zählen (erledigte/
+  // ausgeblendete sind für den Nutzer bereits abgehakt).
+  const tips = buildTips(data, results).filter(
+    (tip) => !doneIds.includes(tip.id) && !dismissedIds.includes(tip.id),
+  )
 
   return (
     <div className="space-y-4">

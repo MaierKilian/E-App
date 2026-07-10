@@ -2,8 +2,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plug, Power, PencilLine, Info } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { AffiliateLink } from '@/components/AffiliateLink'
-import { getAffiliateProducts } from '@/features/onboarding/affiliateProducts'
 import { Modal } from '@/components/ui/Modal'
 import { IntroHeroImage } from '../IntroHeroImage'
 
@@ -11,13 +9,12 @@ const STEP_ICONS: LucideIcon[] = [Plug, Power, PencilLine]
 
 /**
  * Intro des Standby-Checks: Hero-Motiv, kompakte 1-2-3-Anleitung mit Detail-
- * Modal (inkl. Hinweis aufs Messgerät) und dezente Affiliate-Empfehlung.
+ * Modal (inkl. Hinweis aufs Messgerät).
  */
 export function StandbyIntro() {
   const { t } = useTranslation()
   const steps = t('measurements.standby.intro.steps', { returnObjects: true }) as string[]
   const details = t('measurements.standby.intro.details', { returnObjects: true }) as string[]
-  const product = getAffiliateProducts('power_meter')[0]
   const [detailsOpen, setDetailsOpen] = useState(false)
 
   return (
@@ -59,8 +56,6 @@ export function StandbyIntro() {
           })}
         </ol>
       </div>
-
-      {product && <AffiliateLink product={product} />}
 
       <Modal
         open={detailsOpen}

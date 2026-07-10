@@ -36,7 +36,7 @@ interface IntroHeroImageProps {
   variant?: 'lineart' | 'photo'
   /** Fixe Chrome-Höhe (Titel, Schritte, Button, Tab-Leiste …), die von 100dvh
    *  abgezogen wird. Größer = kleineres Hero (z. B. wenn zusätzlich ein
-   *  Affiliate-Block darunter steht). */
+   *  Hinweisblock darunter steht). */
   reservePx?: number
   /** Maximale Hero-Breite auf großen Displays (begrenzt indirekt die Höhe). */
   maxWidthPx?: number

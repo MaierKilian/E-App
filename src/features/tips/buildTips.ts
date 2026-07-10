@@ -35,8 +35,6 @@ export interface Tip {
   category: TipCategory
   /** Geschätzte Jahresersparnis in € (sortiert die Liste); leer = qualitativ. */
   savingEur?: number
-  /** Optionales Produkt (Schlüssel in TIP_PRODUCTS). */
-  productId?: string
   /** Interpolationswerte für Titel/Begründung (konkrete Messwerte im Text). */
   params?: Record<string, string | number>
 }
@@ -119,7 +117,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Plug,
       category: 'electricity',
       savingEur: standby,
-      productId: 'smart_plug',
       params: { deviceType: big?.type ?? 'other', watts: Math.round(big?.watts ?? 0) },
     })
   }
@@ -133,7 +130,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Lightbulb,
       category: 'electricity',
       savingEur: lighting,
-      productId: 'led',
       params: { count: bulbs },
     })
   }
@@ -148,7 +144,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Snowflake,
       category: 'electricity',
       savingEur: saving > 0 ? saving : undefined,
-      productId: 'fridge_thermometer',
       params: { temp: Math.round(tempOf(fridgeCold[0])) },
     })
   }
@@ -158,7 +153,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       id: 'fridge_warm',
       icon: Snowflake,
       category: 'electricity',
-      productId: 'fridge_thermometer',
       params: { temp: Math.round(tempOf(fridgeWarm[0])) },
     })
   }
@@ -181,8 +175,7 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       id: 'base_load',
       icon: Gauge,
       category: 'electricity',
-      productId: 'power_meter',
-      params: { watts: Math.round(r?.primaryValue ?? 0), eur: Math.round(r?.details?.annualEur ?? 0) },
+      params: { watts: Math.round(r?.primaryValue ?? 0) },
     })
   }
 
@@ -196,7 +189,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Droplets,
       category: 'water',
       savingEur: shower,
-      productId: 'eco_showerhead',
       params: { flow: Math.round(flow * 10) / 10 },
     })
   }
@@ -210,7 +202,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Hourglass,
       category: 'water',
       savingEur: hotWater,
-      productId: 'pipe_insulation',
       params: { seconds },
     })
   }
@@ -236,33 +227,33 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
 
     // Luftfeuchte (nur wo erfasst).
     if (roomTemp.some((r) => r.details?.humidity !== undefined && r.details.humidity > HUMID_MAX)) {
-      tips.push({ id: 'humidity_high', icon: Droplets, category: 'heating', productId: 'hygrometer' })
+      tips.push({ id: 'humidity_high', icon: Droplets, category: 'heating' })
     }
     if (roomTemp.some((r) => r.details?.humidity !== undefined && r.details.humidity < HUMID_MIN)) {
-      tips.push({ id: 'humidity_low', icon: Droplets, category: 'heating', productId: 'hygrometer' })
+      tips.push({ id: 'humidity_low', icon: Droplets, category: 'heating' })
     }
 
     // Zugluft (Index >= 1 = spürbar/stark).
     if (roomTemp.some((r) => (r.details?.draft ?? 0) >= 1)) {
-      tips.push({ id: 'draft', icon: Wind, category: 'heating', productId: 'draft_seal' })
+      tips.push({ id: 'draft', icon: Wind, category: 'heating' })
     }
   }
 
   const fs = worstRating(results, 'furniture_spacing')
   if (fs && fs !== 'good') {
-    tips.push({ id: 'furniture_spacing', icon: Sofa, category: 'heating', productId: 'radiator_reflector' })
+    tips.push({ id: 'furniture_spacing', icon: Sofa, category: 'heating' })
   }
 
   // --- Smart-Home aus dem Profil --------------------------------------------
   const hasRadiator = data.rooms.some((r) => r.heatTransfer === 'radiator')
   const ownsSmartThermostat = data.smartHomeDevices.includes('smart_thermostat')
   if (hasRadiator && !ownsSmartThermostat) {
-    tips.push({ id: 'smart_thermostat', icon: ThermometerSun, category: 'heating', productId: 'smart_thermostat' })
+    tips.push({ id: 'smart_thermostat', icon: ThermometerSun, category: 'heating' })
   }
 
   // --- Nur Eigentümer: fest installierte Steuerung --------------------------
   if (data.occupancyStatus === 'owner') {
-    tips.push({ id: 'owner_control', icon: SlidersHorizontal, category: 'heating', productId: 'smart_heating' })
+    tips.push({ id: 'owner_control', icon: SlidersHorizontal, category: 'heating' })
   }
 
   // Nach € absteigend; qualitative (ohne €) stabil danach.

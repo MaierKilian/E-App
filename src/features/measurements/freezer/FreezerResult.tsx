@@ -1,6 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { AffiliateLink } from '@/components/AffiliateLink'
-import { INFRARED_THERMOMETER_PRODUCT } from '@/features/onboarding/affiliateProducts'
 import { RatingBadge } from '../RatingBadge'
 import { RATING_COLOR } from '../rating'
 import type { ResultProps } from '../runnerTypes'
@@ -103,13 +101,6 @@ export function FreezerResult({ result }: ResultProps) {
             status: t(`measurements.freezer.result.tempStatus.${tempStatus}`),
           })}
         </p>
-      )}
-
-      {hasFrost && (
-        <div className="space-y-2">
-          <p className="text-sm text-muted">{t('measurements.freezer.result.affiliateNote')}</p>
-          <AffiliateLink product={INFRARED_THERMOMETER_PRODUCT} />
-        </div>
       )}
     </div>
   )

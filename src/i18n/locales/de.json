@@ -92,62 +92,6 @@
     "renovation": "Renovierungen verbessern den Dämmstandard und senken den Energiebedarf.",
     "location": "Mit der Postleitzahl können später regionale Klima- und Wetterdaten einfließen."
   },
-  "affiliate": {
-    "adLabel": "Anzeige",
-    "cta": "Auf Amazon ansehen",
-    "products": {
-      "temp_infrared_pro": {
-        "name": "Infrarot-Thermometer Pro",
-        "benefit": "Oberflächentemperaturen berührungslos in Sekunden messen.",
-        "price": "ab 24,99 €"
-      },
-      "temp_room_smart": {
-        "name": "Smartes Raumthermometer",
-        "benefit": "Raumtemperatur dauerhaft im Blick, inkl. App-Anbindung.",
-        "price": "ab 19,99 €"
-      },
-      "distance_laser": {
-        "name": "Laser-Entfernungsmesser",
-        "benefit": "Räume und Flächen schnell und präzise vermessen.",
-        "price": "ab 29,99 €"
-      },
-      "co2_monitor": {
-        "name": "CO₂-Messgerät",
-        "benefit": "Luftqualität überwachen und rechtzeitig lüften.",
-        "price": "ab 59,99 €"
-      },
-      "humidity_hygro": {
-        "name": "Digitales Hygrometer",
-        "benefit": "Luftfeuchte messen und Schimmel vorbeugen.",
-        "price": "ab 14,99 €"
-      },
-      "power_plug": {
-        "name": "Energiekosten-Messgerät",
-        "benefit": "Stromfresser im Haushalt einfach aufspüren.",
-        "price": "ab 17,99 €"
-      },
-      "eco_showerhead": {
-        "name": "Sparduschkopf",
-        "benefit": "Bis zu 50 % weniger Warmwasser bei vollem Duschkomfort.",
-        "price": "ab 29,99 €"
-      },
-      "smart_plug": {
-        "name": "Smarte Steckdosenleiste",
-        "benefit": "Standby per Schalter oder App komplett abschalten.",
-        "price": "ab 24,99 €"
-      },
-      "hygrometer": {
-        "name": "Thermo-Hygrometer",
-        "benefit": "Temperatur und Luftfeuchte präzise im Blick behalten.",
-        "price": "ab 14,99 €"
-      },
-      "infrared": {
-        "name": "Infrarot-Thermometer",
-        "benefit": "Temperaturen berührungslos in Sekunden messen.",
-        "price": "ab 19,99 €"
-      }
-    }
-  },
   "report": {
     "title": "Berichte",
     "subtitle": "Profil, Messungen und Monitoring als PDF.",
@@ -296,7 +240,6 @@
     },
     "difficultyLabel": "Schwierigkeit",
     "minutesUnit": "Min.",
-    "affiliateLink": "{{name}} ansehen",
     "ratings": {
       "good": "sparsam",
       "medium": "mittel",
@@ -396,7 +339,6 @@
         "perYear": "{{value}} €/Jahr",
         "savingLabel": "Ersparnis ≈ {{value}}",
         "sourceNote": "Geschätzt für Warmwasser per {{source}}. Genauer mit hinterlegtem Preis.",
-        "affiliateNote": "Ein Sparduschkopf senkt den Verbrauch ohne Komfortverlust:",
         "mini": {
           "liters": "Füllmenge",
           "seconds": "Zeit",
@@ -467,7 +409,6 @@
           "delta": "Aus der erreichten Temperaturdifferenz (≈6 % je °C).",
           "estimate": "Potenzial bis 7 °C (≈6 % je °C) – noch nicht angepasst."
         },
-        "affiliateNote": "Ein Infrarot-Thermometer misst die Temperatur berührungslos:",
         "status": {
           "tooCold": "Zu kalt eingestellt – das kostet unnötig Strom.",
           "optimal": "Optimal eingestellt – sparsam und sicher.",
@@ -502,7 +443,6 @@
           "Smartes Messgerät direkt verbinden: in einer kommenden Version geplant."
         ],
         "start": "Test starten",
-        "affiliateNote": "Damit spürst du Standby-Verbraucher zuverlässig auf:",
         "smartTeaser": "Smartes Messgerät verbinden",
         "smartSoon": "bald"
       },
@@ -528,7 +468,6 @@
         "perYear": "≈ {{value}} €/Jahr",
         "breakdownTitle": "Aufschlüsselung",
         "avoidable": "Vermeidbar ≈ {{value}}",
-        "affiliateNote": "Eine schaltbare Steckdosenleiste eliminiert den Standby fast komplett:",
         "summary": {
           "good": "Sehr sparsam – kaum Standby-Verbrauch.",
           "medium": "Mittlerer Standby-Verbrauch – hier steckt Sparpotenzial.",
@@ -607,7 +546,6 @@
           "noticeable": "Spürbare Zugluft – Fenster/Türen abdichten.",
           "strong": "Starke Zugluft – Dichtungen prüfen lohnt sich."
         },
-        "affiliateNote": "Ein Thermo-Hygrometer behält Temperatur und Feuchte im Blick:",
         "saving": {
           "title": "Mögliche Ersparnis",
           "perYear": "/ Jahr",
@@ -690,8 +628,7 @@
           "optimal": "optimal eingestellt",
           "tooWarm": "zu warm – kälter stellen",
           "tooCold": "zu kalt – wärmer stellen spart Strom"
-        },
-        "affiliateNote": "Ein Infrarot-Thermometer hilft beim schnellen Kontrollieren:"
+        }
       }
     },
     "impact": {
@@ -1827,7 +1764,7 @@
       },
       "base_load": {
         "title": "Dauerverbraucher aufspüren",
-        "reason": "Deine Grundlast liegt bei {{watts}} W (~{{eur}} €/Jahr). Mit einem Messgerät spürst du die heimlichen Verbraucher auf."
+        "reason": "Deine Grundlast liegt bei {{watts}} W – auch wenn nichts bewusst läuft. Mit einem Messgerät spürst du die heimlichen Dauerverbraucher auf."
       },
       "smart_thermostat": {
         "title": "Smarte Heizkörperthermostate",
@@ -1841,6 +1778,13 @@
     "potentialLabel": "Mögliches Sparpotenzial",
     "countLine_one": "{{count}} Maßnahme für dein Zuhause",
     "countLine_other": "{{count}} Maßnahmen für dein Zuhause",
-    "adNote": "Amazon-Links sind Werbung (Affiliate). Preise können abweichen."
+    "markDone": "Erledigt",
+    "reopen": "Wieder öffnen",
+    "dismiss": "Ausblenden",
+    "restore": "Wieder einblenden",
+    "doneSection": "Erledigt",
+    "hiddenSection": "Ausgeblendet",
+    "doneLine": "{{count}} erledigt",
+    "allHandled": "Alles abgearbeitet – stark! Sobald neue Messungen dazukommen, erscheinen hier wieder Empfehlungen."
   }
 }

@@ -2,8 +2,6 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Thermometer, Droplets, Wind, PiggyBank, ChevronRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { AffiliateLink } from '@/components/AffiliateLink'
-import { HYGROMETER_PRODUCT } from '@/features/onboarding/affiliateProducts'
 import { RatingBadge } from '../RatingBadge'
 import { RATING_COLOR } from '../rating'
 import type { ResultProps } from '../runnerTypes'
@@ -174,13 +172,6 @@ export function RoomTemperatureResult({ result }: ResultProps) {
           )}
         </div>
       )}
-
-      <div className="space-y-2">
-        <p className="text-sm text-muted">
-          {t('measurements.room_temperature.result.affiliateNote')}
-        </p>
-        <AffiliateLink product={HYGROMETER_PRODUCT} />
-      </div>
     </div>
   )
 }

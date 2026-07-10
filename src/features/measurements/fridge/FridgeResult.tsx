@@ -1,6 +1,4 @@
 import { useTranslation } from 'react-i18next'
-import { AffiliateLink } from '@/components/AffiliateLink'
-import { INFRARED_THERMOMETER_PRODUCT } from '@/features/onboarding/affiliateProducts'
 import { RatingBadge } from '../RatingBadge'
 import { RATING_COLOR } from '../rating'
 import type { ResultProps } from '../runnerTypes'
@@ -90,13 +88,6 @@ export function FridgeResult({ result }: ResultProps) {
               {t('measurements.fridge.result.estimated')}
             </span>
           )}
-        </div>
-      )}
-
-      {(showSaving || status === 'tooWarm') && (
-        <div className="space-y-2">
-          <p className="text-sm text-muted">{t('measurements.fridge.result.affiliateNote')}</p>
-          <AffiliateLink product={INFRARED_THERMOMETER_PRODUCT} />
         </div>
       )}
     </div>
