@@ -1089,12 +1089,26 @@
       "editButton": "Bearbeiten"
     },
     "step0": {
-      "title": "Einrichtungsmodus",
-      "subtitle": "Wie möchtest du loslegen?",
+      "title": "Los geht’s",
+      "subtitle": "Wie ausführlich möchtest du starten? Mehr Angaben bedeuten genauere Empfehlungen.",
       "quick": "Schnellstart",
-      "quickDesc": "3–5 Minuten, nur das Wichtigste",
+      "quickPill": "3–5 Min",
+      "quickDesc": "Schneller Überblick",
       "detailed": "Vollständig",
-      "detailedDesc": "8–10 Minuten, maximaler Kontext für AI-Empfehlungen"
+      "detailedPill": "8–10 Min",
+      "detailedDesc": "Maximale Genauigkeit",
+      "recommended": "Empfohlen",
+      "quickIncludes": [
+        "Wohnfläche & Personen",
+        "Heizungsart",
+        "Erste Spartipps"
+      ],
+      "detailedIncludes": [
+        "Alles aus dem Schnellstart",
+        "Räume & Geräte",
+        "Tarife für die €-Ersparnis"
+      ],
+      "note": "Kein Stress – du kannst den Modus wechseln und Angaben jederzeit später ergänzen."
     },
     "step1": {
       "title": "Wohnprofil",

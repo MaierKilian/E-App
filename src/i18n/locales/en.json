@@ -962,12 +962,26 @@
       "editButton": "Edit"
     },
     "step0": {
-      "title": "Setup Mode",
-      "subtitle": "How would you like to start?",
+      "title": "Let’s go",
+      "subtitle": "How thorough do you want to start? More detail means more accurate recommendations.",
       "quick": "Quick Start",
-      "quickDesc": "3–5 minutes, just the essentials",
+      "quickPill": "3–5 min",
+      "quickDesc": "A fast overview",
       "detailed": "Full Setup",
-      "detailedDesc": "8–10 minutes, maximum context for AI recommendations"
+      "detailedPill": "8–10 min",
+      "detailedDesc": "Maximum accuracy",
+      "recommended": "Recommended",
+      "quickIncludes": [
+        "Living area & people",
+        "Heating type",
+        "First saving tips"
+      ],
+      "detailedIncludes": [
+        "Everything from Quick Start",
+        "Rooms & appliances",
+        "Tariffs for € savings"
+      ],
+      "note": "No pressure – you can switch modes and add details later any time."
     },
     "step1": {
       "title": "Home Profile",

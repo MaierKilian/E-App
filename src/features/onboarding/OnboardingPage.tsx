@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Sparkles, Info } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { StepIndicator } from './StepIndicator'
 import { ProfileHub } from './ProfileHub'
@@ -233,12 +233,24 @@ export function OnboardingPage() {
   if (isOnModeSelection) {
     return (
       <div className="pb-24">
-        <div key="mode" className="animate-step-in">
-          <h2 className="text-lg font-semibold text-foreground mb-1">
-            {t('onboarding.step0.title')}
-          </h2>
-          <p className="text-sm text-muted mb-5">{t('onboarding.step0.subtitle')}</p>
+        <div
+          key="mode"
+          className="animate-step-in flex min-h-[calc(100dvh-15rem)] flex-col justify-center"
+        >
+          <div className="mb-6">
+            <div className="mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <h2 className="text-xl font-bold text-foreground">{t('onboarding.step0.title')}</h2>
+            <p className="mt-1 text-sm text-muted">{t('onboarding.step0.subtitle')}</p>
+          </div>
+
           <Step0Mode data={data} onChange={updateData} />
+
+          <p className="mt-5 flex items-center gap-1.5 px-1 text-xs text-muted">
+            <Info className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {t('onboarding.step0.note')}
+          </p>
         </div>
 
         <ActionBar>
