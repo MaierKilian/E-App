@@ -164,9 +164,6 @@ export function AddReadingScreen({
           >
             <ScanLine className="w-4 h-4" />
             {t('scan.button')}
-            <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
-              {t('scan.beta')}
-            </span>
           </button>
           <button
             type="button"
