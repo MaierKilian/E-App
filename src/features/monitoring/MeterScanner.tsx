@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X, Camera, RotateCcw, Check, Loader2, AlertTriangle } from 'lucide-react'
 import { cropAndPreprocess, recognizeDigits } from './ocr'
+import { recognizeMeterRemote, REMOTE_SCAN_ENABLED } from './scanRemote'
 
 interface MeterScannerProps {
   unit: string
@@ -101,17 +102,51 @@ export function MeterScanner({ unit, accent, lastReading, onResult, onClose }: M
     const sw = gw / scale
     const sh = gh / scale
 
-    const canvas = cropAndPreprocess(video, sx, sy, sw, sh)
-    setPreview(canvas.toDataURL('image/png'))
+    // Farb-Ausschnitt (JPEG) für Gemini – moderat verkleinert, kleine Payload.
+    const maxW = 1000
+    const cscale = Math.min(1, maxW / Math.max(1, sw))
+    const colorCanvas = document.createElement('canvas')
+    colorCanvas.width = Math.round(sw * cscale)
+    colorCanvas.height = Math.round(sh * cscale)
+    colorCanvas
+      .getContext('2d')
+      ?.drawImage(video, sx, sy, sw, sh, 0, 0, colorCanvas.width, colorCanvas.height)
+    const jpeg = colorCanvas.toDataURL('image/jpeg', 0.75)
+    setPreview(jpeg)
     setPhase('processing')
-    try {
-      const res = await recognizeDigits(canvas)
-      setText(res.digits)
-      setConfidence(res.confidence)
-    } catch {
-      setText('')
-      setConfidence(0)
+
+    let digits = ''
+    let conf = 0
+
+    // 1) Gemini (Firebase-Funktion) – deutlich zuverlässiger auf echten Zählern.
+    if (REMOTE_SCAN_ENABLED) {
+      try {
+        const res = await recognizeMeterRemote({
+          imageBase64: jpeg.split(',')[1] ?? '',
+          unit,
+          lastReading,
+        })
+        digits = res.digits
+        conf = res.confidence === 'high' ? 95 : res.confidence === 'medium' ? 70 : 40
+      } catch {
+        // Funktion nicht deployt / kein Key / Netz → On-Device-Fallback unten.
+      }
     }
+
+    // 2) Fallback: On-Device-OCR (Tesseract), wenn Gemini nichts lieferte.
+    if (!digits) {
+      try {
+        const canvas = cropAndPreprocess(video, sx, sy, sw, sh)
+        const res = await recognizeDigits(canvas)
+        digits = res.digits
+        conf = res.confidence
+      } catch {
+        // beides leer → Nutzer tippt manuell ein
+      }
+    }
+
+    setText(digits)
+    setConfidence(conf)
     setPhase('confirm')
   }
 
