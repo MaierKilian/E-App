@@ -57,6 +57,7 @@
       "invalidCredential": "E-Mail oder Passwort ist falsch.",
       "tooManyRequests": "Zu viele Versuche. Bitte später erneut probieren.",
       "popupClosed": "Anmeldung abgebrochen.",
+      "inAppBrowser": "Google-Anmeldung ist in App-Browsern (z. B. WhatsApp, Instagram) gesperrt. Öffne die Seite in Safari oder Chrome und melde dich dort an.",
       "network": "Netzwerkfehler. Bitte prüfe deine Verbindung.",
       "generic": "Etwas ist schiefgelaufen. Bitte versuche es erneut."
     }

@@ -57,6 +57,7 @@
       "invalidCredential": "Email or password is incorrect.",
       "tooManyRequests": "Too many attempts. Please try again later.",
       "popupClosed": "Sign-in cancelled.",
+      "inAppBrowser": "Google sign-in is blocked in in-app browsers (e.g. WhatsApp, Instagram). Open this page in Safari or Chrome and sign in there.",
       "network": "Network error. Please check your connection.",
       "generic": "Something went wrong. Please try again."
     }

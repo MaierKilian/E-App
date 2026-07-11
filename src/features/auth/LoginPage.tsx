@@ -10,6 +10,7 @@ import {
   loginWithGoogle,
   sendPasswordReset,
   authErrorKey,
+  isInAppBrowser,
 } from './auth'
 
 type Mode = 'login' | 'register'
@@ -225,6 +226,13 @@ export function LoginPage() {
           {t('auth.or')}
           <span className="h-px flex-1 bg-border" />
         </div>
+
+        {/* Hinweis in eingebetteten In-App-Browsern (Google sperrt OAuth dort). */}
+        {isInAppBrowser() && (
+          <p className="mb-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-400">
+            {t('auth.errors.inAppBrowser')}
+          </p>
+        )}
 
         {/* Google */}
         <button
