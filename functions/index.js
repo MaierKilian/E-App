@@ -6,7 +6,7 @@
  * verlangt einen angemeldeten Nutzer und ruft Gemini nur serverseitig auf.
  *
  * Der Key wird als Secret `GEMINI_API_KEY` gesetzt (siehe docs/gemini-scan-setup.md).
- * Modell überschreibbar per Umgebungsvariable GEMINI_MODEL (Default: gemini-2.5-flash).
+ * Modell überschreibbar per Umgebungsvariable GEMINI_MODEL (Default: gemini-flash-latest).
  */
 
 const { onCall, HttpsError } = require('firebase-functions/v2/https')
@@ -14,7 +14,11 @@ const { defineSecret } = require('firebase-functions/params')
 const { setGlobalOptions } = require('firebase-functions/v2')
 
 const GEMINI_API_KEY = defineSecret('GEMINI_API_KEY')
-const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash'
+// `gemini-flash-latest` ist ein von Google gepflegter Alias auf das jeweils
+// aktuelle Flash-Modell. Feste Versionen (z. B. gemini-2.5-flash) werden für
+// neue Projekte teils gesperrt ("no longer available to new users") – der Alias
+// bleibt dagegen gültig. Bei Bedarf per GEMINI_MODEL überschreibbar.
+const MODEL = process.env.GEMINI_MODEL || 'gemini-flash-latest'
 
 // Nah an Deutschland; günstiger Zuschnitt.
 setGlobalOptions({ region: 'europe-west1' })

@@ -67,9 +67,14 @@ firebase deploy --only functions
 Nach erfolgreichem Deploy erscheint die Funktion **`scanMeter`** (Region
 `europe-west1`). Die App nutzt sie ab sofort automatisch.
 
-> **Modell ändern (optional):** Standard ist `gemini-2.5-flash`. Falls nötig,
-> kann man beim Deploy ein anderes Modell setzen, z. B.:
-> `GEMINI_MODEL=gemini-2.0-flash firebase deploy --only functions`
+> **Modell ändern (optional):** Standard ist `gemini-flash-latest` (Google-Alias
+> auf das jeweils aktuelle Flash-Modell). Feste Versionen wie `gemini-2.5-flash`
+> werden für neue Projekte teils gesperrt („no longer available to new users") –
+> der Alias bleibt gültig. Falls nötig, beim Deploy ein anderes Modell setzen:
+> `GEMINI_MODEL=gemini-flash-latest firebase deploy --only functions`
+>
+> Welche Modelle dein Key sehen darf, kannst du auflisten:
+> `curl "https://generativelanguage.googleapis.com/v1beta/models?key=DEIN_KEY"`
 
 ---
 
