@@ -201,12 +201,19 @@ export async function rotateInvite(pid: string, uid: string): Promise<string> {
   return getOrCreateInvite(pid, uid)
 }
 
-/** Baut aus Profil- und Einladungs-ID den teilbaren Einladungslink. */
+/**
+ * Baut aus Profil- und Einladungs-ID den teilbaren Einladungslink.
+ *
+ * Zeigt auf die Vorschau-Zwischenseite `einladung.html` (eigene OG-Tags, damit
+ * WhatsApp & Co. klar eine EINLADUNG anzeigen). Diese leitet echte Besucher
+ * sofort auf die Beitritts-Route `/join/<pid>/<inviteId>` in der App weiter.
+ */
 export function buildInviteLink(pid: string, inviteId: string): string {
   const base = import.meta.env.BASE_URL.endsWith('/')
     ? import.meta.env.BASE_URL
     : `${import.meta.env.BASE_URL}/`
-  return `${window.location.origin}${base}join/${pid}/${inviteId}`
+  const params = new URLSearchParams({ p: pid, i: inviteId })
+  return `${window.location.origin}${base}einladung.html?${params.toString()}`
 }
 
 /**
