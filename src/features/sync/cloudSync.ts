@@ -186,6 +186,18 @@ async function onUserChange(uid: string | null) {
   currentPid = null
 
   if (!uid) {
+    // Abgemeldet: die sichtbaren Wohnungsdaten lokal leeren, damit nach dem
+    // Logout nicht das Profil des Vornutzers stehen bleibt (Datenschutz auf
+    // geteilten Geräten). Theme/Sprache bleiben erhalten (settingsStore gehört
+    // bewusst nicht dazu). Die Daten liegen sicher in der Cloud und kehren beim
+    // nächsten Login zurück. `isHydrating` verhindert einen versehentlichen
+    // Rück-Schreibvorgang.
+    isHydrating = true
+    try {
+      resetAllStores()
+    } finally {
+      isHydrating = false
+    }
     useProfilesStore.getState().reset()
     return
   }
