@@ -145,8 +145,14 @@
       .proc { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 9px; background: rgba(0,0,0,0.5); color: #fff; font-size: 12px; z-index: 2; }
       .spin { width: 24px; height: 24px; border-radius: 50%; border: 3px solid rgba(255,255,255,.22); border-top-color: #fff; animation: spin .8s linear infinite; }
       @keyframes spin { to { transform: rotate(360deg) } }
+      /* kurzer Auslöse-Blitz beim Übergang zur Erkennung */
+      .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 4; }
+      .screen[data-phase="processing"] .flash { animation: flash .55s ease; }
+      @keyframes flash { 0% { opacity: 0 } 12% { opacity: .5 } 100% { opacity: 0 } }
+      @keyframes fadeUp { from { opacity: 0; transform: translateY(7px) } to { opacity: 1; transform: none } }
 
-      .panel { flex: 0 0 auto; padding: 10px 14px 4px; background: #000; z-index: 3; }
+      .panel { flex: 0 0 auto; min-height: 134px; padding: 10px 14px 4px; background: #000; z-index: 3;
+        display: flex; flex-direction: column; justify-content: center; }
       .pane { display: none; flex-direction: column; gap: 7px; align-items: stretch; }
       .cap { text-align: center; color: #e4e4e7; font-size: 12px; font-weight: 500; }
       .cap small { display: block; color: #8b8b93; font-size: 10.5px; font-weight: 400; margin-top: 1px; }
@@ -178,9 +184,9 @@
       .screen[data-phase="result"] .frame, .screen[data-phase="result"] .laser,
       .screen[data-phase="done"] .frame, .screen[data-phase="done"] .laser { display: none; }
       .screen:not([data-phase="result"]) .redbox { opacity: 0; }
-      .screen[data-phase="camera"] .pane-camera { display: flex; }
-      .screen[data-phase="result"] .pane-result { display: flex; }
-      .screen[data-phase="done"] .pane-done { display: flex; }
+      .screen[data-phase="camera"] .pane-camera,
+      .screen[data-phase="result"] .pane-result,
+      .screen[data-phase="done"] .pane-done { display: flex; animation: fadeUp .34s ease both; }
 
       .foot { text-align: center; width: 100%; max-width: 340px; }
       .foot h1 { font-size: clamp(17px, 5vw, 20px); font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
@@ -189,7 +195,7 @@
         background: var(--text); color: var(--bg2); font-weight: 700; font-size: 15px; padding: 12px 22px; border-radius: 14px; transition: transform .1s ease, opacity .15s ease; }
       .cta:active { transform: scale(.98); }
 
-      @media (prefers-reduced-motion: reduce) { .laser, .spin, .done-check { animation: none } }
+      @media (prefers-reduced-motion: reduce) { .laser, .spin, .done-check, .flash, .pane { animation: none !important } }
       @media (max-height: 640px) { .device { height: 58dvh } .foot h1 { font-size: 16px } .foot p { display: none } }
     </style>
   </head>
@@ -232,6 +238,7 @@
           <div class="frame"><i></i><i></i><i></i><i></i></div>
           <div class="laser"></div>
           <div class="proc"><div class="spin"></div>Wird erkannt…</div>
+          <div class="flash"></div>
         </div>
 
         <div class="panel">
