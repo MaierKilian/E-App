@@ -1,8 +1,9 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Mail, Lock, User as UserIcon, ArrowLeft, Loader2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { useUser, useAuthStore } from '@/store/authStore'
 import {
   registerWithEmail,
   loginWithEmail,
@@ -27,6 +28,14 @@ export function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as LocationState | null)?.from ?? '/'
+  const user = useUser()
+  const initializing = useAuthStore((s) => s.initializing)
+
+  // Nach einer Google-Weiterleitung landet man wieder hier – sobald der
+  // Anmeldestatus feststeht und ein Nutzer da ist, weiterleiten.
+  useEffect(() => {
+    if (!initializing && user) navigate(from, { replace: true })
+  }, [initializing, user, from, navigate])
 
   const [mode, setMode] = useState<Mode>('login')
   const [name, setName] = useState('')
@@ -64,8 +73,10 @@ export function LoginPage() {
     setNotice(null)
     setBusy(true)
     try {
-      await loginWithGoogle()
-      navigate(from, { replace: true })
+      const signedIn = await loginWithGoogle()
+      // Popup-Erfolg → direkt weiter. Bei Redirect (null) lädt die Seite neu,
+      // die Navigation übernimmt danach der Effekt oben.
+      if (signedIn) navigate(from, { replace: true })
     } catch (e) {
       showError(e)
     } finally {

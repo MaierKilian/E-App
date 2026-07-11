@@ -2,6 +2,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
   updateProfile,
   sendPasswordResetEmail,
@@ -34,11 +36,58 @@ export async function loginWithEmail(email: string, password: string) {
   return cred.user
 }
 
-/** Anmeldung über das Google-Konto (Popup). */
+/** Auf Mobilgeräten / In-App-Browsern ist ein Popup unzuverlässig – dort Redirect. */
+function prefersRedirect(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent || ''
+  return /Android|iPhone|iPad|iPod|Mobile|WhatsApp|Instagram|FBAN|FBAV|Line\/|GSA/i.test(ua)
+}
+
+/**
+ * Anmeldung über das Google-Konto.
+ * - Mobil/In-App-Browser: Weiterleitung (Redirect), da Popups dort blockiert/
+ *   abgebrochen werden.
+ * - Desktop: Popup; scheitert es (blockiert/nicht unterstützt), Fallback auf Redirect.
+ * Bei Redirect wird `null` zurückgegeben – die Seite lädt neu, der Abschluss
+ * erfolgt über `completeGoogleRedirect()` beim App-Start.
+ */
 export async function loginWithGoogle() {
-  const cred = await signInWithPopup(auth, googleProvider)
-  void track('login', { method: 'google' })
-  return cred.user
+  if (prefersRedirect()) {
+    await signInWithRedirect(auth, googleProvider)
+    return null
+  }
+  try {
+    const cred = await signInWithPopup(auth, googleProvider)
+    void track('login', { method: 'google' })
+    return cred.user
+  } catch (error) {
+    if (
+      error instanceof FirebaseError &&
+      [
+        'auth/popup-blocked',
+        'auth/operation-not-supported-in-this-environment',
+        'auth/web-storage-unsupported',
+        'auth/internal-error',
+      ].includes(error.code)
+    ) {
+      await signInWithRedirect(auth, googleProvider)
+      return null
+    }
+    throw error
+  }
+}
+
+/**
+ * Schließt eine laufende Google-Weiterleitung nach der Rückkehr ab.
+ * Einmalig beim App-Start aufrufen; den Store aktualisiert onAuthStateChanged.
+ */
+export async function completeGoogleRedirect(): Promise<void> {
+  try {
+    const result = await getRedirectResult(auth)
+    if (result?.user) void track('login', { method: 'google' })
+  } catch {
+    // Fehler beim Abschluss ignorieren – die Anmeldung kann wiederholt werden.
+  }
 }
 
 /** Passwort-Zurücksetzen-Mail anfordern. */
