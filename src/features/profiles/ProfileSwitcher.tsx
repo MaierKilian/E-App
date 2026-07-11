@@ -267,7 +267,7 @@ export function ProfileSwitcher() {
                   )}
 
                   <span className="absolute inset-x-0 bottom-0 p-2.5 text-left">
-                    <span className="line-clamp-1 text-sm font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+                    <span className="line-clamp-2 text-[13px] font-semibold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)]">
                       {name}
                     </span>
                   </span>

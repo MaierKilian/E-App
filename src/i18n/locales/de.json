@@ -1514,7 +1514,7 @@
     "addNew": "Neue Wohnung",
     "addAnother": "Weitere Wohnung hinzufügen",
     "manage": "Verwalten",
-    "hint": "Tippe eine Wohnung an, um zu wechseln, oder lege eine neue an.",
+    "hint": "Tippe eine Wohnung an, um zu wechseln.",
     "sharedBadge": "{{count}} Bewohner",
     "shareActive": "Wohnung teilen",
     "leaveActive": "Wohnung verlassen",

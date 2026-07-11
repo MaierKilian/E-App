@@ -1514,7 +1514,7 @@
     "addNew": "New home",
     "addAnother": "Add another home",
     "manage": "Manage",
-    "hint": "Tap a home to switch, or add a new one.",
+    "hint": "Tap a home to switch between them.",
     "sharedBadge": "{{count}} residents",
     "shareActive": "Share home",
     "leaveActive": "Leave home",
