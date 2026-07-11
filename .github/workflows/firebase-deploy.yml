@@ -1,0 +1,51 @@
+name: Deploy to Firebase
+
+# Deployt bei jedem Push auf main automatisch die Web-App (Hosting) UND die
+# Scan-Funktion (Functions) nach Firebase (Projekt e-app-info). So entfällt das
+# manuelle `firebase deploy` vom PC. Anmeldung erfolgt über einen Service-Account,
+# der als GitHub-Secret FIREBASE_SERVICE_ACCOUNT hinterlegt ist.
+
+on:
+  push:
+    branches: [main]
+  # Erlaubt manuelles Auslösen über den "Actions"-Tab (Button "Run workflow").
+  workflow_dispatch:
+
+# Immer nur ein Firebase-Deploy gleichzeitig (eigene Gruppe, stört den
+# GitHub-Pages-Workflow nicht).
+concurrency:
+  group: firebase-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Web-App bauen – base=/ für Firebase Hosting (siehe package.json).
+      - name: Web-App bauen
+        run: |
+          npm ci
+          npm run build:firebase
+
+      # Abhängigkeiten der Cloud Function bereitstellen (kein Lockfile → install).
+      - name: Function-Abhängigkeiten installieren
+        run: npm install --prefix functions
+
+      # Service-Account-Schlüssel aus dem Secret in eine temporäre Datei schreiben.
+      - name: Google-Anmeldung vorbereiten
+        run: printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/gcp-key.json"
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      # Hosting + Functions in einem Rutsch deployen.
+      - name: Deploy nach Firebase
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcp-key.json
+        run: npx --yes firebase-tools deploy --only hosting,functions --project e-app-info --non-interactive
