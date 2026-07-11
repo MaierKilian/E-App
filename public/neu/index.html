@@ -79,17 +79,23 @@
       }
 
       .status {
-        position: relative; height: 30px; flex: 0 0 auto;
+        position: relative; height: 42px; flex: 0 0 auto;
         display: flex; align-items: center; justify-content: space-between;
-        padding: 0 21px; color: #fff; font-size: 12px; font-weight: 600; z-index: 3;
+        padding: 0 20px; color: #fff; font-size: 13px; font-weight: 600; z-index: 3;
       }
-      .status .icons { display: flex; align-items: center; gap: 5px; }
+      .status .time { letter-spacing: .02em; }
+      .status .icons { display: flex; align-items: center; gap: 6px; }
       .island {
-        position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-        width: 84px; height: 22px; background: #000; border-radius: 999px; z-index: 4;
-        display: flex; align-items: center; justify-content: flex-end; padding-right: 9px;
+        position: absolute; top: 9px; left: 50%; transform: translateX(-50%);
+        width: 82px; height: 25px; background: #000; border-radius: 999px; z-index: 4;
+        box-shadow: inset 0 0 1px rgba(255,255,255,0.14), 0 1px 2px rgba(0,0,0,0.5);
       }
-      .island .lens { width: 7px; height: 7px; border-radius: 50%; background: #14212a; box-shadow: inset 0 0 0 1px #263843, 0 0 2px rgba(120,180,255,.4); }
+      .island::before {   /* Frontkamera – dezent */
+        content: ""; position: absolute; top: 50%; right: 11px; transform: translateY(-50%);
+        width: 8px; height: 8px; border-radius: 50%;
+        background: radial-gradient(circle at 35% 30%, #35525f 0%, #0a1218 68%);
+        box-shadow: 0 0 1px rgba(130,190,255,.55);
+      }
 
       .app-head {
         flex: 0 0 auto; display: flex; align-items: flex-start; justify-content: space-between;
@@ -196,9 +202,9 @@
 
     <div class="device">
       <div class="screen" data-phase="camera">
-        <div class="island"><span class="lens"></span></div>
+        <div class="island"></div>
         <div class="status">
-          <span>9:41</span>
+          <span class="time">9:41</span>
           <span class="icons">
             <svg width="17" height="11" viewBox="0 0 17 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
             <svg width="16" height="11" viewBox="0 0 16 12" fill="none"><path d="M8 10.2 1 4.4a10 10 0 0 1 14 0L8 10.2Z" stroke="#fff" stroke-width="1.3" opacity=".9"/><circle cx="8" cy="9.3" r="1.1" fill="#fff"/></svg>
@@ -267,25 +273,33 @@
     <div class="foot">
       <h1>Zählerstände einfach scannen</h1>
       <p>Kamera auf den Zähler – die App erkennt den Stand.</p>
-      <a class="cta" href="https://e-app-info.web.app/">
+      <a class="cta" href="https://e-app-info.web.app/monitoring">
         Jetzt ausprobieren
         <svg width="15" height="15" viewBox="0 0 16 16" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M3 8h9M8 4l4 4-4 4"/></svg>
       </a>
     </div>
 
     <script>
-      document.querySelectorAll('[data-go]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var s = btn.closest('.screen');
-          var to = btn.getAttribute('data-go');
-          if (to === 'processing') {
-            s.dataset.phase = 'processing';
-            setTimeout(function () { s.dataset.phase = 'result'; }, 1200);
-          } else {
-            s.dataset.phase = to;
-          }
+      // Der Scan-Ablauf spielt automatisch in Schleife: camera → processing →
+      // result → done → camera … Klicken springt manuell weiter, danach läuft es
+      // von der neuen Stelle aus weiter.
+      (function () {
+        var screen = document.querySelector('.screen');
+        if (!screen) return;
+        var order = ['camera', 'processing', 'result', 'done'];
+        var hold = { camera: 2000, processing: 1300, result: 2600, done: 1500 };
+        var timer;
+        function show(phase) {
+          screen.dataset.phase = phase;
+          clearTimeout(timer);
+          var next = order[(order.indexOf(phase) + 1) % order.length];
+          timer = setTimeout(function () { show(next); }, hold[phase] || 2000);
+        }
+        document.querySelectorAll('[data-go]').forEach(function (btn) {
+          btn.addEventListener('click', function () { show(btn.getAttribute('data-go')); });
         });
-      });
+        show('camera');
+      })();
     </script>
   </body>
 </html>
