@@ -15,6 +15,9 @@
       2. Optional die og:title / og:description unten anpassen, damit die
          WhatsApp-Vorschau das neueste Update zeigt.
       3. Nach main mergen → geht automatisch live (siehe docs/deployment.md).
+
+      Die interaktive Vorschau (".demo") ist ein reines Klick-Mockup (HTML/CSS/JS),
+      unabhängig von der echten App – nur zur Veranschaulichung.
     -->
 
     <meta name="description" content="Neu in der E-App: Zählerstände per Kamera-Foto automatisch erkennen – dank KI." />
@@ -163,6 +166,112 @@
 
       footer { text-align: center; color: var(--muted); font-size: 12px; padding: 22px 0 4px; }
       footer a { color: var(--muted); }
+
+      /* ---------- Interaktive Vorschau (Klick-Mockup) ---------- */
+      .demo { margin: 20px 0 4px; }
+      .demo-label {
+        font-size: 12px; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 0.06em; color: var(--muted);
+        text-align: center; margin-bottom: 10px;
+      }
+      .device {
+        width: 100%; max-width: 300px; margin: 0 auto;
+        background: #000; border-radius: 30px; padding: 9px;
+        box-shadow: var(--shadow);
+      }
+      .screen {
+        background: #0b0b0d; border-radius: 22px; overflow: hidden;
+        display: flex; flex-direction: column;
+      }
+      .viewport {
+        position: relative; height: 156px;
+        display: grid; place-items: center;
+        background:
+          radial-gradient(120% 90% at 50% 0%, #1b1b20 0%, #0b0b0d 70%);
+      }
+      /* Nachgebauter mechanischer Zähler */
+      .meter {
+        display: flex; align-items: center; gap: 3px;
+        padding: 7px 9px; border-radius: 8px;
+        background: #26241f;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.6);
+      }
+      .meter .d {
+        width: 20px; height: 28px; border-radius: 3px;
+        display: grid; place-items: center;
+        font-weight: 800; font-size: 17px; font-variant-numeric: tabular-nums;
+        background: #f4f1ea; color: #14110c;
+        box-shadow: inset 0 -6px 8px rgba(0,0,0,0.12), inset 0 6px 8px rgba(0,0,0,0.06);
+      }
+      .meter .d.red { background: #c0392b; color: #fff; }
+      .meter .comma { color: #f4f1ea; font-weight: 800; font-size: 17px; align-self: flex-end; padding-bottom: 3px; }
+      .meter .unit { color: #cbd0c4; font-size: 12px; margin-left: 4px; font-weight: 600; }
+
+      .scanframe {
+        position: absolute; pointer-events: none;
+        width: 214px; height: 60px; border-radius: 8px;
+        outline: 2px solid var(--accent);
+        box-shadow: 0 0 0 100vmax rgba(0,0,0,0.35);
+      }
+      .scanline {
+        position: absolute; width: 206px; height: 2px;
+        background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        animation: scan 1.8s ease-in-out infinite;
+      }
+      @keyframes scan {
+        0%, 100% { transform: translateY(-27px); opacity: 0.2; }
+        50% { transform: translateY(27px); opacity: 1; }
+      }
+      .proc-overlay {
+        position: absolute; inset: 0; display: none;
+        flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+        background: rgba(0,0,0,0.5); color: #fff; font-size: 13px;
+      }
+      .spinner {
+        width: 26px; height: 26px; border-radius: 50%;
+        border: 3px solid rgba(255,255,255,0.25); border-top-color: #fff;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .panel {
+        min-height: 96px; padding: 12px 12px 14px;
+        display: flex; flex-direction: column; justify-content: center;
+        background: #0b0b0d;
+      }
+      .pane { display: none; flex-direction: column; gap: 9px; align-items: stretch; }
+      .hint { color: #d4d4d8; font-size: 12px; text-align: center; }
+      .value {
+        text-align: center; color: #fff; font-weight: 800; font-size: 26px;
+        font-variant-numeric: tabular-nums; letter-spacing: 0.01em;
+      }
+      .value small { font-size: 13px; font-weight: 600; color: #a1a1aa; margin-left: 4px; }
+      .demo-row { display: flex; gap: 8px; }
+      .btn {
+        flex: 1; cursor: pointer; border: 0; border-radius: 13px;
+        padding: 11px 12px; font-size: 14px; font-weight: 700;
+        font-family: inherit; transition: opacity 0.15s ease, transform 0.1s ease;
+      }
+      .btn:active { transform: scale(0.97); }
+      .btn.primary { background: var(--accent); color: #fff; }
+      .btn.ghost { background: rgba(255,255,255,0.1); color: #fff; }
+      .check {
+        width: 46px; height: 46px; margin: 0 auto; border-radius: 50%;
+        display: grid; place-items: center; font-size: 24px; color: #fff;
+        background: var(--primary); animation: pop 0.35s ease;
+      }
+      @keyframes pop { 0% { transform: scale(0.4); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+
+      /* Sichtbarkeit je Phase */
+      .scanline { display: block; }
+      .screen[data-phase="processing"] .scanline { display: none; }
+      .screen[data-phase="processing"] .proc-overlay { display: flex; }
+      .screen[data-phase="camera"] .pane-camera { display: flex; }
+      .screen[data-phase="result"] .pane-result { display: flex; }
+      .screen[data-phase="done"] .pane-done { display: flex; }
+      @media (prefers-reduced-motion: reduce) {
+        .scanline, .spinner, .check { animation: none; }
+      }
     </style>
   </head>
   <body>
@@ -185,6 +294,45 @@
             dank KI. Kein Abtippen mehr.
           </p>
 
+          <!-- Interaktive Vorschau: einmal durchklicken -->
+          <div class="demo">
+            <p class="demo-label">▶ Vorschau · zum Durchklicken</p>
+            <div class="device">
+              <div class="screen" data-phase="camera">
+                <div class="viewport">
+                  <div class="meter">
+                    <span class="d">0</span><span class="d">7</span><span class="d">3</span><span class="d">5</span><span class="d">6</span><span class="comma">,</span><span class="d red">4</span><span class="d red">5</span><span class="d red">3</span><span class="unit">m³</span>
+                  </div>
+                  <div class="scanframe"></div>
+                  <div class="scanline"></div>
+                  <div class="proc-overlay">
+                    <div class="spinner"></div>
+                    Erkennung läuft…
+                  </div>
+                </div>
+                <div class="panel">
+                  <div class="pane pane-camera">
+                    <p class="hint">Zähler in den Rahmen halten</p>
+                    <button class="btn primary" data-go="processing">📷 Scannen</button>
+                  </div>
+                  <div class="pane pane-result">
+                    <p class="hint">Erkannt – bitte prüfen</p>
+                    <div class="value">7356,4<small>m³</small></div>
+                    <div class="demo-row">
+                      <button class="btn ghost" data-go="camera">↻ Nochmal</button>
+                      <button class="btn primary" data-go="done">✓ Übernehmen</button>
+                    </div>
+                  </div>
+                  <div class="pane pane-done">
+                    <div class="check">✓</div>
+                    <p class="hint">Gespeichert – so einfach geht's!</p>
+                    <button class="btn ghost" data-go="camera">Nochmal ansehen</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <ul class="points">
             <li><span class="tick">✓</span> Kamera auf den Zähler halten – die Ziffern werden automatisch gelesen</li>
             <li><span class="tick">✓</span> Funktioniert für Gas, Strom und Wasser</li>
@@ -206,5 +354,24 @@
         <a href="https://e-app-info.web.app/">e-app-info.web.app</a>
       </footer>
     </div>
+
+    <script>
+      // Kleiner Zustandsautomat für die Klick-Vorschau (camera → processing → result → done).
+      document.querySelectorAll('.demo [data-go]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var screen = btn.closest('.screen');
+          var target = btn.getAttribute('data-go');
+          if (target === 'processing') {
+            screen.dataset.phase = 'processing';
+            // Kurze „Erkennung" simulieren, dann Ergebnis zeigen.
+            setTimeout(function () {
+              screen.dataset.phase = 'result';
+            }, 1300);
+          } else {
+            screen.dataset.phase = target;
+          }
+        });
+      });
+    </script>
   </body>
 </html>
