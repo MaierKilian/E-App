@@ -1814,6 +1814,7 @@
     "title": "Zählerstand scannen",
     "hint": "Nur die Ziffernzeile in den Rahmen – nah rangehen, gut ausleuchten",
     "capture": "Erfassen",
+    "torch": "Taschenlampe",
     "processing": "Erkenne…",
     "confirmTitle": "Erkannt – bitte prüfen",
     "confirmHint": "Stimmt die Zahl? Bei Bedarf korrigieren.",

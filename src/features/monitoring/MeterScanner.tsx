@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { X, Camera, RotateCcw, Check, Loader2, AlertTriangle } from 'lucide-react'
+import { X, Camera, RotateCcw, Check, Loader2, AlertTriangle, Flashlight, FlashlightOff } from 'lucide-react'
 import { cropAndPreprocess, recognizeDigits } from './ocr'
 import { recognizeMeterRemote, REMOTE_SCAN_ENABLED } from './scanRemote'
 
@@ -38,6 +38,11 @@ export function MeterScanner({ unit, accent, lastReading, onResult, onClose }: M
   const [preview, setPreview] = useState<string | null>(null)
   const [text, setText] = useState('')
   const [confidence, setConfidence] = useState(0)
+  // Taschenlampe: nur anbieten, wenn das Gerät die `torch`-Fähigkeit meldet
+  // (v. a. Android-Chrome). iOS-Safari kann das derzeit nicht – dort bleibt der
+  // Schalter aus, statt einen wirkungslosen Knopf zu zeigen.
+  const [torchSupported, setTorchSupported] = useState(false)
+  const [torchOn, setTorchOn] = useState(false)
 
   // Kamera starten / aufräumen.
   useEffect(() => {
@@ -62,6 +67,10 @@ export function MeterScanner({ unit, accent, lastReading, onResult, onClose }: M
           videoRef.current.srcObject = stream
           await videoRef.current.play().catch(() => {})
         }
+        // Taschenlampen-Fähigkeit des Kamera-Tracks abfragen (nicht überall verfügbar).
+        const track = stream.getVideoTracks()[0]
+        const caps = (track?.getCapabilities?.() ?? {}) as MediaTrackCapabilities & { torch?: boolean }
+        if (caps.torch) setTorchSupported(true)
       } catch (err) {
         const name = (err as DOMException)?.name
         setErrorKey(
@@ -79,6 +88,21 @@ export function MeterScanner({ unit, accent, lastReading, onResult, onClose }: M
       streamRef.current = null
     }
   }, [])
+
+  /** Taschenlampe des Kamera-Tracks an-/ausschalten (Live-Constraint). */
+  async function toggleTorch() {
+    const track = streamRef.current?.getVideoTracks()[0]
+    if (!track) return
+    const next = !torchOn
+    try {
+      await track.applyConstraints({ advanced: [{ torch: next }] } as MediaTrackConstraints)
+      setTorchOn(next)
+    } catch {
+      // Gerät lehnt die Steuerung ab → Schalter zurückziehen.
+      setTorchSupported(false)
+      setTorchOn(false)
+    }
+  }
 
   async function capture() {
     const video = videoRef.current
@@ -225,6 +249,22 @@ export function MeterScanner({ unit, accent, lastReading, onResult, onClose }: M
                   {t('scan.hint')}
                 </p>
               </div>
+            )}
+            {/* Taschenlampe – nur wenn das Gerät sie unterstützt und die Kamera live ist. */}
+            {phase === 'camera' && torchSupported && (
+              <button
+                type="button"
+                onClick={toggleTorch}
+                aria-label={t('scan.torch')}
+                aria-pressed={torchOn}
+                className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full backdrop-blur-sm transition-colors"
+                style={{
+                  background: torchOn ? accent : 'rgba(0,0,0,0.45)',
+                  color: torchOn ? '#fff' : 'rgba(255,255,255,0.85)',
+                }}
+              >
+                {torchOn ? <Flashlight className="h-5 w-5" /> : <FlashlightOff className="h-5 w-5" />}
+              </button>
             )}
             {phase === 'processing' && (
               <div className="absolute inset-0 grid place-items-center bg-black/40">

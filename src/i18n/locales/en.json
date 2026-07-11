@@ -1814,6 +1814,7 @@
     "title": "Scan meter reading",
     "hint": "Only the digit row in the frame – get close, good light",
     "capture": "Capture",
+    "torch": "Flashlight",
     "processing": "Reading…",
     "confirmTitle": "Recognised – please check",
     "confirmHint": "Is the number correct? Adjust if needed.",
