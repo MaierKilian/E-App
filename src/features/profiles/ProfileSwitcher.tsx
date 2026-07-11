@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, Check, Home, Share2, LogOut, Users, Trash2, SlidersHorizontal } from 'lucide-react'
-import { Avatar } from '@/components/ui/Avatar'
 import { useProfilesStore } from '@/store/profilesStore'
 import { useIsAuthenticated } from '@/store/authStore'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -228,6 +227,7 @@ export function ProfileSwitcher() {
           <div className={`grid gap-2.5 ${columnsClass}`}>
             {profiles.map((p) => {
               const isActive = p.id === activeId
+              const name = p.name.trim() || t('home.profileNameFallback')
               return (
                 <button
                   key={p.id}
@@ -235,27 +235,41 @@ export function ProfileSwitcher() {
                   onClick={() => handleSwitch(p.id)}
                   disabled={busy}
                   aria-pressed={isActive}
-                  className={`focus-ring glass relative flex flex-col items-center gap-1.5 rounded-2xl p-3 text-center transition-transform active:scale-[0.98] disabled:opacity-60 ${
-                    isActive ? 'ring-2 ring-primary' : ''
+                  aria-label={name}
+                  className={`focus-ring relative aspect-[4/3] overflow-hidden rounded-2xl transition-transform active:scale-[0.98] disabled:opacity-60 ${
+                    isActive ? 'ring-2 ring-primary' : 'ring-1 ring-border'
                   }`}
                 >
+                  {/* Foto füllt die Kachel – oder schicke grüne Fallback-Kachel mit Haus. */}
+                  {p.image ? (
+                    <img src={p.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                  ) : (
+                    <span className="absolute inset-0 grid place-items-center bg-gradient-to-br from-primary/70 to-primary/90 text-white">
+                      <Home className="h-7 w-7 opacity-90" />
+                    </span>
+                  )}
+                  {/* Verlauf für lesbaren Namen */}
+                  <span className="pointer-events-none absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
+
                   {isActive && (
-                    <span className="absolute right-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-primary text-primary-foreground">
-                      <Check className="h-3 w-3" />
+                    <span className="absolute right-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground shadow ring-2 ring-white/70">
+                      <Check className="h-3.5 w-3.5" />
                     </span>
                   )}
                   {p.memberCount > 1 && (
                     <span
-                      className="absolute left-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[11px] font-medium text-primary"
+                      className="absolute left-1.5 top-1.5 inline-flex items-center gap-0.5 rounded-full bg-black/45 px-1.5 py-0.5 text-[11px] font-semibold text-white backdrop-blur-sm"
                       title={t('profiles.sharedBadge', { count: p.memberCount })}
                     >
                       <Users className="h-3 w-3" />
                       {p.memberCount}
                     </span>
                   )}
-                  <Avatar src={p.image || undefined} name={p.name} size={44} />
-                  <span className="line-clamp-1 w-full text-sm font-medium text-foreground">
-                    {p.name.trim() || t('home.profileNameFallback')}
+
+                  <span className="absolute inset-x-0 bottom-0 p-2.5 text-left">
+                    <span className="line-clamp-1 text-sm font-semibold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+                      {name}
+                    </span>
                   </span>
                 </button>
               )
@@ -266,12 +280,12 @@ export function ProfileSwitcher() {
                 type="button"
                 onClick={handleCreate}
                 disabled={busy}
-                className="focus-ring flex flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border p-3 text-center text-muted transition-colors hover:text-foreground hover:border-primary disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-muted disabled:hover:border-border"
+                className="focus-ring flex aspect-[4/3] flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border text-muted transition-colors hover:border-primary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-muted disabled:hover:border-border"
               >
-                <span className="grid h-11 w-11 place-items-center rounded-full bg-primary/10 text-primary">
+                <span className="grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary">
                   <Plus className="h-5 w-5" />
                 </span>
-                <span className="text-sm font-medium">{t('profiles.addNew')}</span>
+                <span className="text-xs font-medium">{t('profiles.addNew')}</span>
               </button>
             )}
           </div>
