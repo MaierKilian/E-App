@@ -32,15 +32,18 @@ function buildPrompt(unit, lastReading) {
       : ''
   return [
     'Du liest einen Haushalts-Zähler (Gas, Strom oder Wasser) von einem Foto ab.',
-    'Gib NUR den Hauptzählerstand zurück: die großen Ziffern des Hauptzählwerks.',
-    'Bei mechanischen Zählern sind das die schwarzen Ganzzahl-Stellen VOR dem Komma;',
-    'die roten Nachkommastellen NICHT mitzählen.',
+    'Lies das Hauptzählwerk ab und gib zwei Werte zurück:',
+    '1) reading = die schwarzen Ganzzahl-Stellen VOR dem Komma (führende Nullen dürfen dabei sein).',
+    '2) firstDecimal = NUR die ERSTE Nachkommastelle NACH dem Komma (die erste rote Ziffer) – also genau eine Ziffer.',
+    'Bei mechanischen Zählern sind die Vorkomma-Stellen schwarz, die Nachkommastellen rot.',
+    'Weitere rote Nachkommastellen NICHT zurückgeben – ausschließlich die erste.',
     'Ignoriere Typenschild, Serien-/Modellnummern (z. B. „M14", „0102", „EN 1359:2007",',
     '„NG-4701BM"), Einheiten (m³, kWh) und jeglichen sonstigen Text.',
     unitLine,
     lastLine,
-    'Wenn du die Ziffern nicht sicher lesen kannst, gib reading leer zurück.',
-    'Antworte ausschließlich als JSON: {"reading":"<nur Ziffern>","confidence":"high|medium|low"}.',
+    'Wenn du die Vorkomma-Ziffern nicht sicher lesen kannst, gib reading leer zurück.',
+    'Wenn die erste Nachkommastelle nicht sicher lesbar ist, gib firstDecimal leer zurück.',
+    'Antworte ausschließlich als JSON: {"reading":"<Ziffern>","firstDecimal":"<eine Ziffer oder leer>","confidence":"high|medium|low"}.',
   ]
     .filter(Boolean)
     .join(' ')
@@ -83,6 +86,7 @@ exports.scanMeter = onCall(
           type: 'OBJECT',
           properties: {
             reading: { type: 'STRING' },
+            firstDecimal: { type: 'STRING' },
             confidence: { type: 'STRING' },
           },
           required: ['reading', 'confidence'],
@@ -120,7 +124,13 @@ exports.scanMeter = onCall(
     } catch {
       parsed = {}
     }
-    const digits = String(parsed.reading ?? '').replace(/[^0-9]/g, '')
+    // Vorkomma-Stellen (schwarz) und die erste Nachkommastelle (erste rote Ziffer).
+    const intDigits = String(parsed.reading ?? '').replace(/[^0-9]/g, '')
+    const decDigit = String(parsed.firstDecimal ?? '').replace(/[^0-9]/g, '').slice(0, 1)
+    // Führende Nullen entfernen, aber mindestens eine Ziffer behalten: 07356 → 7356.
+    const intTrimmed = intDigits.replace(/^0+(?=\d)/, '')
+    // Mit erster Nachkommastelle und deutschem Komma, falls beides vorhanden: 7356,4.
+    const digits = intTrimmed && decDigit ? `${intTrimmed},${decDigit}` : intTrimmed
     const confidence = ['high', 'medium', 'low'].includes(parsed.confidence)
       ? parsed.confidence
       : 'low'
