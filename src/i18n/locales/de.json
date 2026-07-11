@@ -1003,6 +1003,7 @@
     },
     "odometer": {
       "title": "Zählerstand eintragen",
+      "editTitle": "Zählerstand bearbeiten",
       "keyboard": "Tastatur",
       "wheel": "Zählwerk",
       "save": "Speichern",
@@ -1037,7 +1038,9 @@
         "costPerYear": "Kosten / Jahr"
       },
       "allReadings": "Alle Ablesungen",
+      "edit": "Bearbeiten",
       "delete": "Löschen",
+      "deleteConfirm": "Diese Ablesung wirklich löschen?",
       "chartTitle": "Verbrauch je Intervall",
       "consumptionUnit": "kWh",
       "scrubLabel": "Verlauf abtasten"

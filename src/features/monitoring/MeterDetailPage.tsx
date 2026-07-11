@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft, Plus, Trash2, ChevronDown, Pencil } from 'lucide-react'
-import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
+import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/readingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore, resolvePrice } from '@/store/tariffStore'
 import { SelectChip } from '@/components/ui/SelectChip'
@@ -34,6 +34,7 @@ export function MeterDetailPage() {
   const deleteReading = useReadingsStore((s) => s.deleteReading)
 
   const [addOpen, setAddOpen] = useState(false)
+  const [editing, setEditing] = useState<MeterReading | null>(null)
   const [tariffOpen, setTariffOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [range, setRange] = useState<RangeKey>('all')
@@ -62,22 +63,23 @@ export function MeterDetailPage() {
     currency: 'EUR',
     maximumFractionDigits: 0,
   })
-  const dateFmt = new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'short' })
-  const dateTimeFmt = new Intl.DateTimeFormat(i18n.language, {
+  const historyDateFmt = new Intl.DateTimeFormat(i18n.language, {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
   })
 
-  function formatTimestamp(date: string, createdAt?: string): string {
-    if (createdAt) {
-      const d = new Date(createdAt)
-      if (!Number.isNaN(d.getTime())) return dateTimeFmt.format(d)
-    }
+  /** Zeigt das (bearbeitbare) Ablese-Datum an. */
+  function formatDate(date: string): string {
     const d = new Date(`${date}T00:00:00`)
-    return Number.isNaN(d.getTime()) ? date : dateFmt.format(d)
+    return Number.isNaN(d.getTime()) ? date : historyDateFmt.format(d)
+  }
+
+  /** Löschen mit kurzer Rückfrage (verhindert versehentliches Entfernen). */
+  function handleDelete(id: string) {
+    if (window.confirm(t('monitoring.readings.deleteConfirm'))) {
+      deleteReading(type, id)
+    }
   }
 
   const priceMeta = PRICE_META[type]
@@ -269,17 +271,27 @@ export function MeterDetailPage() {
                       {numFmt.format(r.value)} {unit}
                     </span>
                     <span className="block text-xs text-muted truncate">
-                      {formatTimestamp(r.date, r.createdAt)}
+                      {formatDate(r.date)}
                     </span>
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => deleteReading(type, r.id)}
-                    aria-label={t('monitoring.readings.delete')}
-                    className="grid place-items-center w-7 h-7 rounded-lg text-muted hover:text-foreground transition-colors shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <span className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setEditing(r)}
+                      aria-label={t('monitoring.readings.edit')}
+                      className="grid place-items-center w-7 h-7 rounded-lg text-muted hover:text-foreground transition-colors"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(r.id)}
+                      aria-label={t('monitoring.readings.delete')}
+                      className="grid place-items-center w-7 h-7 rounded-lg text-muted hover:text-foreground transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </span>
                 </li>
               ))}
             </ul>
@@ -299,6 +311,18 @@ export function MeterDetailPage() {
           icon={Icon}
           defaultValue={defaultValue}
           onClose={() => setAddOpen(false)}
+        />
+      )}
+      {editing && (
+        <AddReadingScreen
+          type={type}
+          unit={unit}
+          typeLabel={name}
+          accent={meta.accent}
+          icon={Icon}
+          defaultValue={defaultValue}
+          editReading={editing}
+          onClose={() => setEditing(null)}
         />
       )}
       <TariffModal open={tariffOpen} onClose={() => setTariffOpen(false)} type={type} />

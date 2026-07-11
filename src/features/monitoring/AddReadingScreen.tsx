@@ -2,7 +2,7 @@ import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X, Keyboard, Gauge, ScanLine } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
+import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/readingsStore'
 import { OdometerInput } from './OdometerInput'
 import { clampInt } from './odometer'
 
@@ -22,6 +22,8 @@ interface AddReadingScreenProps {
   icon: LucideIcon
   /** Letzter bekannter Stand als Default für das Zählwerk (Ganzzahl-Anteil). */
   defaultValue: number
+  /** Wenn gesetzt: bestehende Ablesung bearbeiten statt neu anlegen. */
+  editReading?: MeterReading
   onClose: () => void
 }
 
@@ -48,18 +50,23 @@ export function AddReadingScreen({
   accent,
   icon: Icon,
   defaultValue,
+  editReading,
   onClose,
 }: AddReadingScreenProps) {
   const { t } = useTranslation()
   const addReading = useReadingsStore((s) => s.addReading)
+  const updateReading = useReadingsStore((s) => s.updateReading)
 
   const max = 10 ** DIGITS - 1
-  const [date, setDate] = useState(todayIso)
-  const [value, setValue] = useState(() => clampInt(defaultValue, max))
-  const [keyboard, setKeyboard] = useState(false)
+  // Beim Bearbeiten die vorhandenen Werte vorbelegen, sonst „neu" (heute + Default).
+  const initialValue = editReading ? editReading.value : defaultValue
+  const [date, setDate] = useState(() => editReading?.date ?? todayIso())
+  const [value, setValue] = useState(() => clampInt(Math.trunc(initialValue), max))
+  // Bei Dezimalwerten direkt die Tastatur zeigen, damit die Nachkommastelle sichtbar ist.
+  const [keyboard, setKeyboard] = useState(() => !Number.isInteger(initialValue))
   const [scanning, setScanning] = useState(false)
   // Manuelles Tastaturfeld erlaubt auch Dezimaleingabe.
-  const [text, setText] = useState(() => String(clampInt(defaultValue, max)))
+  const [text, setText] = useState(() => String(initialValue))
 
   /** Ergebnis aus dem Kamera-Scan übernehmen: in die Tastatureingabe füllen,
    *  damit der Nutzer es vor dem Speichern noch im Kontext sieht/korrigiert. */
@@ -81,7 +88,11 @@ export function AddReadingScreen({
 
   function handleSave() {
     if (!valid) return
-    addReading(type, { date, value: effectiveValue })
+    if (editReading) {
+      updateReading(type, editReading.id, { date, value: effectiveValue })
+    } else {
+      addReading(type, { date, value: effectiveValue })
+    }
     onClose()
   }
 
@@ -102,7 +113,7 @@ export function AddReadingScreen({
           </span>
           <div className="min-w-0">
             <h2 className="text-base font-semibold text-foreground truncate">
-              {t('monitoring.odometer.title')}
+              {t(editReading ? 'monitoring.odometer.editTitle' : 'monitoring.odometer.title')}
             </h2>
             <p className="text-sm text-muted truncate">
               {typeLabel} · {unit}

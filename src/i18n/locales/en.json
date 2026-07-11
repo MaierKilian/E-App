@@ -1342,6 +1342,7 @@
     },
     "odometer": {
       "title": "Enter reading",
+      "editTitle": "Edit reading",
       "keyboard": "Keyboard",
       "wheel": "Dial",
       "save": "Save",
@@ -1376,7 +1377,9 @@
         "costPerYear": "Cost / year"
       },
       "allReadings": "All readings",
+      "edit": "Edit",
       "delete": "Delete",
+      "deleteConfirm": "Really delete this reading?",
       "chartTitle": "Consumption per interval",
       "consumptionUnit": "kWh",
       "scrubLabel": "Scrub the trend"

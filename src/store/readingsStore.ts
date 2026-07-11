@@ -29,6 +29,11 @@ interface ReadingsState {
   readings: Partial<Record<EnergyType, MeterReading[]>>
   reminderFrequency: ReminderFrequency
   addReading: (type: EnergyType, reading: { date: string; value: number }) => void
+  updateReading: (
+    type: EnergyType,
+    id: string,
+    patch: { date?: string; value?: number },
+  ) => void
   deleteReading: (type: EnergyType, id: string) => void
   setReminderFrequency: (freq: ReminderFrequency) => void
   resetReadings: () => void
@@ -75,6 +80,26 @@ export const useReadingsStore = create<ReadingsState>()(
             readings: {
               ...state.readings,
               [type]: sortReadings([...existing, next]),
+            },
+          }
+        }),
+      updateReading: (type, id, patch) =>
+        set((state) => {
+          const existing = state.readings[type] ?? []
+          const updated = existing.map((r) =>
+            r.id === id
+              ? {
+                  ...r,
+                  ...(patch.date !== undefined ? { date: patch.date } : {}),
+                  ...(patch.value !== undefined ? { value: patch.value } : {}),
+                }
+              : r,
+          )
+          // Neu sortieren, da sich das Datum geändert haben kann.
+          return {
+            readings: {
+              ...state.readings,
+              [type]: sortReadings(updated),
             },
           }
         }),
