@@ -23,6 +23,16 @@ import { ShareProfileDialog } from './ShareProfileDialog'
  * Wohnung liegen – so ist die Startseite aufgeräumt und das Löschen nicht mehr
  * dauerhaft präsent. Wird nur für angemeldete Nutzer mit geladenen Profilen gezeigt.
  */
+/**
+ * Kürzt fürs Display gängige Straßen-Endungen (…straße/…strasse → …str.),
+ * damit lange Adressen in die Kachel passen – ohne die gespeicherte
+ * Bezeichnung zu ändern. Greift nur am Wortende, damit z. B. „Straßenfest"
+ * unangetastet bleibt.
+ */
+function shortenPlaceName(name: string): string {
+  return name.replace(/stra(?:ß|ss)e\b/gi, (m) => (m[0] === 'S' ? 'Str.' : 'str.'))
+}
+
 export function ProfileSwitcher() {
   const { t } = useTranslation()
   const isAuthenticated = useIsAuthenticated()
@@ -227,7 +237,8 @@ export function ProfileSwitcher() {
           <div className={`grid gap-2.5 ${columnsClass}`}>
             {profiles.map((p) => {
               const isActive = p.id === activeId
-              const name = p.name.trim() || t('home.profileNameFallback')
+              const fullName = p.name.trim() || t('home.profileNameFallback')
+              const name = shortenPlaceName(fullName)
               return (
                 <button
                   key={p.id}
@@ -235,7 +246,7 @@ export function ProfileSwitcher() {
                   onClick={() => handleSwitch(p.id)}
                   disabled={busy}
                   aria-pressed={isActive}
-                  aria-label={name}
+                  aria-label={fullName}
                   className={`focus-ring relative aspect-[4/3] overflow-hidden rounded-2xl transition-transform active:scale-[0.98] disabled:opacity-60 ${
                     isActive ? 'ring-2 ring-primary' : 'ring-1 ring-border'
                   }`}
