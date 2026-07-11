@@ -146,6 +146,8 @@
     "builder": {
       "back": "Back",
       "variant": "Scope",
+      "variantHint": "Short: the essentials. Long: detailed with everything.",
+      "customize": "Customize",
       "contents": "Contents",
       "range": "Period",
       "meters": "Meters",

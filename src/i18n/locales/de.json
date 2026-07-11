@@ -146,6 +146,8 @@
     "builder": {
       "back": "Zurück",
       "variant": "Umfang",
+      "variantHint": "Kurz: das Wichtigste. Lang: ausführlich mit allen Details.",
+      "customize": "Anpassen",
       "contents": "Inhalte",
       "range": "Zeitraum",
       "meters": "Zähler",

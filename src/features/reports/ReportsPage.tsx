@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FileText, Download, Ruler, Gauge, Layers, ChevronLeft, Check, Sparkles } from 'lucide-react'
+import { FileText, Download, Ruler, Gauge, Layers, ChevronLeft, ChevronDown, Check, Sparkles } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { SelectChip } from '@/components/ui/SelectChip'
@@ -245,6 +245,9 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
   const [meters, setMeters] = useState<EnergyType[]>([])
   const [categories, setCategories] = useState<MeasurementCategory[]>([])
   const [busy, setBusy] = useState(false)
+  // Erweiterte Optionen (Inhalte, Zeitraum, Zähler, Gewerke) standardmäßig
+  // eingeklappt – der Standard ist bewusst schlank (nur Umfang + Export).
+  const [advanced, setAdvanced] = useState(false)
 
   const showMonitoring = type === 'monitoring' || type === 'total'
   const showMeasurements = type === 'measurements' || type === 'total'
@@ -335,115 +338,114 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
         <p className="text-sm text-muted">{t(`report.types.${type}.description`)}</p>
       </div>
 
-      {/* 1 · Format & Inhalt */}
-      <Card className="space-y-4">
-        <div>
-          <SectionLabel>{t('report.builder.variant')}</SectionLabel>
-          <div className="flex flex-wrap gap-2">
-            <SelectChip
-              label={t('report.variant.short')}
-              selected={variant === 'short'}
-              onClick={() => changeVariant('short')}
-            />
-            <SelectChip
-              label={t('report.variant.long')}
-              selected={variant === 'long'}
-              onClick={() => changeVariant('long')}
-            />
-          </div>
-        </div>
-        <div>
-          <SectionLabel>{t('report.builder.contents')}</SectionLabel>
-          <div className="flex flex-wrap gap-2">
-            {showMonitoring && (
-              <>
-                <ToggleChip label={t('report.contents.charts')} active={options.charts} onClick={() => toggleOption('charts')} />
-                <ToggleChip label={t('report.contents.kpis')} active={options.kpis} onClick={() => toggleOption('kpis')} />
-                <ToggleChip label={t('report.contents.comparison')} active={options.comparison} onClick={() => toggleOption('comparison')} />
-                <ToggleChip label={t('report.contents.history')} active={options.history} onClick={() => toggleOption('history')} />
-              </>
-            )}
-            {showMeasurements && (
-              <>
-                <ToggleChip label={t('report.contents.savings')} active={options.savings} onClick={() => toggleOption('savings')} />
-                <ToggleChip label={t('report.contents.tips')} active={options.tips} onClick={() => toggleOption('tips')} />
-                <ToggleChip label={t('report.contents.openMeasurements')} active={options.openMeasurements} onClick={() => toggleOption('openMeasurements')} />
-              </>
-            )}
-          </div>
-        </div>
-      </Card>
-
-      {/* 2 · Zeitraum & Auswahl (zusammengefasst) */}
-      {(showMonitoring || needsSelection) && (
-        <Card className="space-y-4">
-          {showMonitoring && (
-            <div>
-              <SectionLabel>{t('report.builder.range')}</SectionLabel>
-              <div className="flex flex-wrap gap-2">
-                {RANGE_OPTIONS.map((r) => (
-                  <SelectChip
-                    key={r.key}
-                    label={t(`report.range.${r.key}`)}
-                    selected={rangeDays === r.value}
-                    onClick={() => setRangeDays(r.value)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {showMonitoring && meterTypes.length > 0 && (
-            <div>
-              <SectionLabel>{t('report.builder.meters')}</SectionLabel>
-              <div className="flex flex-wrap gap-2">
-                {meterTypes.map((m) => (
-                  <SelectChip
-                    key={m}
-                    label={t(`monitoring.energyTypes.${m}`)}
-                    selected={meters.length === 0 || meters.includes(m)}
-                    onClick={() => toggleMeter(m)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {showMeasurements && (
-            <div>
-              <SectionLabel>{t('report.builder.categories')}</SectionLabel>
-              <div className="flex flex-wrap gap-2">
-                {catTypes.map((c) => (
-                  <SelectChip
-                    key={c}
-                    label={t(`measurements.categories.${c}`)}
-                    selected={categories.length === 0 || categories.includes(c)}
-                    onClick={() => toggleCategory(c)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {needsSelection && <p className="text-xs text-muted">{t('report.builder.allHint')}</p>}
-        </Card>
-      )}
-
-      {/* 3 · Kompakte Vorschau */}
+      {/* Umfang – die eine sichtbare Entscheidung. Der Rest hat sinnvolle
+          Defaults und liegt unter „Anpassen“. */}
       <Card>
-        <SectionLabel>{t('report.builder.previewTitle')}</SectionLabel>
-        <div className="flex flex-wrap gap-1.5">
-          {buildPreviewLines(t, type, variant, options).map((line) => (
-            <span
-              key={line}
-              className="inline-flex items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1 text-xs text-foreground"
-            >
-              <Check className="h-3 w-3 text-primary shrink-0" />
-              {line}
-            </span>
-          ))}
+        <SectionLabel>{t('report.builder.variant')}</SectionLabel>
+        <div className="flex flex-wrap gap-2">
+          <SelectChip
+            label={t('report.variant.short')}
+            selected={variant === 'short'}
+            onClick={() => changeVariant('short')}
+          />
+          <SelectChip
+            label={t('report.variant.long')}
+            selected={variant === 'long'}
+            onClick={() => changeVariant('long')}
+          />
         </div>
+        <p className="mt-3 text-xs text-muted">{t('report.builder.variantHint')}</p>
       </Card>
+
+      {/* Anpassen – erweiterte Optionen, standardmäßig eingeklappt */}
+      <div className="glass rounded-2xl">
+        <button
+          type="button"
+          onClick={() => setAdvanced((v) => !v)}
+          aria-expanded={advanced}
+          className="focus-ring flex w-full items-center justify-between gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-foreground"
+        >
+          {t('report.builder.customize')}
+          <ChevronDown
+            className={`h-4 w-4 text-muted transition-transform ${advanced ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        {advanced && (
+          <div className="space-y-4 px-4 pb-4">
+            <div>
+              <SectionLabel>{t('report.builder.contents')}</SectionLabel>
+              <div className="flex flex-wrap gap-2">
+                {showMonitoring && (
+                  <>
+                    <ToggleChip label={t('report.contents.charts')} active={options.charts} onClick={() => toggleOption('charts')} />
+                    <ToggleChip label={t('report.contents.kpis')} active={options.kpis} onClick={() => toggleOption('kpis')} />
+                    <ToggleChip label={t('report.contents.comparison')} active={options.comparison} onClick={() => toggleOption('comparison')} />
+                    <ToggleChip label={t('report.contents.history')} active={options.history} onClick={() => toggleOption('history')} />
+                  </>
+                )}
+                {showMeasurements && (
+                  <>
+                    <ToggleChip label={t('report.contents.savings')} active={options.savings} onClick={() => toggleOption('savings')} />
+                    <ToggleChip label={t('report.contents.tips')} active={options.tips} onClick={() => toggleOption('tips')} />
+                    <ToggleChip label={t('report.contents.openMeasurements')} active={options.openMeasurements} onClick={() => toggleOption('openMeasurements')} />
+                  </>
+                )}
+              </div>
+            </div>
+
+            {showMonitoring && (
+              <div>
+                <SectionLabel>{t('report.builder.range')}</SectionLabel>
+                <div className="flex flex-wrap gap-2">
+                  {RANGE_OPTIONS.map((r) => (
+                    <SelectChip
+                      key={r.key}
+                      label={t(`report.range.${r.key}`)}
+                      selected={rangeDays === r.value}
+                      onClick={() => setRangeDays(r.value)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {showMonitoring && meterTypes.length > 0 && (
+              <div>
+                <SectionLabel>{t('report.builder.meters')}</SectionLabel>
+                <div className="flex flex-wrap gap-2">
+                  {meterTypes.map((m) => (
+                    <SelectChip
+                      key={m}
+                      label={t(`monitoring.energyTypes.${m}`)}
+                      selected={meters.length === 0 || meters.includes(m)}
+                      onClick={() => toggleMeter(m)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {showMeasurements && (
+              <div>
+                <SectionLabel>{t('report.builder.categories')}</SectionLabel>
+                <div className="flex flex-wrap gap-2">
+                  {catTypes.map((c) => (
+                    <SelectChip
+                      key={c}
+                      label={t(`measurements.categories.${c}`)}
+                      selected={categories.length === 0 || categories.includes(c)}
+                      onClick={() => toggleCategory(c)}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {needsSelection && <p className="text-xs text-muted">{t('report.builder.allHint')}</p>}
+          </div>
+        )}
+      </div>
 
       {/* Fixe Export-Leiste – immer erreichbar */}
       <div className="glass-bar fixed inset-x-0 z-30 border-t border-border/60 bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]">
@@ -461,33 +463,6 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
       </div>
     </div>
   )
-}
-
-/** Baut die Vorschau-Zeilen aus der aktuellen Auswahl. */
-function buildPreviewLines(
-  t: (k: string) => string,
-  type: ReportType,
-  variant: ReportVariant,
-  options: ReportContentOptions,
-): string[] {
-  const lines: string[] = [
-    `${t('report.builder.variant')}: ${t(`report.variant.${variant}`)}`,
-  ]
-  const add = (k: keyof ReportContentOptions, label: string) => {
-    if (options[k]) lines.push(label)
-  }
-  if (type === 'monitoring' || type === 'total') {
-    add('charts', t('report.contents.charts'))
-    add('kpis', t('report.contents.kpis'))
-    add('comparison', t('report.contents.comparison'))
-    add('history', t('report.contents.history'))
-  }
-  if (type === 'measurements' || type === 'total') {
-    add('savings', t('report.contents.savings'))
-    add('tips', t('report.contents.tips'))
-    add('openMeasurements', t('report.contents.openMeasurements'))
-  }
-  return lines
 }
 
 function SectionLabel({ children }: { children: ReactNode }) {
