@@ -117,6 +117,21 @@ exports.scanMeter = onCall(
     }
 
     const data = await resp.json()
+
+    // Token-Verbrauch dieses einen Scans protokollieren (im Logs Explorer
+    // nach "Gemini-Tokens" filtern). promptTokenCount enthält Text + Bild.
+    const usage = data?.usageMetadata
+    if (usage) {
+      console.log(
+        'Gemini-Tokens',
+        JSON.stringify({
+          prompt: usage.promptTokenCount,
+          output: usage.candidatesTokenCount,
+          total: usage.totalTokenCount,
+        }),
+      )
+    }
+
     const text = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? ''
     let parsed = {}
     try {
