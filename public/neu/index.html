@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>E-App – Neuigkeiten</title>
+
+    <!--
+      NEUIGKEITEN-SEITE (öffentlich, ohne Login) unter https://e-app-info.web.app/neu/
+      Zum Teilen in WhatsApp & Co. gedacht: ein fester Link, oben steht das Neueste.
+
+      NEUES UPDATE HINZUFÜGEN:
+      1. Unten eine neue <article class="update"> ganz OBEN in <main> einfügen
+         (Vorlage: die vorhandene Karte kopieren, Datum/Titel/Text anpassen).
+      2. Optional die og:title / og:description unten anpassen, damit die
+         WhatsApp-Vorschau das neueste Update zeigt.
+      3. Nach main mergen → geht automatisch live (siehe docs/deployment.md).
+    -->
+
+    <meta name="description" content="Neu in der E-App: Zählerstände per Kamera-Foto automatisch erkennen – dank KI." />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#FAFAFA" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#09090B" />
+
+    <!-- Vorschau-Kärtchen für WhatsApp / Messenger / Social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="E-App" />
+    <meta property="og:title" content="Neu: Zählerstände einfach abfotografieren 📸" />
+    <meta property="og:description" content="Die E-App erkennt deinen Gas-, Strom- oder Wasserzähler jetzt automatisch per Kamera – kein Abtippen mehr. Jetzt ausprobieren." />
+    <meta property="og:image" content="https://e-app-info.web.app/logo.png" />
+    <meta property="og:url" content="https://e-app-info.web.app/neu/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Neu: Zählerstände einfach abfotografieren 📸" />
+    <meta name="twitter:description" content="Die E-App erkennt deinen Zählerstand jetzt automatisch per Kamera – kein Abtippen mehr." />
+    <meta name="twitter:image" content="https://e-app-info.web.app/logo.png" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <style>
+      :root {
+        --bg: #fafafa;
+        --surface: #ffffff;
+        --text: #18181b;
+        --muted: #71717a;
+        --border: #e4e4e7;
+        --primary: #4d7c0f;
+        --primary-ink: #ffffff;
+        --accent: #ea7a3b;
+        --shadow: 0 10px 30px rgba(24, 24, 27, 0.08);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #09090b;
+          --surface: #18181b;
+          --text: #fafafa;
+          --muted: #a1a1aa;
+          --border: #27272a;
+          --primary: #84cc16;
+          --primary-ink: #14200a;
+          --accent: #fb923c;
+          --shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html { -webkit-text-size-adjust: 100%; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: env(safe-area-inset-top) 20px calc(28px + env(safe-area-inset-bottom));
+      }
+      .wrap { width: 100%; max-width: 560px; margin: 0 auto; }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 28px 4px 20px;
+      }
+      header img { width: 40px; height: 40px; border-radius: 11px; }
+      header .brand { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+      header .brand span { color: var(--muted); font-weight: 500; }
+
+      .update {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        padding: 22px;
+        box-shadow: var(--shadow);
+        margin-bottom: 16px;
+      }
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--primary-ink);
+        background: var(--primary);
+        padding: 4px 10px;
+        border-radius: 999px;
+      }
+      .date { font-size: 12px; color: var(--muted); margin-left: 10px; }
+      .hero-emoji { font-size: 40px; line-height: 1; margin: 16px 0 10px; }
+      h1 {
+        font-size: 24px;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        margin-bottom: 8px;
+      }
+      .lead { color: var(--muted); font-size: 15px; }
+
+      ul.points { list-style: none; margin: 18px 0 4px; }
+      ul.points li {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 7px 0;
+        font-size: 15px;
+      }
+      ul.points li .tick {
+        flex: 0 0 auto;
+        width: 20px; height: 20px;
+        margin-top: 1px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--primary) 16%, transparent);
+        color: var(--primary);
+        display: grid; place-items: center;
+        font-size: 12px; font-weight: 800;
+      }
+      .also {
+        margin-top: 16px;
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+        font-size: 14px;
+      }
+      .also b { color: var(--accent); }
+
+      .cta {
+        display: block;
+        text-align: center;
+        text-decoration: none;
+        background: var(--primary);
+        color: var(--primary-ink);
+        font-weight: 700;
+        font-size: 16px;
+        padding: 15px 20px;
+        border-radius: 16px;
+        margin-top: 22px;
+        transition: opacity 0.15s ease, transform 0.1s ease;
+      }
+      .cta:active { transform: scale(0.985); }
+      .cta:hover { opacity: 0.92; }
+      .url-hint { text-align: center; font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+      footer { text-align: center; color: var(--muted); font-size: 12px; padding: 22px 0 4px; }
+      footer a { color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <img src="/logo.png" alt="E-App Logo" />
+        <div class="brand">E-App <span>· Neuigkeiten</span></div>
+      </header>
+
+      <main>
+        <!-- Neuestes Update ganz oben -->
+        <article class="update">
+          <div>
+            <span class="badge">Neu</span><span class="date">Juli 2026</span>
+          </div>
+          <div class="hero-emoji">📸</div>
+          <h1>Zählerstände einfach abfotografieren</h1>
+          <p class="lead">
+            Die E-App erkennt deinen Zählerstand jetzt automatisch per Kamera –
+            dank KI. Kein Abtippen mehr.
+          </p>
+
+          <ul class="points">
+            <li><span class="tick">✓</span> Kamera auf den Zähler halten – die Ziffern werden automatisch gelesen</li>
+            <li><span class="tick">✓</span> Funktioniert für Gas, Strom und Wasser</li>
+            <li><span class="tick">✓</span> Wert kurz prüfen, speichern – fertig</li>
+          </ul>
+
+          <div class="also">
+            <b>Außerdem neu:</b> Eingetragene Zählerstände lassen sich jetzt
+            nachträglich bearbeiten (Datum &amp; Wert) und einzeln löschen.
+          </div>
+
+          <a class="cta" href="https://e-app-info.web.app/">Jetzt ausprobieren →</a>
+          <p class="url-hint">e-app-info.web.app</p>
+        </article>
+      </main>
+
+      <footer>
+        E-App · Energieanalyse für zuhause ·
+        <a href="https://e-app-info.web.app/">e-app-info.web.app</a>
+      </footer>
+    </div>
+  </body>
+</html>
