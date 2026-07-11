@@ -95,7 +95,8 @@ export function MeterScanner({ unit, accent, lastReading, onResult, onClose }: M
     if (!track) return
     const next = !torchOn
     try {
-      await track.applyConstraints({ advanced: [{ torch: next }] } as MediaTrackConstraints)
+      // `torch` ist (noch) nicht Teil der DOM-Typen → bewusst über unknown casten.
+      await track.applyConstraints({ advanced: [{ torch: next }] } as unknown as MediaTrackConstraints)
       setTorchOn(next)
     } catch {
       // Gerät lehnt die Steuerung ab → Schalter zurückziehen.
