@@ -1584,9 +1584,7 @@
     "profileMissing_other": "{{count}} details left",
     "completeCta": "Complete",
     "energy": {
-      "title": "{{type}} · projected / year",
-      "perYear": "≈ {{kwh}} kWh / year",
-      "perYearUnit": "≈ {{amount}} {{unit}} / year"
+      "overline": "Projected / year"
     },
     "hero": {
       "title": "Estimated energy costs",

@@ -1584,9 +1584,7 @@
     "profileMissing_other": "Noch {{count}} Angaben offen",
     "completeCta": "Vervollständigen",
     "energy": {
-      "title": "{{type}} · hochgerechnet / Jahr",
-      "perYear": "≈ {{kwh}} kWh / Jahr",
-      "perYearUnit": "≈ {{amount}} {{unit}} / Jahr"
+      "overline": "Hochgerechnet / Jahr"
     },
     "hero": {
       "title": "Geschätzte Energiekosten",
