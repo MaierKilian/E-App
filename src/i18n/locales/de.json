@@ -1585,7 +1585,8 @@
     "completeCta": "Vervollständigen",
     "energy": {
       "title": "{{type}} · hochgerechnet / Jahr",
-      "perYear": "≈ {{kwh}} kWh / Jahr"
+      "perYear": "≈ {{kwh}} kWh / Jahr",
+      "perYearUnit": "≈ {{amount}} {{unit}} / Jahr"
     },
     "hero": {
       "title": "Geschätzte Energiekosten",
