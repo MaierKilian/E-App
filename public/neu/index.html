@@ -62,8 +62,10 @@
       }
 
       .device {
-        position: relative;
-        height: min(64dvh, 580px); aspect-ratio: 300 / 620;
+        position: relative; flex: 0 0 auto;
+        /* Feste Maße nur aus der Bildschirmhöhe – NIE aus dem Inhalt (kein Größensprung). */
+        height: min(64dvh, 580px);
+        width: calc(min(64dvh, 580px) * 0.484);
         background: linear-gradient(160deg, #434347, #101012);
         border-radius: 46px; padding: 5px;
         box-shadow: 0 34px 64px -22px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.35);
@@ -196,7 +198,7 @@
       .cta:active { transform: scale(.98); }
 
       @media (prefers-reduced-motion: reduce) { .laser, .spin, .done-check, .flash, .pane { animation: none !important } }
-      @media (max-height: 640px) { .device { height: 58dvh } .foot h1 { font-size: 16px } .foot p { display: none } }
+      @media (max-height: 640px) { .device { height: 58dvh; width: calc(58dvh * 0.484) } .foot h1 { font-size: 16px } .foot p { display: none } }
     </style>
   </head>
   <body>
