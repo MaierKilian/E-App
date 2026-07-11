@@ -1558,6 +1558,7 @@
   },
   "home": {
     "greeting": "Willkommen zurück",
+    "homeProfileLabel": "Wohnprofil",
     "profileNameFallback": "dein Zuhause",
     "questionnaire": {
       "continue": "Energieprofil vervollständigen",

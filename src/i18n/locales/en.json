@@ -1558,6 +1558,7 @@
   },
   "home": {
     "greeting": "Welcome back",
+    "homeProfileLabel": "Home profile",
     "profileNameFallback": "your home",
     "questionnaire": {
       "continue": "Complete your profile",

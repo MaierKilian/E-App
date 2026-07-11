@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Lightbulb, CheckCircle2 } from 'lucide-react'
+import { ChevronRight, Lightbulb, CheckCircle2, Home } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useTipsStore } from '@/store/tipsStore'
@@ -51,11 +51,19 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
           onClick={onEdit}
           className="focus-ring w-full text-left rounded-2xl flex items-center gap-4 transition-transform duration-200 active:scale-[0.99]"
         >
-          <ProgressRing value={completeness} size={64} stroke={6}>
-            <Avatar src={data.profileImage || undefined} name={data.profileName} size={50} />
-          </ProgressRing>
+          <div className="relative shrink-0">
+            <ProgressRing value={completeness} size={64} stroke={6}>
+              <Avatar src={data.profileImage || undefined} name={data.profileName} size={50} />
+            </ProgressRing>
+            {/* Haus-Badge kennzeichnet die Karte klar als Wohnung (nicht als Konto). */}
+            <span className="absolute -bottom-0.5 -right-0.5 grid h-6 w-6 place-items-center rounded-full bg-primary text-primary-foreground ring-2 ring-surface-2">
+              <Home className="h-3.5 w-3.5" />
+            </span>
+          </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm text-muted">{t('home.greeting')}</p>
+            <p className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+              {t('home.homeProfileLabel')}
+            </p>
             <h1 className="text-xl font-bold text-foreground truncate">
               {(data.profileName ?? '').trim() || t('home.profileNameFallback')}
             </h1>
