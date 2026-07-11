@@ -64,8 +64,8 @@
       .device {
         position: relative; flex: 0 0 auto;
         /* Feste Maße nur aus der Bildschirmhöhe – NIE aus dem Inhalt (kein Größensprung). */
-        height: min(64dvh, 580px);
-        width: calc(min(64dvh, 580px) * 0.484);
+        height: min(70dvh, 600px);
+        width: calc(min(70dvh, 600px) * 0.484);
         background: linear-gradient(160deg, #434347, #101012);
         border-radius: 46px; padding: 5px;
         box-shadow: 0 34px 64px -22px rgba(0,0,0,0.6), 0 2px 6px rgba(0,0,0,0.35);
@@ -160,15 +160,15 @@
       .cap small { display: block; color: #8b8b93; font-size: 10.5px; font-weight: 400; margin-top: 1px; }
       .field-row { display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 1px; }
       .field {
-        min-width: 128px; text-align: center; padding: 8px 14px; border-radius: 14px;
+        min-width: 100px; text-align: center; padding: 7px 12px; border-radius: 13px;
         border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.08);
-        color: #fff; font-weight: 800; font-size: 22px; font-variant-numeric: tabular-nums;
+        color: #fff; font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums;
       }
       .field-row .u { color: #a1a1aa; font-size: 12px; }
       .last { text-align: center; color: #6b6b73; font-size: 10px; }
-      .row { display: flex; gap: 8px; margin-top: 1px; }
-      .b { border: 0; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 13px; padding: 11px 12px; border-radius: 14px;
-        display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: transform .1s ease, opacity .15s ease; }
+      .row { display: flex; gap: 6px; margin-top: 1px; }
+      .b { border: 0; cursor: pointer; font-family: inherit; font-weight: 700; font-size: 12px; padding: 10px 7px; border-radius: 13px; min-width: 0;
+        display: inline-flex; align-items: center; justify-content: center; gap: 5px; line-height: 1.15; transition: transform .1s ease, opacity .15s ease; }
       .b:active { transform: scale(.97); }
       .b.primary { background: var(--accent); color: #fff; }
       .b.ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.25); }
