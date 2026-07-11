@@ -17,9 +17,13 @@ Diese Datei ist gleichzeitig **Anleitung** und **Fortschritts-Checkliste**.
 | Backend / Daten     | Firestore (Datenbank)     | ⏳ to do  | kostenlos (Spark) |
 | Eigene Domain       | Hosting → Custom Domain   | ⏸ später | kostenlos         |
 
-> **Wichtig:** Der Admin-Schlüssel (Service-Account-`.json`) wird für diesen Weg
-> **nicht** gebraucht und gehört **niemals** ins Repo oder in Chats. Die Web-App
-> nutzt ausschließlich die öffentliche Web-Config (siehe `.env.example`).
+> **Wichtig:** Die **Web-App selbst** braucht keinen Admin-Schlüssel – sie nutzt
+> ausschließlich die öffentliche Web-Config (siehe `.env.example`). Ein
+> Service-Account-`.json` gehört **niemals ins Repo oder in Chats**.
+>
+> Für den **automatischen CI-Deploy** (GitHub Actions) wird hingegen ein
+> Service-Account verwendet – dessen Key liegt als **GitHub-Secret**
+> `FIREBASE_SERVICE_ACCOUNT` (nicht im Repo). Siehe `docs/deployment.md`.
 
 ---
 
@@ -98,21 +102,19 @@ Im Code (ERLEDIGT ✅):
 
 ---
 
-## Phase E – Live schalten
+## Phase E – Live schalten (ERLEDIGT ✅ – jetzt automatisch)
 
-Voraussetzung: Firebase CLI installiert und eingeloggt.
+Deploys laufen inzwischen **automatisch** bei jedem Push auf `main`
+(GitHub Actions → Firebase Hosting + Functions). Details: `docs/deployment.md`.
+
+Manueller Fallback (Firebase CLI installiert & `firebase login`):
 
 ```bash
-npm install -g firebase-tools   # einmalig
-firebase login                  # einmalig, öffnet Browser
-npm run deploy:firebase         # baut + deployt zu Firebase Hosting
+npm run deploy:firebase          # baut + deployt Hosting
+firebase deploy --only functions # deployt die Cloud Function
 ```
 
-Danach ist die aktuelle Version live unter `https://e-app-info.web.app`.
-
-> **Checkliste Phase E**
-> - [ ] Firebase CLI installiert & eingeloggt
-> - [ ] Erster Deploy erfolgreich
+Live unter `https://e-app-info.web.app`.
 
 ---
 
