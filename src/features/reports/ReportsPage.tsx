@@ -338,6 +338,9 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
         <p className="text-sm text-muted">{t(`report.types.${type}.description`)}</p>
       </div>
 
+      {/* Hero: elegante Papier-Vorschau des Berichts */}
+      <ReportPreview variant={variant} title={(profile.profileName ?? '').trim() || t('home.profileNameFallback')} />
+
       {/* Umfang – die eine sichtbare Entscheidung. Der Rest hat sinnvolle
           Defaults und liegt unter „Anpassen“. */}
       <Card>
@@ -459,6 +462,105 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
             <Download className="w-5 h-5" />
             {t('report.builder.export')}
           </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Elegante „Papier"-Vorschau des Berichts (stilisiertes Cover mit Kopfband,
+ * Mini-Chart, Kennzahlen-Kacheln und angedeuteten Textzeilen). Kein echtes PDF –
+ * ein hochwertiges Mockup, das den Bereich sofort greifbar und begehrenswert macht.
+ */
+function ReportPreview({ variant, title }: { variant: ReportVariant; title: string }) {
+  const { t, i18n } = useTranslation()
+  const long = variant === 'long'
+  const dateLabel = `${new Intl.DateTimeFormat(i18n.language, {
+    month: 'long',
+    year: 'numeric',
+  }).format(new Date())} · ${t(`report.variant.${variant}`)}`
+
+  return (
+    <div className="grid place-items-center py-1">
+      <div className="relative w-[200px]">
+        {/* Gestapelte Seiten – deuten Mehrseitigkeit an (mehr beim Langbericht). */}
+        {long && (
+          <div className="absolute inset-x-3 -bottom-2 top-5 rotate-[7deg] origin-bottom rounded-2xl bg-zinc-300/80" />
+        )}
+        <div className="absolute inset-x-2.5 -bottom-1.5 top-4 rotate-[4deg] origin-bottom rounded-2xl bg-zinc-200" />
+        <div className="absolute inset-x-1.5 -bottom-0.5 top-2 -rotate-2 origin-bottom rounded-2xl bg-zinc-100 shadow-sm" />
+
+        {/* Vorderseite */}
+        <div className="relative aspect-[1/1.414] overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_26px_50px_-18px_rgba(20,30,10,0.45)]">
+          <div
+            className="relative px-3 py-2.5 text-white"
+            style={{ background: 'linear-gradient(135deg,#5a8a1e,#3c5c14)' }}
+          >
+            <p className="text-[7px] font-extrabold tracking-[0.2em]">ENERGIEBERICHT</p>
+            <div className="absolute right-3 top-3 flex flex-col items-end gap-[2px]">
+              <span className="block h-[3px] w-[15px] rounded-sm bg-white/95" />
+              <span className="block h-[3px] w-[11px] rounded-sm bg-white/95" />
+              <span className="block h-[3px] w-[15px] rounded-sm bg-white/95" />
+            </div>
+            <h3 className="mt-2 truncate text-[11px] font-extrabold leading-tight">{title}</h3>
+            <p className="text-[7px] opacity-85">{dateLabel}</p>
+          </div>
+
+          <div className="p-3">
+            <div className="mb-2 h-[52px] overflow-hidden rounded-lg border border-zinc-100 bg-zinc-50">
+              <svg viewBox="0 0 190 52" preserveAspectRatio="none" className="h-full w-full">
+                <defs>
+                  <linearGradient id="rp-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#5a8a1e" stopOpacity="0.35" />
+                    <stop offset="1" stopColor="#5a8a1e" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path
+                  d="M0,40 L26,34 L52,37 L78,22 L104,27 L130,14 L156,18 L190,8 L190,52 L0,52 Z"
+                  fill="url(#rp-grad)"
+                />
+                <path
+                  d="M0,40 L26,34 L52,37 L78,22 L104,27 L130,14 L156,18 L190,8"
+                  fill="none"
+                  stroke="#5a8a1e"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+
+            <div className="mb-2.5 flex gap-1.5">
+              {['#f2b807', '#3b82f6', '#ef7c1b'].map((c) => (
+                <div key={c} className="flex-1 rounded-lg bg-zinc-100 p-1.5">
+                  <span className="mb-1.5 block h-3.5 w-3.5 rounded-md" style={{ background: c }} />
+                  <span className="block h-1.5 w-[70%] rounded bg-zinc-300" />
+                  <span className="mt-1 block h-1 w-[45%] rounded bg-zinc-200" />
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              {[92, 100, 70, 84].slice(0, long ? 4 : 3).map((w, idx) => (
+                <span
+                  key={idx}
+                  className="block h-[5px] rounded bg-zinc-200"
+                  style={{ width: `${w}%` }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <p className="absolute bottom-2 left-3 text-[6px] font-bold tracking-widest text-zinc-300">
+            E-APP · ENERGIEANALYSE
+          </p>
+        </div>
+
+        {/* PDF-Badge */}
+        <div className="absolute right-[-8px] top-3 flex items-center gap-1.5 rounded-full bg-zinc-900 px-2.5 py-1.5 text-[10px] font-bold text-white shadow-[0_8px_18px_-6px_rgba(0,0,0,0.5)]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#8fd14f]" />
+          PDF
         </div>
       </div>
     </div>
