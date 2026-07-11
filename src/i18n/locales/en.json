@@ -1800,5 +1800,23 @@
     "hiddenSection": "Hidden",
     "doneLine": "{{count}} done",
     "allHandled": "All handled – nice! New measurements will surface fresh recommendations here."
+  },
+  "scan": {
+    "button": "Scan",
+    "beta": "Beta",
+    "title": "Scan meter reading",
+    "hint": "Line up the digits in the frame – hold steady",
+    "capture": "Capture",
+    "processing": "Reading…",
+    "confirmTitle": "Recognised – please check",
+    "confirmHint": "Is the number correct? Adjust if needed.",
+    "lowConfidence": "Low-confidence read – please check carefully.",
+    "noDigits": "No digits found – type the number or scan again",
+    "retry": "Scan again",
+    "apply": "Use value",
+    "cancel": "Cancel",
+    "errorPermission": "No camera access. Allow the camera in your browser settings and try again.",
+    "errorNoCamera": "No camera found.",
+    "errorInsecure": "The camera needs a secure connection (HTTPS)."
   }
 }

@@ -35,3 +35,7 @@ firebase-adminsdk*.json
 *.njsproj
 *.sln
 *.sw?
+
+# Tesseract.js Sprachdaten (werden vom Node-Worker in cwd geschrieben)
+*.traineddata
+*.traineddata.gz

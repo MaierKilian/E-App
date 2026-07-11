@@ -1,10 +1,15 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { X, Keyboard, Gauge } from 'lucide-react'
+import { X, Keyboard, Gauge, ScanLine } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
 import { OdometerInput } from './OdometerInput'
 import { clampInt } from './odometer'
+
+// Der Scanner zieht Tesseract.js (WASM) nach – nur bei Bedarf laden.
+const MeterScanner = lazy(() =>
+  import('./MeterScanner').then((m) => ({ default: m.MeterScanner })),
+)
 
 interface AddReadingScreenProps {
   type: EnergyType
@@ -52,8 +57,18 @@ export function AddReadingScreen({
   const [date, setDate] = useState(todayIso)
   const [value, setValue] = useState(() => clampInt(defaultValue, max))
   const [keyboard, setKeyboard] = useState(false)
+  const [scanning, setScanning] = useState(false)
   // Manuelles Tastaturfeld erlaubt auch Dezimaleingabe.
   const [text, setText] = useState(() => String(clampInt(defaultValue, max)))
+
+  /** Ergebnis aus dem Kamera-Scan übernehmen: in die Tastatureingabe füllen,
+   *  damit der Nutzer es vor dem Speichern noch im Kontext sieht/korrigiert. */
+  function handleScanResult(scanned: number) {
+    setKeyboard(true)
+    setText(String(scanned))
+    setValue(clampInt(scanned, max))
+    setScanning(false)
+  }
 
   /** Aktuell gültiger numerischer Wert (Zählwerk oder Tastatur). */
   const parsedText = Number.parseFloat(text.replace(',', '.'))
@@ -139,8 +154,20 @@ export function AddReadingScreen({
           <OdometerInput digits={DIGITS} value={value} onChange={setValue} accent={accent} />
         )}
 
-        {/* Umschalter Zählwerk <-> Tastatur */}
-        <div className="flex justify-center">
+        {/* Aktionen: Scannen + Umschalter Zählwerk <-> Tastatur */}
+        <div className="flex justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => setScanning(true)}
+            className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            style={{ background: accent }}
+          >
+            <ScanLine className="w-4 h-4" />
+            {t('scan.button')}
+            <span className="rounded-full bg-white/25 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+              {t('scan.beta')}
+            </span>
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -160,6 +187,17 @@ export function AddReadingScreen({
           </button>
         </div>
       </div>
+
+      {scanning && (
+        <Suspense fallback={null}>
+          <MeterScanner
+            unit={unit}
+            accent={accent}
+            onResult={handleScanResult}
+            onClose={() => setScanning(false)}
+          />
+        </Suspense>
+      )}
 
       <div className="flex flex-col gap-2">
         <button

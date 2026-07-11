@@ -1800,5 +1800,23 @@
     "hiddenSection": "Ausgeblendet",
     "doneLine": "{{count}} erledigt",
     "allHandled": "Alles abgearbeitet – stark! Sobald neue Messungen dazukommen, erscheinen hier wieder Empfehlungen."
+  },
+  "scan": {
+    "button": "Scannen",
+    "beta": "Beta",
+    "title": "Zählerstand scannen",
+    "hint": "Ziffern im Rahmen ausrichten – ruhig halten",
+    "capture": "Erfassen",
+    "processing": "Erkenne…",
+    "confirmTitle": "Erkannt – bitte prüfen",
+    "confirmHint": "Stimmt die Zahl? Bei Bedarf korrigieren.",
+    "lowConfidence": "Unsicher erkannt – bitte genau prüfen.",
+    "noDigits": "Keine Ziffern erkannt – Zahl eintippen oder neu scannen",
+    "retry": "Neu scannen",
+    "apply": "Übernehmen",
+    "cancel": "Abbrechen",
+    "errorPermission": "Kein Kamerazugriff. Erlaube die Kamera in den Browser-Einstellungen und versuche es erneut.",
+    "errorNoCamera": "Keine Kamera gefunden.",
+    "errorInsecure": "Die Kamera braucht eine sichere Verbindung (HTTPS)."
   }
 }
