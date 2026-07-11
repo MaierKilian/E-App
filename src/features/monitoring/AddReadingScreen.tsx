@@ -193,6 +193,7 @@ export function AddReadingScreen({
           <MeterScanner
             unit={unit}
             accent={accent}
+            lastReading={clampInt(defaultValue, max)}
             onResult={handleScanResult}
             onClose={() => setScanning(false)}
           />

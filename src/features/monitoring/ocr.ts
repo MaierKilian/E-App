@@ -6,9 +6,9 @@ import type { Worker } from 'tesseract.js'
  * wird beim ersten Scan einmalig geladen und danach gecacht.
  *
  * Bewusst als *Assistent*: erkannte Ziffern werden nur vorgeschlagen, der Nutzer
- * bestätigt/korrigiert sie (siehe MeterScanner). Generische OCR ist auf realen
- * Zählern nicht fehlerfrei – gerade mechanische Rollenzählwerke, Spiegelungen
- * und schräge Winkel sind schwierig.
+ * bestätigt/korrigiert sie (siehe MeterScanner). Zählwerke sind schwierig
+ * (helle Ziffern auf dunklem Grund, mechanische Rollen, Spiegelungen) – deshalb
+ * eng auf die Ziffernzeile zuschneiden und robust nachverarbeiten.
  */
 
 let workerPromise: Promise<Worker> | null = null
@@ -31,15 +31,19 @@ async function getWorker(): Promise<Worker> {
 }
 
 export interface OcrResult {
-  /** Zusammenhängende Ziffernfolge (alles Nicht-Ziffern entfernt). */
+  /** Beste zusammenhängende Ziffernfolge (längster Lauf). */
   digits: string
   /** Konfidenz 0–100 (grob). */
   confidence: number
 }
 
+/** Zielhöhe des aufbereiteten Ausschnitts – Tesseract mag große, klare Ziffern. */
+const TARGET_HEIGHT = 160
+
 /**
  * Schneidet aus einer Quelle (Video/Canvas) einen Bereich aus und bereitet ihn
- * für die Erkennung auf: hochskalieren, Graustufen, Kontrast strecken.
+ * für die Erkennung auf: auf Zielhöhe skalieren, Graustufen, Perzentil-Kontrast
+ * (robuster als Min/Max, verträgt Glanzlichter/Schatten besser).
  */
 export function cropAndPreprocess(
   source: CanvasImageSource,
@@ -48,8 +52,7 @@ export function cropAndPreprocess(
   sw: number,
   sh: number,
 ): HTMLCanvasElement {
-  // Schmale Ausschnitte hochskalieren – Tesseract mag ~30–50 px hohe Ziffern.
-  const scale = Math.max(2, Math.min(4, 900 / Math.max(1, sw)))
+  const scale = Math.max(1, Math.min(6, TARGET_HEIGHT / Math.max(1, sh)))
   const canvas = document.createElement('canvas')
   canvas.width = Math.round(sw * scale)
   canvas.height = Math.round(sh * scale)
@@ -59,18 +62,25 @@ export function cropAndPreprocess(
 
   const img = ctx.getImageData(0, 0, canvas.width, canvas.height)
   const d = img.data
-  // 1) Graustufen + Min/Max ermitteln.
-  let min = 255
-  let max = 0
+  // 1) Graustufen + Helligkeits-Histogramm.
+  const hist = new Array(256).fill(0)
   for (let i = 0; i < d.length; i += 4) {
     const g = (d[i] * 0.299 + d[i + 1] * 0.587 + d[i + 2] * 0.114) | 0
     d[i] = d[i + 1] = d[i + 2] = g
-    if (g < min) min = g
-    if (g > max) max = g
+    hist[g]++
   }
-  // 2) Kontrast strecken (mit kleinem Sicherheitsabstand gegen Rauschen).
-  const lo = min + (max - min) * 0.1
-  const hi = max - (max - min) * 0.1
+  // 2) Perzentil-Grenzen (3 %/97 %) für den Kontrast-Stretch bestimmen.
+  const total = canvas.width * canvas.height
+  const loCount = total * 0.03
+  const hiCount = total * 0.97
+  let acc = 0
+  let lo = 0
+  let hi = 255
+  for (let v = 0; v < 256; v++) {
+    acc += hist[v]
+    if (acc <= loCount) lo = v
+    if (acc <= hiCount) hi = v
+  }
   const range = Math.max(1, hi - lo)
   for (let i = 0; i < d.length; i += 4) {
     const v = Math.max(0, Math.min(255, ((d[i] - lo) / range) * 255))
@@ -80,12 +90,18 @@ export function cropAndPreprocess(
   return canvas
 }
 
+/** Längste zusammenhängende Ziffernfolge (verwirft Streu-Ziffern am Rand). */
+function longestDigitRun(text: string): string {
+  const runs = text.match(/\d+/g)
+  if (!runs) return ''
+  return runs.reduce((best, r) => (r.length > best.length ? r : best), '')
+}
+
 /** Erkennt Ziffern in einem vorbereiteten Canvas. */
 export async function recognizeDigits(source: HTMLCanvasElement): Promise<OcrResult> {
   const worker = await getWorker()
   const { data } = await worker.recognize(source)
-  const digits = (data.text.match(/\d/g) ?? []).join('')
-  return { digits, confidence: Math.round(data.confidence) }
+  return { digits: longestDigitRun(data.text), confidence: Math.round(data.confidence) }
 }
 
 /** Worker freigeben (z. B. wenn der Scanner geschlossen wird). */

@@ -1805,7 +1805,7 @@
     "button": "Scannen",
     "beta": "Beta",
     "title": "Zählerstand scannen",
-    "hint": "Ziffern im Rahmen ausrichten – ruhig halten",
+    "hint": "Nur die Ziffernzeile in den Rahmen – nah rangehen, gut ausleuchten",
     "capture": "Erfassen",
     "processing": "Erkenne…",
     "confirmTitle": "Erkannt – bitte prüfen",
@@ -1817,6 +1817,7 @@
     "cancel": "Abbrechen",
     "errorPermission": "Kein Kamerazugriff. Erlaube die Kamera in den Browser-Einstellungen und versuche es erneut.",
     "errorNoCamera": "Keine Kamera gefunden.",
-    "errorInsecure": "Die Kamera braucht eine sichere Verbindung (HTTPS)."
+    "errorInsecure": "Die Kamera braucht eine sichere Verbindung (HTTPS).",
+    "lastReading": "Zuletzt: {{value}} {{unit}}"
   }
 }

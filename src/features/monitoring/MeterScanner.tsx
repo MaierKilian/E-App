@@ -7,25 +7,29 @@ interface MeterScannerProps {
   unit: string
   /** Typ-Akzentfarbe (Rahmen, Aktion). */
   accent: string
+  /** Letzter bekannter Zählerstand – als Referenz im Prüf-Schritt. */
+  lastReading?: number
   /** Übergibt den bestätigten Wert an den Aufrufer. */
   onResult: (value: number) => void
   onClose: () => void
 }
 
-/** Anteiliger Erfassungsrahmen (mittiges Band) – für Overlay und Crop identisch. */
-const GUIDE = { w: 0.86, h: 0.16 }
+/** Erfassungsrahmen: breite, flache Ziffernzeile (Anteil der Videobreite + Aspekt). */
+const GUIDE_W = 0.9
+const GUIDE_ASPECT = 5
 /** Unter diesem Konfidenzwert deutlich zur Prüfung mahnen. */
-const LOW_CONFIDENCE = 70
+const LOW_CONFIDENCE = 75
 
 type Phase = 'camera' | 'processing' | 'confirm' | 'error'
 
 /**
- * Vollflächiger Zähler-Scanner: Live-Kamera mit Erfassungsrahmen, ein Auslöser
- * friert das Bild ein und liest die Ziffern per On-Device-OCR. Das Ergebnis wird
- * nur vorgeschlagen – der Nutzer prüft und übernimmt es (kein Blind-Vertrauen).
+ * Vollflächiger Zähler-Scanner: Live-Kamera mit flachem Ziffernzeilen-Rahmen.
+ * Ein Auslöser friert das Bild ein, schneidet exakt den Rahmen aus der echten
+ * Kameraauflösung aus (object-fit-korrekt) und liest die Ziffern per On-Device-
+ * OCR. Das Ergebnis wird nur vorgeschlagen – der Nutzer prüft und übernimmt es.
  */
-export function MeterScanner({ unit, accent, onResult, onClose }: MeterScannerProps) {
-  const { t } = useTranslation()
+export function MeterScanner({ unit, accent, lastReading, onResult, onClose }: MeterScannerProps) {
+  const { t, i18n } = useTranslation()
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const [phase, setPhase] = useState<Phase>('camera')
@@ -80,10 +84,22 @@ export function MeterScanner({ unit, accent, onResult, onClose }: MeterScannerPr
     if (!video || !video.videoWidth) return
     const vw = video.videoWidth
     const vh = video.videoHeight
-    const sw = vw * GUIDE.w
-    const sh = vh * GUIDE.h
-    const sx = (vw - sw) / 2
-    const sy = (vh - sh) / 2
+    const rect = video.getBoundingClientRect()
+
+    // object-fit: cover → Skalierung und Versatz des sichtbaren Ausschnitts.
+    const scale = Math.max(rect.width / vw, rect.height / vh)
+    const offX = (vw * scale - rect.width) / 2
+    const offY = (vh * scale - rect.height) / 2
+
+    // Rahmen (in CSS-Pixeln, mittig) → echte Kamerapixel.
+    const gw = rect.width * GUIDE_W
+    const gh = gw / GUIDE_ASPECT
+    const gx = (rect.width - gw) / 2
+    const gy = (rect.height - gh) / 2
+    const sx = (offX + gx) / scale
+    const sy = (offY + gy) / scale
+    const sw = gw / scale
+    const sh = gh / scale
 
     const canvas = cropAndPreprocess(video, sx, sy, sw, sh)
     setPreview(canvas.toDataURL('image/png'))
@@ -104,7 +120,12 @@ export function MeterScanner({ unit, accent, onResult, onClose }: MeterScannerPr
     if (Number.isFinite(parsed) && parsed >= 0) onResult(parsed)
   }
 
+  const parsedValue = Number.parseFloat(text.replace(',', '.'))
   const lowConfidence = phase === 'confirm' && (text === '' || confidence < LOW_CONFIDENCE)
+  const lastLabel =
+    lastReading !== undefined && lastReading > 0
+      ? new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 }).format(lastReading)
+      : null
 
   return (
     <div
@@ -144,23 +165,23 @@ export function MeterScanner({ unit, accent, onResult, onClose }: MeterScannerPr
               muted
               className={`h-full w-full object-cover ${phase === 'camera' ? '' : 'opacity-0'}`}
             />
-            {/* Eingefrorene Vorschau */}
+            {/* Eingefrorene Vorschau des ausgewerteten Ausschnitts */}
             {preview && phase !== 'camera' && (
               <img
                 src={preview}
                 alt=""
-                className="absolute left-1/2 top-1/2 w-[86%] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/20"
+                className="absolute left-1/2 top-1/2 w-[90%] -translate-x-1/2 -translate-y-1/2 rounded-xl border border-white/20"
               />
             )}
-            {/* Erfassungsrahmen */}
+            {/* Erfassungsrahmen (flache Ziffernzeile) */}
             {phase === 'camera' && (
               <div className="pointer-events-none absolute inset-0 grid place-items-center">
                 <div
                   className="rounded-2xl"
                   style={{
-                    width: `${GUIDE.w * 100}%`,
-                    aspectRatio: `${GUIDE.w} / ${GUIDE.h}`,
-                    boxShadow: '0 0 0 100vmax rgba(0,0,0,0.5)',
+                    width: `${GUIDE_W * 100}%`,
+                    aspectRatio: `${GUIDE_ASPECT}`,
+                    boxShadow: '0 0 0 100vmax rgba(0,0,0,0.55)',
                     outline: `3px solid ${accent}`,
                     outlineOffset: '2px',
                   }}
@@ -215,6 +236,11 @@ export function MeterScanner({ unit, accent, onResult, onClose }: MeterScannerPr
               />
               <span className="text-sm text-white/70">{unit}</span>
             </div>
+            {lastLabel && (
+              <p className="text-center text-xs text-white/50">
+                {t('scan.lastReading', { value: lastLabel, unit })}
+              </p>
+            )}
             <div className="flex gap-2">
               <button
                 type="button"
@@ -230,7 +256,7 @@ export function MeterScanner({ unit, accent, onResult, onClose }: MeterScannerPr
               <button
                 type="button"
                 onClick={apply}
-                disabled={Number.isNaN(Number.parseFloat(text.replace(',', '.')))}
+                disabled={!Number.isFinite(parsedValue) || parsedValue < 0}
                 className="flex flex-[1.4] items-center justify-center gap-1.5 rounded-2xl px-4 py-3 text-sm font-semibold text-white transition-opacity disabled:opacity-40"
                 style={{ background: accent }}
               >
