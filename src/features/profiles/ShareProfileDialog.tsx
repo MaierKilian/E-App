@@ -52,6 +52,13 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
   const { maxMembersPerProfile } = getEntitlements()
   const atMemberLimit = members.length >= maxMembersPerProfile
 
+  // Einladender Nachrichtentext inkl. Link – damit der Empfänger (z. B. in
+  // WhatsApp) sofort versteht, worum es geht, statt nur einen nackten Link zu sehen.
+  const profileName = profile.name.trim() || t('home.profileNameFallback')
+  function inviteMessage(url: string): string {
+    return `${t('profiles.share.inviteMessage', { profile: profileName })}\n${url}`
+  }
+
   // Beim Öffnen (Mount): Einladung laden/erstellen und Mitglieder anzeigen.
   useEffect(() => {
     if (!user) return
@@ -78,7 +85,7 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
   async function handleCopy() {
     if (!link) return
     try {
-      await navigator.clipboard.writeText(link)
+      await navigator.clipboard.writeText(inviteMessage(link))
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
@@ -89,7 +96,9 @@ function ShareDialogBody({ profile }: { profile: ProfileMeta }) {
   async function handleNativeShare() {
     if (!link) return
     try {
-      await navigator.share({ title: t('profiles.share.shareTitle'), url: link })
+      // Nur `text` (inkl. Link) senden – so zeigt WhatsApp die Nachricht mit
+      // einer Linkvorschau, ohne den Link doppelt anzuhängen.
+      await navigator.share({ title: t('profiles.share.shareTitle'), text: inviteMessage(link) })
     } catch {
       // Abbruch durch Nutzer – kein Fehler.
     }
