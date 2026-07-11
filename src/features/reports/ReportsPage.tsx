@@ -34,15 +34,19 @@ export function ReportsPage() {
 
   return (
     <div className="space-y-5">
-      <header className="flex items-start gap-4">
-        <span className="grid place-items-center w-12 h-12 rounded-2xl bg-primary/10 text-primary shrink-0">
-          <FileText className="w-6 h-6" />
-        </span>
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold">{t('report.title')}</h1>
-          <p className="text-muted mt-1 text-sm">{t('report.subtitle')}</p>
-        </div>
-      </header>
+      {/* Große Kopfzeile nur in der Übersicht – im Builder wäre sie redundant
+          (dort gibt es „Zurück“ + Titel) und würde unnötig Platz kosten. */}
+      {active === null && (
+        <header className="flex items-start gap-4">
+          <span className="grid place-items-center w-12 h-12 rounded-2xl bg-primary/10 text-primary shrink-0">
+            <FileText className="w-6 h-6" />
+          </span>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold">{t('report.title')}</h1>
+            <p className="text-muted mt-1 text-sm">{t('report.subtitle')}</p>
+          </div>
+        </header>
+      )}
 
       {active === null ? (
         <ReportOverview onSelect={setActive} />
@@ -333,10 +337,7 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
         {t('report.builder.back')}
       </button>
 
-      <div>
-        <h2 className="text-lg font-bold">{t(`report.types.${type}.title`)}</h2>
-        <p className="text-sm text-muted">{t(`report.types.${type}.description`)}</p>
-      </div>
+      <h2 className="text-lg font-bold">{t(`report.types.${type}.title`)}</h2>
 
       {/* Hero: elegante Papier-Vorschau des Berichts */}
       <ReportPreview variant={variant} title={(profile.profileName ?? '').trim() || t('home.profileNameFallback')} />
@@ -357,7 +358,6 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
             onClick={() => changeVariant('long')}
           />
         </div>
-        <p className="mt-3 text-xs text-muted">{t('report.builder.variantHint')}</p>
       </Card>
 
       {/* Anpassen – erweiterte Optionen, standardmäßig eingeklappt */}
@@ -482,8 +482,8 @@ function ReportPreview({ variant, title }: { variant: ReportVariant; title: stri
   }).format(new Date())} · ${t(`report.variant.${variant}`)}`
 
   return (
-    <div className="grid place-items-center py-1">
-      <div className="relative w-[200px]">
+    <div className="grid place-items-center">
+      <div className="relative w-[168px]">
         {/* Gestapelte Seiten – deuten Mehrseitigkeit an (mehr beim Langbericht). */}
         {long && (
           <div className="absolute inset-x-3 -bottom-2 top-5 rotate-[7deg] origin-bottom rounded-2xl bg-zinc-300/80" />
