@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import {
   ChevronLeft,
+  ChevronRight,
   User,
   Building2,
   DoorOpen,
@@ -11,9 +12,9 @@ import {
   MapPin,
   Wallet,
   Check,
+  Sparkles,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { ReactNode } from 'react'
 import type { OnboardingData } from '@/types'
 import { profileCompleteness } from '@/features/home/estimateEnergy'
 import { sectionStatus } from './sectionStatus'
@@ -49,68 +50,61 @@ interface HubTileProps {
   icon: LucideIcon
   title: string
   onClick: () => void
-  /** Füllgrad 0..100 (für die Fortschrittsleiste der Kachel). */
+  /** Füllgrad 0..100 (nur relevant, solange der Abschnitt noch offen ist). */
   pct?: number
   complete?: boolean
   open?: number
-  accent?: boolean
-  badge?: ReactNode
-  subtitle?: string
 }
 
 /**
- * Kompakte, antippbare Kategorie-Kachel mit Icon, Status (erledigt/offen) und
- * einer Füllanzeige am unteren Rand – so sieht man auf einen Blick, wie weit ein
- * Abschnitt ausgefüllt ist.
+ * Kategorie-Kachel mit klarer Hierarchie:
+ * - **Offen** = prominent (Glass-Karte, Akzent-Rand, „N offen"-Badge, Füllleiste).
+ * - **Erledigt** = ruhig/flach (dezenter Rahmen, grüner Haken, kein Balken).
+ * So springt sofort ins Auge, was noch zu tun ist – statt neun gleich lauter Kacheln.
  */
-function HubTile({
-  icon: Icon,
-  title,
-  onClick,
-  pct = 0,
-  complete = false,
-  open = 0,
-  accent = false,
-  badge,
-  subtitle,
-}: HubTileProps) {
+function HubTile({ icon: Icon, title, onClick, pct = 0, complete = false, open = 0 }: HubTileProps) {
   const { t } = useTranslation()
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`focus-ring glass relative flex flex-col gap-2 rounded-2xl p-3 text-left transition-transform active:scale-[0.98] ${
-        complete ? 'ring-1 ring-primary/40' : ''
+      className={`focus-ring relative flex flex-col gap-2 rounded-2xl p-3 text-left transition-transform active:scale-[0.98] ${
+        complete
+          ? 'border border-border bg-surface/50'
+          : 'glass ring-1 ring-amber-500/30'
       }`}
     >
       <div className="flex items-start justify-between gap-2">
         <span
           className={`grid h-9 w-9 place-items-center rounded-xl ${
-            complete || accent ? 'bg-primary/10 text-primary' : 'bg-surface-2 text-foreground'
+            complete ? 'bg-surface-2 text-muted' : 'bg-amber-500/15 text-amber-600'
           }`}
         >
           <Icon className="h-4.5 w-4.5" />
         </span>
-        {badge ??
-          (complete ? (
-            <span className="grid h-5 w-5 place-items-center rounded-full bg-primary text-primary-foreground">
-              <Check className="h-3.5 w-3.5" />
-            </span>
-          ) : (
-            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
-              {t('onboarding.hub.sectionOpen', { count: open })}
-            </span>
-          ))}
+        {complete ? (
+          <span className="grid h-5 w-5 place-items-center rounded-full bg-success/15 text-success">
+            <Check className="h-3.5 w-3.5" />
+          </span>
+        ) : (
+          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-600">
+            {t('onboarding.hub.sectionOpen', { count: open })}
+          </span>
+        )}
       </div>
 
-      <p className="text-sm font-medium leading-tight text-foreground">{title}</p>
+      <p
+        className={`text-sm font-medium leading-tight ${
+          complete ? 'text-muted' : 'text-foreground'
+        }`}
+      >
+        {title}
+      </p>
 
-      {subtitle ? (
-        <p className="mt-auto text-[11px] leading-tight text-muted">{subtitle}</p>
-      ) : (
+      {complete ? null : (
         <div className="mt-auto h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
           <div
-            className="h-full rounded-full bg-primary transition-[width] duration-500"
+            className="h-full rounded-full bg-amber-500 transition-[width] duration-500"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -123,6 +117,10 @@ export function ProfileHub({ data, onOpenSection, onDone }: ProfileHubProps) {
   const { t } = useTranslation()
   const statuses = sectionStatus(data)
   const completeness = profileCompleteness(data)
+
+  // Erster noch offener Abschnitt – dient als „Als Nächstes"-Wegweiser.
+  const nextOpen = SECTIONS.find((s) => statuses[s.index].open > 0)
+  const openCount = SECTIONS.filter((s) => statuses[s.index].open > 0).length
 
   return (
     <div className="space-y-4">
@@ -161,6 +159,42 @@ export function ProfileHub({ data, onOpenSection, onDone }: ProfileHubProps) {
         </div>
       </div>
 
+      {/* Wegweiser: nächster offener Abschnitt bzw. Erfolgs-Zustand */}
+      {nextOpen ? (
+        <button
+          type="button"
+          onClick={() => onOpenSection(nextOpen.index)}
+          className="focus-ring glass flex w-full items-center gap-3 rounded-2xl p-3 text-left transition-transform active:scale-[0.99]"
+        >
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-600">
+            <nextOpen.icon className="h-4.5 w-4.5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-[11px] font-medium uppercase tracking-wide text-muted">
+              {t('onboarding.hub.nextUp', { count: openCount })}
+            </span>
+            <span className="block truncate text-sm font-semibold text-foreground">
+              {t(nextOpen.titleKey)}
+            </span>
+          </span>
+          <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+        </button>
+      ) : (
+        <div className="glass flex w-full items-center gap-3 rounded-2xl p-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
+            <Sparkles className="h-4.5 w-4.5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-semibold text-foreground">
+              {t('onboarding.hub.allComplete')}
+            </span>
+            <span className="block text-[11px] leading-tight text-muted">
+              {t('onboarding.hub.allCompleteHint')}
+            </span>
+          </span>
+        </div>
+      )}
+
       {/* Kachel-Grid der Abschnitte */}
       <div className="grid grid-cols-2 gap-2.5">
         {SECTIONS.map((section) => {
@@ -181,16 +215,29 @@ export function ProfileHub({ data, onOpenSection, onDone }: ProfileHubProps) {
             />
           )
         })}
-
-        {/* Optional: individuelle Verbrauchspreise. */}
-        <HubTile
-          icon={Wallet}
-          title={t('onboarding.prices.title')}
-          accent
-          subtitle={t('onboarding.hub.optional')}
-          onClick={() => onOpenSection(PRICES_INDEX)}
-        />
       </div>
+
+      {/* Optional: individuelle Verbrauchspreise – eigene volle Zeile. */}
+      <button
+        type="button"
+        onClick={() => onOpenSection(PRICES_INDEX)}
+        className="focus-ring border-border bg-surface/50 flex w-full items-center gap-3 rounded-2xl border p-3 text-left transition-transform active:scale-[0.99]"
+      >
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-surface-2 text-muted">
+          <Wallet className="h-4.5 w-4.5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-medium text-foreground">
+            {t('onboarding.prices.title')}
+          </span>
+          <span className="block text-[11px] leading-tight text-muted">
+            {t('onboarding.hub.optional')}
+          </span>
+        </span>
+        <span className="shrink-0 rounded-full bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-muted">
+          {t('onboarding.hub.optionalBadge')}
+        </span>
+      </button>
     </div>
   )
 }

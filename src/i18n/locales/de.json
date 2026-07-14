@@ -1388,6 +1388,10 @@
       "sectionOpen": "{{count}} offen",
       "sectionComplete": "vollständig",
       "optional": "Optional · Smart Home",
+      "optionalBadge": "Optional",
+      "nextUp": "Als Nächstes · noch {{count}} offen",
+      "allComplete": "Profil vollständig",
+      "allCompleteHint": "Alle Angaben ausgefüllt – bereit für genaue Auswertungen.",
       "backToOverview": "Übersicht",
       "done": "Fertig"
     },

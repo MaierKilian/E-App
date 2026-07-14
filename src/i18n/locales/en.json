@@ -1258,6 +1258,10 @@
       "sectionOpen": "{{count}} open",
       "sectionComplete": "complete",
       "optional": "Optional · Smart home",
+      "optionalBadge": "Optional",
+      "nextUp": "Up next · {{count}} left",
+      "allComplete": "Profile complete",
+      "allCompleteHint": "Everything filled in – ready for precise insights.",
       "backToOverview": "Overview",
       "done": "Done"
     },
