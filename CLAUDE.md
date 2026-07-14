@@ -30,6 +30,17 @@
   GitHub Pages (`/E-App/` base path)
 - Sprachen: Deutsch (primär) + Englisch
 
+## Design-Konzepte / Roadmaps
+
+Vor Arbeit an einem dieser Bereiche zuerst die zugehörige Doku lesen:
+
+- **`docs/renovation-redesign.md`** – abgestimmtes Redesign-Konzept für den
+  Onboarding-Schritt „Renovierungshistorie" (`Step7Renovation`): Effizienz-Band
+  aus Baujahr + Sanierungen, Bauteil-Erfassung, Mehrwert-Output. **Noch nicht
+  umgesetzt.**
+- **`docs/ux-roadmap.md`** – UX/UI-Analyse & Roadmap (Wissen/Lernen/Messen,
+  Gamification im Apple-Fitness-Stil).
+
 ## Deployment & Infrastruktur
 
 Vollständige Übersicht: **`docs/deployment.md`**. Das Wichtigste in Kürze:
