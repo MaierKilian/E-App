@@ -1687,7 +1687,8 @@
     "load": "Beispiel laden",
     "cancel": "Abbrechen",
     "bannerLabel": "Demo-Wohnung",
-    "exit": "Verlassen"
+    "exit": "Verlassen",
+    "startOwn": "Selbst loslegen"
   },
   "onboardingIntro": {
     "skip": "Überspringen",

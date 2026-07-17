@@ -2,9 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sparkles } from 'lucide-react'
-import { useSettingsStore } from '@/store/settingsStore'
-import { resetAllStores, hydrate } from '@/features/sync/stores'
-import { buildDemoSnapshot } from './demoProfile'
+import { enterDemo } from './enterDemo'
 
 /**
  * Lädt über den Link-Parameter `?demo` eine fertig befüllte Beispiel-Wohnung
@@ -19,8 +17,6 @@ export function DemoLoader() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [, setParams] = useSearchParams()
-  const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
-  const setDemoMode = useSettingsStore((s) => s.setDemoMode)
   // Den ?demo-Wunsch beim allerersten Render festhalten: die Index-Weiterleitung
   // (/ → /onboarding) verwirft den Query-Parameter, bevor wir sonst reagieren
   // könnten. Deshalb einmalig einlesen und merken.
@@ -47,12 +43,7 @@ export function DemoLoader() {
   }
 
   function loadDemo() {
-    // Demo-Modus zuerst setzen, damit die Cloud-Sync den folgenden Import nicht
-    // als echte Änderung hochschreibt.
-    setDemoMode(true)
-    resetAllStores()
-    hydrate(buildDemoSnapshot())
-    setIntroSeen(true) // Beispiel direkt zeigen, ohne Einführung
+    enterDemo()
     finish()
     navigate('/onboarding', { replace: true })
   }

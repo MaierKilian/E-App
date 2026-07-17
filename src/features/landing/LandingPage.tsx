@@ -16,6 +16,7 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useSettingsStore } from '@/store/settingsStore'
+import { enterDemo } from '@/features/demo/enterDemo'
 import { PreviewSection } from './PreviewSection'
 
 /**
@@ -49,11 +50,11 @@ export function LandingPage() {
     navigate('/login', { state: { from: '/onboarding' } })
   }
 
-  // Demo lädt über den vorhandenen `?demo`-Mechanismus (DemoLoader). Ein voller
-  // Seitenwechsel ist nötig, weil DemoLoader den Query-Parameter nur beim Mount
-  // liest. Feinschliff (nahtloses Laden) folgt in einem späteren Schritt.
+  // Demo direkt und nahtlos laden – ein Klick genügt, kein Reload, keine
+  // Zwischenabfrage (der Button ist bereits die bewusste Entscheidung).
   function openDemo() {
-    window.location.assign(`${import.meta.env.BASE_URL}?demo`)
+    enterDemo()
+    navigate('/onboarding')
   }
 
   return (

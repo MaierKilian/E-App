@@ -1687,7 +1687,8 @@
     "load": "Load example",
     "cancel": "Cancel",
     "bannerLabel": "Demo home",
-    "exit": "Leave"
+    "exit": "Leave",
+    "startOwn": "Start my own"
   },
   "onboardingIntro": {
     "skip": "Skip",
