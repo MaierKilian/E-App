@@ -1,6 +1,19 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Play, TrendingDown } from 'lucide-react'
+import {
+  ChevronRight,
+  Play,
+  TrendingDown,
+  Gauge,
+  LineChart,
+  PiggyBank,
+  FileText,
+  Lock,
+  Check,
+  Users,
+  GraduationCap,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useSettingsStore } from '@/store/settingsStore'
 import { PreviewSection } from './PreviewSection'
@@ -98,10 +111,87 @@ export function LandingPage() {
       {/* ② „So sieht's mit Daten aus" */}
       <PreviewSection onOpenDemo={openDemo} />
 
-      {/* ③ Was du machen kannst – folgt */}
-      {/* ④ Vertrauen / Für wen – folgt */}
-      {/* ⑤ Abschluss-CTA – folgt */}
+      {/* ③ Was du machen kannst */}
+      <section className="mx-auto w-full max-w-5xl px-5 py-16">
+        <h2 className="text-center text-balance text-2xl font-bold text-foreground md:text-3xl">
+          {t('landing.features.title')}
+        </h2>
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Feature icon={Gauge} title={t('landing.features.measure.title')} desc={t('landing.features.measure.desc')} />
+          <Feature icon={LineChart} title={t('landing.features.track.title')} desc={t('landing.features.track.desc')} />
+          <Feature icon={PiggyBank} title={t('landing.features.save.title')} desc={t('landing.features.save.desc')} />
+          <Feature icon={FileText} title={t('landing.features.report.title')} desc={t('landing.features.report.desc')} />
+        </div>
+      </section>
+
+      {/* ④ Vertrauen / Für wen */}
+      <section className="mx-auto w-full max-w-5xl px-5 pb-4">
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
+          <TrustChip icon={Lock} label={t('landing.trust.local')} />
+          <TrustChip icon={Check} label={t('landing.trust.free')} />
+          <TrustChip icon={Users} label={t('landing.trust.everyone')} />
+          <TrustChip icon={GraduationCap} label={t('landing.trust.learning')} />
+        </div>
+      </section>
+
+      {/* ⑤ Abschluss-CTA */}
+      <section className="mx-auto w-full max-w-3xl px-5 py-20 text-center">
+        <h2 className="mx-auto max-w-xl text-balance text-2xl font-bold text-foreground md:text-3xl">
+          {t('landing.closing.title')}
+        </h2>
+        <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:mx-auto sm:max-w-none sm:flex-row sm:justify-center">
+          <button
+            type="button"
+            onClick={startOnboarding}
+            className="flex items-center justify-center gap-1.5 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]"
+          >
+            {t('landing.closing.ctaStart')}
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={openDemo}
+            className="focus-ring flex items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-6 py-3.5 text-sm font-medium text-foreground transition-transform active:scale-[0.98]"
+          >
+            <Play className="h-4 w-4" />
+            {t('landing.closing.ctaDemo')}
+          </button>
+        </div>
+        <p className="mt-6 text-sm text-muted">
+          {t('landing.closing.signInPrompt')}{' '}
+          <button
+            type="button"
+            onClick={goToLogin}
+            className="focus-ring rounded font-semibold text-primary underline-offset-2 hover:underline"
+          >
+            {t('landing.closing.signIn')}
+          </button>
+        </p>
+      </section>
     </div>
+  )
+}
+
+/** Eine Capability-Kachel (Abschnitt ③): Icon, Titel, Beschreibung. */
+function Feature({ icon: Icon, title, desc }: { icon: LucideIcon; title: string; desc: string }) {
+  return (
+    <div className="glass flex flex-col rounded-3xl p-5">
+      <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary">
+        <Icon className="h-5 w-5" />
+      </span>
+      <h3 className="mt-4 font-semibold text-foreground">{title}</h3>
+      <p className="mt-1 text-sm text-muted">{desc}</p>
+    </div>
+  )
+}
+
+/** Ein Vertrauens-Chip (Abschnitt ④): Icon + kurzer Text als Pille. */
+function TrustChip({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/70 px-3.5 py-2 text-xs font-medium text-foreground">
+      <Icon className="h-3.5 w-3.5 shrink-0 text-muted" />
+      {label}
+    </span>
   )
 }
 
