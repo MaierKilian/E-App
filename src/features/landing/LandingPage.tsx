@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Play } from 'lucide-react'
+import { ChevronRight, Play, TrendingDown } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useSettingsStore } from '@/store/settingsStore'
 
@@ -61,39 +61,145 @@ export function LandingPage() {
         </button>
       </header>
 
-      {/* ① Hero */}
-      <section className="mx-auto flex w-full max-w-5xl flex-col items-center px-5 pb-16 pt-10 text-center md:pt-16">
-        <h1 className="max-w-2xl text-balance text-3xl font-bold leading-tight text-foreground md:text-5xl">
-          {t('landing.hero.title')}
-        </h1>
-        <p className="mt-4 max-w-xl text-balance text-base text-muted md:text-lg">
-          {t('landing.hero.subtitle')}
-        </p>
+      {/* ① Hero – zweispaltig auf Desktop (Text links, App-Mock rechts) */}
+      <section className="mx-auto grid w-full max-w-5xl items-center gap-10 px-5 pb-16 pt-10 md:grid-cols-2 md:gap-12 md:pt-16">
+        <div className="flex flex-col items-center text-center md:items-start md:text-left">
+          <h1 className="max-w-2xl text-balance text-3xl font-bold leading-tight text-foreground md:text-5xl">
+            {t('landing.hero.title')}
+          </h1>
+          <p className="mt-4 max-w-xl text-balance text-base text-muted md:text-lg">
+            {t('landing.hero.subtitle')}
+          </p>
 
-        <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
-          <button
-            type="button"
-            onClick={startOnboarding}
-            className="flex items-center justify-center gap-1.5 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]"
-          >
-            {t('landing.hero.ctaStart')}
-            <ChevronRight className="h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            onClick={openDemo}
-            className="focus-ring flex items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-6 py-3.5 text-sm font-medium text-foreground transition-transform active:scale-[0.98]"
-          >
-            <Play className="h-4 w-4" />
-            {t('landing.hero.ctaDemo')}
-          </button>
+          <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row md:w-auto">
+            <button
+              type="button"
+              onClick={startOnboarding}
+              className="flex items-center justify-center gap-1.5 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]"
+            >
+              {t('landing.hero.ctaStart')}
+              <ChevronRight className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={openDemo}
+              className="focus-ring flex items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-6 py-3.5 text-sm font-medium text-foreground transition-transform active:scale-[0.98]"
+            >
+              <Play className="h-4 w-4" />
+              {t('landing.hero.ctaDemo')}
+            </button>
+          </div>
         </div>
+
+        <HeroMock />
       </section>
 
       {/* ② „So sieht's mit Daten aus" – folgt in einem späteren Schritt */}
       {/* ③ Was du machen kannst – folgt */}
       {/* ④ Vertrauen / Für wen – folgt */}
       {/* ⑤ Abschluss-CTA – folgt */}
+    </div>
+  )
+}
+
+/**
+ * Leichtgewichtiges, „echt" wirkendes Dashboard-Mock für den Hero.
+ *
+ * Bewusst kein Rendern der echten Komponenten (keine Store-Abhängigkeit) – nur
+ * ein visuelles Abbild der Energie-Status-Karte mit klarer „Beispiel"-Kennung
+ * und einer sich aufbauenden Verbrauchskurve (wiederverwendete intro-*-
+ * Animationen, respektieren `prefers-reduced-motion`).
+ */
+function HeroMock() {
+  const { t, i18n } = useTranslation()
+  const eur = new Intl.NumberFormat(i18n.language, {
+    style: 'currency',
+    currency: 'EUR',
+    maximumFractionDigits: 0,
+  })
+
+  return (
+    <div className="intro-rise mx-auto w-full max-w-sm md:mx-0 md:ml-auto">
+      <div className="glass relative overflow-hidden rounded-3xl p-5">
+        {/* Dezenter Akzent-Schimmer wie in der echten Energie-Karte */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-12 h-40 w-40 rounded-full bg-amber-500/20 blur-3xl"
+        />
+
+        <p className="relative text-[11px] font-semibold uppercase tracking-wide text-muted">
+          {t('landing.hero.mockLabel')}
+        </p>
+
+        <div className="relative mt-1.5 flex items-baseline gap-2">
+          <span className="text-3xl font-bold tabular-nums text-foreground">
+            ≈ {eur.format(1980)}
+          </span>
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <TrendingDown className="h-3.5 w-3.5" />
+            8 %
+          </span>
+        </div>
+
+        {/* Verbrauchskurve */}
+        <svg
+          viewBox="0 0 240 96"
+          fill="none"
+          preserveAspectRatio="none"
+          className="relative mt-4 h-24 w-full"
+          aria-hidden="true"
+        >
+          <defs>
+            <linearGradient id="heroArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stopColor="#f59e0b" stopOpacity="0.28" />
+              <stop offset="1" stopColor="#f59e0b" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            className="intro-area"
+            style={{ animationDelay: '0.55s' }}
+            d="M6 70 L52 58 L98 64 L144 44 L190 48 L234 22 L234 90 L6 90 Z"
+            fill="url(#heroArea)"
+          />
+          <path
+            className="intro-draw"
+            style={{ animationDelay: '0.2s' }}
+            d="M6 70 L52 58 L98 64 L144 44 L190 48 L234 22"
+            stroke="#f59e0b"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <circle
+            className="intro-dot"
+            style={{ animationDelay: '0.95s' }}
+            cx="234"
+            cy="22"
+            r="4.5"
+            fill="#f59e0b"
+          />
+        </svg>
+
+        {/* Träger-Legende – spiegelt die echte Kachel-Reihe wider */}
+        <div className="relative mt-4 grid grid-cols-3 gap-2">
+          <MockCarrier color="#f59e0b" label={t('monitoring.energyTypes.electricity')} value={`≈ ${eur.format(1240)}`} />
+          <MockCarrier color="#ef4444" label={t('monitoring.energyTypes.gas')} value={`≈ ${eur.format(560)}`} />
+          <MockCarrier color="#38bdf8" label={t('monitoring.energyTypes.water')} value={`≈ ${eur.format(180)}`} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Eine Mini-Kachel der Hero-Mock-Legende (Träger + Beispielkosten). */
+function MockCarrier({ color, label, value }: { color: string; label: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-border/60 bg-surface-2/40 p-2.5">
+      <span className="flex items-center gap-1.5">
+        <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
+        <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted">{label}</span>
+      </span>
+      <span className="mt-1 block text-sm font-bold tabular-nums text-foreground">{value}</span>
     </div>
   )
 }
