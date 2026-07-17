@@ -1827,5 +1827,69 @@
     "errorNoCamera": "No camera found.",
     "errorInsecure": "The camera needs a secure connection (HTTPS).",
     "lastReading": "Previous: {{value}} {{unit}}"
+  },
+  "landing": {
+    "nav": {
+      "signIn": "Sign in"
+    },
+    "hero": {
+      "title": "See where your home is wasting energy and money.",
+      "subtitle": "Simple measurements, your real usage, clear savings tips – done yourself, in just minutes.",
+      "ctaStart": "Get started",
+      "ctaDemo": "See an example home",
+      "mockLabel": "Example · Estimated energy cost / year"
+    },
+    "preview": {
+      "title": "This is what your app looks like once it's live",
+      "subtitle": "Add your home, log meter readings, run measurements – the app turns your usage and savings potential into something you can see.",
+      "tiles": {
+        "dashboard": {
+          "title": "Your dashboard",
+          "desc": "Costs, progress and tips at a glance"
+        },
+        "trend": {
+          "title": "Usage over time",
+          "desc": "Electricity, gas and water across months"
+        },
+        "measurement": {
+          "title": "Measurement with result",
+          "desc": "e.g. showerhead – save ≈ €120/year"
+        }
+      },
+      "cta": "Open live example",
+      "note": "A fully filled example home – no sign-up, leave anytime."
+    },
+    "features": {
+      "title": "What you can do",
+      "measure": {
+        "title": "Measure yourself",
+        "desc": "9 simple checks – showerhead, standby, lighting and more"
+      },
+      "track": {
+        "title": "Track usage",
+        "desc": "Enter meter readings or scan them from a photo"
+      },
+      "save": {
+        "title": "Savings in euros",
+        "desc": "Your profile and measurements become a savings goal"
+      },
+      "report": {
+        "title": "PDF report",
+        "desc": "All results bundled to share and keep"
+      }
+    },
+    "trust": {
+      "local": "Runs locally on your device",
+      "free": "Free & no commitment",
+      "everyone": "For every household",
+      "learning": "Includes learning content (HTW Berlin)"
+    },
+    "closing": {
+      "title": "Ready to get on top of your energy use?",
+      "ctaStart": "Get started",
+      "ctaDemo": "See the example first",
+      "signInPrompt": "Already have an account?",
+      "signIn": "Sign in"
+    }
   }
 }

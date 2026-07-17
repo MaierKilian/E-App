@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { ChevronRight, Play } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -17,6 +18,7 @@ import { useSettingsStore } from '@/store/settingsStore'
  * und die i18n-Anbindung folgen in den nächsten Schritten.
  */
 export function LandingPage() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
 
@@ -55,18 +57,17 @@ export function LandingPage() {
           onClick={goToLogin}
           className="focus-ring rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
         >
-          Anmelden
+          {t('landing.nav.signIn')}
         </button>
       </header>
 
       {/* ① Hero */}
       <section className="mx-auto flex w-full max-w-5xl flex-col items-center px-5 pb-16 pt-10 text-center md:pt-16">
         <h1 className="max-w-2xl text-balance text-3xl font-bold leading-tight text-foreground md:text-5xl">
-          Finde heraus, wo dein Zuhause Energie und Geld verliert.
+          {t('landing.hero.title')}
         </h1>
         <p className="mt-4 max-w-xl text-balance text-base text-muted md:text-lg">
-          Einfache Messungen, dein echter Verbrauch, klare Spartipps – selbst
-          gemacht, in wenigen Minuten.
+          {t('landing.hero.subtitle')}
         </p>
 
         <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center">
@@ -75,7 +76,7 @@ export function LandingPage() {
             onClick={startOnboarding}
             className="flex items-center justify-center gap-1.5 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]"
           >
-            Jetzt starten
+            {t('landing.hero.ctaStart')}
             <ChevronRight className="h-4 w-4" />
           </button>
           <button
@@ -84,7 +85,7 @@ export function LandingPage() {
             className="focus-ring flex items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-6 py-3.5 text-sm font-medium text-foreground transition-transform active:scale-[0.98]"
           >
             <Play className="h-4 w-4" />
-            Beispiel-Wohnung ansehen
+            {t('landing.hero.ctaDemo')}
           </button>
         </div>
       </section>

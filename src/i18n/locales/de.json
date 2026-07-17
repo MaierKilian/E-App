@@ -1827,5 +1827,69 @@
     "errorNoCamera": "Keine Kamera gefunden.",
     "errorInsecure": "Die Kamera braucht eine sichere Verbindung (HTTPS).",
     "lastReading": "Zuletzt: {{value}} {{unit}}"
+  },
+  "landing": {
+    "nav": {
+      "signIn": "Anmelden"
+    },
+    "hero": {
+      "title": "Finde heraus, wo dein Zuhause Energie und Geld verliert.",
+      "subtitle": "Einfache Messungen, dein echter Verbrauch, klare Spartipps – selbst gemacht, in wenigen Minuten.",
+      "ctaStart": "Jetzt starten",
+      "ctaDemo": "Beispiel-Wohnung ansehen",
+      "mockLabel": "Beispiel · Geschätzte Energiekosten / Jahr"
+    },
+    "preview": {
+      "title": "So sieht es aus, wenn deine App lebt",
+      "subtitle": "Wohnung anlegen, Zählerstände eintragen, Messungen machen – die App macht deinen Verbrauch und dein Sparpotenzial sichtbar.",
+      "tiles": {
+        "dashboard": {
+          "title": "Dein Dashboard",
+          "desc": "Kosten, Fortschritt und Empfehlungen auf einen Blick"
+        },
+        "trend": {
+          "title": "Verbrauchs-Verlauf",
+          "desc": "Strom, Gas und Wasser über Monate"
+        },
+        "measurement": {
+          "title": "Messung mit Ergebnis",
+          "desc": "z. B. Duschkopf – ≈ 120 €/Jahr sparbar"
+        }
+      },
+      "cta": "Live-Beispiel öffnen",
+      "note": "Voll befüllte Beispiel-Wohnung – ohne Anmeldung, jederzeit verlassbar."
+    },
+    "features": {
+      "title": "Was du machen kannst",
+      "measure": {
+        "title": "Selbst messen",
+        "desc": "9 einfache Checks – Duschkopf, Standby, Beleuchtung u. v. m."
+      },
+      "track": {
+        "title": "Verbrauch verfolgen",
+        "desc": "Zählerstände eintragen oder per Foto scannen"
+      },
+      "save": {
+        "title": "Sparpotenzial in Euro",
+        "desc": "Aus Profil und Messungen wird dein Sparziel"
+      },
+      "report": {
+        "title": "Bericht als PDF",
+        "desc": "Alle Ergebnisse gebündelt zum Teilen und Ablegen"
+      }
+    },
+    "trust": {
+      "local": "Läuft lokal auf deinem Gerät",
+      "free": "Kostenlos & ohne Verpflichtung",
+      "everyone": "Für jeden Haushalt",
+      "learning": "Mit Lerninhalten (HTW Berlin)"
+    },
+    "closing": {
+      "title": "Bereit, deinem Verbrauch auf die Spur zu kommen?",
+      "ctaStart": "Jetzt starten",
+      "ctaDemo": "Erst Beispiel ansehen",
+      "signInPrompt": "Schon dabei?",
+      "signIn": "Anmelden"
+    }
   }
 }
