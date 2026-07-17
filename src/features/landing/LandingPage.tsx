@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Play, TrendingDown } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useSettingsStore } from '@/store/settingsStore'
+import { PreviewSection } from './PreviewSection'
 
 /**
  * Öffentliche Landing Page (Route „/") für Erst-Besucher.
@@ -94,7 +95,9 @@ export function LandingPage() {
         <HeroMock />
       </section>
 
-      {/* ② „So sieht's mit Daten aus" – folgt in einem späteren Schritt */}
+      {/* ② „So sieht's mit Daten aus" */}
+      <PreviewSection onOpenDemo={openDemo} />
+
       {/* ③ Was du machen kannst – folgt */}
       {/* ④ Vertrauen / Für wen – folgt */}
       {/* ⑤ Abschluss-CTA – folgt */}
