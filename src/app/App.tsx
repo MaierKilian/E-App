@@ -18,6 +18,9 @@ import { SplashScreen } from '@/components/SplashScreen'
 import { OnboardingIntro } from '@/components/OnboardingIntro'
 import { DemoLoader } from '@/features/demo/DemoLoader'
 import { LoginGate } from '@/components/LoginGate'
+import { LandingPage } from '@/features/landing/LandingPage'
+import { useSettingsStore } from '@/store/settingsStore'
+import { useOnboardingStore } from '@/store/onboardingStore'
 
 /**
  * Meldet jeden Seitenwechsel als Analytics-Ereignis „page_view".
@@ -31,6 +34,23 @@ function RouteTracker() {
   return null
 }
 
+/**
+ * Einstieg auf „/": Erst-Besucher sehen die Landing Page, Wiederkehrer werden
+ * direkt weitergeleitet. Als „schon dabei" gilt, wer die Einführung/Landing
+ * bereits gesehen hat (`introSeen`), ein fertiges Profil besitzt
+ * (`data.completed`) oder gerade die Demo betrachtet (`demoMode`).
+ */
+function LandingRoute() {
+  const introSeen = useSettingsStore((s) => s.introSeen)
+  const demoMode = useSettingsStore((s) => s.demoMode)
+  const completed = useOnboardingStore((s) => s.data.completed)
+
+  if (introSeen || demoMode || completed) {
+    return <Navigate to="/onboarding" replace />
+  }
+  return <LandingPage />
+}
+
 export function App() {
   useApplyTheme()
 
@@ -41,8 +61,9 @@ export function App() {
         <DemoLoader />
         <OnboardingIntro />
         <Routes>
+          {/* Öffentliche Landing Page ohne App-Chrome (eigene Topbar). */}
+          <Route path="/" element={<LandingRoute />} />
           <Route element={<Layout />}>
-            <Route index element={<Navigate to="/onboarding" replace />} />
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/measurements" element={<LoginGate><MeasurementsPage /></LoginGate>} />
             <Route path="/measurements/:id" element={<LoginGate><MeasurementRunner /></LoginGate>} />

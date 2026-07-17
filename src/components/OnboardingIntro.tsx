@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Droplet, TrendingUp, Lightbulb, ChevronRight, ChevronLeft, UserPlus, TrendingDown } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -20,6 +20,7 @@ interface Slide {
 export function OnboardingIntro() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const location = useLocation()
   const introSeen = useSettingsStore((s) => s.introSeen)
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
   const user = useUser()
@@ -32,7 +33,9 @@ export function OnboardingIntro() {
     if (!introSeen) setIndex(0)
   }, [introSeen])
 
-  if (introSeen) return null
+  // Auf der Landing Page („/") nie anzeigen – dort ist die Seite selbst das
+  // Value-Intro; das Vollbild-Overlay würde sie sonst verdecken.
+  if (introSeen || location.pathname === '/') return null
 
   const slides = t('onboardingIntro.slides', { returnObjects: true }) as Slide[]
   const total = slides.length
