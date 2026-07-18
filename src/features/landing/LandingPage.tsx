@@ -74,7 +74,10 @@ export function LandingPage() {
       {/* Schlanke Topbar */}
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-4">
         <span className="flex items-center gap-2 font-semibold">
-          <Logo className="h-6 w-6" />
+          {/* Logo dekorativ – der Text „E-App" liefert bereits den Namen. */}
+          <span aria-hidden="true">
+            <Logo className="h-6 w-6" />
+          </span>
           <span>E-App</span>
         </span>
         <button
