@@ -4,6 +4,7 @@ import { Sparkles, X, ChevronRight } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useAuthStore } from '@/store/authStore'
 import { resetAllStores } from '@/features/sync/stores'
+import { track } from '@/features/analytics/analytics'
 
 /**
  * Schmaler Hinweisstreifen, solange die Beispiel-Wohnung (Demo-Modus) aktiv ist.
@@ -25,6 +26,7 @@ export function DemoBanner() {
 
   // Aus der Demo heraus das eigene Profil beginnen (nur für Gäste sinnvoll).
   function startOwn() {
+    void track('demo_to_onboarding')
     setDemoMode(false)
     resetAllStores()
     setIntroSeen(true)

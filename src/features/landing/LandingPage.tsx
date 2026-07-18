@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
@@ -17,6 +18,7 @@ import type { LucideIcon } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
 import { useSettingsStore } from '@/store/settingsStore'
 import { enterDemo } from '@/features/demo/enterDemo'
+import { track } from '@/features/analytics/analytics'
 import { PreviewSection } from './PreviewSection'
 
 /**
@@ -37,10 +39,17 @@ export function LandingPage() {
   const navigate = useNavigate()
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
 
+  // Ein „landing_view" je Aufruf der Landing Page (Conversion-Basiswert).
+  useEffect(() => {
+    void track('landing_view')
+  }, [])
+
   // Beim Verlassen der Landing gilt die Einführung als gesehen: die Landing
   // übernimmt die Rolle des Value-Intros. Dadurch überspringt der normale Flow
   // das alte Overlay (dessen Verbleib ist eine spätere Entscheidung).
-  function startOnboarding() {
+  // `location` verortet den geklickten CTA (hero / closing / preview).
+  function startOnboarding(location: string) {
+    void track('landing_cta_start', { location })
     setIntroSeen(true)
     navigate('/onboarding')
   }
@@ -52,7 +61,8 @@ export function LandingPage() {
 
   // Demo direkt und nahtlos laden – ein Klick genügt, kein Reload, keine
   // Zwischenabfrage (der Button ist bereits die bewusste Entscheidung).
-  function openDemo() {
+  function openDemo(location: string) {
+    void track('landing_cta_demo', { location })
     enterDemo()
     navigate('/onboarding')
   }
@@ -89,7 +99,7 @@ export function LandingPage() {
           <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row md:w-auto">
             <button
               type="button"
-              onClick={startOnboarding}
+              onClick={() => startOnboarding('hero')}
               className="flex items-center justify-center gap-1.5 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]"
             >
               {t('landing.hero.ctaStart')}
@@ -97,7 +107,7 @@ export function LandingPage() {
             </button>
             <button
               type="button"
-              onClick={openDemo}
+              onClick={() => openDemo('hero')}
               className="focus-ring flex items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-6 py-3.5 text-sm font-medium text-foreground transition-transform active:scale-[0.98]"
             >
               <Play className="h-4 w-4" />
@@ -110,7 +120,7 @@ export function LandingPage() {
       </section>
 
       {/* ② „So sieht's mit Daten aus" */}
-      <PreviewSection onOpenDemo={openDemo} />
+      <PreviewSection onOpenDemo={() => openDemo('preview')} />
 
       {/* ③ Was du machen kannst */}
       <section className="mx-auto w-full max-w-5xl px-5 py-16">
@@ -143,7 +153,7 @@ export function LandingPage() {
         <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:mx-auto sm:max-w-none sm:flex-row sm:justify-center">
           <button
             type="button"
-            onClick={startOnboarding}
+            onClick={() => startOnboarding('closing')}
             className="flex items-center justify-center gap-1.5 rounded-2xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.98]"
           >
             {t('landing.closing.ctaStart')}
@@ -151,7 +161,7 @@ export function LandingPage() {
           </button>
           <button
             type="button"
-            onClick={openDemo}
+            onClick={() => openDemo('closing')}
             className="focus-ring flex items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-6 py-3.5 text-sm font-medium text-foreground transition-transform active:scale-[0.98]"
           >
             <Play className="h-4 w-4" />
