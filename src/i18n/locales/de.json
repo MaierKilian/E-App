@@ -1331,7 +1331,20 @@
         "basement_ceiling": "Kellerdecke",
         "nothing": "Nichts bekannt"
       },
-      "itemsHint": "Mehrfachauswahl möglich."
+      "itemsHint": "Mehrfachauswahl möglich.",
+      "estimate": {
+        "title": "Bausubstanz – grobe Orientierung",
+        "scaleEfficient": "eher effizient",
+        "scaleNeedy": "sanierungsbedürftig",
+        "savings": "Deine Sanierungen: ≈ −{{pct}} % Heizbedarf ggü. unsaniertem Bau",
+        "noSavings": "Noch keine Sanierung der Gebäudehülle erfasst.",
+        "nextLever": "Größter Hebel: {{item}} – ≈ −{{pct}} %",
+        "allDone": "Gebäudehülle rundum saniert – stark!",
+        "funding": "Für solche Maßnahmen gibt es i. d. R. staatliche Förderung (BEG) – prüfenswert.",
+        "needYear": "Ergänze das Baujahr, um die Einordnung zu sehen.",
+        "disclaimer": "Grobe Schätzung aus Baujahr und Sanierungen. Deine echten Zählerstände zeigen später den tatsächlichen Verbrauch.",
+        "toMeter": "Zählerstand eintragen"
+      }
     },
     "step7": {
       "title": "Standort",

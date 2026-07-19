@@ -1201,7 +1201,20 @@
         "basement_ceiling": "Basement ceiling",
         "nothing": "Nothing known"
       },
-      "itemsHint": "Multiple choice."
+      "itemsHint": "Multiple choice.",
+      "estimate": {
+        "title": "Building fabric – rough orientation",
+        "scaleEfficient": "more efficient",
+        "scaleNeedy": "needs renovation",
+        "savings": "Your renovations: ≈ −{{pct}} % heating demand vs. unrenovated",
+        "noSavings": "No envelope renovation recorded yet.",
+        "nextLever": "Biggest lever: {{item}} – ≈ −{{pct}} %",
+        "allDone": "Building envelope fully renovated – great!",
+        "funding": "Such measures are usually eligible for government funding (BEG) – worth checking.",
+        "needYear": "Add the construction year to see the classification.",
+        "disclaimer": "Rough estimate from construction year and renovations. Your real meter readings will later show actual consumption.",
+        "toMeter": "Enter meter reading"
+      }
     },
     "step7": {
       "title": "Location",
