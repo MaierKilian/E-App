@@ -34,15 +34,20 @@ import { PreviewSection } from './PreviewSection'
  * In diesem Schritt ist nur das Gerüst + Hero angelegt; die weiteren Abschnitte
  * und die i18n-Anbindung folgen in den nächsten Schritten.
  */
-export function LandingPage() {
+/**
+ * @param preview  Vorschau aus den Einstellungen (nicht der echte Erst-Besuch):
+ *   unterdrückt das `landing_view`-Analytics-Ereignis, damit die Conversion-
+ *   Kennzahl nur reale Erst-Aufrufe zählt.
+ */
+export function LandingPage({ preview = false }: { preview?: boolean }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
 
-  // Ein „landing_view" je Aufruf der Landing Page (Conversion-Basiswert).
+  // Ein „landing_view" je echtem Aufruf der Landing Page (Conversion-Basiswert).
   useEffect(() => {
-    void track('landing_view')
-  }, [])
+    if (!preview) void track('landing_view')
+  }, [preview])
 
   // Beim Verlassen der Landing gilt die Einführung als gesehen: die Landing
   // übernimmt die Rolle des Value-Intros. Dadurch überspringt der normale Flow

@@ -1649,6 +1649,7 @@
     "appearance": "Appearance",
     "help": "Help",
     "replayIntro": "Replay introduction",
+    "viewLanding": "View landing page",
     "resetEntry": "Reset data",
     "data": {
       "title": "Reset data",

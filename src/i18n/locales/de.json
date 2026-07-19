@@ -1649,6 +1649,7 @@
     "appearance": "Darstellung",
     "help": "Hilfe",
     "replayIntro": "Einführung erneut ansehen",
+    "viewLanding": "Landing Page ansehen",
     "resetEntry": "Daten zurücksetzen",
     "data": {
       "title": "Daten zurücksetzen",

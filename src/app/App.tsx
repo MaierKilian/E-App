@@ -63,6 +63,8 @@ export function App() {
         <Routes>
           {/* Öffentliche Landing Page ohne App-Chrome (eigene Topbar). */}
           <Route path="/" element={<LandingRoute />} />
+          {/* Fester Vorschau-Einstieg (z. B. aus den Einstellungen), immer sichtbar. */}
+          <Route path="/willkommen" element={<LandingPage preview />} />
           <Route element={<Layout />}>
             <Route path="/onboarding" element={<OnboardingPage />} />
             <Route path="/measurements" element={<LoginGate><MeasurementsPage /></LoginGate>} />
