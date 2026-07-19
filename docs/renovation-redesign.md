@@ -243,6 +243,65 @@ Umsetzung; Abschnitte 0–8 bleiben als Konzept gültig.
 
 ### Nächster Schritt (kein Code)
 
-Bevor Baustein 1 gebaut wird: **Freigabe der Rechenwerte** aus Abschnitt 4
-(Startwerte je Baujahr, Abschlagsfaktoren je Bauteil, Klassengrenzen A–H) durch
-den Nutzer – ggf. mit Anpassungen. Danach Implementierung von Baustein 1.
+Siehe **Abschnitt 10** – die Ausgabe wurde bewusst umgestellt, um keine
+Schein-Genauigkeit zu versprechen. Damit verschiebt sich auch, was an den
+Rechenwerten überhaupt freigegeben werden muss.
+
+---
+
+## 10. Genauigkeits-Beschluss – revidierte Ausgabe (2026-07-19)
+
+**Anlass:** Ein Klassen-Buchstabe (A–H) plus konkrete kWh/m²·a-Zahl *sieht aus*
+wie ein Energieausweis und verspricht eine Präzision, die vier Dropdowns nicht
+liefern können. Das eigentliche Risiko ist die **Darstellung**, nicht die
+Schätzung selbst.
+
+**Grundeinsicht:** Hüllen-Schätzung und echte Zählerstände beantworten
+*verschiedene* Fragen. Die Schätzung sagt (am Tag 1, ohne Daten), **wo** der
+bauliche Verlust sitzt; der Verbrauch sagt (später, mit Ablesungen), **wie viel**
+tatsächlich verbraucht wird – aber nicht warum. Sie ergänzen sich.
+
+### Beschluss
+
+| Aspekt | Beschluss |
+|---|---|
+| **Darstellung** | **Qualitativ + relativ.** Grobe Skala mit Marker („eher effizient ↔ eher sanierungsbedürftig") + „**≈ X % gegenüber unsaniert**" + **größter nächster Hebel**. **Keine** A–H-Energieausweis-Klasse, **keine** absolute Punktzahl in v1. |
+| **Echtdaten-Bezug** | **Aktiv verzahnen.** Schätzung klar als vorläufig rahmen; sobald Zählerstände vorliegen, auf den echten Verbrauch / die Heizkosten verweisen bzw. diese daneben zeigen. Anschluss an `heatingCost.ts` / `EnergySummaryCard`. |
+| **Absolute Zahl** | Entfällt in der UI. (Intern darf der kWh-Wert berechnet werden, um % und Hebel-Rangfolge abzuleiten – er wird nur **nicht als präziser Wert angezeigt**.) |
+| **Förderhinweis** | Weich/evergreen wie bisher (BEG, ohne Zahlen), nur bei Dämm-/Fenster-Hebeln. |
+
+### Warum das robust ist
+
+Die **Rangfolge der Hebel** (Fassade −20 % > Dach/Fenster −12 % > Keller −6 %)
+und die **relative** Wirkung der Sanierungen sind stabil, auch wenn die absoluten
+kWh danebenliegen – Fehler im Ausgangswert kürzen sich beim Vergleich weitgehend
+heraus. Genau diese belastbaren Aussagen zeigen wir; die scheinpräzise absolute
+Zahl zeigen wir nicht.
+
+### Folge für die Rechenwerte-Freigabe (Abschnitt 4)
+
+Weil keine absolute Zahl/Klasse mehr angezeigt wird, ist die **exakte
+Kalibrierung zweitrangig**. Fachlich relevant ist nur noch, dass die
+**Reihenfolge/Relation der Abschlagsfaktoren** plausibel ist (welches Bauteil
+bringt am meisten). Die Baujahr-Startwerte dienen dann nur noch intern der
+%-Berechnung. → Leichtere Freigabe: nur die **Faktor-Rangfolge** gegenchecken,
+nicht jede Dezimalstelle.
+
+### Revidierte Output-Skizze
+
+```
+┌───────────────────────────────┐
+│  Bausubstanz (grobe Orient.)   │
+│  ●━━━━━━━○━━━━  eher effizient  │  ← Marker auf neutraler Skala, kein A–H
+│  Deine Sanierungen: ≈ −24 %    │  ← relativ, belastbar
+│  ggü. unsaniertem Bau          │
+├───────────────────────────────┤
+│  Größter Hebel: Fassade ≈ −20 %│  ← Rangfolge, robust
+│  Förderung (BEG) i. d. R. mögl.│
+├───────────────────────────────┤
+│  ⓘ Grobe Schätzung aus Baujahr │
+│  & Sanierungen. Echte Zähler-  │  ← ehrlich + Verzahnung
+│  stände zeigen den tatsächl.   │
+│  Verbrauch. [Zählerstand ▸]    │
+└───────────────────────────────┘
+```
