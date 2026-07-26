@@ -47,6 +47,20 @@
   color-scheme: dark;
 }
 
+/* Mitternacht – reines Schwarz (OLED-schonend), neutraler heller Primary. */
+[data-theme='midnight'] {
+  --bg: #000000;
+  --surface: #0b0b0c;
+  --surface-2: #161618;
+  --fg: #fafafa;
+  --muted: #8a8a8a;
+  --border: #242427;
+  --primary: #fafafa;
+  --primary-fg: #000000;
+  --success: #10b981;
+  color-scheme: dark;
+}
+
 /* HTW-Grün (Hochschule für Technik und Wirtschaft Berlin) */
 [data-theme='htw'] {
   --bg: #f0f5ea;
@@ -58,6 +72,62 @@
   --primary: #5a8a1b;
   --primary-fg: #ffffff;
   --success: #5a8a1b;
+  color-scheme: light;
+}
+
+/* Ozean – ruhiges Blau (seriös, „Tech & Vertrauen"). */
+[data-theme='ocean'] {
+  --bg: #f0f5fb;
+  --surface: #ffffff;
+  --surface-2: #e2ecf7;
+  --fg: #0f1e2e;
+  --muted: #5a6b80;
+  --border: #cfddec;
+  --primary: #2563eb;
+  --primary-fg: #ffffff;
+  --success: #0e7490;
+  color-scheme: light;
+}
+
+/* Bernstein – Energie-Orange (passend zu den Gas-/Energie-Karten). */
+[data-theme='amber'] {
+  --bg: #fdf6ec;
+  --surface: #ffffff;
+  --surface-2: #f8ebd6;
+  --fg: #2b1d0a;
+  --muted: #8a6d43;
+  --border: #eddcc0;
+  --primary: #d97706;
+  --primary-fg: #ffffff;
+  --success: #6b8e23;
+  color-scheme: light;
+}
+
+/* Sepia – warmer Papierton (augenschonend, fürs Abendlesen). */
+[data-theme='sepia'] {
+  --bg: #f5efe2;
+  --surface: #fffaf0;
+  --surface-2: #ece2cf;
+  --fg: #3a2f1e;
+  --muted: #8a7a5c;
+  --border: #ddceb3;
+  --primary: #a65a28;
+  --primary-fg: #ffffff;
+  --success: #6b7d2c;
+  color-scheme: light;
+}
+
+/* Hoher Kontrast – maximale Lesbarkeit, kräftige Ränder (Barrierefreiheit). */
+[data-theme='contrast'] {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f0f0f0;
+  --fg: #000000;
+  --muted: #333333;
+  --border: #000000;
+  --primary: #0033cc;
+  --primary-fg: #ffffff;
+  --success: #006622;
   color-scheme: light;
 }
 
@@ -147,6 +217,38 @@ body {
 [data-theme='htw'] .app-backdrop::after {
   background: radial-gradient(circle, color-mix(in srgb, var(--primary) 18%, transparent), transparent 70%);
   opacity: 0.45;
+}
+
+/* Mitternacht: sehr dezente Glut auf reinem Schwarz (echtes True-Black bleibt). */
+[data-theme='midnight'] .app-backdrop::before {
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%);
+  opacity: 0.4;
+}
+
+[data-theme='midnight'] .app-backdrop::after {
+  background: radial-gradient(circle, color-mix(in srgb, #3b82f6 20%, transparent), transparent 70%);
+  opacity: 0.22;
+}
+
+/* Farbige Hell-Themes: Primary-getönte Blobs für einen stimmigen Grundton. */
+[data-theme='ocean'] .app-backdrop::before,
+[data-theme='amber'] .app-backdrop::before,
+[data-theme='sepia'] .app-backdrop::before {
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 24%, transparent), transparent 70%);
+  opacity: 0.5;
+}
+
+[data-theme='ocean'] .app-backdrop::after,
+[data-theme='amber'] .app-backdrop::after,
+[data-theme='sepia'] .app-backdrop::after {
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 14%, transparent), transparent 70%);
+  opacity: 0.4;
+}
+
+/* Hoher Kontrast: keine dekorativen Blobs – maximale Ruhe/Lesbarkeit. */
+[data-theme='contrast'] .app-backdrop::before,
+[data-theme='contrast'] .app-backdrop::after {
+  display: none;
 }
 
 @keyframes blob-drift-a {

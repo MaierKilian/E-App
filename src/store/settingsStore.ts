@@ -1,9 +1,28 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export type Theme = 'light' | 'dark' | 'htw'
+export type Theme =
+  | 'light'
+  | 'dark'
+  | 'midnight'
+  | 'htw'
+  | 'ocean'
+  | 'amber'
+  | 'sepia'
+  | 'contrast'
 
-export const THEMES: Theme[] = ['light', 'dark', 'htw']
+// Reihenfolge im Umschalter: erst die Neutralen (hell → dunkel → schwarz),
+// dann die farbigen Akzent-Themes, zuletzt die Barrierefrei-Variante.
+export const THEMES: Theme[] = [
+  'light',
+  'dark',
+  'midnight',
+  'htw',
+  'ocean',
+  'amber',
+  'sepia',
+  'contrast',
+]
 
 /** Geräte-Voreinstellung (hell/dunkel) als Standard für neue Nutzer. */
 function systemTheme(): Theme {

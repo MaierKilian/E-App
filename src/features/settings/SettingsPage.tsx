@@ -12,16 +12,13 @@ import {
   Info,
   ShieldCheck,
   BarChart3,
-  Sun,
-  Moon,
-  Leaf,
 } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
-import { useSettingsStore, THEMES, type Theme } from '@/store/settingsStore'
+import { useSettingsStore } from '@/store/settingsStore'
 import { useUser, useIsAuthenticated } from '@/store/authStore'
 import { useProfilesStore } from '@/store/profilesStore'
 import { Avatar } from '@/components/ui/Avatar'
 import { Toggle } from '@/components/ui/Toggle'
+import { ThemePicker } from '@/components/ThemePicker'
 import { logout } from '@/features/auth/auth'
 import { syncAnalyticsConsent } from '@/features/analytics/analytics'
 import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
@@ -29,12 +26,6 @@ import { SUPPORTED_LANGUAGES } from '@/i18n'
 import { APP_VERSION } from '@/app/version'
 import { SettingsSection } from './SettingsSection'
 import { SettingsRow } from './SettingsRow'
-
-const THEME_ICONS: Record<Theme, LucideIcon> = {
-  light: Sun,
-  dark: Moon,
-  htw: Leaf,
-}
 
 /**
  * Eigenständige Einstellungsseite: bündelt Konto, Darstellung, Hilfe, Daten und
@@ -45,8 +36,6 @@ const THEME_ICONS: Record<Theme, LucideIcon> = {
 export function SettingsPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
-  const theme = useSettingsStore((s) => s.theme)
-  const setTheme = useSettingsStore((s) => s.setTheme)
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
   const demoMode = useSettingsStore((s) => s.demoMode)
   const analyticsEnabled = useSettingsStore((s) => s.analyticsEnabled)
@@ -119,26 +108,7 @@ export function SettingsPage() {
             <Palette className="h-3.5 w-3.5" />
             {t('theme.label')}
           </p>
-          <div className="flex gap-1 rounded-xl border border-border bg-surface-2/40 p-1">
-            {THEMES.map((option) => {
-              const Icon = THEME_ICONS[option]
-              const active = option === theme
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => setTheme(option)}
-                  aria-pressed={active}
-                  className={`flex flex-1 items-center justify-center gap-1 rounded-lg px-1.5 py-2 text-[11px] font-medium transition-colors ${
-                    active ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-surface-2'
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5 shrink-0" />
-                  <span className="truncate">{t(`theme.${option}`)}</span>
-                </button>
-              )
-            })}
-          </div>
+          <ThemePicker />
         </div>
         <div className="border-t border-border px-3 py-3">
           <p className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-muted">

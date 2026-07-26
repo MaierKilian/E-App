@@ -14,7 +14,12 @@
     "label": "Design",
     "light": "Hell",
     "dark": "Dunkel",
-    "htw": "HTW-Grün"
+    "midnight": "Mitternacht",
+    "htw": "HTW-Grün",
+    "ocean": "Ozean",
+    "amber": "Bernstein",
+    "sepia": "Sepia",
+    "contrast": "Hoher Kontrast"
   },
   "language": {
     "label": "Sprache",

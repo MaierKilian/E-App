@@ -14,7 +14,12 @@
     "label": "Theme",
     "light": "Light",
     "dark": "Dark",
-    "htw": "HTW Green"
+    "midnight": "Midnight",
+    "htw": "HTW Green",
+    "ocean": "Ocean",
+    "amber": "Amber",
+    "sepia": "Sepia",
+    "contrast": "High contrast"
   },
   "language": {
     "label": "Language",
