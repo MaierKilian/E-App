@@ -3,22 +3,62 @@ import { Check } from 'lucide-react'
 import { useSettingsStore, THEMES } from '@/store/settingsStore'
 import { THEME_SWATCHES } from '@/app/themes'
 
+interface ThemePickerProps {
+  /**
+   * Kompakte Variante: nur Farbpunkte in einer umbrechenden Reihe (ohne Labels),
+   * für das enge Konto-Popover. Standard ist das beschriftete Raster für die
+   * Einstellungsseite.
+   */
+  compact?: boolean
+}
+
+/** Diagonale Zweifarb-Vorschau eines Themes (Hintergrund + Akzent). */
+function swatchStyle(bg: string, primary: string) {
+  return { background: `linear-gradient(135deg, ${bg} 0 50%, ${primary} 50% 100%)` }
+}
+
 /**
- * Theme-Auswahl als umbrechendes Raster mit Farbvorschau. Ersetzt den früheren
- * horizontalen Segmented-Control, der bei mehr als drei Themes auf kleinen
- * Displays zu eng wurde. Wird sowohl auf der Einstellungsseite als auch im
- * Konto-Popover genutzt, damit die Auswahl an beiden Stellen identisch ist und
- * beliebig viele Themes verträgt.
+ * Theme-Auswahl mit zweifarbiger Vorschau (Hintergrund/Akzent), die bei hellen
+ * wie dunklen Themes gleich klar aussieht. Wird auf der Einstellungsseite
+ * (beschriftetes Raster) und im Konto-Popover (`compact`) genutzt, damit die
+ * Auswahl an beiden Stellen konsistent ist und beliebig viele Themes verträgt.
  */
-export function ThemePicker() {
+export function ThemePicker({ compact = false }: ThemePickerProps) {
   const { t } = useTranslation()
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
 
+  if (compact) {
+    return (
+      <div className="flex flex-wrap gap-2.5">
+        {THEMES.map((key) => {
+          const sw = THEME_SWATCHES[key]
+          const active = key === theme
+          return (
+            <button
+              key={key}
+              type="button"
+              onClick={() => setTheme(key)}
+              aria-pressed={active}
+              aria-label={t(`theme.${key}`)}
+              title={t(`theme.${key}`)}
+              className={`focus-ring h-8 w-8 shrink-0 rounded-full border transition-transform active:scale-90 ${
+                active
+                  ? 'border-transparent ring-2 ring-primary ring-offset-2 ring-offset-surface'
+                  : 'border-border'
+              }`}
+              style={swatchStyle(sw.bg, sw.primary)}
+            />
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div className="grid grid-cols-2 gap-1.5">
       {THEMES.map((key) => {
-        const swatch = THEME_SWATCHES[key]
+        const sw = THEME_SWATCHES[key]
         const active = key === theme
         return (
           <button
@@ -31,16 +71,17 @@ export function ThemePicker() {
             }`}
           >
             <span
-              className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-black/10"
-              style={{ backgroundColor: swatch.bg }}
+              className="h-5 w-5 shrink-0 rounded-full border border-border"
+              style={swatchStyle(sw.bg, sw.primary)}
+            />
+            <span
+              className={`flex-1 text-xs leading-tight text-foreground ${
+                active ? 'font-semibold' : 'font-medium'
+              }`}
             >
-              {active ? (
-                <Check className="h-3.5 w-3.5" style={{ color: swatch.primary }} />
-              ) : (
-                <span className="h-3 w-3 rounded-full" style={{ backgroundColor: swatch.primary }} />
-              )}
+              {t(`theme.${key}`)}
             </span>
-            <span className="truncate text-xs font-medium text-foreground">{t(`theme.${key}`)}</span>
+            {active && <Check className="h-3.5 w-3.5 shrink-0 text-primary" />}
           </button>
         )
       })}

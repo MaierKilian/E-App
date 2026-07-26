@@ -114,7 +114,7 @@ export function ProfileMenu() {
             {t('theme.label')}
           </p>
           <div className="mb-3">
-            <ThemePicker />
+            <ThemePicker compact />
           </div>
 
           {/* Zur vollständigen Einstellungsseite */}
