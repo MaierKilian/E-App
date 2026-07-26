@@ -10,15 +10,21 @@ import {
   Trash2,
   LogOut,
   Info,
+  ShieldCheck,
+  BarChart3,
   Sun,
   Moon,
   Leaf,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useSettingsStore, THEMES, type Theme } from '@/store/settingsStore'
-import { useUser } from '@/store/authStore'
+import { useUser, useIsAuthenticated } from '@/store/authStore'
+import { useProfilesStore } from '@/store/profilesStore'
 import { Avatar } from '@/components/ui/Avatar'
+import { Toggle } from '@/components/ui/Toggle'
 import { logout } from '@/features/auth/auth'
+import { syncAnalyticsConsent } from '@/features/analytics/analytics'
+import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
 import { SUPPORTED_LANGUAGES } from '@/i18n'
 import { APP_VERSION } from '@/app/version'
 import { SettingsSection } from './SettingsSection'
@@ -42,8 +48,22 @@ export function SettingsPage() {
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
+  const demoMode = useSettingsStore((s) => s.demoMode)
+  const analyticsEnabled = useSettingsStore((s) => s.analyticsEnabled)
+  const setAnalyticsEnabled = useSettingsStore((s) => s.setAnalyticsEnabled)
   const user = useUser()
+  const isAuthenticated = useIsAuthenticated()
+  const profilesReady = useProfilesStore((s) => s.status === 'ready' && s.profiles.length > 0)
   const currentLang = i18n.resolvedLanguage
+
+  // Wohnprofil-Verwaltung nur zeigen, wenn es echte, geladene Profile gibt
+  // (angemeldet, nicht in der Demo) – sonst bliebe der Abschnitt leer.
+  const showProfiles = !demoMode && isAuthenticated && profilesReady
+
+  function handleAnalyticsToggle(next: boolean) {
+    setAnalyticsEnabled(next)
+    void syncAnalyticsConsent()
+  }
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
@@ -82,6 +102,15 @@ export function SettingsPage() {
           />
         )}
       </SettingsSection>
+
+      {/* Wohnprofil verwalten (wechseln, teilen, verlassen, löschen) – nutzt den
+          bestehenden ProfileSwitcher (bringt seine eigene Überschrift „Meine
+          Wohnungen" mit), damit die Logik nur an einer Stelle lebt. */}
+      {showProfiles && (
+        <section className="rounded-2xl border border-border bg-surface p-3">
+          <ProfileSwitcher />
+        </section>
+      )}
 
       {/* Darstellung: Design + Sprache */}
       <SettingsSection title={t('settings.appearance')} icon={Palette}>
@@ -150,6 +179,22 @@ export function SettingsPage() {
       {/* Daten */}
       <SettingsSection title={t('settings.dataSection')} icon={Trash2}>
         <SettingsRow icon={Trash2} title={t('settings.resetEntry')} to="/einstellungen/daten" danger />
+      </SettingsSection>
+
+      {/* Datenschutz */}
+      <SettingsSection title={t('settings.privacy')} icon={ShieldCheck}>
+        <SettingsRow
+          icon={BarChart3}
+          title={t('settings.analytics.title')}
+          subtitle={t('settings.analytics.desc')}
+          right={
+            <Toggle
+              checked={analyticsEnabled}
+              onChange={handleAnalyticsToggle}
+              label={t('settings.analytics.title')}
+            />
+          }
+        />
       </SettingsSection>
 
       {/* Über */}

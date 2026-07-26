@@ -26,6 +26,13 @@ interface SettingsState {
    */
   demoMode: boolean
   setDemoMode: (on: boolean) => void
+  /**
+   * Einwilligung in die anonyme Nutzungsstatistik (Firebase Analytics).
+   * Standardmäßig aktiv; über die Einstellungen abschaltbar (DSGVO-Opt-out).
+   * Wird von `track()` ausgewertet, bevor ein Ereignis gesendet wird.
+   */
+  analyticsEnabled: boolean
+  setAnalyticsEnabled: (on: boolean) => void
 }
 
 /**
@@ -43,6 +50,8 @@ export const useSettingsStore = create<SettingsState>()(
       setIntroSeen: (introSeen) => set({ introSeen }),
       demoMode: false,
       setDemoMode: (demoMode) => set({ demoMode }),
+      analyticsEnabled: true,
+      setAnalyticsEnabled: (analyticsEnabled) => set({ analyticsEnabled }),
     }),
     { name: 'eapp-settings' },
   ),

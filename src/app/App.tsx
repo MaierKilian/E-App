@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Layout } from './Layout'
 import { useApplyTheme } from './useApplyTheme'
-import { track } from '@/features/analytics/analytics'
+import { track, syncAnalyticsConsent } from '@/features/analytics/analytics'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { MeasurementsPage } from '@/features/measurements/MeasurementsPage'
 import { MeasurementRunner } from '@/features/measurements/MeasurementRunner'
@@ -54,6 +54,13 @@ function LandingRoute() {
 
 export function App() {
   useApplyTheme()
+
+  // Analytics-Einwilligung (Opt-out) beim Start und bei jeder Änderung auf
+  // Firebase Analytics übertragen, damit auch automatische Ereignisse folgen.
+  const analyticsEnabled = useSettingsStore((s) => s.analyticsEnabled)
+  useEffect(() => {
+    void syncAnalyticsConsent()
+  }, [analyticsEnabled])
 
   return (
     <>

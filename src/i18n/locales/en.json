@@ -1664,7 +1664,12 @@
     "replayIntro": "Replay introduction",
     "viewLanding": "View landing page",
     "dataSection": "Data",
+    "privacy": "Privacy",
     "about": "About",
+    "analytics": {
+      "title": "Anonymous usage statistics",
+      "desc": "Help us improve the app with anonymous usage data. No personal content, can be turned off anytime."
+    },
     "resetEntry": "Reset data",
     "data": {
       "title": "Reset data",
