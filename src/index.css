@@ -47,15 +47,15 @@
   color-scheme: dark;
 }
 
-/* Mitternacht – reines Schwarz (OLED-schonend), neutraler heller Primary. */
+/* Mitternacht – reines Schwarz (OLED-schonend), betont matt & tief. */
 [data-theme='midnight'] {
   --bg: #000000;
-  --surface: #0b0b0c;
-  --surface-2: #161618;
-  --fg: #fafafa;
-  --muted: #8a8a8a;
-  --border: #242427;
-  --primary: #fafafa;
+  --surface: #070708;
+  --surface-2: #101012;
+  --fg: #f4f4f5;
+  --muted: #7d7d82;
+  --border: #1b1b1e;
+  --primary: #f4f4f5;
   --primary-fg: #000000;
   --success: #10b981;
   color-scheme: dark;
@@ -219,15 +219,15 @@ body {
   opacity: 0.45;
 }
 
-/* Mitternacht: sehr dezente Glut auf reinem Schwarz (echtes True-Black bleibt). */
+/* Mitternacht: nahezu flaches True-Black. Nur ein Hauch neutraler Tiefe oben,
+   kein farbiger Glow – bewusst matt. */
 [data-theme='midnight'] .app-backdrop::before {
-  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%);
-  opacity: 0.4;
+  background: radial-gradient(circle, color-mix(in srgb, #ffffff 5%, transparent), transparent 70%);
+  opacity: 0.22;
 }
 
 [data-theme='midnight'] .app-backdrop::after {
-  background: radial-gradient(circle, color-mix(in srgb, #3b82f6 20%, transparent), transparent 70%);
-  opacity: 0.22;
+  display: none;
 }
 
 /* Farbige Hell-Themes: Primary-getönte Blobs für einen stimmigen Grundton. */
@@ -321,6 +321,38 @@ body {
   box-shadow:
     inset 0 0 0 1px color-mix(in srgb, #ffffff 12%, transparent),
     inset 0 -1px 0 color-mix(in srgb, #ffffff 6%, transparent);
+}
+
+/* Mitternacht: bewusst matt – kein Schimmer-Verlauf, fast deckende Flächen und
+   nur ein hauchdünner Innenrand statt hellem Highlight. So wirken die Karten
+   tiefschwarz statt grau/glänzend. */
+[data-theme='midnight'] .glass {
+  background-color: color-mix(in srgb, var(--surface) 90%, transparent);
+  background-image: none;
+  -webkit-backdrop-filter: blur(8px) saturate(110%);
+  backdrop-filter: blur(8px) saturate(110%);
+  box-shadow:
+    0 1px 1px color-mix(in srgb, #000000 50%, transparent),
+    0 8px 22px color-mix(in srgb, #000000 60%, transparent);
+}
+
+[data-theme='midnight'] .glass::before {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 4%, transparent);
+}
+
+[data-theme='midnight'] .glass-bar {
+  background-color: color-mix(in srgb, var(--surface) 88%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(115%);
+  backdrop-filter: blur(16px) saturate(115%);
+}
+
+[data-theme='midnight'] .glass-floating {
+  background-image: none;
+  background-color: color-mix(in srgb, var(--surface) 92%, transparent);
+}
+
+[data-theme='midnight'] .glass-floating::before {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 5%, transparent);
 }
 
 /* Kräftigere Variante für fixierte Leisten (Header / Aktionsleiste / Nav). */
