@@ -1663,6 +1663,8 @@
     "help": "Help",
     "replayIntro": "Replay introduction",
     "viewLanding": "View landing page",
+    "dataSection": "Data",
+    "about": "About",
     "resetEntry": "Reset data",
     "data": {
       "title": "Reset data",

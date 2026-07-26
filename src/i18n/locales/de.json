@@ -1663,6 +1663,8 @@
     "help": "Hilfe",
     "replayIntro": "Einführung erneut ansehen",
     "viewLanding": "Landing Page ansehen",
+    "dataSection": "Daten",
+    "about": "Über",
     "resetEntry": "Daten zurücksetzen",
     "data": {
       "title": "Daten zurücksetzen",

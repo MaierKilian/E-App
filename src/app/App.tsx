@@ -11,6 +11,7 @@ import { MeterDetailPage } from '@/features/monitoring/MeterDetailPage'
 import { ReportsPage } from '@/features/reports/ReportsPage'
 import { EducationPage } from '@/features/education/EducationPage'
 import { TipsPage } from '@/features/tips/TipsPage'
+import { SettingsPage } from '@/features/settings/SettingsPage'
 import { DataResetPage } from '@/features/settings/DataResetPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { JoinProfilePage } from '@/features/profiles/JoinProfilePage'
@@ -74,6 +75,7 @@ export function App() {
             <Route path="/reports" element={<LoginGate><ReportsPage /></LoginGate>} />
             <Route path="/education" element={<EducationPage />} />
             <Route path="/tipps" element={<TipsPage />} />
+            <Route path="/einstellungen" element={<SettingsPage />} />
             <Route path="/einstellungen/daten" element={<DataResetPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/join/:pid/:inviteId" element={<JoinProfilePage />} />

@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { User, Palette, Globe, PlayCircle, ChevronRight, Sun, Moon, Leaf, Trash2, LogOut, Sparkles } from 'lucide-react'
+import { User, Palette, Settings, ChevronRight, Sun, Moon, Leaf, LogOut } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useSettingsStore, THEMES, type Theme } from '@/store/settingsStore'
 import { useUser } from '@/store/authStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { Avatar } from '@/components/ui/Avatar'
 import { logout } from '@/features/auth/auth'
-import { SUPPORTED_LANGUAGES } from '@/i18n'
+import { APP_VERSION } from '@/app/version'
 
 const THEME_ICONS: Record<Theme, LucideIcon> = {
   light: Sun,
@@ -17,21 +17,21 @@ const THEME_ICONS: Record<Theme, LucideIcon> = {
 }
 
 /**
- * Zentraler Profil-/Einstellungs-Einstieg oben rechts (Dropdown). Bündelt Konto
- * (Platzhalter fürs künftige Login), Darstellung (Design + Sprache) und Hilfe –
- * statt mehrerer Schnellschalter in der Kopfzeile.
+ * Schlankes Konto-Popover oben rechts (Dropdown). Bietet nur den schnellen
+ * Zugriff auf das Konto und den Design-Umschalter; alles Weitere lebt auf der
+ * eigenständigen Einstellungsseite (`/einstellungen`), auf die von hier verlinkt
+ * wird. So bleibt das Popover übersichtlich, egal wie viele Einstellungen
+ * hinzukommen.
  */
 export function ProfileMenu() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const theme = useSettingsStore((s) => s.theme)
   const setTheme = useSettingsStore((s) => s.setTheme)
-  const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
   const user = useUser()
   const profileName = useOnboardingStore((s) => s.data.profileName)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  const currentLang = i18n.resolvedLanguage
   // Der Account-Avatar zeigt bewusst Initialen/Personen-Icon (nicht das
   // Wohnungsfoto) – so ist das Konto klar vom Wohnprofil unterscheidbar.
   // Bevorzugt der Firebase-Anzeigename, sonst die E-Mail, sonst der Profilname.
@@ -117,7 +117,7 @@ export function ProfileMenu() {
             </button>
           )}
 
-          {/* Design */}
+          {/* Design-Schnellumschalter */}
           <p className="mb-1.5 flex items-center gap-1.5 px-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted">
             <Palette className="h-3.5 w-3.5" />
             {t('theme.label')}
@@ -143,86 +143,26 @@ export function ProfileMenu() {
             })}
           </div>
 
-          {/* Sprache */}
-          <p className="mb-1.5 flex items-center gap-1.5 px-0.5 text-[11px] font-semibold uppercase tracking-wide text-muted">
-            <Globe className="h-3.5 w-3.5" />
-            {t('language.label')}
-          </p>
-          <div className="mb-3 flex gap-1 rounded-xl border border-border bg-surface-2/40 p-1">
-            {SUPPORTED_LANGUAGES.map((lng) => {
-              const active = currentLang === lng
-              return (
-                <button
-                  key={lng}
-                  type="button"
-                  onClick={() => void i18n.changeLanguage(lng)}
-                  aria-pressed={active}
-                  className={`flex-1 rounded-lg px-2 py-2 text-sm font-medium transition-colors ${
-                    active ? 'bg-primary text-primary-foreground' : 'text-foreground hover:bg-surface-2'
-                  }`}
-                >
-                  {t(`language.${lng}`)}
-                </button>
-              )
-            })}
-          </div>
-
-          {/* Hilfe */}
+          {/* Zur vollständigen Einstellungsseite */}
           <button
             type="button"
             role="menuitem"
             onClick={() => {
               setOpen(false)
-              setIntroSeen(false)
+              navigate('/einstellungen')
             }}
             className="flex w-full items-center gap-2.5 rounded-xl border border-border bg-surface-2/50 p-2.5 text-left transition-colors hover:bg-surface-2"
           >
             <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-              <PlayCircle className="h-4.5 w-4.5" />
+              <Settings className="h-4.5 w-4.5" />
             </span>
-            <span className="flex-1 text-sm font-medium text-foreground">
-              {t('settings.replayIntro')}
-            </span>
+            <span className="flex-1 text-sm font-medium text-foreground">{t('settings.title')}</span>
             <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
           </button>
 
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setOpen(false)
-              navigate('/willkommen')
-            }}
-            className="mt-2 flex w-full items-center gap-2.5 rounded-xl border border-border bg-surface-2/50 p-2.5 text-left transition-colors hover:bg-surface-2"
-          >
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-              <Sparkles className="h-4.5 w-4.5" />
-            </span>
-            <span className="flex-1 text-sm font-medium text-foreground">
-              {t('settings.viewLanding')}
-            </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
-          </button>
-
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setOpen(false)
-              navigate('/einstellungen/daten')
-            }}
-            className="mt-2 flex w-full items-center gap-2.5 rounded-xl border border-border bg-surface-2/50 p-2.5 text-left transition-colors hover:bg-surface-2"
-          >
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-rose-500/10 text-rose-600">
-              <Trash2 className="h-4.5 w-4.5" />
-            </span>
-            <span className="flex-1 text-sm font-medium text-foreground">
-              {t('settings.resetEntry')}
-            </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
-          </button>
-
-          <p className="mt-3 text-center text-[10px] text-muted">{t('app.name')} · v0.5.0</p>
+          <p className="mt-3 text-center text-[10px] text-muted">
+            {t('app.name')} · {APP_VERSION}
+          </p>
         </div>
       )}
     </div>
