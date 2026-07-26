@@ -1,28 +1,11 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
-export type Theme =
-  | 'light'
-  | 'dark'
-  | 'midnight'
-  | 'htw'
-  | 'ocean'
-  | 'amber'
-  | 'sepia'
-  | 'contrast'
+export type Theme = 'light' | 'dark' | 'midnight' | 'htw' | 'amber'
 
 // Reihenfolge im Umschalter: erst die Neutralen (hell → dunkel → schwarz),
-// dann die farbigen Akzent-Themes, zuletzt die Barrierefrei-Variante.
-export const THEMES: Theme[] = [
-  'light',
-  'dark',
-  'midnight',
-  'htw',
-  'ocean',
-  'amber',
-  'sepia',
-  'contrast',
-]
+// dann die Marke HTW-Grün und der Energie-Akzent Bernstein.
+export const THEMES: Theme[] = ['light', 'dark', 'midnight', 'htw', 'amber']
 
 /** Geräte-Voreinstellung (hell/dunkel) als Standard für neue Nutzer. */
 function systemTheme(): Theme {
@@ -72,6 +55,19 @@ export const useSettingsStore = create<SettingsState>()(
       analyticsEnabled: true,
       setAnalyticsEnabled: (analyticsEnabled) => set({ analyticsEnabled }),
     }),
-    { name: 'eapp-settings' },
+    {
+      name: 'eapp-settings',
+      // v2: Themes Ozean/Sepia/Hoher Kontrast entfernt. Ein gespeichertes,
+      // nicht mehr vorhandenes Theme würde sonst auf die Standardfarben (hell)
+      // durchfallen – daher hier auf das Geräte-Theme zurücksetzen.
+      version: 2,
+      migrate: (persisted) => {
+        const state = persisted as Partial<SettingsState> | undefined
+        if (state && !THEMES.includes(state.theme as Theme)) {
+          state.theme = systemTheme()
+        }
+        return state as SettingsState
+      },
+    },
   ),
 )

@@ -29,10 +29,11 @@
     <script>
       // Theme früh setzen, um ein Aufblitzen beim Laden zu vermeiden (no-FOUC).
       try {
+        var valid = ['light', 'dark', 'midnight', 'htw', 'amber'];
         var raw = localStorage.getItem('eapp-settings');
         var theme = raw ? JSON.parse(raw).state.theme : null;
-        if (!theme) {
-          // Neue Nutzer: Geräte-Theme (hell/dunkel) als Standard.
+        if (!theme || valid.indexOf(theme) === -1) {
+          // Neue Nutzer bzw. entferntes Theme: Geräte-Theme (hell/dunkel).
           theme =
             window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
               ? 'dark'

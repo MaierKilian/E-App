@@ -16,10 +16,7 @@
     "dark": "Dark",
     "midnight": "Midnight",
     "htw": "HTW Green",
-    "ocean": "Ocean",
-    "amber": "Amber",
-    "sepia": "Sepia",
-    "contrast": "High contrast"
+    "amber": "Amber"
   },
   "language": {
     "label": "Language",
