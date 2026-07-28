@@ -989,7 +989,8 @@
       "readDaysAgo_other": "vor {{count}} Tagen abgelesen",
       "trackHint": "Erfasse regelmäßig, um deinen Verlauf zu sehen.",
       "exampleBadge": "Beispiel",
-      "ghostHint": "So sieht dein Verlauf aus, sobald du zwei Zählerstände einträgst."
+      "ghostHint": "So sieht dein Verlauf aus, sobald du zwei Zählerstände einträgst.",
+      "reorderHint": "Widget gedrückt halten und ziehen, um es anzuordnen."
     },
     "detail": {
       "back": "Monitoring",

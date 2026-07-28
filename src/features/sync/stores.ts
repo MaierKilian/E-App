@@ -4,6 +4,7 @@ import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { useProgressStore } from '@/store/progressStore'
 import { useMeasurementDraftStore } from '@/store/measurementDraftStore'
+import { useWidgetOrderStore } from '@/store/widgetOrderStore'
 
 /**
  * Gemeinsame Basis für die Cloud-Synchronisation und die Profilverwaltung.
@@ -32,6 +33,7 @@ export const STORES: Record<string, SyncStore> = {
   tariff: useTariffStore as unknown as SyncStore,
   progress: useProgressStore as unknown as SyncStore,
   drafts: useMeasurementDraftStore as unknown as SyncStore,
+  widgetOrder: useWidgetOrderStore as unknown as SyncStore,
 }
 
 /** Erzeugt einen JSON-sicheren Schnappschuss aller Stores (Funktionen entfallen). */
@@ -62,6 +64,7 @@ export function resetAllStores() {
   useTariffStore.getState().resetTariff()
   useProgressStore.getState().resetProgress()
   useMeasurementDraftStore.getState().resetDrafts()
+  useWidgetOrderStore.getState().resetOrder()
 }
 
 /** Leitet die Anzeige-Metadaten (Name, Bild) eines Profils aus dem Zustand ab. */

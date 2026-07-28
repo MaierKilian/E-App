@@ -1341,7 +1341,8 @@
       "readDaysAgo_other": "read {{count}} days ago",
       "trackHint": "Log readings regularly to see your trend.",
       "exampleBadge": "Example",
-      "ghostHint": "This is how your trend will look once you enter two meter readings."
+      "ghostHint": "This is how your trend will look once you enter two meter readings.",
+      "reorderHint": "Press and hold a widget, then drag to rearrange."
     },
     "detail": {
       "back": "Monitoring",
