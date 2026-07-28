@@ -16,7 +16,8 @@ import {
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUser, useIsAuthenticated } from '@/store/authStore'
 import { useProfilesStore } from '@/store/profilesStore'
-import { Avatar } from '@/components/ui/Avatar'
+import { useAccountAvatarStore, useAccountAvatarSrc } from '@/store/accountAvatarStore'
+import { AvatarPicker } from '@/components/AvatarPicker'
 import { Toggle } from '@/components/ui/Toggle'
 import { ThemePicker } from '@/components/ThemePicker'
 import { logout } from '@/features/auth/auth'
@@ -42,6 +43,9 @@ export function SettingsPage() {
   const setAnalyticsEnabled = useSettingsStore((s) => s.setAnalyticsEnabled)
   const user = useUser()
   const isAuthenticated = useIsAuthenticated()
+  const accountAvatar = useAccountAvatarSrc()
+  const setAccountAvatar = useAccountAvatarStore((s) => s.setAvatar)
+  const removeAccountAvatar = useAccountAvatarStore((s) => s.removeAvatar)
   const profilesReady = useProfilesStore((s) => s.status === 'ready' && s.profiles.length > 0)
   const currentLang = i18n.resolvedLanguage
 
@@ -71,9 +75,19 @@ export function SettingsPage() {
       <SettingsSection title={t('settings.account')} icon={User}>
         {user ? (
           <>
-            <div className="flex items-center gap-3 px-3 py-3">
-              <Avatar name={user.displayName || user.email || undefined} size={40} />
-              <div className="min-w-0 flex-1">
+            <div className="flex flex-col items-center gap-3 px-3 py-4">
+              <AvatarPicker
+                value={accountAvatar}
+                name={user.displayName || user.email || undefined}
+                size={72}
+                addLabel={t('settings.avatar.add')}
+                removeLabel={t('settings.avatar.remove')}
+                onChange={(dataUrl) => {
+                  if (dataUrl) setAccountAvatar(user.uid, dataUrl)
+                  else removeAccountAvatar(user.uid)
+                }}
+              />
+              <div className="min-w-0 text-center">
                 <p className="truncate text-sm font-semibold text-foreground">
                   {user.displayName || t('settings.account')}
                 </p>

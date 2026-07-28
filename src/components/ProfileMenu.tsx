@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { User, Palette, Settings, ChevronRight, LogOut } from 'lucide-react'
 import { useUser } from '@/store/authStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
+import { useAccountAvatarSrc } from '@/store/accountAvatarStore'
 import { Avatar } from '@/components/ui/Avatar'
 import { ThemePicker } from '@/components/ThemePicker'
 import { logout } from '@/features/auth/auth'
@@ -21,11 +22,13 @@ export function ProfileMenu() {
   const navigate = useNavigate()
   const user = useUser()
   const profileName = useOnboardingStore((s) => s.data.profileName)
+  const accountAvatar = useAccountAvatarSrc()
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
-  // Der Account-Avatar zeigt bewusst Initialen/Personen-Icon (nicht das
-  // Wohnungsfoto) – so ist das Konto klar vom Wohnprofil unterscheidbar.
-  // Bevorzugt der Firebase-Anzeigename, sonst die E-Mail, sonst der Profilname.
+  // Der Account-Avatar zeigt das selbst gewählte Konto-Foto (bzw. das
+  // Google-Profilbild) – bewusst NICHT das Wohnungsfoto, damit Konto und
+  // Wohnprofil unterscheidbar bleiben. Ohne Bild dienen Anzeigename, E-Mail
+  // oder Profilname als Initialen-Grundlage.
   const avatarName = user?.displayName || user?.email || profileName
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export function ProfileMenu() {
         aria-expanded={open}
         className="focus-ring grid h-9 w-9 place-items-center overflow-hidden rounded-full border border-border transition-transform hover:scale-105 active:scale-95"
       >
-        <Avatar name={avatarName} size={34} />
+        <Avatar src={accountAvatar} name={avatarName} size={34} />
       </button>
 
       {open && (
@@ -66,7 +69,7 @@ export function ProfileMenu() {
           {user ? (
             <div className="mb-3 rounded-xl border border-border bg-surface-2/50 p-2.5">
               <div className="flex items-center gap-3">
-                <Avatar name={user.displayName || user.email || undefined} size={40} />
+                <Avatar src={accountAvatar} name={user.displayName || user.email || undefined} size={40} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-foreground">
                     {user.displayName || t('settings.account')}

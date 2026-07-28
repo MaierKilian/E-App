@@ -10,6 +10,12 @@ interface AvatarPickerProps {
   /** Name für die Initialen-Vorschau, solange kein Bild gewählt wurde. */
   name?: string
   onChange: (dataUrl: string) => void
+  /** Kantenlänge des Avatars in Pixeln (Standard 88). */
+  size?: number
+  /** Beschriftung des Hinzufügen-Buttons (Standard: Onboarding-Text). */
+  addLabel?: string
+  /** Beschriftung des Entfernen-Buttons (Standard: Onboarding-Text). */
+  removeLabel?: string
 }
 
 /**
@@ -17,10 +23,20 @@ interface AvatarPickerProps {
  * Dateidialog, das Bild wird clientseitig heruntergerechnet und als Data-URL
  * zurückgegeben. Ist bereits ein Bild gesetzt, erscheint ein Entfernen-Button.
  */
-export function AvatarPicker({ value, name, onChange }: AvatarPickerProps) {
+export function AvatarPicker({
+  value,
+  name,
+  onChange,
+  size = 88,
+  addLabel,
+  removeLabel,
+}: AvatarPickerProps) {
   const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
+
+  const addText = addLabel ?? t('onboarding.step1.profileImageAdd')
+  const removeText = removeLabel ?? t('onboarding.step1.profileImageRemove')
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -48,10 +64,10 @@ export function AvatarPicker({ value, name, onChange }: AvatarPickerProps) {
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        aria-label={t('onboarding.step1.profileImageAdd')}
+        aria-label={addText}
         className={`focus-ring relative rounded-full transition-transform active:scale-95 ${busy ? 'opacity-60' : ''}`}
       >
-        <Avatar src={value || undefined} name={name} size={88} className="ring-2 ring-border" />
+        <Avatar src={value || undefined} name={name} size={size} className="ring-2 ring-border" />
         <span className="absolute -bottom-0.5 -right-0.5 grid h-7 w-7 place-items-center rounded-full bg-primary text-primary-foreground shadow ring-2 ring-surface">
           <Camera className="h-3.5 w-3.5" />
         </span>
@@ -64,7 +80,7 @@ export function AvatarPicker({ value, name, onChange }: AvatarPickerProps) {
           className="flex items-center gap-1 text-xs font-medium text-muted transition-colors hover:text-rose-600"
         >
           <Trash2 className="h-3.5 w-3.5" />
-          {t('onboarding.step1.profileImageRemove')}
+          {removeText}
         </button>
       ) : (
         <button
@@ -72,7 +88,7 @@ export function AvatarPicker({ value, name, onChange }: AvatarPickerProps) {
           onClick={() => inputRef.current?.click()}
           className="text-xs font-medium text-primary hover:underline"
         >
-          {t('onboarding.step1.profileImageAdd')}
+          {addText}
         </button>
       )}
     </div>

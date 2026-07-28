@@ -1659,6 +1659,10 @@
     "account": "Konto",
     "signIn": "Anmelden / Registrieren",
     "accountHint": "Daten geräteübergreifend speichern",
+    "avatar": {
+      "add": "Profilbild hinzufügen",
+      "remove": "Bild entfernen"
+    },
     "soon": "Bald",
     "logout": "Abmelden",
     "appearance": "Darstellung",
