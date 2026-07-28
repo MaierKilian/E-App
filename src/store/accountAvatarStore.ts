@@ -9,19 +9,23 @@ interface AccountAvatarState {
    * nicht das falsche Bild erscheint.
    */
   avatars: Record<string, string>
-  /** Profilbild für einen Nutzer setzen/ersetzen. */
+  /** Cache setzen/ersetzen. Der Firestore-Schreibvorgang liegt in accountAvatarSync. */
   setAvatar: (uid: string, dataUrl: string) => void
-  /** Selbst gewähltes Profilbild wieder entfernen (Fallback greift dann). */
+  /** Cache-Eintrag entfernen (danach greift ggf. der photoURL-Fallback). */
   removeAvatar: (uid: string) => void
 }
 
 /**
- * Dauerhaft gespeicherte Konto-Profilbilder (localStorage „eapp-account-avatar").
+ * Lokaler Cache der Konto-Profilbilder (localStorage „eapp-account-avatar").
  *
- * Das Bild wird bewusst lokal und nicht als Firebase-`photoURL` abgelegt: Ein
- * Data-URL im Auth-Token würde dieses unnötig aufblähen. Das Google-Profilbild
- * (`user.photoURL`) dient trotzdem als automatischer Fallback – siehe
- * `useAccountAvatarSrc()`.
+ * Quelle der Wahrheit ist Firestore (`users/{uid}.accountPhoto`) – siehe
+ * `features/sync/accountAvatarSync.ts`, das dieses Bild geräteübergreifend hält.
+ * Der Cache sorgt nur dafür, dass das Bild sofort beim Start und offline
+ * erscheint, bevor der Firestore-Listener antwortet.
+ *
+ * Bewusst NICHT als Firebase-`photoURL` gespeichert: ein Data-URL im Auth-Token
+ * würde dieses unnötig aufblähen. Das Google-Profilbild (`user.photoURL`) dient
+ * trotzdem als automatischer Fallback – siehe `useAccountAvatarSrc()`.
  */
 export const useAccountAvatarStore = create<AccountAvatarState>()(
   persist(

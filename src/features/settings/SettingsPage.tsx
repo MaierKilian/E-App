@@ -16,7 +16,8 @@ import {
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUser, useIsAuthenticated } from '@/store/authStore'
 import { useProfilesStore } from '@/store/profilesStore'
-import { useAccountAvatarStore, useAccountAvatarSrc } from '@/store/accountAvatarStore'
+import { useAccountAvatarSrc } from '@/store/accountAvatarStore'
+import { saveAccountPhoto, deleteAccountPhoto } from '@/features/sync/accountAvatarSync'
 import { AvatarPicker } from '@/components/AvatarPicker'
 import { Toggle } from '@/components/ui/Toggle'
 import { ThemePicker } from '@/components/ThemePicker'
@@ -44,8 +45,6 @@ export function SettingsPage() {
   const user = useUser()
   const isAuthenticated = useIsAuthenticated()
   const accountAvatar = useAccountAvatarSrc()
-  const setAccountAvatar = useAccountAvatarStore((s) => s.setAvatar)
-  const removeAccountAvatar = useAccountAvatarStore((s) => s.removeAvatar)
   const profilesReady = useProfilesStore((s) => s.status === 'ready' && s.profiles.length > 0)
   const currentLang = i18n.resolvedLanguage
 
@@ -83,8 +82,8 @@ export function SettingsPage() {
                 addLabel={t('settings.avatar.add')}
                 removeLabel={t('settings.avatar.remove')}
                 onChange={(dataUrl) => {
-                  if (dataUrl) setAccountAvatar(user.uid, dataUrl)
-                  else removeAccountAvatar(user.uid)
+                  if (dataUrl) void saveAccountPhoto(dataUrl)
+                  else void deleteAccountPhoto()
                 }}
               />
               <div className="min-w-0 text-center">
