@@ -23,6 +23,19 @@ const ACCENT: Record<TipCategory, string> = {
   water: 'bg-cyan-500/15 text-cyan-500',
 }
 
+/**
+ * Grobe Unsicherheits-Spanne einer €-Schätzung, auf 5-€-Schritte gerundet.
+ * Bewusst als Bereich statt centgenauer Einzelzahl – die zugrunde liegenden
+ * Werte sind selbst nur Schätzungen, eine exakte Zahl würde Genauigkeit
+ * vortäuschen, die es nicht gibt.
+ */
+function savingRange(eur: number): { low: number; high: number } {
+  const round5 = (n: number) => Math.round(n / 5) * 5
+  const low = Math.max(5, round5(eur * 0.8))
+  const high = Math.max(low + 5, round5(eur * 1.2))
+  return { low, high }
+}
+
 interface TipCardProps {
   tip: Tip
   done?: boolean
@@ -46,6 +59,10 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
   const barPct =
     tip.savingEur && maxSaving > 0 ? Math.max(10, Math.round((tip.savingEur / maxSaving) * 100)) : 0
+  const range = tip.savingEur ? savingRange(tip.savingEur) : null
+  const rangeText = range
+    ? t('tips.savingRange', { low: eurFmt.format(range.low), high: eurFmt.format(range.high) })
+    : ''
 
   return (
     <div
@@ -80,11 +97,9 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
             <p className={`font-semibold leading-tight text-foreground ${done ? 'line-through' : ''}`}>
               {t(`tips.items.${tip.id}.title`, tip.params)}
             </p>
-            {tip.savingEur ? (
-              <span className="shrink-0 rounded-full bg-success/15 px-2.5 py-1 text-[11px] font-bold tabular-nums text-success">
-                {t('tips.savingPerYear', { value: eurFmt.format(tip.savingEur) })}
-              </span>
-            ) : (
+            {/* Qualitative Tipps (ohne €) tragen den „Lohnt sich"-Chip; €-Tipps
+                zeigen ihre Schätzung unten neben dem Wirkungsbalken. */}
+            {!tip.savingEur && (
               <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1 text-[11px] font-medium text-foreground/70 ring-1 ring-inset ring-black/5 dark:ring-white/10">
                 <Sparkles className="h-3 w-3" />
                 {t('tips.worthIt')}
@@ -95,13 +110,17 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
             {t(`tips.items.${tip.id}.reason`, tip.params)}
           </p>
 
-          {/* Relativer Wirkungsbalken – macht die Sortierung nach Hebel sichtbar. */}
-          {!done && barPct > 0 && (
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-2/70">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-success/60 to-success"
-                style={{ width: `${barPct}%` }}
-              />
+          {/* Wirkungsbalken + grobe €-Spanne – ruhig statt plakativ, klar als
+              Schätzung erkennbar (kein centgenauer €-Klotz mehr). */}
+          {!done && tip.savingEur && (
+            <div className="mt-3 flex items-center gap-3">
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2/70">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-success/60 to-success"
+                  style={{ width: `${barPct}%` }}
+                />
+              </div>
+              <span className="shrink-0 text-xs font-semibold tabular-nums text-success">{rangeText}</span>
             </div>
           )}
 
@@ -178,6 +197,15 @@ export function TipsPage() {
 
   const openEur = active.reduce((sum, tip) => sum + (tip.savingEur ?? 0), 0)
   const maxSaving = active.reduce((max, tip) => Math.max(max, tip.savingEur ?? 0), 0)
+  // Gesamt-Spanne = Summe der Einzel-Spannen (die Teile ergeben das Ganze).
+  const heroRange = active.reduce(
+    (acc, tip) => {
+      if (!tip.savingEur) return acc
+      const r = savingRange(tip.savingEur)
+      return { low: acc.low + r.low, high: acc.high + r.high }
+    },
+    { low: 0, high: 0 },
+  )
   // „Top-Tipp": der wirksamste offene €-Tipp (Liste ist bereits nach € sortiert).
   const topId = maxSaving > 0 ? active.find((tip) => tip.savingEur === maxSaving)?.id : undefined
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
@@ -221,15 +249,23 @@ export function TipsPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-xs uppercase tracking-wide text-muted">{t('tips.potentialLabel')}</p>
                 {openEur > 0 ? (
-                  <p className="text-3xl font-bold leading-none tabular-nums text-foreground">
-                    {t('tips.savingPerYear', { value: eurFmt.format(openEur) })}
-                  </p>
+                  <>
+                    <p className="text-3xl font-bold leading-tight tabular-nums text-foreground">
+                      {t('tips.savingRangeShort', {
+                        low: eurFmt.format(heroRange.low),
+                        high: eurFmt.format(heroRange.high),
+                      })}
+                    </p>
+                    <p className="mt-1 text-[11px] font-medium text-muted">{t('tips.estimateNote')}</p>
+                  </>
                 ) : (
-                  <p className="text-3xl font-bold leading-none text-foreground">{active.length}</p>
+                  <>
+                    <p className="text-3xl font-bold leading-none text-foreground">{active.length}</p>
+                    <p className="mt-1 text-xs text-muted">
+                      {t('tips.countLine', { count: active.length })}
+                    </p>
+                  </>
                 )}
-                <p className="mt-1 text-xs text-muted">
-                  {t('tips.countLine', { count: active.length })}
-                </p>
               </div>
             </div>
 
