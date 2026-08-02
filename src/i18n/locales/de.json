@@ -1480,7 +1480,8 @@
       "faq": "FAQ",
       "glossary": "Glossar",
       "measurements": "Messungen",
-      "university": "Hochschule"
+      "university": "Hochschule",
+      "flashcards": "Karteikarten"
     },
     "glossarySearch": "Begriff suchen …",
     "source": "Quelle",
@@ -1494,11 +1495,7 @@
       "prepTitle": "Vorbereitung",
       "passed": "Bestanden",
       "notPassed": "Offen",
-      "retake": "Erneut testen",
-      "tabs": {
-        "labs": "Laborversuche",
-        "flashcards": "Karteikarten"
-      }
+      "retake": "Erneut testen"
     },
     "flashcards": {
       "title": "Karteikarten",

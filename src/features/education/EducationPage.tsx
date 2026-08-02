@@ -15,9 +15,9 @@ import {
   type LabExperiment,
 } from './educationContent'
 
-type Section = 'faq' | 'glossary' | 'measurements' | 'university'
+type Section = 'faq' | 'glossary' | 'measurements' | 'university' | 'flashcards'
 
-const SECTIONS: Section[] = ['faq', 'glossary', 'measurements', 'university']
+const SECTIONS: Section[] = ['faq', 'glossary', 'measurements', 'university', 'flashcards']
 
 /** Horizontal scrollbare Themen-Chips (statt gequetschter 4er-Segmentleiste). */
 function SectionSwitch({
@@ -316,45 +316,8 @@ function ExperimentCard({
   )
 }
 
-type UniversityTab = 'labs' | 'flashcards'
-
-const UNIVERSITY_TABS: UniversityTab[] = ['labs', 'flashcards']
-
-/** Segment-Umschalter zwischen Laborversuchen und Karteikarten. */
-function UniversitySwitch({
-  tab,
-  onChange,
-}: {
-  tab: UniversityTab
-  onChange: (t: UniversityTab) => void
-}) {
-  const { t } = useTranslation()
-  return (
-    <div className="flex gap-2">
-      {UNIVERSITY_TABS.map((value) => {
-        const active = value === tab
-        return (
-          <button
-            key={value}
-            type="button"
-            onClick={() => onChange(value)}
-            aria-pressed={active}
-            className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-              active
-                ? 'bg-primary text-primary-foreground'
-                : 'glass text-foreground hover:bg-surface-2/70'
-            }`}
-          >
-            {t(`education.university.tabs.${value}`)}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-/** Laborversuche mit Vorbereitungstest (bisheriger Hochschulteil). */
-function LabsView() {
+/** Laborversuche mit Vorbereitungstest (Hochschulteil). */
+function UniversityView() {
   const { t } = useTranslation()
   const [selected, setSelected] = useState<LabExperiment | null>(null)
 
@@ -373,17 +336,6 @@ function LabsView() {
           <ExperimentCard key={exp.id} exp={exp} onSelect={() => setSelected(exp)} />
         ))}
       </div>
-    </div>
-  )
-}
-
-function UniversityView() {
-  const [tab, setTab] = useState<UniversityTab>('labs')
-
-  return (
-    <div className="space-y-4">
-      <UniversitySwitch tab={tab} onChange={setTab} />
-      {tab === 'labs' ? <LabsView /> : <FlashcardsView />}
     </div>
   )
 }
@@ -411,6 +363,7 @@ export function EducationPage() {
       {section === 'glossary' && <GlossaryView />}
       {section === 'measurements' && <MeasurementsView />}
       {section === 'university' && <UniversityView />}
+      {section === 'flashcards' && <FlashcardsView />}
     </div>
   )
 }

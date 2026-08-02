@@ -1480,7 +1480,8 @@
       "faq": "FAQ",
       "glossary": "Glossary",
       "measurements": "Measurements",
-      "university": "University"
+      "university": "University",
+      "flashcards": "Flashcards"
     },
     "glossarySearch": "Search term …",
     "source": "Source",
@@ -1494,11 +1495,7 @@
       "prepTitle": "Preparation",
       "passed": "Passed",
       "notPassed": "Open",
-      "retake": "Retake",
-      "tabs": {
-        "labs": "Lab experiments",
-        "flashcards": "Flashcards"
-      }
+      "retake": "Retake"
     },
     "flashcards": {
       "title": "Flashcards",
