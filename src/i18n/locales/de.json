@@ -1494,7 +1494,28 @@
       "prepTitle": "Vorbereitung",
       "passed": "Bestanden",
       "notPassed": "Offen",
-      "retake": "Erneut testen"
+      "retake": "Erneut testen",
+      "tabs": {
+        "labs": "Laborversuche",
+        "flashcards": "Karteikarten"
+      }
+    },
+    "flashcards": {
+      "title": "Karteikarten",
+      "subtitle": "Fächerweise auf Klausuren vorbereiten – Karte antippen zum Umdrehen.",
+      "placeholderNote": "Beispiel-Karten zur Vorschau. Die vollständigen, professionell aufbereiteten Sets folgen schrittweise.",
+      "semester": "{{n}}. Semester",
+      "setCount_one": "{{count}} Set",
+      "setCount_other": "{{count}} Sets",
+      "cardCount_one": "{{count}} Karte",
+      "cardCount_other": "{{count}} Karten",
+      "progress": "Karte {{current}} von {{total}}",
+      "front": "Vorderseite",
+      "back": "Rückseite",
+      "flip": "Karte umdrehen",
+      "tapHint": "Zum Umdrehen antippen",
+      "prev": "Zurück",
+      "next": "Weiter"
     },
     "quiz": {
       "question": "Frage",

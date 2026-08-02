@@ -1494,7 +1494,28 @@
       "prepTitle": "Preparation",
       "passed": "Passed",
       "notPassed": "Open",
-      "retake": "Retake"
+      "retake": "Retake",
+      "tabs": {
+        "labs": "Lab experiments",
+        "flashcards": "Flashcards"
+      }
+    },
+    "flashcards": {
+      "title": "Flashcards",
+      "subtitle": "Prepare for exams subject by subject – tap a card to flip it.",
+      "placeholderNote": "Sample cards for preview. The full, professionally prepared sets will follow step by step.",
+      "semester": "Semester {{n}}",
+      "setCount_one": "{{count}} set",
+      "setCount_other": "{{count}} sets",
+      "cardCount_one": "{{count}} card",
+      "cardCount_other": "{{count}} cards",
+      "progress": "Card {{current}} of {{total}}",
+      "front": "Front",
+      "back": "Back",
+      "flip": "Flip card",
+      "tapHint": "Tap to flip",
+      "prev": "Previous",
+      "next": "Next"
     },
     "quiz": {
       "question": "Question",
