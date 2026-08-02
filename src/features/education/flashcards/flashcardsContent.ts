@@ -8,13 +8,16 @@
 // Fachliche Inhalte liegen – wie educationContent.ts – bewusst als deutscher
 // Content hier und NICHT in i18n. Nur UI-Beschriftungen werden übersetzt.
 
-/** Fach, z. B. „Thermodynamik". Bündelt mehrere Karteikartensets. */
+/**
+ * Modul (Fach) des Studiengangs, z. B. „Thermodynamik". Jedes Modul gehört zu
+ * genau einem Fachsemester und bündelt ein oder mehrere Karteikartensets.
+ */
 export interface FlashcardSubject {
   id: string
   title: string
-  /** Fachsemester zur groben Einordnung (optional). */
-  semester?: number
-  /** Kurzbeschreibung des Fachs. */
+  /** Fachsemester (1–6), in dem das Modul gehört wird. */
+  semester: number
+  /** Kurzbeschreibung des Moduls. */
   description?: string
 }
 
@@ -221,12 +224,25 @@ export const FLASHCARD_SETS: FlashcardSet[] = [
   },
 ]
 
-/** Alle Sets eines Fachs. */
+/** Die Fachsemester des Studiengangs (fest 1–6). */
+export const SEMESTERS = [1, 2, 3, 4, 5, 6] as const
+
+/** Alle Module (Fächer) eines Semesters. */
+export function modulesForSemester(semester: number): FlashcardSubject[] {
+  return FLASHCARD_SUBJECTS.filter((m) => m.semester === semester)
+}
+
+/** Alle Sets eines Moduls. */
 export function setsForSubject(subjectId: string): FlashcardSet[] {
   return FLASHCARD_SETS.filter((s) => s.subjectId === subjectId)
 }
 
-/** Gesamtzahl der Karten eines Fachs (über alle Sets). */
+/** Gesamtzahl der Karten eines Moduls (über alle Sets). */
 export function cardCountForSubject(subjectId: string): number {
   return setsForSubject(subjectId).reduce((sum, set) => sum + set.cards.length, 0)
+}
+
+/** Gesamtzahl der Karten eines Semesters (über alle Module). */
+export function cardCountForSemester(semester: number): number {
+  return modulesForSemester(semester).reduce((sum, m) => sum + cardCountForSubject(m.id), 0)
 }
