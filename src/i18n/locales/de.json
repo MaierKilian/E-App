@@ -1476,11 +1476,15 @@
     }
   },
   "education": {
+    "groups": {
+      "general": "Energiewissen",
+      "university": "HTW GEIT"
+    },
     "sections": {
       "faq": "FAQ",
       "glossary": "Glossar",
       "measurements": "Messungen",
-      "university": "Hochschule",
+      "university": "Laborversuche",
       "flashcards": "Karteikarten"
     },
     "glossarySearch": "Begriff suchen …",

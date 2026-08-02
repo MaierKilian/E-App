@@ -1476,11 +1476,15 @@
     }
   },
   "education": {
+    "groups": {
+      "general": "Energy basics",
+      "university": "HTW GEIT"
+    },
     "sections": {
       "faq": "FAQ",
       "glossary": "Glossary",
       "measurements": "Measurements",
-      "university": "University",
+      "university": "Lab experiments",
       "flashcards": "Flashcards"
     },
     "glossarySearch": "Search term …",

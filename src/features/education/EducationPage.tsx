@@ -17,20 +17,58 @@ import {
 
 type Section = 'faq' | 'glossary' | 'measurements' | 'university' | 'flashcards'
 
-const SECTIONS: Section[] = ['faq', 'glossary', 'measurements', 'university', 'flashcards']
+/** Oberste Ebene: allgemeines Energiewissen vs. HTW-GEIT-Studieninhalte. */
+type Group = 'general' | 'university'
 
-/** Horizontal scrollbare Themen-Chips (statt gequetschter 4er-Segmentleiste). */
+const GROUPS: Group[] = ['general', 'university']
+
+/** Welche Unterpunkte zu welcher Gruppe gehören. */
+const GROUP_SECTIONS: Record<Group, Section[]> = {
+  general: ['faq', 'glossary', 'measurements'],
+  university: ['university', 'flashcards'],
+}
+
+/** Ebene 1: schlichter 2er-Umschalter zwischen den Gruppen. */
+function GroupSwitch({ group, onChange }: { group: Group; onChange: (g: Group) => void }) {
+  const { t } = useTranslation()
+  return (
+    <div className="flex gap-2">
+      {GROUPS.map((g) => {
+        const active = g === group
+        return (
+          <button
+            key={g}
+            type="button"
+            onClick={() => onChange(g)}
+            aria-pressed={active}
+            className={`flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors ${
+              active
+                ? 'bg-primary text-primary-foreground'
+                : 'glass text-foreground hover:bg-surface-2/70'
+            }`}
+          >
+            {t(`education.groups.${g}`)}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+/** Ebene 2: horizontal scrollbare Themen-Chips der aktuellen Gruppe. */
 function SectionSwitch({
+  sections,
   section,
   onChange,
 }: {
+  sections: Section[]
   section: Section
   onChange: (s: Section) => void
 }) {
   const { t } = useTranslation()
   return (
     <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
-      {SECTIONS.map((s) => {
+      {sections.map((s) => {
         const active = s === section
         return (
           <button
@@ -38,10 +76,10 @@ function SectionSwitch({
             type="button"
             onClick={() => onChange(s)}
             aria-pressed={active}
-            className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-colors ${
+            className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-medium transition-colors ${
               active
-                ? 'bg-primary text-primary-foreground'
-                : 'glass text-foreground hover:bg-surface-2/70'
+                ? 'bg-primary/15 text-primary'
+                : 'text-muted hover:text-foreground'
             }`}
           >
             {t(`education.sections.${s}`)}
@@ -326,16 +364,11 @@ function UniversityView() {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-lg font-bold">{t('education.university.title')}</h2>
-        <p className="mt-1 text-sm text-muted">{t('education.university.subtitle')}</p>
-      </div>
-      <div className="space-y-3">
-        {LAB_EXPERIMENTS.map((exp) => (
-          <ExperimentCard key={exp.id} exp={exp} onSelect={() => setSelected(exp)} />
-        ))}
-      </div>
+    <div className="space-y-3">
+      <p className="text-sm text-muted">{t('education.university.subtitle')}</p>
+      {LAB_EXPERIMENTS.map((exp) => (
+        <ExperimentCard key={exp.id} exp={exp} onSelect={() => setSelected(exp)} />
+      ))}
     </div>
   )
 }
@@ -343,21 +376,26 @@ function UniversityView() {
 /** Bildungsbereich „Wissen" mit FAQ, Glossar, Messungs-Infos und Hochschulteil. */
 export function EducationPage() {
   const { t } = useTranslation()
+  const [group, setGroup] = useState<Group>('general')
   const [section, setSection] = useState<Section>('faq')
 
+  // Gruppenwechsel: auf den ersten Unterpunkt der neuen Gruppe springen.
+  const selectGroup = (g: Group) => {
+    setGroup(g)
+    setSection(GROUP_SECTIONS[g][0])
+  }
+
   return (
-    <div className="space-y-5">
-      <div className="flex items-start gap-4">
-        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
-          <GraduationCap className="h-6 w-6" />
+    <div className="space-y-4">
+      <div className="flex items-center gap-2.5">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+          <GraduationCap className="h-5 w-5" />
         </span>
-        <div>
-          <h1 className="text-2xl font-bold">{t('pages.education.title')}</h1>
-          <p className="mt-1 text-muted">{t('pages.education.subtitle')}</p>
-        </div>
+        <h1 className="text-xl font-bold">{t('pages.education.title')}</h1>
       </div>
 
-      <SectionSwitch section={section} onChange={setSection} />
+      <GroupSwitch group={group} onChange={selectGroup} />
+      <SectionSwitch sections={GROUP_SECTIONS[group]} section={section} onChange={setSection} />
 
       {section === 'faq' && <FaqView />}
       {section === 'glossary' && <GlossaryView />}
