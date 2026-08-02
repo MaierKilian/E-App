@@ -38,36 +38,22 @@ Laborversuchen. Wir bauen sie als neuen Bereich innerhalb von „Hochschule" auf
 
 ---
 
-## 1. Die drei zentralen Entscheidungen (bitte vorab gemeinsam festlegen)
+## 1. Die drei zentralen Entscheidungen
 
-Diese Weichen bestimmen den Zuschnitt von Phase 1. Meine Empfehlung ist jeweils
-markiert; alles ist später erweiterbar.
+### Entscheidung A – Kartenformat → ✅ **Hybrid (Bild + Text)**
+GoodNotes-Karten sind i. d. R. **handschriftlich/gezeichnet** → Bildinhalt. Wir
+speichern das Bild der Vorder-/Rückseite **und** optionale Textfelder
+(Titel/Tags/Antworttext). Das ergibt die beste Endqualität: durchsuchbar,
+barrierefrei (Vorlesen), gut skalierend – bei voller Übernahme deiner
+handschriftlichen Karten als Bild. Textfelder können pro Karte nach und nach
+befüllt werden (Bild reicht, um eine Karte lauffähig zu machen).
 
-### Entscheidung A – Kartenformat (wie werden GoodNotes-Karten zu App-Karten?)
-GoodNotes-Karten sind i. d. R. **handschriftlich/gezeichnet** → Bildinhalt, nicht
-reiner Text.
+### Entscheidung B – Fortschritt-Sync → ✅ **Kontogebunden** (`users/{uid}`)
+Wie der Konto-Avatar. Fortschritt folgt dem Studenten geräteübergreifend,
+unabhängig vom Wohnprofil, mit lokalem Cache als Offline-Puffer (Muster:
+`accountAvatarSync.ts`). **Nicht** in `stores.ts` (Wohnprofil-Sync) aufnehmen.
 
-- **A1 (Empfehlung): Bild-Karten.** Vorder-/Rückseite je als Bild (aus GoodNotes
-  als PNG/PDF exportiert). Schnellster Weg zur vollständigen Integration deiner
-  bestehenden Sets, kein Neuschreiben. Später optional pro Karte durch Text
-  ergänzbar (Suche/Barrierefreiheit).
-- **A2: Text-Karten.** Höchste Qualität (durchsuchbar, klein, skaliert, TTS),
-  aber jede Karte muss abgetippt/strukturiert werden – hoher Initialaufwand.
-- **A3: Hybrid.** Bild + optionale Textfelder (Titel/Tags/Antworttext). Beste
-  Endqualität, etwas mehr Modell-Komplexität.
-
-→ **Empfehlung: A1 jetzt, Datenmodell aber A3-fähig auslegen** (Textfelder
-optional von Anfang an im Schema, nur noch nicht befüllt).
-
-### Entscheidung B – Sync-Geltungsbereich des Lernfortschritts
-- **B1 (Empfehlung): Kontogebunden** (`users/{uid}`), wie der Konto-Avatar.
-  Fortschritt folgt dem Studenten geräteübergreifend, unabhängig vom Wohnprofil.
-- **B2: Nur lokal** (localStorage). Simpel, aber Verlust bei Gerätewechsel/Logout.
-
-→ **Empfehlung: B1**, mit lokalem Cache als Offline-Puffer (Muster:
-`accountAvatarSync.ts`).
-
-### Entscheidung C – Content-Auslieferung (wo liegen die Karten-Bilder?)
+### Entscheidung C – Content-Auslieferung (wo liegen die Karten-Bilder?) → *offen, Empfehlung C1*
 - **C1 (Empfehlung, Start): Im Repo gebündelt** unter `src/features/education/flashcards/assets/…`,
   als statische Imports. Versioniert, offline-fähig, kein Backend nötig. Achtung
   Bundle-Größe → WebP/komprimiert, Lazy-Loading pro Set.
@@ -251,6 +237,11 @@ Jede Phase ist eigenständig lauffähig, testbar und mergebar (kleine PRs auf
 
 ## 7. Nächster konkreter Schritt
 
-1. Entscheidungen A/B/C bestätigen (Empfehlung: **A1 · B1 · C1**).
-2. **Ein Pilot-Set** als Export bereitstellen (z. B. 15–30 Karten eines Fachs,
-   Vorder-/Rückseiten als Bilder) – damit starte ich Phase 1 an echtem Material.
+Entscheidungen A/B festgelegt (**Hybrid · kontogebunden**), C bleibt vorerst
+**C1 (im Repo gebündelt)**.
+
+1. **Ein Pilot-Set** als Export bereitstellen (z. B. 15–30 Karten eines Fachs,
+   Vorder-/Rückseiten als Bilder, gern schon mit Set-/Fach-Titel) – damit starte
+   ich **Phase 1** an echtem Material.
+2. Bevorzugtes Fach für den Piloten nennen (idealerweise ein überschaubares,
+   repräsentatives Set), damit wir Bildqualität und Handy-Lesbarkeit früh prüfen.
