@@ -1515,7 +1515,13 @@
       "flip": "Flip card",
       "tapHint": "Tap to flip",
       "prev": "Previous",
-      "next": "Next"
+      "next": "Next",
+      "start": "Study",
+      "exit": "Close study mode",
+      "finish": "Done",
+      "restart": "Study again",
+      "doneTitle": "Set complete!",
+      "doneSubtitle": "You worked through all {{count}} cards of “{{title}}”."
     },
     "quiz": {
       "question": "Question",

@@ -1515,7 +1515,13 @@
       "flip": "Karte umdrehen",
       "tapHint": "Zum Umdrehen antippen",
       "prev": "Zurück",
-      "next": "Weiter"
+      "next": "Weiter",
+      "start": "Lernen",
+      "exit": "Lernmodus schließen",
+      "finish": "Fertig",
+      "restart": "Nochmal lernen",
+      "doneTitle": "Set geschafft!",
+      "doneSubtitle": "Du hast alle {{count}} Karten von „{{title}}“ durchgearbeitet."
     },
     "quiz": {
       "question": "Frage",
