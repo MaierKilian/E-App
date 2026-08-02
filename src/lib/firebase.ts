@@ -15,9 +15,31 @@ import { getFirestore } from 'firebase/firestore'
 import { getFunctions } from 'firebase/functions'
 import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
 
+/**
+ * Wählt die `authDomain` für den Google-OAuth-Ablauf.
+ *
+ * Hintergrund: Firebase wickelt Google-Login über einen (versteckten) iframe
+ * bzw. eine Weiterleitung auf der `authDomain` ab. Weicht diese Domain von der
+ * App-Domain ab, ist das ein Cross-Origin-Kontext – Safari/iOS (ITP,
+ * Storage-Partitionierung) blockiert dort den Storage, `getRedirectResult()`
+ * liefert oft `null` und der Nutzer bleibt trotz Anmeldung ausgeloggt
+ * („funktioniert nicht zuverlässig").
+ *
+ * Lösung: Auf der Firebase-Hosting-Produktionsdomain den Auth-Handler
+ * FIRST-PARTY ausliefern, indem `authDomain` = App-Domain gesetzt wird
+ * (`e-app-info.web.app/__/auth/handler` wird von Firebase Hosting bereitgestellt).
+ * Für localhost (Entwicklung) und andere Domains bleibt es bei der Standard-
+ * Domain `e-app-info.firebaseapp.com`.
+ */
+function resolveAuthDomain(): string {
+  const host = typeof window !== 'undefined' ? window.location.hostname : ''
+  if (host === 'e-app-info.web.app') return 'e-app-info.web.app'
+  return 'e-app-info.firebaseapp.com'
+}
+
 const firebaseConfig = {
   apiKey: 'AIzaSyCf52jDrugmsralbzLMIoqZZ1FIniA-ZHw',
-  authDomain: 'e-app-info.firebaseapp.com',
+  authDomain: resolveAuthDomain(),
   projectId: 'e-app-info',
   storageBucket: 'e-app-info.firebasestorage.app',
   messagingSenderId: '379772614513',

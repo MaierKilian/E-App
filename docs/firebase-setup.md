@@ -59,6 +59,28 @@ In der Console (erledigt):
 - [x] **E-Mail/Passwort** aktiviert
 - [x] **Google** aktiviert
 
+### Google-Login Zuverlässigkeit (Safari/iOS)
+
+**Problem:** Google-Login schlug auf Safari/iOS teils fehl (Anmeldung wirkt
+erfolgreich, Nutzer bleibt aber ausgeloggt). Ursache: Die `authDomain` wich von
+der App-Domain ab (`firebaseapp.com` vs. `web.app`) → der OAuth-Abschluss lief
+in einem Cross-Origin-iframe, dessen Storage Safari/iOS (ITP) blockiert.
+
+**Fix im Code:**
+- `src/lib/firebase.ts` setzt `authDomain` auf der Produktionsdomain
+  **`e-app-info.web.app`** (First-Party-Auth-Handler); localhost/andere Domains
+  behalten `e-app-info.firebaseapp.com`.
+- `firebase.json`: `X-Frame-Options` von `DENY` → `SAMEORIGIN` (das strikte
+  `DENY` hätte auch das gleich-origin Auth-iframe blockiert).
+
+**In der Console zu prüfen (einmalig):**
+- Authentication → Settings → **Autorisierte Domains** enthält
+  `e-app-info.web.app` (Standard) – und ggf. `maierkilian.github.io`, falls das
+  GitHub-Pages-Deployment für Login genutzt wird.
+- Hinweis: Auf `maierkilian.github.io` bleibt Login cross-origin (der
+  Auth-Handler liegt nur auf den Firebase-Domains) – die Produktionsdomain
+  `e-app-info.web.app` ist der zuverlässige Weg.
+
 Im Code (erledigt):
 
 - [x] `src/store/authStore.ts` – globaler Anmeldestatus (live über Tabs)
