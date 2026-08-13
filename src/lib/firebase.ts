@@ -26,17 +26,16 @@ import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
  * Setzt man `authDomain` = App-Domain, läuft alles gleich-origin und der
  * Redirect-Login wird auf Safari/iOS zuverlässig.
  *
- * ⚠️ ERST EINSCHALTEN, WENN DER OAUTH-CLIENT DAS KENNT:
- * Google prüft die `redirect_uri` gegen eine Allowlist. Der von Firebase
- * automatisch angelegte OAuth-Client enthält nur
- * `https://e-app-info.firebaseapp.com/__/auth/handler`. Ohne den zusätzlichen
- * Eintrag `https://e-app-info.web.app/__/auth/handler` bricht Google den Login
- * mit „Fehler 400: redirect_uri_mismatch" ab – der Login ist dann komplett tot.
- *
- * Anleitung für den einmaligen Console-Schritt: `docs/firebase-setup.md`
- * („Google-Login Zuverlässigkeit"). Danach hier auf `true` setzen und pushen.
+ * ⚠️ HÄNGT AN EINER EINSTELLUNG IM OAUTH-CLIENT:
+ * Google prüft die `redirect_uri` gegen eine Allowlist. Steht dort
+ * `https://e-app-info.web.app/__/auth/handler` nicht drin, bricht Google jeden
+ * Login mit „Fehler 400: redirect_uri_mismatch" ab – der Login ist dann komplett
+ * tot. Der Eintrag ist im Client „Web client (auto created by Google Service)"
+ * hinterlegt (Google Auth Platform → Clients), zusammen mit dem JavaScript-Origin
+ * `https://e-app-info.web.app`. Wird er dort entfernt, muss dieser Schalter
+ * zurück auf `false`. Details: `docs/firebase-setup.md`.
  */
-const USE_FIRST_PARTY_AUTH_DOMAIN = false
+const USE_FIRST_PARTY_AUTH_DOMAIN = true
 
 /** Domain, auf der der First-Party-Auth-Handler ausgeliefert würde. */
 const FIRST_PARTY_AUTH_HOST = 'e-app-info.web.app'

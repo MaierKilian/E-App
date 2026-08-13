@@ -78,40 +78,41 @@ mit einem Console-Schritt** – ohne ihn ist der Login komplett tot:
 > Google jeden Login-Versuch mit „Zugriff blockiert: Die Anfrage dieser App ist
 > ungültig" ab.
 
-#### Schritt 1 – OAuth-Client erweitern (einmalig, Google Cloud Console)
+#### Schritt 1 – OAuth-Client erweitern (ERLEDIGT ✅)
 
-1. Firebase Console → **Authentication → Sign-in method → Google** aufklappen →
-   ganz unten **„Web SDK configuration"** → Link **„Web client ID"** öffnen.
-   (Direkt: Google Cloud Console → **APIs & Services → Credentials** → OAuth-2.0-
-   Client-ID **„Web client (auto created by Google Service)"**, Projekt `e-app-info`.)
-2. Unter **Authorised redirect URIs** ergänzen:
-   ```
-   https://e-app-info.web.app/__/auth/handler
-   ```
-   *(Der bestehende Eintrag `https://e-app-info.firebaseapp.com/__/auth/handler`
-   bleibt stehen – localhost und GitHub Pages nutzen ihn weiter.)*
-3. Unter **Authorised JavaScript origins** ergänzen:
-   ```
-   https://e-app-info.web.app
-   ```
-4. **Speichern.** Änderungen brauchen erfahrungsgemäß ein paar Minuten.
+Google Cloud Console → **Google Auth Platform → Clients** (Projekt `e-app-info`;
+die Seite hat das alte „APIs & Services → Credentials" abgelöst) → Client
+**„Web client (auto created by Google Service)"**. Dort eingetragen:
 
-#### Schritt 2 – Im Code scharfschalten
+- **Authorised redirect URIs:** `https://e-app-info.web.app/__/auth/handler`
+- **Authorised JavaScript origins:** `https://e-app-info.web.app`
+
+Die `firebaseapp.com`-Einträge bleiben daneben bestehen – localhost und GitHub
+Pages nutzen sie weiter. Änderungen an dieser Allowlist brauchen ein paar
+Minuten, bis Google sie ausliefert.
+
+> Wird einer der beiden Einträge später entfernt, muss `USE_FIRST_PARTY_AUTH_DOMAIN`
+> (siehe unten) zurück auf `false` – sonst ist der Login sofort komplett tot.
+
+Ebenfalls gesetzt: **Branding → Public-facing name = „E-App"** (erscheint auf dem
+Google-Anmeldebildschirm; vorher stand dort die Projektnummer).
+
+#### Schritt 2 – Im Code scharfschalten (ERLEDIGT ✅)
 
 In `src/lib/firebase.ts`:
 
 ```ts
-const USE_FIRST_PARTY_AUTH_DOMAIN = true   // vorher: false
+const USE_FIRST_PARTY_AUTH_DOMAIN = true
 ```
 
-Push auf `main` → Auto-Deploy. Danach nutzt die App auf `e-app-info.web.app` den
-gleich-origin Auth-Handler, und `features/auth/auth.ts` schaltet auf iOS/PWA
-automatisch auf `signInWithRedirect` um (siehe `authDomainIsFirstParty`).
+Damit nutzt die App auf `e-app-info.web.app` den gleich-origin Auth-Handler, und
+`features/auth/auth.ts` schaltet auf iOS/PWA automatisch auf
+`signInWithRedirect` um (siehe `authDomainIsFirstParty`).
 
-> **Solange der Schalter `false` ist**, läuft alles über
-> `e-app-info.firebaseapp.com` und **überall per Popup** – funktioniert
-> zuverlässig, ist auf iOS-Safari aber gelegentlich zäh. Das ist der sichere
-> Zustand ohne Console-Schritt.
+> **Zum Zurückdrehen:** Schalter auf `false` → alles läuft wieder über
+> `e-app-info.firebaseapp.com` und **überall per Popup**. Das funktioniert
+> zuverlässig und ohne jede Console-Einstellung, ist auf iOS-Safari aber
+> gelegentlich zäh. Der sichere Rückfall, falls am OAuth-Client etwas klemmt.
 
 **Ebenfalls erledigt:** `firebase.json` setzt `X-Frame-Options` auf `SAMEORIGIN`
 statt `DENY` (das strikte `DENY` hätte auch das gleich-origin Auth-iframe
