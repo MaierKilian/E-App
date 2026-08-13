@@ -16,24 +16,39 @@ import { getFunctions } from 'firebase/functions'
 import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
 
 /**
- * Wählt die `authDomain` für den Google-OAuth-Ablauf.
+ * Schalter für den FIRST-PARTY-Auth-Handler auf `e-app-info.web.app`.
  *
  * Hintergrund: Firebase wickelt Google-Login über einen (versteckten) iframe
  * bzw. eine Weiterleitung auf der `authDomain` ab. Weicht diese Domain von der
  * App-Domain ab, ist das ein Cross-Origin-Kontext – Safari/iOS (ITP,
  * Storage-Partitionierung) blockiert dort den Storage, `getRedirectResult()`
- * liefert oft `null` und der Nutzer bleibt trotz Anmeldung ausgeloggt
- * („funktioniert nicht zuverlässig").
+ * liefert oft `null` und der Nutzer bleibt trotz Anmeldung ausgeloggt.
+ * Setzt man `authDomain` = App-Domain, läuft alles gleich-origin und der
+ * Redirect-Login wird auf Safari/iOS zuverlässig.
  *
- * Lösung: Auf der Firebase-Hosting-Produktionsdomain den Auth-Handler
- * FIRST-PARTY ausliefern, indem `authDomain` = App-Domain gesetzt wird
- * (`e-app-info.web.app/__/auth/handler` wird von Firebase Hosting bereitgestellt).
- * Für localhost (Entwicklung) und andere Domains bleibt es bei der Standard-
- * Domain `e-app-info.firebaseapp.com`.
+ * ⚠️ ERST EINSCHALTEN, WENN DER OAUTH-CLIENT DAS KENNT:
+ * Google prüft die `redirect_uri` gegen eine Allowlist. Der von Firebase
+ * automatisch angelegte OAuth-Client enthält nur
+ * `https://e-app-info.firebaseapp.com/__/auth/handler`. Ohne den zusätzlichen
+ * Eintrag `https://e-app-info.web.app/__/auth/handler` bricht Google den Login
+ * mit „Fehler 400: redirect_uri_mismatch" ab – der Login ist dann komplett tot.
+ *
+ * Anleitung für den einmaligen Console-Schritt: `docs/firebase-setup.md`
+ * („Google-Login Zuverlässigkeit"). Danach hier auf `true` setzen und pushen.
+ */
+const USE_FIRST_PARTY_AUTH_DOMAIN = false
+
+/** Domain, auf der der First-Party-Auth-Handler ausgeliefert würde. */
+const FIRST_PARTY_AUTH_HOST = 'e-app-info.web.app'
+
+/**
+ * Wählt die `authDomain` für den Google-OAuth-Ablauf. Standard ist die von
+ * Firebase vorgegebene Domain – nur wenn der First-Party-Modus aktiviert ist
+ * UND die App wirklich auf der Produktionsdomain läuft, wird umgeschaltet.
  */
 function resolveAuthDomain(): string {
   const host = typeof window !== 'undefined' ? window.location.hostname : ''
-  if (host === 'e-app-info.web.app') return 'e-app-info.web.app'
+  if (USE_FIRST_PARTY_AUTH_DOMAIN && host === FIRST_PARTY_AUTH_HOST) return FIRST_PARTY_AUTH_HOST
   return 'e-app-info.firebaseapp.com'
 }
 
@@ -46,6 +61,17 @@ const firebaseConfig = {
   appId: '1:379772614513:web:01f63efc811c4fe621e8d0',
   measurementId: 'G-63T81J9E5B',
 }
+
+/**
+ * Läuft der Auth-Handler gleich-origin zur App?
+ *
+ * Nur dann ist `signInWithRedirect` zuverlässig – andernfalls muss das Ergebnis
+ * über einen Cross-Site-Kontext zurückkommen, den Safari/iOS blockiert. Der
+ * Login-Ablauf (`features/auth/auth.ts`) entscheidet daran, ob er mobil auf
+ * Redirect umschaltet oder beim Popup bleibt.
+ */
+export const authDomainIsFirstParty =
+  typeof window !== 'undefined' && firebaseConfig.authDomain === window.location.hostname
 
 export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)

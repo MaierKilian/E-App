@@ -10,7 +10,7 @@ import {
   signOut as firebaseSignOut,
 } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
-import { auth } from '@/lib/firebase'
+import { auth, authDomainIsFirstParty } from '@/lib/firebase'
 import { track } from '@/features/analytics/analytics'
 
 const googleProvider = new GoogleAuthProvider()
@@ -77,40 +77,49 @@ const REDIRECT_FALLBACK_CODES = new Set([
  * Erkennt Umgebungen, in denen `signInWithPopup` unzuverlässig ist und daher
  * direkt `signInWithRedirect` verwendet werden sollte.
  *
- * Vor allem **iOS-Safari**: Das Popup öffnet dort als (oft unsichtbarer) neuer
- * Tab, und die Anmelde-Promise bleibt hängen – der Nutzer sieht nur „es lädt und
- * dann passiert nichts". Gleiches gilt für Home-Screen-PWAs und mobile Browser.
- * Mit der First-Party-`authDomain` (siehe `firebase.ts`) schließt der Redirect
- * nach der Rückkehr über `getRedirectResult()` zuverlässig ab.
+ * Vor allem **iOS-Safari** und Home-Screen-PWAs: Das Popup öffnet dort als (oft
+ * unsichtbarer) neuer Tab, und die Anmelde-Promise bleibt hängen – der Nutzer
+ * sieht nur „es lädt und dann passiert nichts".
+ *
+ * **Bedingung:** Der Redirect ist nur dann die bessere Wahl, wenn der
+ * Auth-Handler gleich-origin ausgeliefert wird. Sonst tauscht man ein hängendes
+ * Popup gegen ein stilles `getRedirectResult() === null` (Safari/ITP blockiert
+ * den Cross-Site-Storage) – und das ist schlechter, weil der Nutzer dann ohne
+ * jede Rückmeldung ausgeloggt bleibt. Deshalb bleibt es beim Popup, solange
+ * `authDomainIsFirstParty` false ist (siehe `lib/firebase.ts`).
+ *
+ * Android-Chrome ist bewusst nicht dabei: Popups funktionieren dort zuverlässig
+ * und sparen den Seitenwechsel.
  */
 function prefersRedirect(): boolean {
   if (typeof navigator === 'undefined' || typeof window === 'undefined') return false
+  if (!authDomainIsFirstParty) return false
   const ua = navigator.userAgent || ''
   const isIOS =
     /iPad|iPhone|iPod/.test(ua) ||
     // iPadOS meldet sich als „MacIntel" mit Touch.
     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  const isAndroid = /Android/.test(ua)
   const standalone =
     (window.navigator as unknown as { standalone?: boolean }).standalone === true ||
     window.matchMedia?.('(display-mode: standalone)').matches === true
-  return isIOS || isAndroid || standalone
+  return isIOS || standalone
 }
 
 /**
  * Anmeldung über das Google-Konto.
  *
- * Strategie: **Desktop → Popup** (schnell, kein Seitenwechsel), **mobil/PWA →
- * Redirect** (Popup hängt auf iOS-Safari). Der Redirect gibt `null` zurück und
- * wird beim nächsten App-Start über `completeGoogleRedirect()` abgeschlossen.
- * Schlägt das Popup auf dem Desktop fehl (blockiert/nicht unterstützt), fällt es
- * ebenfalls auf den Redirect zurück.
+ * Strategie: **Popup zuerst** (schnell, kein Seitenwechsel). Nur dort, wo das
+ * Popup bekanntermaßen hängt (iOS/PWA) UND der Redirect zuverlässig abschließen
+ * kann, wird direkt umgeleitet. Der Redirect gibt `null` zurück und wird beim
+ * nächsten App-Start über `completeGoogleRedirect()` abgeschlossen. Schlägt das
+ * Popup fehl (blockiert/nicht unterstützt), fällt es ebenfalls auf den Redirect
+ * zurück – dann ist er die einzige verbliebene Möglichkeit.
  */
 export async function loginWithGoogle() {
   // In eingebetteten Webviews sperrt Google OAuth komplett – gar nicht erst versuchen.
   if (isInAppBrowser()) throw new InAppBrowserError()
 
-  // Mobil / iOS-Safari / PWA: direkt Redirect (Popup ist dort unzuverlässig).
+  // iOS-Safari / PWA mit gleich-origin Auth-Handler: direkt Redirect.
   if (prefersRedirect()) {
     await signInWithRedirect(auth, googleProvider)
     return null

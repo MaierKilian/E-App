@@ -61,25 +61,68 @@ In der Console (erledigt):
 
 ### Google-Login Zuverlässigkeit (Safari/iOS)
 
-**Problem:** Google-Login schlug auf Safari/iOS teils fehl (Anmeldung wirkt
-erfolgreich, Nutzer bleibt aber ausgeloggt). Ursache: Die `authDomain` wich von
-der App-Domain ab (`firebaseapp.com` vs. `web.app`) → der OAuth-Abschluss lief
-in einem Cross-Origin-iframe, dessen Storage Safari/iOS (ITP) blockiert.
+**Problem:** Google-Login schlägt auf Safari/iOS teils fehl (Anmeldung wirkt
+erfolgreich, Nutzer bleibt aber ausgeloggt). Ursache: Die `authDomain` weicht von
+der App-Domain ab (`firebaseapp.com` vs. `web.app`) → der OAuth-Abschluss läuft
+in einem Cross-Origin-Kontext, dessen Storage Safari/iOS (ITP) blockiert;
+`getRedirectResult()` liefert dann `null`.
 
-**Fix im Code:**
-- `src/lib/firebase.ts` setzt `authDomain` auf der Produktionsdomain
-  **`e-app-info.web.app`** (First-Party-Auth-Handler); localhost/andere Domains
-  behalten `e-app-info.firebaseapp.com`.
-- `firebase.json`: `X-Frame-Options` von `DENY` → `SAMEORIGIN` (das strikte
-  `DENY` hätte auch das gleich-origin Auth-iframe blockiert).
+**Die Lösung** ist der First-Party-Auth-Handler: `authDomain` = App-Domain
+(`e-app-info.web.app`), dann läuft alles gleich-origin. Das geht **nur zusammen
+mit einem Console-Schritt** – ohne ihn ist der Login komplett tot:
 
-**In der Console zu prüfen (einmalig):**
-- Authentication → Settings → **Autorisierte Domains** enthält
-  `e-app-info.web.app` (Standard) – und ggf. `maierkilian.github.io`, falls das
-  GitHub-Pages-Deployment für Login genutzt wird.
-- Hinweis: Auf `maierkilian.github.io` bleibt Login cross-origin (der
-  Auth-Handler liegt nur auf den Firebase-Domains) – die Produktionsdomain
-  `e-app-info.web.app` ist der zuverlässige Weg.
+> ⚠️ **Fehler 400: `redirect_uri_mismatch`**
+> Google prüft die `redirect_uri` gegen eine Allowlist im OAuth-Client. Der von
+> Firebase automatisch angelegte Client kennt nur die `firebaseapp.com`-Variante.
+> Schaltet man `authDomain` auf `web.app` um, ohne die URI nachzutragen, bricht
+> Google jeden Login-Versuch mit „Zugriff blockiert: Die Anfrage dieser App ist
+> ungültig" ab.
+
+#### Schritt 1 – OAuth-Client erweitern (einmalig, Google Cloud Console)
+
+1. Firebase Console → **Authentication → Sign-in method → Google** aufklappen →
+   ganz unten **„Web SDK configuration"** → Link **„Web client ID"** öffnen.
+   (Direkt: Google Cloud Console → **APIs & Services → Credentials** → OAuth-2.0-
+   Client-ID **„Web client (auto created by Google Service)"**, Projekt `e-app-info`.)
+2. Unter **Authorised redirect URIs** ergänzen:
+   ```
+   https://e-app-info.web.app/__/auth/handler
+   ```
+   *(Der bestehende Eintrag `https://e-app-info.firebaseapp.com/__/auth/handler`
+   bleibt stehen – localhost und GitHub Pages nutzen ihn weiter.)*
+3. Unter **Authorised JavaScript origins** ergänzen:
+   ```
+   https://e-app-info.web.app
+   ```
+4. **Speichern.** Änderungen brauchen erfahrungsgemäß ein paar Minuten.
+
+#### Schritt 2 – Im Code scharfschalten
+
+In `src/lib/firebase.ts`:
+
+```ts
+const USE_FIRST_PARTY_AUTH_DOMAIN = true   // vorher: false
+```
+
+Push auf `main` → Auto-Deploy. Danach nutzt die App auf `e-app-info.web.app` den
+gleich-origin Auth-Handler, und `features/auth/auth.ts` schaltet auf iOS/PWA
+automatisch auf `signInWithRedirect` um (siehe `authDomainIsFirstParty`).
+
+> **Solange der Schalter `false` ist**, läuft alles über
+> `e-app-info.firebaseapp.com` und **überall per Popup** – funktioniert
+> zuverlässig, ist auf iOS-Safari aber gelegentlich zäh. Das ist der sichere
+> Zustand ohne Console-Schritt.
+
+**Ebenfalls erledigt:** `firebase.json` setzt `X-Frame-Options` auf `SAMEORIGIN`
+statt `DENY` (das strikte `DENY` hätte auch das gleich-origin Auth-iframe
+blockiert).
+
+**Autorisierte Domains** (Authentication → Settings) müssen enthalten:
+`e-app-info.web.app`, `e-app-info.firebaseapp.com`, `localhost` – und
+`maierkilian.github.io`, falls das GitHub-Pages-Deployment für Login genutzt
+wird. Auf `maierkilian.github.io` bleibt der Login immer cross-origin (der
+Auth-Handler liegt nur auf den Firebase-Domains) – `e-app-info.web.app` ist der
+zuverlässige Weg.
 
 Im Code (erledigt):
 
