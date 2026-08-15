@@ -12,11 +12,13 @@ import {
   Info,
   ShieldCheck,
   BarChart3,
+  MessageSquarePlus,
 } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUser, useIsAuthenticated } from '@/store/authStore'
 import { useProfilesStore } from '@/store/profilesStore'
 import { useAccountAvatarSrc } from '@/store/accountAvatarStore'
+import { useFeedbackStore } from '@/store/feedbackStore'
 import { saveAccountPhoto, deleteAccountPhoto } from '@/features/sync/accountAvatarSync'
 import { AvatarPicker } from '@/components/AvatarPicker'
 import { Toggle } from '@/components/ui/Toggle'
@@ -45,6 +47,7 @@ export function SettingsPage() {
   const user = useUser()
   const isAuthenticated = useIsAuthenticated()
   const accountAvatar = useAccountAvatarSrc()
+  const openFeedback = useFeedbackStore((s) => s.openFeedback)
   const profilesReady = useProfilesStore((s) => s.status === 'ready' && s.profiles.length > 0)
   const currentLang = i18n.resolvedLanguage
 
@@ -157,6 +160,12 @@ export function SettingsPage() {
           onClick={() => setIntroSeen(false)}
         />
         <SettingsRow icon={Sparkles} title={t('settings.viewLanding')} to="/willkommen" />
+        <SettingsRow
+          icon={MessageSquarePlus}
+          title={t('feedback.short')}
+          subtitle={t('feedback.settingsHint')}
+          onClick={() => openFeedback('settings')}
+        />
       </SettingsSection>
 
       {/* Daten */}

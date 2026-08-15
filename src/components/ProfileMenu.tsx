@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { User, Palette, Settings, ChevronRight, LogOut } from 'lucide-react'
+import { User, Palette, Settings, ChevronRight, LogOut, MessageSquarePlus } from 'lucide-react'
 import { useUser } from '@/store/authStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useAccountAvatarSrc } from '@/store/accountAvatarStore'
+import { useFeedbackStore } from '@/store/feedbackStore'
 import { Avatar } from '@/components/ui/Avatar'
 import { ThemePicker } from '@/components/ThemePicker'
 import { logout } from '@/features/auth/auth'
@@ -23,6 +24,7 @@ export function ProfileMenu() {
   const user = useUser()
   const profileName = useOnboardingStore((s) => s.data.profileName)
   const accountAvatar = useAccountAvatarSrc()
+  const openFeedback = useFeedbackStore((s) => s.openFeedback)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   // Der Account-Avatar zeigt das selbst gewählte Konto-Foto (bzw. das
@@ -119,6 +121,24 @@ export function ProfileMenu() {
           <div className="mb-3">
             <ThemePicker compact />
           </div>
+
+          {/* Feedback – zweiter Weg neben dem Knopf in der Kopfzeile, für alle,
+              die so etwas reflexhaft im Menü suchen. */}
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              setOpen(false)
+              openFeedback('menu')
+            }}
+            className="mb-2 flex w-full items-center gap-2.5 rounded-xl border border-border bg-surface-2/50 p-2.5 text-left transition-colors hover:bg-surface-2"
+          >
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+              <MessageSquarePlus className="h-4.5 w-4.5" />
+            </span>
+            <span className="flex-1 text-sm font-medium text-foreground">{t('feedback.short')}</span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
+          </button>
 
           {/* Zur vollständigen Einstellungsseite */}
           <button

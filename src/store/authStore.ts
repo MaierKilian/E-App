@@ -21,7 +21,22 @@ export const useAuthStore = create<AuthState>(() => ({
 
 // Firebase-Listener einmalig starten (beim ersten Import dieses Moduls).
 onAuthStateChanged(auth, (user) => {
-  useAuthStore.setState({ user, initializing: false })
+  // Anonyme Konten sind bewusst KEINE angemeldeten Nutzer im Sinne der App.
+  //
+  // Hintergrund: Der Feedback-Kanal meldet Gäste im Hintergrund anonym an, damit
+  // die Firestore-Regel an `request.auth != null` hängen kann, ohne die
+  // Collection offen zu schreiben (siehe docs/feedback-concept.md, §6.3). Ohne
+  // diesen Filter würde so ein Konto die ganze App umschalten: `LoginGate` gäbe
+  // gesperrte Bereiche frei, `initCloudSync` legte ein Wohnprofil in der Cloud
+  // an und das Konto-Menü zeigte einen Nutzer ohne E-Mail.
+  //
+  // Das anonyme Konto ist reine Schreibberechtigung für ein einzelnes Dokument.
+  // Wer es braucht, greift direkt über `auth.currentUser` darauf zu –
+  // absichtlich nur in `features/feedback/submitFeedback.ts`.
+  useAuthStore.setState({
+    user: user && !user.isAnonymous ? user : null,
+    initializing: false,
+  })
 })
 
 /** Bequemer Zugriff auf den aktuellen Nutzer. */

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Logo } from './ui/Logo'
 import { NAV_ITEMS } from '@/app/navigation'
 import { ProfileMenu } from './ProfileMenu'
+import { FeedbackButton } from '@/features/feedback/FeedbackButton'
 
 /** Feste Kopfzeile mit Logo, Navigation (Desktop) und Profil-/Einstellungs-Menü. */
 export function Header() {
@@ -34,7 +35,8 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1">
+          <FeedbackButton />
           <ProfileMenu />
         </div>
       </div>

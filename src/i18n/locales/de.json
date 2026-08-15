@@ -1741,6 +1741,30 @@
       }
     }
   },
+  "feedback": {
+    "open": "Feedback geben",
+    "short": "Feedback",
+    "title": "Was hat gefehlt oder gestört?",
+    "settingsHint": "Kritik und Ideen helfen uns am meisten",
+    "sentiment": {
+      "bad": "Hat mich gestört",
+      "neutral": "Geht so",
+      "good": "Hat gut geklappt"
+    },
+    "category": {
+      "bug": "Fehler",
+      "idea": "Idee",
+      "other": "Sonstiges"
+    },
+    "textLabel": "Dein Feedback",
+    "placeholder": "Was ist dir aufgefallen? Je konkreter, desto besser.",
+    "contextHint": "Seite, App-Version und Gerät werden automatisch mitgesendet.",
+    "submit": "Absenden",
+    "sending": "Wird gesendet …",
+    "thanksTitle": "Danke!",
+    "thanksBody": "Wir lesen jedes Feedback.",
+    "error": "Das hat leider nicht geklappt. Bitte versuch es noch einmal."
+  },
   "demo": {
     "title": "Beispiel-Wohnung ansehen",
     "body": "Wir laden eine fertig eingerichtete Muster-Wohnung mit vielen Messungen und regelmäßigen Zählerständen. Deine aktuelle Ansicht wird dafür ersetzt. Angemeldet? Deine echte Wohnung bleibt unberührt und ist nach dem Verlassen wieder da.",

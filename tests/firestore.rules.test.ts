@@ -382,3 +382,99 @@ describe('users: Alt-Daten', () => {
     await assertFails(getDoc(doc(asStranger().firestore(), 'users', OWNER)))
   })
 })
+
+describe('feedback: anlegen', () => {
+  /** Gültiges Feedback-Dokument, wie es `submitFeedback.ts` schreibt. */
+  function validFeedback(uid: string) {
+    return {
+      sentiment: 'good',
+      category: 'idea',
+      text: 'Die Messung war gut erklärt.',
+      source: 'header',
+      route: '/measurements',
+      appVersion: 'v0.5.0',
+      language: 'de',
+      theme: 'light',
+      demoMode: false,
+      viewport: '390x844',
+      userAgent: 'Test',
+      uid,
+      isGuest: false,
+      createdAt: serverTimestamp(),
+    }
+  }
+
+  it('Angemeldeter Nutzer darf Feedback anlegen', async () => {
+    await assertSucceeds(
+      setDoc(doc(asOwner().firestore(), 'feedback', 'fb-1'), validFeedback(OWNER)),
+    )
+  })
+
+  it('Gast (anonymes Konto) darf Feedback anlegen', async () => {
+    // Der Emulator kennt kein `isAnonymous`; entscheidend ist, dass die Regel
+    // nur `request.auth != null` verlangt – ein anonymes Konto erfüllt das.
+    await assertSucceeds(
+      setDoc(doc(asStranger().firestore(), 'feedback', 'fb-guest'), validFeedback(STRANGER)),
+    )
+  })
+
+  it('Ohne Anmeldung geht nichts', async () => {
+    await assertFails(setDoc(doc(anon().firestore(), 'feedback', 'fb-2'), validFeedback(OWNER)))
+  })
+
+  it('Fremde uid im Dokument wird abgelehnt', async () => {
+    await assertFails(
+      setDoc(doc(asOwner().firestore(), 'feedback', 'fb-3'), validFeedback(STRANGER)),
+    )
+  })
+
+  it('Zu langer Text wird abgelehnt', async () => {
+    await assertFails(
+      setDoc(doc(asOwner().firestore(), 'feedback', 'fb-4'), {
+        ...validFeedback(OWNER),
+        text: 'x'.repeat(2001),
+      }),
+    )
+  })
+
+  it('Unbekannte Stimmung wird abgelehnt', async () => {
+    await assertFails(
+      setDoc(doc(asOwner().firestore(), 'feedback', 'fb-5'), {
+        ...validFeedback(OWNER),
+        sentiment: 'angry',
+      }),
+    )
+  })
+
+  it('Fehlender Text wird abgelehnt', async () => {
+    const withoutText: Record<string, unknown> = validFeedback(OWNER)
+    delete withoutText.text
+    await assertFails(setDoc(doc(asOwner().firestore(), 'feedback', 'fb-6'), withoutText))
+  })
+})
+
+describe('feedback: lesen und ändern', () => {
+  beforeEach(async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'feedback', 'fb-existing'), {
+        sentiment: 'bad',
+        text: 'Hier klemmt etwas.',
+        uid: OWNER,
+      })
+    })
+  })
+
+  it('Niemand darf Feedback lesen – auch nicht der Verfasser', async () => {
+    await assertFails(getDoc(doc(asOwner().firestore(), 'feedback', 'fb-existing')))
+  })
+
+  it('Feedback lässt sich nicht nachträglich ändern', async () => {
+    await assertFails(
+      updateDoc(doc(asOwner().firestore(), 'feedback', 'fb-existing'), { text: 'Doch nicht.' }),
+    )
+  })
+
+  it('Feedback lässt sich nicht löschen', async () => {
+    await assertFails(deleteDoc(doc(asOwner().firestore(), 'feedback', 'fb-existing')))
+  })
+})

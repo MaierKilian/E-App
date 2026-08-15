@@ -2,7 +2,7 @@ rules_version = '2';
 
 // Sicherheitsregeln für Firestore.
 //
-// Drei Bereiche:
+// Vier Bereiche:
 //  1. users/{uid}        – Alt-Daten (ein Profil pro Nutzer). Bleibt bestehen für
 //                          die einmalige Migration und als Sicherung.
 //  2. profiles/{id}      – Wohnprofile (mehrere pro Nutzer, teilbar). Zugriff hat,
@@ -11,6 +11,8 @@ rules_version = '2';
 //                          Geheimnis und steckt im Einladungslink. Wer die ID kennt
 //                          und angemeldet ist, darf der Wohnung beitreten, solange
 //                          die Einladung aktiv ist. Der Besitzer verwaltet sie.
+//  4. feedback/{id}      – Nutzer-Feedback. Schreiben darf jeder Angemeldete
+//                          (auch anonym), lesen darf niemand aus der App heraus.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -123,6 +125,27 @@ service cloud.firestore {
         allow list: if request.auth != null && request.auth.uid == ownerUid();
         allow create, update, delete: if request.auth != null && request.auth.uid == ownerUid();
       }
+    }
+
+    // 4. Nutzer-Feedback – schreiben ja, lesen nein.
+    //
+    // Jeder angemeldete Nutzer darf Feedback anlegen. „Angemeldet" schließt
+    // ausdrücklich anonyme Konten ein: Die App ist ohne Login nutzbar, und
+    // gerade die Rückmeldung von Abspringern ist wertvoll. Der Client meldet
+    // Gäste deshalb kurz vor dem Schreiben anonym an, statt die Collection für
+    // alle offen zu lassen (siehe docs/feedback-concept.md, §6.3).
+    //
+    // Gelesen wird ausschließlich serverseitig (Cloud Function für die
+    // Mail-Benachrichtigung, Firebase-Console). Kein Client bekommt Feedback zu
+    // sehen – deshalb `read: if false`. Ändern und Löschen sind ebenfalls
+    // gesperrt: Ein abgeschicktes Feedback bleibt, wie es war.
+    match /feedback/{feedbackId} {
+      allow create: if request.auth != null
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() <= 2000
+        && request.resource.data.sentiment in ['bad', 'neutral', 'good'];
+      allow read, update, delete: if false;
     }
   }
 }

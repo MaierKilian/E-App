@@ -1,9 +1,9 @@
 # Nutzer-Feedback – Konzept
 
 > Stand: 2026-08-15 · Konzept für einen Feedback-Kanal für die ersten echten
-> Nutzer. **Noch nicht umgesetzt** – dies ist die abgestimmte Spezifikation,
-> nicht der Ist-Zustand. Gedacht als Grundlage für die Umsetzung in einer
-> späteren Session (auch für eine neue KI). Stand der Entscheidungen: §9.
+> Nutzer. **Phase 1 ist umgesetzt**, Phase 2 (automatische Nachfrage) und
+> Phase 3 stehen noch aus – siehe §10. Einrichtung der beiden Konsolen-Schritte:
+> `docs/feedback-mail-setup.md`. Stand der Entscheidungen: §9.
 >
 > **Ziel:** Konstruktive Kritik von den ersten Nutzern einsammeln und die App
 > daraus verbessern. Nicht: Zufriedenheit messen.
@@ -239,6 +239,26 @@ ausgelöst, sondern in `submitFeedback.ts` unmittelbar vor dem Schreiben
 (`signInAnonymously`, nur falls kein Nutzer angemeldet ist). So entstehen keine
 anonymen Konten für Besucher, die nie Feedback geben.
 
+### 6.4 Anonyme Konten sind keine angemeldeten Nutzer
+
+**Bei der Umsetzung aufgefallen und nicht optional:** Ein anonymer Login löst in
+dieser App sonst eine Kettenreaktion aus. `authStore` speist `LoginGate`,
+`initCloudSync` und `initAccountAvatarSync` – ein anonymes Konto würde also
+
+- gesperrte Bereiche (Messungen, Monitoring, Berichte) freigeben,
+- über `onUserChange()` ein leeres Wohnprofil in Firestore anlegen und die
+  lokalen Stores dorthin synchronisieren,
+- im Konto-Menü einen „Nutzer" ohne E-Mail anzeigen.
+
+Deshalb filtert `src/store/authStore.ts` anonyme Konten heraus
+(`user.isAnonymous → user: null`). Für die App bleibt ein Gast ein Gast; das
+anonyme Konto ist reine Schreibberechtigung und wird ausschließlich in
+`submitFeedback.ts` über `auth.currentUser` angefasst.
+
+> Wer später echte anonyme Sitzungen einführen will (z. B. Daten ohne Konto in
+> der Cloud halten), muss diesen Filter bewusst auflösen – und dann alle drei
+> oben genannten Wege durchdenken.
+
 ---
 
 ## 7. Analytics
@@ -322,27 +342,35 @@ in einer serverlosen Umgebung anfälliger.
 
 - [ ] **Erster Prompt** – Inline-Karte im Ergebnis-Screen *(Empfehlung)* oder
       doch ein echtes Modal (§5.1)? Blockiert nur Phase 2, nicht Phase 1.
-- [ ] **Versandweg der Mail** – Resend *(Empfehlung)* oder GMX-SMTP (§8.3).
-      Beides braucht ein Zugangsdatum, das nur du anlegen kannst.
+- [x] **Versandweg der Mail: Resend** (§8.3). Bei der Umsetzung gesetzt, weil
+      ein HTTPS-Aufruf in einer Cloud Function robuster ist als SMTP und keine
+      zusätzliche npm-Abhängigkeit braucht (Node 20 bringt `fetch` mit). Der
+      Wechsel auf GMX-SMTP bliebe eine lokale Änderung in `functions/index.js`.
 
 ---
 
 ## 10. Umsetzung in Phasen
 
-### Phase 1 – Der Kanal (Kern)
-- [ ] `src/store/feedbackStore.ts` – Zustand + `shouldPrompt()`
-- [ ] `src/features/feedback/FeedbackModal.tsx` – Formular nach §3
-- [ ] `src/features/feedback/submitFeedback.ts` – Kontext (§4), anonymer Login
+### Phase 1 – Der Kanal (Kern) — ✅ erledigt
+- [x] `src/store/feedbackStore.ts` – Zustand + `shouldPrompt()` (Regeln aus §5.2
+      vollständig, wird in Phase 2 nur noch aufgerufen)
+- [x] `src/features/feedback/FeedbackModal.tsx` – Formular nach §3
+- [x] `src/features/feedback/submitFeedback.ts` – Kontext (§4), anonymer Login
       bei Bedarf (§6.3), Firestore-Write
-- [ ] Header-Button (§2.1) + `ProfileMenu`- und Einstellungs-Eintrag (§2.2)
-- [ ] `firestore.rules` um `feedback` erweitern (§6.2)
-- [ ] i18n-Strings in `de.json` **und** `en.json`
-- [ ] Analytics-Events (§7)
-- [ ] Cloud Function `onFeedbackCreated` + Mailversand (§8)
+- [x] `src/features/feedback/FeedbackButton.tsx` in der Kopfzeile (§2.1) +
+      Einträge in `ProfileMenu` und auf der Einstellungsseite (§2.2)
+- [x] `src/store/authStore.ts` – anonyme Konten herausfiltern (§6.4)
+- [x] `firestore.rules` um `feedback` erweitern (§6.2), inkl. zehn neuer Fälle
+      in `tests/firestore.rules.test.ts`
+- [x] i18n-Strings in `de.json` **und** `en.json`
+- [x] Analytics-Events (§7)
+- [x] Cloud Function `onFeedbackCreated` + Mailversand (§8)
 
-**Voraussetzungen außerhalb des Codes** (nur vom Projekt-Inhaber machbar):
+**Voraussetzungen außerhalb des Codes** (nur vom Projekt-Inhaber machbar,
+Anleitung in `docs/feedback-mail-setup.md`):
 - [ ] Anonymous Auth in der Firebase-Console aktivieren (§6.3)
-- [ ] Mail-Zugang anlegen und als Firebase-Secret hinterlegen (§8.3)
+- [ ] Resend-Key als Firebase-Secret `RESEND_API_KEY` hinterlegen (§8.3) –
+      **vor dem Merge nach `main`**, sonst schlägt der Functions-Deploy fehl
 
 ### Phase 2 – Proaktiv fragen
 - [ ] Inline-Karte in der Ergebnis-Phase von `MeasurementRunner`

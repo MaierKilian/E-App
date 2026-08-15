@@ -1741,6 +1741,30 @@
       }
     }
   },
+  "feedback": {
+    "open": "Give feedback",
+    "short": "Feedback",
+    "title": "What was missing or annoying?",
+    "settingsHint": "Criticism and ideas help us most",
+    "sentiment": {
+      "bad": "Frustrating",
+      "neutral": "It was okay",
+      "good": "Worked well"
+    },
+    "category": {
+      "bug": "Bug",
+      "idea": "Idea",
+      "other": "Other"
+    },
+    "textLabel": "Your feedback",
+    "placeholder": "What did you notice? The more specific, the better.",
+    "contextHint": "Page, app version and device are sent along automatically.",
+    "submit": "Send",
+    "sending": "Sending …",
+    "thanksTitle": "Thank you!",
+    "thanksBody": "We read every single message.",
+    "error": "That didn't work. Please try again."
+  },
   "demo": {
     "title": "View the example home",
     "body": "We'll load a fully set-up sample home with lots of measurements and regular meter readings. Your current view will be replaced. Signed in? Your real home stays untouched and comes back once you leave the demo.",

@@ -153,3 +153,130 @@ exports.scanMeter = onCall(
     return { digits, confidence }
   },
 )
+
+// ---------------------------------------------------------------------------
+// Feedback-Benachrichtigung: Mail bei jedem neuen Nutzer-Feedback.
+//
+// Warum überhaupt? Ohne Benachrichtigung schaut niemand in die Firestore-
+// Console, und der Kanal verrottet still (docs/feedback-concept.md, §8).
+//
+// Eine Mail pro Feedback – bei den ersten Nutzern ist das Volumen klein und die
+// schnelle Reaktion wertvoll. Ab spürbarem Volumen auf einen Tages-Digest
+// umstellen.
+// ---------------------------------------------------------------------------
+
+const { onDocumentCreated } = require('firebase-functions/v2/firestore')
+const { logger } = require('firebase-functions')
+const admin = require('firebase-admin')
+
+const RESEND_API_KEY = defineSecret('RESEND_API_KEY')
+
+/** Empfänger und Absender – per Umgebungsvariable überschreibbar. */
+const FEEDBACK_MAIL_TO = process.env.FEEDBACK_MAIL_TO || 'kili.maier@gmx.de'
+const FEEDBACK_MAIL_FROM = process.env.FEEDBACK_MAIL_FROM || 'E-App Feedback <onboarding@resend.dev>'
+
+/** Obergrenze pro Tag – schützt das Postfach, falls jemand das Formular flutet. */
+const MAX_MAILS_PER_DAY = 50
+
+const SENTIMENT_LABEL = { bad: '☹️ negativ', neutral: '😐 neutral', good: '🙂 positiv' }
+const CATEGORY_LABEL = { bug: 'Fehler', idea: 'Idee', other: 'Sonstiges' }
+
+admin.initializeApp()
+
+/**
+ * Zählt die heute verschickten Mails hoch und meldet, ob noch Platz ist.
+ *
+ * Der Zähler liegt in Firestore (`feedbackMeta/mailQuota`), nicht im
+ * Arbeitsspeicher: Cloud Functions laufen in mehreren Instanzen, ein lokaler
+ * Zähler würde die Grenze pro Instanz statt insgesamt ziehen.
+ */
+async function claimMailQuota() {
+  const today = new Date().toISOString().slice(0, 10)
+  const ref = admin.firestore().doc('feedbackMeta/mailQuota')
+  return admin.firestore().runTransaction(async (tx) => {
+    const snap = await tx.get(ref)
+    const data = snap.exists ? snap.data() : {}
+    const count = data.date === today ? data.count || 0 : 0
+    if (count >= MAX_MAILS_PER_DAY) return false
+    tx.set(ref, { date: today, count: count + 1 })
+    return true
+  })
+}
+
+/** Baut den Mailtext: Freitext zuerst, Kontext darunter. */
+function buildMailBody(data, feedbackId) {
+  const context = [
+    ['Seite', data.route],
+    ['Version', data.appVersion],
+    ['Sprache', data.language],
+    ['Design', data.theme],
+    ['Gerät', data.viewport],
+    ['Angemeldet', data.isGuest ? 'nein (Gast)' : 'ja'],
+    ['Demo-Modus', data.demoMode ? 'ja' : 'nein'],
+    ['Ausgelöst über', data.source],
+    ['User-Agent', data.userAgent],
+    ['Dokument', feedbackId],
+  ]
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([label, value]) => `${label}: ${value}`)
+    .join('\n')
+
+  const text = String(data.text || '').trim()
+  return `${text || '(kein Freitext)'}\n\n---\n${context}\n`
+}
+
+exports.onFeedbackCreated = onDocumentCreated(
+  {
+    document: 'feedback/{feedbackId}',
+    secrets: [RESEND_API_KEY],
+    memory: '256MiB',
+    timeoutSeconds: 30,
+    maxInstances: 3,
+    // Ein fehlgeschlagener Mailversand darf NICHT endlos wiederholt werden –
+    // das Feedback liegt ohnehin sicher in Firestore.
+    retry: false,
+  },
+  async (event) => {
+    const data = event.data && event.data.data()
+    if (!data) return
+
+    const apiKey = RESEND_API_KEY.value()
+    if (!apiKey) {
+      logger.warn('RESEND_API_KEY fehlt – Feedback gespeichert, aber keine Mail verschickt.')
+      return
+    }
+
+    if (!(await claimMailQuota())) {
+      logger.warn(`Tageslimit von ${MAX_MAILS_PER_DAY} Feedback-Mails erreicht – nur protokolliert.`)
+      return
+    }
+
+    const sentiment = SENTIMENT_LABEL[data.sentiment] || data.sentiment || '–'
+    const category = CATEGORY_LABEL[data.category] || 'ohne Einordnung'
+    const subject = `[E-App] ${sentiment} · ${category} · ${data.route || '/'}`
+
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: FEEDBACK_MAIL_FROM,
+          to: [FEEDBACK_MAIL_TO],
+          subject,
+          text: buildMailBody(data, event.params.feedbackId),
+        }),
+      })
+      if (!response.ok) {
+        logger.error('Resend hat den Versand abgelehnt', {
+          status: response.status,
+          body: await response.text(),
+        })
+      }
+    } catch (error) {
+      logger.error('Feedback-Mail konnte nicht verschickt werden', error)
+    }
+  },
+)

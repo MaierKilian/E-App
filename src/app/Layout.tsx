@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import { Header } from '@/components/Header'
 import { BottomNav } from '@/components/BottomNav'
 import { DemoBanner } from '@/features/demo/DemoBanner'
+import { FeedbackModal } from '@/features/feedback/FeedbackModal'
 
 /**
  * Grundgerüst der App: feste Kopfzeile, scrollbarer Inhaltsbereich und
@@ -17,6 +18,9 @@ export function Layout() {
         <Outlet />
       </main>
       <BottomNav />
+      {/* Genau ein Feedback-Fenster für alle Einstiegspunkte (Kopfzeile,
+          Konto-Menü, Einstellungen). Gesteuert über den feedbackStore. */}
+      <FeedbackModal />
     </div>
   )
 }
