@@ -3,7 +3,7 @@
 > Stand: 2026-08-15 · Konzept für einen Feedback-Kanal für die ersten echten
 > Nutzer. **Noch nicht umgesetzt** – dies ist die abgestimmte Spezifikation,
 > nicht der Ist-Zustand. Gedacht als Grundlage für die Umsetzung in einer
-> späteren Session (auch für eine neue KI).
+> späteren Session (auch für eine neue KI). Stand der Entscheidungen: §9.
 >
 > **Ziel:** Konstruktive Kritik von den ersten Nutzern einsammeln und die App
 > daraus verbessern. Nicht: Zufriedenheit messen.
@@ -222,11 +222,22 @@ Die App ist **ohne Login nutzbar** (`LoginGate.tsx` lässt Gäste und Demo-Modus
 durch). Gerade Abspringer sind die interessanteste Gruppe – die dürfen nicht
 ausgesperrt werden.
 
-- **Empfohlen:** Firebase **Anonymous Auth** aktivieren. Dann greift
-  `request.auth != null` für alle, und die Collection bleibt geschlossen.
+**Entschieden: Gäste dürfen Feedback geben.** Umsetzung über Firebase
+**Anonymous Auth**. Dann greift `request.auth != null` für alle, und die
+Collection bleibt trotzdem geschlossen.
+
 - **Verworfen:** `allow create: if true` – offene Schreibregel ohne Rate-Limit.
-- **Alternative:** Callable Cloud Function mit App Check (mehr Aufwand, das
-  Function-Gerüst existiert aber bereits).
+- **Verworfen:** Callable Cloud Function mit App Check – mehr Aufwand ohne
+  Mehrwert gegenüber Anonymous Auth.
+
+**Einmaliger Konsolenschritt (nicht im Code machbar):** Firebase-Console →
+Authentication → Sign-in method → **Anonym** aktivieren. Ohne diesen Schritt
+scheitert jeder Gäste-Write mit `permission-denied`.
+
+**Anmeldung erst beim Absenden.** Der anonyme Login wird nicht beim App-Start
+ausgelöst, sondern in `submitFeedback.ts` unmittelbar vor dem Schreiben
+(`signInAnonymously`, nur falls kein Nutzer angemeldet ist). So entstehen keine
+anonymen Konten für Besucher, die nie Feedback geben.
 
 ---
 
@@ -250,27 +261,69 @@ Ereignisse über das vorhandene `track()`:
 
 ---
 
-## 8. Betrieb – sonst verrottet der Kanal
+## 8. Betrieb – Mail-Benachrichtigung
 
-Ohne Benachrichtigung schaut erfahrungsgemäß niemand in die Firestore-Console.
+**Entschieden: Mail-Benachrichtigung von Anfang an**, nicht erst „später bei
+Bedarf". Ohne sie schaut erfahrungsgemäß niemand in die Firestore-Console, und
+der Kanal verrottet still.
 
-- **Start:** Firestore-Console reicht.
-- **Empfohlen, sobald echte Nutzer da sind:** `onDocumentCreated`-Trigger in
-  `functions/index.js` (Region `europe-west1` ist bereits gesetzt), der eine
-  Mail oder Nachricht schickt. Das Gerüst inkl. Secrets-Handhabung steht schon.
+### 8.1 Auslöser
+
+`onDocumentCreated('feedback/{id}')` in `functions/index.js`. Region
+`europe-west1` ist über `setGlobalOptions` bereits gesetzt, das Gerüst für
+Secrets (`defineSecret`) steht durch `scanMeter` schon.
+
+**Eine Mail pro Feedback**, kein Tages-Digest. Bei den ersten Nutzern ist das
+Volumen klein und die schnelle Reaktion wertvoll – gerade wenn jemand die
+Rückfrage-Checkbox (§3) gesetzt hat. Ab spürbarem Volumen auf einen
+Tages-Digest umstellen.
+
+### 8.2 Inhalt der Mail
+
+Betreff so, dass die Einordnung ohne Öffnen klappt:
+`[E-App] 🙂 Idee – /messungen`
+
+Body: Freitext zuerst, darunter kompakt der Kontext aus §4 (Route, Version,
+Gerät, angemeldet ja/nein, Rückfrage erlaubt ja/nein) und die Dokument-ID.
+
+### 8.3 Versandweg
+
+**Empfehlung: Resend** über die HTTPS-API, API-Key als Firebase-Secret
+`RESEND_API_KEY` – exakt das Muster, das `GEMINI_API_KEY` schon verwendet. In
+einer Cloud Function ist ein einfacher HTTPS-Aufruf robuster als eine
+SMTP-Verbindung (kein Verbindungsaufbau, keine Timeouts im kalten Start). Der
+kostenlose Tarif deckt das Volumen um Größenordnungen. Bis eine eigene Domain
+verifiziert ist, funktioniert `onboarding@resend.dev` als Absender.
+
+**Alternative ohne neuen Dienst:** `nodemailer` + GMX-SMTP an die bestehende
+Adresse. Kostet nichts extra, braucht aber ein separates App-Passwort und ist
+in einer serverlosen Umgebung anfälliger.
+
+### 8.4 Zwei Schutzmaßnahmen
+
+- **`retry: false`** am Trigger. Ein fehlgeschlagener Mailversand darf nicht
+  endlos wiederholt werden – Fehler ins Log, Feedback liegt ohnehin sicher in
+  Firestore.
+- **Obergrenze pro Tag** (z. B. 50 Mails). Schützt das Postfach, falls jemand
+  das Formular flutet. Darüber hinaus nur noch ins Log.
 
 ---
 
-## 9. Offene Entscheidungen
+## 9. Entscheidungen
 
-Diese drei Punkte sind noch nicht entschieden und blockieren die Umsetzung:
+### Getroffen
 
-- [ ] **Gäste ohne Login** – dürfen die Feedback geben?
-      *Empfehlung: ja → Anonymous Auth aktivieren (§6.3).*
-- [ ] **Wo wird gelesen?** Firestore-Console zum Start, oder direkt
-      Mail-Benachrichtigung per Function (§8)?
+- [x] **Gäste ohne Login dürfen Feedback geben** → Anonymous Auth (§6.3).
+      Erfordert einen einmaligen Schritt in der Firebase-Console.
+- [x] **Mail-Benachrichtigung von Anfang an** → `onDocumentCreated`-Trigger,
+      eine Mail pro Feedback (§8). Rutscht damit von Phase 3 in Phase 1.
+
+### Noch offen
+
 - [ ] **Erster Prompt** – Inline-Karte im Ergebnis-Screen *(Empfehlung)* oder
-      doch ein echtes Modal (§5.1)?
+      doch ein echtes Modal (§5.1)? Blockiert nur Phase 2, nicht Phase 1.
+- [ ] **Versandweg der Mail** – Resend *(Empfehlung)* oder GMX-SMTP (§8.3).
+      Beides braucht ein Zugangsdatum, das nur du anlegen kannst.
 
 ---
 
@@ -279,19 +332,25 @@ Diese drei Punkte sind noch nicht entschieden und blockieren die Umsetzung:
 ### Phase 1 – Der Kanal (Kern)
 - [ ] `src/store/feedbackStore.ts` – Zustand + `shouldPrompt()`
 - [ ] `src/features/feedback/FeedbackModal.tsx` – Formular nach §3
-- [ ] `src/features/feedback/submitFeedback.ts` – Kontext (§4) + Firestore-Write
+- [ ] `src/features/feedback/submitFeedback.ts` – Kontext (§4), anonymer Login
+      bei Bedarf (§6.3), Firestore-Write
 - [ ] Header-Button (§2.1) + `ProfileMenu`- und Einstellungs-Eintrag (§2.2)
 - [ ] `firestore.rules` um `feedback` erweitern (§6.2)
 - [ ] i18n-Strings in `de.json` **und** `en.json`
 - [ ] Analytics-Events (§7)
+- [ ] Cloud Function `onFeedbackCreated` + Mailversand (§8)
+
+**Voraussetzungen außerhalb des Codes** (nur vom Projekt-Inhaber machbar):
+- [ ] Anonymous Auth in der Firebase-Console aktivieren (§6.3)
+- [ ] Mail-Zugang anlegen und als Firebase-Secret hinterlegen (§8.3)
 
 ### Phase 2 – Proaktiv fragen
 - [ ] Inline-Karte in der Ergebnis-Phase von `MeasurementRunner`
 - [ ] Frequenzregeln in `shouldPrompt()` (§5.2)
 - [ ] Zweiter Auslöser (3. Versuch / ~7 Tage) als Modal
 
-### Phase 3 – Betrieb & Komfort
-- [ ] Benachrichtigung per Cloud Function (§8)
+### Phase 3 – Komfort
 - [ ] Checkbox „Für Rückfragen erreichbar" (§3)
+- [ ] Tages-Digest statt Einzelmails, sobald das Volumen steigt (§8.1)
 - [ ] *Optional, bewusst zurückgestellt:* Screenshot-Anhang – `html2canvas`,
       Dateigröße und Datenschutz für vergleichsweise wenig Ertrag
