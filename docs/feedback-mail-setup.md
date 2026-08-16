@@ -112,6 +112,50 @@ npx firebase-tools deploy --only functions:onFeedbackCreated --project e-app-inf
 
 ---
 
+## E) Einmalig: IAM-Rollen für ereignisgesteuerte Funktionen
+
+**Beim ersten Deploy schlägt der Workflow ohne diesen Schritt fehl:**
+
+```
+Error: We failed to modify the IAM policy for the project.
+```
+
+`onFeedbackCreated` ist die erste **ereignisgesteuerte** Funktion im Projekt.
+`scanMeter` ist ein direkter HTTPS-Aufruf; ein Firestore-Trigger läuft dagegen
+über **Eventarc** und **Pub/Sub**, und deren Dienstkonten brauchen dafür eigene
+Rollen.
+
+Der CI-Service-Account hat die Rolle **Editor**. Editor darf keine
+IAM-Richtlinien ändern – das kann nur ein **Owner**. Deshalb muss ein Mensch die
+drei Bindungen einmalig setzen; danach laufen alle weiteren Deploys wieder
+allein durch.
+
+**Am einfachsten über die Cloud Shell** (Browser, nichts zu installieren):
+https://console.cloud.google.com → Terminal-Symbol oben rechts → Projekt
+`e-app-info` wählen → die drei Befehle nacheinander ausführen:
+
+```bash
+gcloud projects add-iam-policy-binding e-app-info \
+  --member=serviceAccount:service-379772614513@gcp-sa-pubsub.iam.gserviceaccount.com \
+  --role=roles/iam.serviceAccountTokenCreator
+
+gcloud projects add-iam-policy-binding e-app-info \
+  --member=serviceAccount:379772614513-compute@developer.gserviceaccount.com \
+  --role=roles/run.invoker
+
+gcloud projects add-iam-policy-binding e-app-info \
+  --member=serviceAccount:379772614513-compute@developer.gserviceaccount.com \
+  --role=roles/eventarc.eventReceiver
+```
+
+Danach den Workflow neu anstoßen: **GitHub → Actions → „Deploy to Firebase" →
+Run workflow**. Ein neuer Commit ist dafür nicht nötig.
+
+> Gilt für jede künftige ereignisgesteuerte Funktion mit: Ist das einmal
+> gesetzt, greift es projektweit.
+
+---
+
 ## Was ankommt
 
 Pro Feedback eine Mail. Betreff zeigt Stimmung, Einordnung und Seite:
