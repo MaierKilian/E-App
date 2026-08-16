@@ -54,10 +54,18 @@ das Volumen um Größenordnungen.
 3. Schlüssel kopieren (beginnt mit `re_…`). **Geheim halten** – nicht ins Repo,
    nicht in Chats.
 
-**Absenderadresse:** Ohne eigene Domain funktioniert `onboarding@resend.dev`
-sofort; damit lassen sich nur Mails an die eigene Konto-Adresse schicken. Das
-genügt hier, weil ohnehin nur ein Empfänger vorgesehen ist. Wer später eine
-eigene Domain verifiziert, setzt `FEEDBACK_MAIL_FROM` entsprechend um.
+**Absender und Empfänger hängen zusammen.** Ohne eigene Domain funktioniert
+`onboarding@resend.dev` als Absender sofort – dann lässt Resend aber
+ausschließlich Mails **an die Adresse des Resend-Kontos** zu und lehnt jede
+andere mit 403 ab.
+
+Die Funktion schickt deshalb an **`eapp.admin@gmail.com`** (die Adresse des
+Resend-Kontos), nicht an die private GMX-Adresse. Wer die Mails woanders haben
+will, hat zwei Wege:
+
+- Weiterleitung im Gmail-Konto einrichten – kostet nichts und geht sofort.
+- Eigene Domain bei Resend verifizieren, dann `FEEDBACK_MAIL_FROM` und
+  `FEEDBACK_MAIL_TO` frei setzen.
 
 ---
 

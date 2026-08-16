@@ -171,8 +171,16 @@ const admin = require('firebase-admin')
 
 const RESEND_API_KEY = defineSecret('RESEND_API_KEY')
 
-/** Empfänger und Absender – per Umgebungsvariable überschreibbar. */
-const FEEDBACK_MAIL_TO = process.env.FEEDBACK_MAIL_TO || 'kili.maier@gmx.de'
+/**
+ * Empfänger und Absender – per Umgebungsvariable überschreibbar.
+ *
+ * Der Empfänger MUSS die Adresse des Resend-Kontos sein, solange als Absender
+ * `onboarding@resend.dev` dient: Ohne eigene verifizierte Domain lässt Resend
+ * nur Mails an den Kontoinhaber zu und lehnt alles andere mit 403 ab.
+ * Erst nach dem Verifizieren einer eigenen Domain lässt sich hier eine
+ * beliebige Adresse eintragen.
+ */
+const FEEDBACK_MAIL_TO = process.env.FEEDBACK_MAIL_TO || 'eapp.admin@gmail.com'
 const FEEDBACK_MAIL_FROM = process.env.FEEDBACK_MAIL_FROM || 'E-App Feedback <onboarding@resend.dev>'
 
 /** Obergrenze pro Tag – schützt das Postfach, falls jemand das Formular flutet. */
