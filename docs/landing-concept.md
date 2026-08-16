@@ -217,3 +217,29 @@ in 5 minutes."
 6. **Demo-Feinschliff:** „Selbst loslegen"-Button in der Demo, Rückweg prüfen.
 7. **Analytics-Events** ergänzen.
 8. **Politur:** alle drei Themes, Responsivität, Reduced-Motion, A11y.
+
+## I. Abweichungen aus der Politur-Runde (Stand 2026-08-16)
+
+Nach dem ersten Durchlauf auf echten Viewports angepasst – Ziel: prägnanter,
+weniger Scrollen bis zur Aussage.
+
+- **Abschnitt ④ (Vertrauen) aufgelöst.** Die vier Signale stehen jetzt als
+  2×2-Raster direkt unter den Hero-CTAs statt als eigener Streifen vor dem
+  Abschluss-CTA – dort, wo die Frage „kostet das was / wo bleiben meine Daten?"
+  tatsächlich aufkommt. Ohne Pillen-Rahmen, damit sie nicht mit den Buttons
+  konkurrieren. Labels gekürzt („Lokal & privat", „Kostenlos",
+  „Für jeden Haushalt", „Mit HTW-Lerninhalten").
+- **Kachel 1 in ② ausgetauscht.** „Dein Dashboard" zeigte dieselbe Zahl
+  (≈ 1.980 €) wie das Hero-Mock. Ersetzt durch **„Dein Sparziel"**
+  (≈ 380 €/Jahr) – neues Versprechen statt Wiederholung.
+  i18n: `landing.preview.tiles.dashboard` → `landing.preview.tiles.savings`.
+- **Capability-Kacheln (③) auf dem Handy als flache Zeilen** (Icon links,
+  Text rechts), ab `sm` wieder als Karten im Raster.
+- **Vertikaler Rhythmus gestrafft** (`py-16` → `py-12` mobil, kleinere H2 und
+  Abstände). Seitenhöhe auf 390 px Breite: **3514 px → 2740 px (−22 %)**.
+- **Mock-Label gekürzt** auf „Beispiel · Energiekosten / Jahr" (brach vorher
+  auf schmalen Geräten mit einem „JAHR"-Waisenkind um).
+
+Offen: Die Landing Page ist öffentlich erreichbar, hat aber **keinen Footer mit
+Impressum/Datenschutz**. Für ein öffentliches Angebot in Deutschland separat zu
+klären (eigene Seiten + Footer-Links).

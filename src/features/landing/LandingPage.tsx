@@ -95,16 +95,16 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
       </header>
 
       {/* ① Hero – zweispaltig auf Desktop (Text links, App-Mock rechts) */}
-      <section className="mx-auto grid w-full max-w-5xl items-center gap-10 px-5 pb-16 pt-10 md:grid-cols-2 md:gap-12 md:pt-16">
+      <section className="mx-auto grid w-full max-w-5xl items-center gap-8 px-5 pb-12 pt-6 md:grid-cols-2 md:gap-12 md:pb-16 md:pt-12">
         <div className="flex flex-col items-center text-center md:items-start md:text-left">
-          <h1 className="max-w-2xl text-balance text-3xl font-bold leading-tight text-foreground md:text-5xl">
+          <h1 className="max-w-2xl text-balance text-[1.75rem] font-bold leading-[1.15] text-foreground md:text-5xl">
             {t('landing.hero.title')}
           </h1>
-          <p className="mt-4 max-w-xl text-balance text-base text-muted md:text-lg">
+          <p className="mt-3.5 max-w-xl text-balance text-base text-muted md:mt-4 md:text-lg">
             {t('landing.hero.subtitle')}
           </p>
 
-          <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row md:w-auto">
+          <div className="mt-6 flex w-full max-w-sm flex-col gap-3 sm:max-w-none sm:flex-row md:mt-8 md:w-auto">
             <button
               type="button"
               onClick={() => startOnboarding('hero')}
@@ -122,6 +122,18 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
               {t('landing.hero.ctaDemo')}
             </button>
           </div>
+
+          {/* ④ Vertrauen – direkt unter den CTAs statt als eigener Abschnitt:
+              beantwortet die „Kostet das was? Wo bleiben meine Daten?"-Frage
+              genau dort, wo sie aufkommt (und spart eine Sektion). */}
+          {/* Bewusst 2×2 statt einer Wrap-Zeile: vier Signale nebeneinander passen
+              in keine Hero-Spalte und brechen sonst unruhig auf 3 + 1 um. */}
+          <div className="mt-5 grid w-full max-w-xs grid-cols-2 gap-x-3 gap-y-2 sm:max-w-sm md:mt-6">
+            <TrustChip icon={Lock} label={t('landing.trust.local')} />
+            <TrustChip icon={Check} label={t('landing.trust.free')} />
+            <TrustChip icon={Users} label={t('landing.trust.everyone')} />
+            <TrustChip icon={GraduationCap} label={t('landing.trust.learning')} />
+          </div>
         </div>
 
         <HeroMock />
@@ -131,11 +143,11 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
       <PreviewSection onOpenDemo={() => openDemo('preview')} />
 
       {/* ③ Was du machen kannst */}
-      <section className="mx-auto w-full max-w-5xl px-5 py-16">
-        <h2 className="text-center text-balance text-2xl font-bold text-foreground md:text-3xl">
+      <section className="mx-auto w-full max-w-5xl px-5 py-12 md:py-16">
+        <h2 className="text-center text-balance text-xl font-bold text-foreground md:text-3xl">
           {t('landing.features.title')}
         </h2>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 md:mt-10 md:gap-4 lg:grid-cols-4">
           <Feature icon={Gauge} title={t('landing.features.measure.title')} desc={t('landing.features.measure.desc')} />
           <Feature icon={LineChart} title={t('landing.features.track.title')} desc={t('landing.features.track.desc')} />
           <Feature icon={PiggyBank} title={t('landing.features.save.title')} desc={t('landing.features.save.desc')} />
@@ -143,22 +155,12 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
         </div>
       </section>
 
-      {/* ④ Vertrauen / Für wen */}
-      <section className="mx-auto w-full max-w-5xl px-5 pb-4">
-        <div className="flex flex-wrap items-center justify-center gap-2.5">
-          <TrustChip icon={Lock} label={t('landing.trust.local')} />
-          <TrustChip icon={Check} label={t('landing.trust.free')} />
-          <TrustChip icon={Users} label={t('landing.trust.everyone')} />
-          <TrustChip icon={GraduationCap} label={t('landing.trust.learning')} />
-        </div>
-      </section>
-
       {/* ⑤ Abschluss-CTA */}
-      <section className="mx-auto w-full max-w-3xl px-5 py-20 text-center">
-        <h2 className="mx-auto max-w-xl text-balance text-2xl font-bold text-foreground md:text-3xl">
+      <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-4 text-center md:pb-20 md:pt-8">
+        <h2 className="mx-auto max-w-xl text-balance text-xl font-bold text-foreground md:text-3xl">
           {t('landing.closing.title')}
         </h2>
-        <div className="mt-8 flex w-full max-w-sm flex-col gap-3 sm:mx-auto sm:max-w-none sm:flex-row sm:justify-center">
+        <div className="mt-6 flex w-full max-w-sm flex-col gap-3 sm:mx-auto sm:max-w-none sm:flex-row sm:justify-center md:mt-8">
           <button
             type="button"
             onClick={() => startOnboarding('closing')}
@@ -191,24 +193,35 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
   )
 }
 
-/** Eine Capability-Kachel (Abschnitt ③): Icon, Titel, Beschreibung. */
+/**
+ * Eine Capability-Kachel (Abschnitt ③): Icon, Titel, Beschreibung.
+ *
+ * Auf dem Handy bewusst als flache Zeile (Icon links, Text rechts) – vier
+ * gestapelte Hochkant-Karten hätten die Seite unnötig lang gemacht. Ab `sm`
+ * wieder als Karte im Raster.
+ */
 function Feature({ icon: Icon, title, desc }: { icon: LucideIcon; title: string; desc: string }) {
   return (
-    <div className="glass flex flex-col rounded-3xl p-5">
-      <span className="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary">
+    <div className="glass flex items-start gap-3.5 rounded-2xl p-4 sm:flex-col sm:gap-0 sm:rounded-3xl sm:p-5">
+      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary sm:h-11 sm:w-11 sm:rounded-2xl">
         <Icon className="h-5 w-5" />
       </span>
-      <h3 className="mt-4 font-semibold text-foreground">{title}</h3>
-      <p className="mt-1 text-sm text-muted">{desc}</p>
+      <div className="min-w-0 sm:mt-4">
+        <h3 className="font-semibold leading-snug text-foreground">{title}</h3>
+        <p className="mt-1 text-sm text-muted">{desc}</p>
+      </div>
     </div>
   )
 }
 
-/** Ein Vertrauens-Chip (Abschnitt ④): Icon + kurzer Text als Pille. */
+/**
+ * Ein Vertrauens-Signal im Hero: Icon + kurzer Text, bewusst ohne Pillen-Rahmen.
+ * Vier umrandete Chips direkt unter den Buttons hätten mit den CTAs konkurriert.
+ */
 function TrustChip({ icon: Icon, label }: { icon: LucideIcon; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/70 px-3.5 py-2 text-xs font-medium text-foreground">
-      <Icon className="h-3.5 w-3.5 shrink-0 text-muted" />
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-muted">
+      <Icon className="h-3.5 w-3.5 shrink-0 text-primary" />
       {label}
     </span>
   )
@@ -306,12 +319,15 @@ function HeroMock() {
 /** Eine Mini-Kachel der Hero-Mock-Legende (Träger + Beispielkosten). */
 function MockCarrier({ color, label, value }: { color: string; label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-surface-2/40 p-2.5">
+    <div className="rounded-2xl border border-border/60 bg-surface-2/40 px-2 py-2.5">
       <span className="flex items-center gap-1.5">
         <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: color }} />
         <span className="truncate text-[10px] font-medium uppercase tracking-wide text-muted">{label}</span>
       </span>
-      <span className="mt-1 block text-sm font-bold tabular-nums text-foreground">{value}</span>
+      {/* `whitespace-nowrap`: auf schmalen Handys sonst Umbruch zwischen ≈ und Betrag. */}
+      <span className="mt-1 block whitespace-nowrap text-[13px] font-bold tabular-nums text-foreground">
+        {value}
+      </span>
     </div>
   )
 }

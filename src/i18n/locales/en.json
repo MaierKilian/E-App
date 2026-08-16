@@ -1973,15 +1973,16 @@
       "subtitle": "Simple measurements, your real usage, clear savings tips – done yourself, in just minutes.",
       "ctaStart": "Get started",
       "ctaDemo": "See an example home",
-      "mockLabel": "Example · Estimated energy cost / year"
+      "mockLabel": "Example · Energy cost / year"
     },
     "preview": {
       "title": "This is what your app looks like once it's live",
       "subtitle": "Add your home, log meter readings, run measurements – the app turns your usage and savings potential into something you can see.",
       "tiles": {
-        "dashboard": {
-          "title": "Your dashboard",
-          "desc": "Costs, progress and tips at a glance"
+        "savings": {
+          "title": "Your savings goal",
+          "desc": "What is realistically in it for your home",
+          "mockLabel": "Example · Savings potential"
         },
         "trend": {
           "title": "Usage over time",
@@ -2015,10 +2016,10 @@
       }
     },
     "trust": {
-      "local": "Runs locally on your device",
-      "free": "Free & no commitment",
+      "local": "Local & private",
+      "free": "Free",
       "everyone": "For every household",
-      "learning": "Includes learning content (HTW Berlin)"
+      "learning": "With HTW learning content"
     },
     "closing": {
       "title": "Ready to get on top of your energy use?",

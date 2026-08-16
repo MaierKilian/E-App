@@ -1973,15 +1973,16 @@
       "subtitle": "Einfache Messungen, dein echter Verbrauch, klare Spartipps – selbst gemacht, in wenigen Minuten.",
       "ctaStart": "Jetzt starten",
       "ctaDemo": "Beispiel-Wohnung ansehen",
-      "mockLabel": "Beispiel · Geschätzte Energiekosten / Jahr"
+      "mockLabel": "Beispiel · Energiekosten / Jahr"
     },
     "preview": {
       "title": "So sieht es aus, wenn deine App lebt",
       "subtitle": "Wohnung anlegen, Zählerstände eintragen, Messungen machen – die App macht deinen Verbrauch und dein Sparpotenzial sichtbar.",
       "tiles": {
-        "dashboard": {
-          "title": "Dein Dashboard",
-          "desc": "Kosten, Fortschritt und Empfehlungen auf einen Blick"
+        "savings": {
+          "title": "Dein Sparziel",
+          "desc": "Was in deinem Haushalt konkret drin ist",
+          "mockLabel": "Beispiel · Sparpotenzial"
         },
         "trend": {
           "title": "Verbrauchs-Verlauf",
@@ -2015,10 +2016,10 @@
       }
     },
     "trust": {
-      "local": "Läuft lokal auf deinem Gerät",
-      "free": "Kostenlos & ohne Verpflichtung",
+      "local": "Lokal & privat",
+      "free": "Kostenlos",
       "everyone": "Für jeden Haushalt",
-      "learning": "Mit Lerninhalten (HTW Berlin)"
+      "learning": "Mit HTW-Lerninhalten"
     },
     "closing": {
       "title": "Bereit, deinem Verbrauch auf die Spur zu kommen?",

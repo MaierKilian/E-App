@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Play, Home, Droplet, TrendingDown } from 'lucide-react'
+import { Play, PiggyBank, Droplet, TrendingDown } from 'lucide-react'
 
 /**
  * Abschnitt ② „So sieht's mit Daten aus" der Landing Page.
@@ -13,22 +13,22 @@ export function PreviewSection({ onOpenDemo }: { onOpenDemo: () => void }) {
   const { t } = useTranslation()
 
   return (
-    <section className="mx-auto w-full max-w-5xl px-5 py-16">
+    <section className="mx-auto w-full max-w-5xl px-5 py-12 md:py-16">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-balance text-2xl font-bold text-foreground md:text-3xl">
+        <h2 className="text-balance text-xl font-bold text-foreground md:text-3xl">
           {t('landing.preview.title')}
         </h2>
-        <p className="mx-auto mt-3 max-w-xl text-balance text-muted">
+        <p className="mx-auto mt-2.5 max-w-xl text-balance text-sm text-muted md:mt-3 md:text-base">
           {t('landing.preview.subtitle')}
         </p>
       </div>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-3">
+      <div className="mt-6 grid gap-3 sm:grid-cols-3 md:mt-10 md:gap-4">
         <PreviewTile
-          title={t('landing.preview.tiles.dashboard.title')}
-          desc={t('landing.preview.tiles.dashboard.desc')}
+          title={t('landing.preview.tiles.savings.title')}
+          desc={t('landing.preview.tiles.savings.desc')}
         >
-          <DashboardMock label={t('landing.hero.mockLabel')} />
+          <SavingsMock label={t('landing.preview.tiles.savings.mockLabel')} />
         </PreviewTile>
 
         <PreviewTile
@@ -47,7 +47,7 @@ export function PreviewSection({ onOpenDemo }: { onOpenDemo: () => void }) {
       </div>
 
       {/* Demo-Aufruf */}
-      <div className="mt-10 flex flex-col items-center gap-3">
+      <div className="mt-8 flex flex-col items-center gap-3 md:mt-10">
         <button
           type="button"
           onClick={onOpenDemo}
@@ -65,18 +65,24 @@ export function PreviewSection({ onOpenDemo }: { onOpenDemo: () => void }) {
 /** Rahmen einer Vorschau-Kachel: Mock oben, Titel + Beschreibung darunter. */
 function PreviewTile({ title, desc, children }: { title: string; desc: string; children: React.ReactNode }) {
   return (
-    <div className="glass flex flex-col rounded-3xl p-4">
-      <div className="flex h-32 items-center justify-center rounded-2xl bg-surface-2/40 p-3">
+    <div className="glass flex flex-col rounded-2xl p-3.5 sm:rounded-3xl sm:p-4">
+      <div className="flex h-28 items-center justify-center rounded-2xl bg-surface-2/40 p-3 sm:h-32">
         {children}
       </div>
-      <h3 className="mt-4 font-semibold text-foreground">{title}</h3>
+      <h3 className="mt-3.5 font-semibold leading-snug text-foreground">{title}</h3>
       <p className="mt-1 text-sm text-muted">{desc}</p>
     </div>
   )
 }
 
-/** Mini-Abbild der Startseiten-Karte: Fortschrittsring + Jahreskosten. */
-function DashboardMock({ label }: { label: string }) {
+/**
+ * Mini-Abbild des Sparziels: Fortschrittsring + jährlicher Sparbetrag.
+ *
+ * Bewusst NICHT die Jahreskosten (≈ 1.980 €) – die zeigt bereits das Hero-Mock;
+ * eine zweite Kachel mit derselben Zahl hätte die Seite nur verlängert, ohne ein
+ * neues Versprechen zu geben. Hier steht daher das Ergebnis: was drin ist.
+ */
+function SavingsMock({ label }: { label: string }) {
   return (
     <div className="flex w-full items-center gap-3">
       <div className="relative shrink-0">
@@ -91,16 +97,16 @@ function DashboardMock({ label }: { label: string }) {
             strokeLinecap="round"
             className="stroke-primary"
             strokeDasharray={2 * Math.PI * 19}
-            strokeDashoffset={2 * Math.PI * 19 * 0.12}
+            strokeDashoffset={2 * Math.PI * 19 * 0.38}
           />
         </svg>
         <span className="absolute inset-0 grid place-items-center text-primary">
-          <Home className="h-4 w-4" />
+          <PiggyBank className="h-4 w-4" />
         </span>
       </div>
       <div className="min-w-0">
         <p className="truncate text-[10px] font-semibold uppercase tracking-wide text-muted">{label}</p>
-        <p className="text-lg font-bold tabular-nums text-foreground">≈ 1.980 €</p>
+        <p className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-400">≈ 380 €/Jahr</p>
       </div>
     </div>
   )
