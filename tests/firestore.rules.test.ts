@@ -478,3 +478,52 @@ describe('feedback: lesen und ändern', () => {
     await assertFails(deleteDoc(doc(asOwner().firestore(), 'feedback', 'fb-existing')))
   })
 })
+
+describe('feedback: Austritt', () => {
+  /** Austritts-Feedback, wie es `submitExitFeedback()` schreibt. */
+  function exitFeedback(uid: string) {
+    return {
+      sentiment: 'bad',
+      category: null,
+      text: 'Zu viele Schritte bis zum ersten Ergebnis.',
+      kind: 'exit',
+      exitReason: 'complex',
+      source: 'settings',
+      route: '/einstellungen/daten',
+      appVersion: 'v0.5.0',
+      language: 'de',
+      theme: 'light',
+      demoMode: false,
+      viewport: '390x844',
+      userAgent: 'Test',
+      uid,
+      isGuest: false,
+      contactOk: false,
+      contactEmail: null,
+      createdAt: serverTimestamp(),
+    }
+  }
+
+  it('Angemeldeter Nutzer darf Austritts-Feedback anlegen', async () => {
+    await assertSucceeds(
+      setDoc(doc(asOwner().firestore(), 'feedback', 'exit-1'), exitFeedback(OWNER)),
+    )
+  })
+
+  it('Gast darf Austritts-Feedback anlegen', async () => {
+    await assertSucceeds(
+      setDoc(doc(asStranger().firestore(), 'feedback', 'exit-2'), exitFeedback(STRANGER)),
+    )
+  })
+
+  it('Ohne Anmeldung geht auch der Austritt nicht', async () => {
+    await assertFails(setDoc(doc(anon().firestore(), 'feedback', 'exit-3'), exitFeedback(OWNER)))
+  })
+
+  it('Austritts-Feedback ist ebenfalls nicht lesbar', async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await setDoc(doc(ctx.firestore(), 'feedback', 'exit-existing'), exitFeedback(OWNER))
+    })
+    await assertFails(getDoc(doc(asOwner().firestore(), 'feedback', 'exit-existing')))
+  })
+})

@@ -1789,7 +1789,26 @@
     "thanksTitle": "Danke!",
     "thanksBody": "Wir lesen jedes Feedback.",
     "thanksBodyContact": "Wir lesen jedes Feedback und melden uns, falls wir Rückfragen haben.",
-    "error": "Das hat leider nicht geklappt. Bitte versuch es noch einmal."
+    "error": "Das hat leider nicht geklappt. Bitte versuch es noch einmal.",
+    "prompt": {
+      "title": "Wie war dieser Versuch für dich?",
+      "body": "Ein Tipp genügt – das hilft uns sehr."
+    },
+    "exit": {
+      "title": "Bevor du gehst – woran hat es gelegen?",
+      "body": "Eine kurze Antwort hilft uns mehr als jede Statistik.",
+      "reason": {
+        "complex": "Zu kompliziert",
+        "noValue": "Bringt mir nichts",
+        "technical": "Technische Probleme",
+        "cleanup": "Nur aufräumen"
+      },
+      "placeholder": "Magst du kurz sagen, was genau?",
+      "send": "Absenden",
+      "skip": "Nicht jetzt",
+      "thanks": "Danke – das hilft uns wirklich weiter.",
+      "continue": "Weiter"
+    }
   },
   "demo": {
     "title": "Beispiel-Wohnung ansehen",

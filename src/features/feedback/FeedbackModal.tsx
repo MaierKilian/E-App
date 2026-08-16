@@ -33,13 +33,15 @@ type Phase = 'form' | 'sending' | 'done' | 'error'
  * `Modal` rendert seine Kinder nur im geöffneten Zustand, dadurch startet das
  * Formular bei jedem Öffnen von selbst leer – ganz ohne Zurücksetz-Effekt.
  */
-function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
+function FeedbackForm({ source, presetSentiment, onClose, onSubmitted }: FeedbackFormProps) {
   const { t } = useTranslation()
   const location = useLocation()
   const user = useUser()
   const markSubmitted = useFeedbackStore((s) => s.markSubmitted)
 
-  const [sentiment, setSentiment] = useState<Sentiment | null>(null)
+  // Kommt der Aufruf von der Nachfrage-Karte, ist dort schon ein Gesicht
+  // getippt worden – diese Auswahl wird übernommen statt neu abgefragt.
+  const [sentiment, setSentiment] = useState<Sentiment | null>(presetSentiment)
   const [category, setCategory] = useState<FeedbackCategory | null>(null)
   const [text, setText] = useState('')
   const [contactOk, setContactOk] = useState(false)
@@ -225,6 +227,8 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
 
 interface FeedbackFormProps {
   source: FeedbackSource
+  /** Vorgewählte Stimmung (von der Nachfrage-Karte), sonst null. */
+  presetSentiment: Sentiment | null
   onClose: () => void
   /** Meldet den Erfolg nach oben, damit die Überschrift mitwechselt. */
   onSubmitted: () => void
@@ -243,6 +247,7 @@ export function FeedbackModal() {
   const { t } = useTranslation()
   const open = useFeedbackStore((s) => s.open)
   const source = useFeedbackStore((s) => s.source)
+  const presetSentiment = useFeedbackStore((s) => s.presetSentiment)
   const closeFeedback = useFeedbackStore((s) => s.closeFeedback)
   const [submitted, setSubmitted] = useState(false)
 
@@ -260,7 +265,12 @@ export function FeedbackModal() {
       onClose={handleClose}
       title={submitted ? t('feedback.thanksTitle') : t('feedback.title')}
     >
-      <FeedbackForm source={source} onClose={handleClose} onSubmitted={() => setSubmitted(true)} />
+      <FeedbackForm
+        source={source}
+        presetSentiment={presetSentiment}
+        onClose={handleClose}
+        onSubmitted={() => setSubmitted(true)}
+      />
     </Modal>
   )
 }

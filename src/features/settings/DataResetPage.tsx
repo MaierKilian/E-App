@@ -19,6 +19,7 @@ import { useTariffStore } from '@/store/tariffStore'
 import { useProgressStore } from '@/store/progressStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useMeasurementDraftStore } from '@/store/measurementDraftStore'
+import { ExitFeedback } from '@/features/feedback/ExitFeedback'
 
 /** Setzt alle Nutzerdaten zurück (App-Einstellungen wie Theme/Sprache bleiben). */
 function resetAllUserData() {
@@ -125,6 +126,7 @@ function ResetCard({
 export function DataResetPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [askedWhy, setAskedWhy] = useState(false)
 
   return (
     <div className="space-y-5">
@@ -181,9 +183,13 @@ export function DataResetPage() {
           danger
           onReset={() => {
             resetAllUserData()
-            navigate('/onboarding')
+            // Bewusst NICHT sofort weiternavigieren: Erst kommt die Frage nach
+            // dem Grund – der aussagekräftigste Moment im ganzen Feedback-
+            // System. Der Sprung zum Onboarding erfolgt danach.
+            setAskedWhy(true)
           }}
         />
+        {askedWhy && <ExitFeedback onDone={() => navigate('/onboarding')} />}
       </div>
     </div>
   )

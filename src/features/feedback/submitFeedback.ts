@@ -17,6 +17,22 @@ export type FeedbackCategory = (typeof CATEGORIES)[number]
 /** Muss zur Obergrenze in `firestore.rules` passen, sonst scheitert der Write. */
 export const FEEDBACK_TEXT_LIMIT = 2000
 
+/**
+ * Gründe beim Löschen aller Daten. „Aufräumen" ist bewusst dabei: Nicht jeder,
+ * der zurücksetzt, hört auf – wer neu anfangen will, darf nicht als Absprung
+ * gezählt werden, sonst ist die ganze Auswertung wertlos.
+ */
+export const EXIT_REASONS = ['complex', 'noValue', 'technical', 'cleanup'] as const
+export type ExitReason = (typeof EXIT_REASONS)[number]
+
+/** Ein Austritt ist keine Stimmungsabfrage – die Stimmung folgt aus dem Grund. */
+const EXIT_SENTIMENT: Record<ExitReason, Sentiment> = {
+  complex: 'bad',
+  noValue: 'bad',
+  technical: 'bad',
+  cleanup: 'neutral',
+}
+
 export interface FeedbackInput {
   sentiment: Sentiment
   category: FeedbackCategory | null
@@ -69,6 +85,8 @@ export async function submitFeedback(input: FeedbackInput): Promise<void> {
     text: input.text.trim().slice(0, FEEDBACK_TEXT_LIMIT),
 
     // Wie es zustande kam.
+    kind: 'general',
+    exitReason: null,
     source: input.source,
     route: input.route,
 
@@ -89,6 +107,55 @@ export async function submitFeedback(input: FeedbackInput): Promise<void> {
     // in der Frühphase mehr wert als jede Kennzahl.
     contactOk: input.contactOk,
     contactEmail: input.contactOk ? (user.email ?? null) : null,
+
+    createdAt: serverTimestamp(),
+  })
+}
+
+/**
+ * Austritts-Feedback beim Löschen aller Daten.
+ *
+ * Warum eigener Weg: Wer gerade alles löscht, hat beschlossen aufzuhören – und
+ * genau diese Menschen erreicht ein freiwilliger Feedback-Knopf nie. Eine
+ * einzige Frage in diesem Moment sagt mehr über das Scheitern der App aus als
+ * zwanzig wohlwollende Rückmeldungen von Gebliebenen.
+ *
+ * Bewusst NACH dem Löschen gefragt und überspringbar: Eine Frage vor die
+ * Ausführung zu hängen, wäre Erpressung an einer bereits getroffenen
+ * Entscheidung.
+ */
+export async function submitExitFeedback(input: {
+  reason: ExitReason
+  text: string
+  route: string
+}): Promise<void> {
+  const user = await ensureWriteAccess()
+  const settings = useSettingsStore.getState()
+
+  await addDoc(collection(db, 'feedback'), {
+    sentiment: EXIT_SENTIMENT[input.reason],
+    category: null,
+    text: input.text.trim().slice(0, FEEDBACK_TEXT_LIMIT),
+
+    kind: 'exit',
+    exitReason: input.reason,
+    source: 'settings',
+    route: input.route,
+
+    appVersion: APP_VERSION,
+    language: i18n.resolvedLanguage ?? i18n.language,
+    theme: settings.theme,
+    demoMode: settings.demoMode,
+    viewport: `${window.innerWidth}x${window.innerHeight}`,
+    userAgent: navigator.userAgent,
+
+    uid: user.uid,
+    isGuest: user.isAnonymous,
+
+    // Beim Austritt bewusst keine Rückfrage-Abfrage: Wer gerade aufräumt oder
+    // geht, soll nicht noch um seine Adresse gebeten werden.
+    contactOk: false,
+    contactEmail: null,
 
     createdAt: serverTimestamp(),
   })

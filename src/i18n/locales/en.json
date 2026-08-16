@@ -1789,7 +1789,26 @@
     "thanksTitle": "Thank you!",
     "thanksBody": "We read every single message.",
     "thanksBodyContact": "We read every message and will get back to you if anything is unclear.",
-    "error": "That didn't work. Please try again."
+    "error": "That didn't work. Please try again.",
+    "prompt": {
+      "title": "How was this experiment for you?",
+      "body": "One tap is enough – it helps us a lot."
+    },
+    "exit": {
+      "title": "Before you go – what went wrong?",
+      "body": "A short answer helps us more than any statistic.",
+      "reason": {
+        "complex": "Too complicated",
+        "noValue": "Not useful to me",
+        "technical": "Technical problems",
+        "cleanup": "Just tidying up"
+      },
+      "placeholder": "Care to say what exactly?",
+      "send": "Send",
+      "skip": "Not now",
+      "thanks": "Thank you – that genuinely helps.",
+      "continue": "Continue"
+    }
   },
   "demo": {
     "title": "View the example home",

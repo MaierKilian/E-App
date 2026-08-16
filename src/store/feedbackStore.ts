@@ -1,5 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+// Nur der Typ – zur Laufzeit erzeugt das keine Abhängigkeit auf das Feature und
+// damit keinen Zyklus (`submitFeedback.ts` importiert `FeedbackSource` von hier).
+import type { Sentiment } from '@/features/feedback/submitFeedback'
 
 /** Woher wurde das Feedback-Fenster geöffnet? Wandert als `source` mit. */
 export type FeedbackSource = 'header' | 'menu' | 'settings' | 'prompt'
@@ -42,8 +45,13 @@ interface FeedbackState {
   open: boolean
   /** Auslöser des offenen Fensters. (nicht gespeichert) */
   source: FeedbackSource
+  /**
+   * Vorgewählte Stimmung beim Öffnen. Kommt von der Nachfrage-Karte: Wer dort
+   * schon auf ein Gesicht getippt hat, soll die Auswahl nicht wiederholen.
+   */
+  presetSentiment: Sentiment | null
 
-  openFeedback: (source: FeedbackSource) => void
+  openFeedback: (source: FeedbackSource, presetSentiment?: Sentiment) => void
   closeFeedback: () => void
   /** Eine automatische Nachfrage wurde angezeigt. */
   markPrompted: () => void
@@ -79,8 +87,10 @@ export const useFeedbackStore = create<FeedbackState>()(
       promptedThisSession: false,
       open: false,
       source: 'header',
+      presetSentiment: null,
 
-      openFeedback: (source) => set({ open: true, source }),
+      openFeedback: (source, presetSentiment = undefined) =>
+        set({ open: true, source, presetSentiment: presetSentiment ?? null }),
       closeFeedback: () => set({ open: false }),
       markPrompted: () => set({ lastPromptedAt: Date.now(), promptedThisSession: true }),
       markDismissed: () =>

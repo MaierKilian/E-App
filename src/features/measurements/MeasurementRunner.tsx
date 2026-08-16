@@ -9,6 +9,7 @@ import { getMeasurementMeta } from './catalog'
 import { getMeasurementModule } from './registry'
 import { roomInstances, roomLabel, instanceKey } from './rooms'
 import { resultSavingsEur } from './impact'
+import { FeedbackPrompt } from '@/features/feedback/FeedbackPrompt'
 import type { RunnerPhase, RunOutcome } from './runnerTypes'
 import type { MeasurementResult } from './types'
 
@@ -222,7 +223,9 @@ function SavedInterstitial({ state, onContinue }: { state: SavedState; onContinu
   const backToOverview = state.nextHref === '/measurements'
 
   return (
-    <div className="grid min-h-[60vh] place-items-center">
+    // Spalte statt Raster: Die Nachfrage-Karte darunter soll die volle Breite
+    // der Erfolgskarte einnehmen, nicht auf Inhaltsbreite schrumpfen.
+    <div className="flex min-h-[60vh] flex-col justify-center">
       <div className="glass relative w-full overflow-hidden rounded-3xl p-8 text-center">
         <div
           aria-hidden="true"
@@ -252,6 +255,12 @@ function SavedInterstitial({ state, onContinue }: { state: SavedState; onContinu
           </button>
         </div>
       </div>
+
+      {/* Nachfrage im besten Moment: Der Versuch ist geschafft, die Ersparnis
+          steht da. Bewusst UNTER der Erfolgskarte und ohne Overlay, damit der
+          Belohnungsmoment nicht gekappt wird. Ob überhaupt gefragt wird,
+          entscheidet `shouldPrompt()` im feedbackStore. */}
+      <FeedbackPrompt />
     </div>
   )
 }

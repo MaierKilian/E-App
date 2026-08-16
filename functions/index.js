@@ -188,6 +188,12 @@ const MAX_MAILS_PER_DAY = 50
 
 const SENTIMENT_LABEL = { bad: '☹️ negativ', neutral: '😐 neutral', good: '🙂 positiv' }
 const CATEGORY_LABEL = { bug: 'Fehler', idea: 'Idee', other: 'Sonstiges' }
+const EXIT_REASON_LABEL = {
+  complex: 'Zu kompliziert',
+  noValue: 'Bringt mir nichts',
+  technical: 'Technische Probleme',
+  cleanup: 'Nur aufräumen',
+}
 
 admin.initializeApp()
 
@@ -217,6 +223,9 @@ function buildMailBody(data, feedbackId) {
     // Ganz nach oben: Wer geantwortet werden darf, ist die wichtigste
     // Handlungsanweisung der ganzen Mail.
     ['Rückfragen erlaubt', data.contactOk ? `JA → ${data.contactEmail || 'ohne Adresse'}` : 'nein'],
+    data.kind === 'exit'
+      ? ['Grund', EXIT_REASON_LABEL[data.exitReason] || data.exitReason || '–']
+      : null,
     ['Seite', data.route],
     ['Version', data.appVersion],
     ['Sprache', data.language],
@@ -228,6 +237,7 @@ function buildMailBody(data, feedbackId) {
     ['User-Agent', data.userAgent],
     ['Dokument', feedbackId],
   ]
+    .filter(Boolean)
     .filter(([, value]) => value !== undefined && value !== null && value !== '')
     .map(([label, value]) => `${label}: ${value}`)
     .join('\n')
@@ -262,12 +272,22 @@ exports.onFeedbackCreated = onDocumentCreated(
       return
     }
 
-    const sentiment = SENTIMENT_LABEL[data.sentiment] || data.sentiment || '–'
-    const category = CATEGORY_LABEL[data.category] || 'ohne Einordnung'
     // Ein „✉" im Betreff macht die Feedbacks sichtbar, bei denen sich eine
     // Antwort lohnt – ohne die Mail öffnen zu müssen.
     const reply = data.contactOk ? '✉ ' : ''
-    const subject = `[E-App] ${reply}${sentiment} · ${category} · ${data.route || '/'}`
+
+    // Austritte bekommen einen eigenen Betreff: Wer die App gerade komplett
+    // gelöscht hat, ist die wichtigste Rückmeldung überhaupt und darf im
+    // Postfach nicht zwischen normalem Feedback untergehen.
+    let subject
+    if (data.kind === 'exit') {
+      const label = EXIT_REASON_LABEL[data.exitReason] || data.exitReason || 'ohne Grund'
+      subject = `[E-App] 🚪 AUSTRITT · ${label}`
+    } else {
+      const sentiment = SENTIMENT_LABEL[data.sentiment] || data.sentiment || '–'
+      const category = CATEGORY_LABEL[data.category] || 'ohne Einordnung'
+      subject = `[E-App] ${reply}${sentiment} · ${category} · ${data.route || '/'}`
+    }
 
     try {
       const response = await fetch('https://api.resend.com/emails', {

@@ -1,9 +1,9 @@
 # Nutzer-Feedback – Konzept
 
-> Stand: 2026-08-15 · Konzept für einen Feedback-Kanal für die ersten echten
-> Nutzer. **Phase 1 ist umgesetzt**, Phase 2 (automatische Nachfrage) und
-> Phase 3 stehen noch aus – siehe §10. Einrichtung der beiden Konsolen-Schritte:
-> `docs/feedback-mail-setup.md`. Stand der Entscheidungen: §9.
+> Stand: 2026-08-16 · Konzept für den Feedback-Kanal. **Phase 1 und 2 sind
+> umgesetzt und live**, Phase 3 ist bis auf die Rückfrage-Checkbox offen –
+> siehe §10. Einrichtung der Konsolen-Schritte: `docs/feedback-mail-setup.md`.
+> Stand der Entscheidungen: §9.
 >
 > **Ziel:** Konstruktive Kritik von den ersten Nutzern einsammeln und die App
 > daraus verbessern. Nicht: Zufriedenheit messen.
@@ -96,7 +96,40 @@ Sag uns hier jederzeit, was dir auffällt" mit einem „Verstanden"-Knopf.
 Bewusst **kein Modal**: Ein Overlay für ein Nebenangebot wäre die aufdringlichste
 mögliche Lösung für das kleinste Problem.
 
-### 2.3 Verworfen
+### 2.4 Austritts-Frage beim Löschen aller Daten
+
+Der aussagekräftigste Einstiegspunkt überhaupt – und der einzige, der die
+**Abspringer** erreicht. Wer auf `/einstellungen/daten` alle Daten löscht, hat
+gerade beschlossen aufzuhören; ein freiwilliger Knopf erreicht diese Menschen
+nie. Ihre Antwort sagt, woran die App scheitert, nicht was den Gebliebenen noch
+fehlt.
+
+Vier Gründe zur Auswahl, dazu ein optionaler Satz:
+
+| Grund | Stimmung |
+|---|---|
+| Zu kompliziert | ☹️ |
+| Bringt mir nichts | ☹️ |
+| Technische Probleme | ☹️ |
+| **Nur aufräumen** | 😐 |
+
+Der vierte ist entscheidend für die Auswertbarkeit: **Nicht jeder, der
+zurücksetzt, hört auf.** Wer neu anfangen will, darf nicht als Absprung gezählt
+werden – sonst ist die ganze Statistik wertlos.
+
+**Zwei Regeln, die nicht verhandelbar sind:**
+
+- **Gefragt wird NACH dem Löschen**, nie davor. Eine Frage vor die Ausführung zu
+  hängen, hieße eine bereits getroffene Entscheidung als Druckmittel zu
+  benutzen.
+- **Überspringbar** („Nicht jetzt"). Der Sprung zum Onboarding erfolgt erst
+  danach – deshalb navigiert `DataResetPage` nach dem Löschen nicht mehr sofort
+  weiter.
+
+Keine Rückfrage-Abfrage an dieser Stelle: Wer gerade geht oder aufräumt, soll
+nicht auch noch um seine Adresse gebeten werden.
+
+### 2.5 Verworfen
 
 - **Floating Action Button unten rechts.** Kollidiert mobil mit der BottomNav
   und verdeckt Inhalt.
@@ -223,17 +256,27 @@ Einwilligung nötig, da der Nutzer die Übermittlung aktiv auslöst.
 
 ### 5.1 Timing
 
-Der beste Moment im ganzen Produkt ist die **Ergebnis-Phase eines Versuchs**
-(`MeasurementRunner.tsx:193`, `phase === 'result'`): Die Stimmung ist am
-höchsten, der Kontext frisch.
+Der beste Moment im ganzen Produkt ist der **Erfolgsmoment nach dem Speichern**
+(`SavedInterstitial` in `MeasurementRunner.tsx`): Der Versuch ist geschafft, die
+Ersparnis steht da, die Stimmung ist am höchsten und der Kontext frisch.
 
 **Genau deshalb dort kein Modal.** Ein Overlay kappt exakt den Belohnungsmoment,
 den die App gerade erzeugt hat.
 
-| Auslöser | Form |
-|---|---|
-| **1. abgeschlossener Versuch** | Dezente **Inline-Karte** unter dem Ergebnis: „Wie war das für dich?" + drei Smileys. Ein Klick klappt das Freitextfeld auf. Blockiert nichts. |
-| **3. Versuch oder ab ~7 Tagen Nutzung** | **Echtes Modal** mit der größeren Frage: „Was würdest du als Erstes ändern?" Hier ist ein Overlay gerechtfertigt, weil echtes Nachdenken gewünscht ist. |
+Umgesetzt als **Inline-Karte unter der Erfolgskarte**
+(`features/feedback/FeedbackPrompt.tsx`): „Wie war dieser Versuch für dich?" plus
+die drei Gesichter. Sie blockiert nichts und wird trotzdem gesehen, weil der
+Blick ohnehin dort liegt.
+
+Ein Tipp öffnet das normale Feedback-Fenster **mit bereits gewählter Stimmung**.
+So bleibt der gesamte Ablauf – Einordnung, stimmungsabhängige Frage,
+Rückfrage-Häkchen – an einer Stelle, statt hier ein zweites Formular zu bauen.
+
+> **Abweichung vom ursprünglichen Plan:** Vorgesehen war zusätzlich ein zweiter
+> Auslöser („3. Versuch oder ~7 Tage") als echtes Modal. Der ist entfallen. Die
+> Frequenzregeln (§5.2) sorgen ohnehin dafür, dass die Karte nach Ablauf der
+> Ruhezeit beim nächsten abgeschlossenen Versuch wieder erscheint – ein zweiter
+> Code-Pfad hätte dieselbe Wirkung mit doppelter Komplexität erkauft.
 
 ### 5.2 Frequenzregeln
 
@@ -337,6 +380,8 @@ Ereignisse über das vorhandene `track()`:
 | `feedback_opened` | `source` |
 | `feedback_submitted` | `sentiment`, `category`, `hasText`, `contactOk` |
 | `feedback_dismissed` | `source`, `dismissCount` |
+| `feedback_prompt_shown` | – |
+| `feedback_exit_submitted` | `reason`, `hasText` |
 
 **Zwei Regeln:**
 
@@ -442,10 +487,14 @@ Anleitung in `docs/feedback-mail-setup.md`):
 - [ ] Resend-Key als Firebase-Secret `RESEND_API_KEY` hinterlegen (§8.3) –
       **vor dem Merge nach `main`**, sonst schlägt der Functions-Deploy fehl
 
-### Phase 2 – Proaktiv fragen
-- [ ] Inline-Karte in der Ergebnis-Phase von `MeasurementRunner`
-- [ ] Frequenzregeln in `shouldPrompt()` (§5.2)
-- [ ] Zweiter Auslöser (3. Versuch / ~7 Tage) als Modal
+### Phase 2 – Proaktiv fragen — ✅ erledigt
+- [x] Inline-Karte im Erfolgsmoment (`FeedbackPrompt` in `SavedInterstitial`),
+      öffnet das Fenster mit vorgewählter Stimmung
+- [x] Frequenzregeln in `shouldPrompt()` (§5.2) angebunden
+- [x] Austritts-Frage beim Löschen aller Daten (§2.4) – erreicht als einzige
+      Stelle die Abspringer
+- [~] Zweiter Auslöser (3. Versuch / ~7 Tage) als Modal – **entfällt**, die
+      Frequenzregeln erzeugen denselben Effekt ohne zweiten Code-Pfad (§5.1)
 
 ### Phase 3 – Komfort
 - [x] Checkbox „Für Rückfragen erreichbar" (§3) – vorgezogen, weil sie den
