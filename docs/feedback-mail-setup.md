@@ -8,6 +8,7 @@ Konsolen gesetzt werden:
 |---|---|
 | **A** – Anonyme Anmeldung aktivieren | Gäste ohne Login bekommen beim Absenden eine Fehlermeldung |
 | **B/C** – Mail-Zugang als Secret hinterlegen | **Der Functions-Deploy schlägt fehl** (siehe Warnung unten) |
+| **D** – Firestore-Regeln deployen | Jeder Schreibversuch endet mit `permission-denied` – der CI-Workflow deployt die Regeln **nicht** |
 
 > ⚠️ **Vor dem Merge nach `main` erledigen.** Der Workflow
 > `.github/workflows/firebase-deploy.yml` deployt bei jedem Push auf `main` auch
@@ -83,15 +84,23 @@ FEEDBACK_MAIL_FROM=…
 
 ## D) Deployen
 
-Nach dem Merge nach `main` passiert das automatisch. Manuell:
+**Hosting und Functions** übernimmt der Workflow beim Push auf `main` von
+selbst.
+
+**Die Firestore-Regeln nicht.** Der Workflow deployt ausdrücklich nur
+`--only hosting,functions` – Regeländerungen aus dem Repo landen also **nie**
+automatisch bei Firebase. Ohne diesen Schritt wird jeder Schreibversuch mit
+`permission-denied` abgelehnt, obwohl im Repo alles richtig steht:
 
 ```bash
-firebase deploy --only functions:onFeedbackCreated --project e-app-info
-firebase deploy --only firestore:rules --project e-app-info
+npx firebase-tools deploy --only firestore:rules --project e-app-info
 ```
 
-**Die Firestore-Regeln nicht vergessen** – ohne sie wird jeder Schreibversuch
-abgelehnt.
+Manuell auch die Funktion, falls nötig:
+
+```bash
+npx firebase-tools deploy --only functions:onFeedbackCreated --project e-app-info
+```
 
 ---
 
