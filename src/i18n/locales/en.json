@@ -1970,10 +1970,33 @@
     },
     "hero": {
       "title": "See where your home is wasting energy and money.",
-      "subtitle": "Simple measurements, your real usage, clear savings tips – done yourself, in just minutes.",
+      "subtitle": "Guided measurements with video and stopwatch, your real usage, clear savings tips – in just minutes.",
       "ctaStart": "Get started",
       "ctaDemo": "See an example home",
       "mockLabel": "Example · Energy cost / year"
+    },
+    "guided": {
+      "title": "How a measurement works",
+      "subtitle": "Showerhead test as an example: 5 minutes, no tools. All nine checks follow the same pattern.",
+      "steps": {
+        "info": {
+          "title": "Instructions",
+          "desc": "A short video and three steps – that is all you need to know."
+        },
+        "run": {
+          "title": "Measure",
+          "desc": "The stopwatch runs inside the app, you just enter two values."
+        },
+        "result": {
+          "title": "Result",
+          "desc": "The app rates your result and converts it into euros."
+        }
+      },
+      "mock": {
+        "stopwatchLabel": "Time to 5 litres",
+        "savingLabel": "≈ €120/year"
+      },
+      "note": "You can stop at any point – your progress is kept."
     },
     "preview": {
       "title": "This is what your app looks like once it's live",
@@ -2000,7 +2023,7 @@
       "title": "What you can do",
       "measure": {
         "title": "Measure yourself",
-        "desc": "9 simple checks – showerhead, standby, lighting and more"
+        "desc": "9 checks, 2–5 minutes each – guided step by step"
       },
       "track": {
         "title": "Track usage",

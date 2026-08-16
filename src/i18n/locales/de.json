@@ -1970,10 +1970,33 @@
     },
     "hero": {
       "title": "Finde heraus, wo dein Zuhause Energie und Geld verliert.",
-      "subtitle": "Einfache Messungen, dein echter Verbrauch, klare Spartipps – selbst gemacht, in wenigen Minuten.",
+      "subtitle": "Geführte Messungen mit Video und Stoppuhr, dein echter Verbrauch, klare Spartipps – in wenigen Minuten.",
       "ctaStart": "Jetzt starten",
       "ctaDemo": "Beispiel-Wohnung ansehen",
       "mockLabel": "Beispiel · Energiekosten / Jahr"
+    },
+    "guided": {
+      "title": "So läuft eine Messung ab",
+      "subtitle": "Beispiel Duschkopf-Test: 5 Minuten, ohne Werkzeug. Alle neun Checks sind gleich aufgebaut.",
+      "steps": {
+        "info": {
+          "title": "Anleitung",
+          "desc": "Kurzes Video und drei Schritte – mehr musst du nicht wissen."
+        },
+        "run": {
+          "title": "Messen",
+          "desc": "Die Stoppuhr läuft in der App mit, du trägst nur zwei Werte ein."
+        },
+        "result": {
+          "title": "Ergebnis",
+          "desc": "Die App ordnet dein Ergebnis ein und rechnet es in Euro um."
+        }
+      },
+      "mock": {
+        "stopwatchLabel": "Zeit bis 5 Liter",
+        "savingLabel": "≈ 120 €/Jahr"
+      },
+      "note": "Zwischendurch aufhören geht jederzeit – dein Fortschritt bleibt gespeichert."
     },
     "preview": {
       "title": "So sieht es aus, wenn deine App lebt",
@@ -2000,7 +2023,7 @@
       "title": "Was du machen kannst",
       "measure": {
         "title": "Selbst messen",
-        "desc": "9 einfache Checks – Duschkopf, Standby, Beleuchtung u. v. m."
+        "desc": "9 Checks, je 2–5 Minuten – Schritt für Schritt angeleitet"
       },
       "track": {
         "title": "Verbrauch verfolgen",

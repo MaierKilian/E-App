@@ -20,6 +20,7 @@ import { useSettingsStore } from '@/store/settingsStore'
 import { enterDemo } from '@/features/demo/enterDemo'
 import { track } from '@/features/analytics/analytics'
 import { PreviewSection } from './PreviewSection'
+import { GuidedSection } from './GuidedSection'
 
 /**
  * Öffentliche Landing Page (Route „/") für Erst-Besucher.
@@ -30,9 +31,10 @@ import { PreviewSection } from './PreviewSection'
  * an dieser Seite vorbei aufs Onboarding/Dashboard geleitet.
  *
  * Aufbau folgt `docs/landing-concept.md`:
- *   ① Hero · ② „So sieht's mit Daten aus" · ③ Capabilities · ④ Vertrauen · ⑤ CTA
- * In diesem Schritt ist nur das Gerüst + Hero angelegt; die weiteren Abschnitte
- * und die i18n-Anbindung folgen in den nächsten Schritten.
+ *   ① Hero (mit Vertrauens-Signalen) · ② „So läuft eine Messung ab" ·
+ *   ③ „So sieht's mit Daten aus" · ④ Capabilities · ⑤ CTA
+ * Erst der Weg (② zeigt den geführten Dreischritt einer echten Messung), dann
+ * das Ergebnis (③) – die Reihenfolge beantwortet „kann ich das?" vor „lohnt es sich?".
  */
 /**
  * @param preview  Vorschau aus den Einstellungen (nicht der echte Erst-Besuch):
@@ -123,7 +125,7 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
             </button>
           </div>
 
-          {/* ④ Vertrauen – direkt unter den CTAs statt als eigener Abschnitt:
+          {/* Vertrauen – direkt unter den CTAs statt als eigener Abschnitt:
               beantwortet die „Kostet das was? Wo bleiben meine Daten?"-Frage
               genau dort, wo sie aufkommt (und spart eine Sektion). */}
           {/* Bewusst 2×2 statt einer Wrap-Zeile: vier Signale nebeneinander passen
@@ -139,10 +141,13 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
         <HeroMock />
       </section>
 
-      {/* ② „So sieht's mit Daten aus" */}
+      {/* ② „So läuft eine Messung ab" – erst der Weg … */}
+      <GuidedSection />
+
+      {/* ③ „So sieht's mit Daten aus" – … dann das Ergebnis. */}
       <PreviewSection onOpenDemo={() => openDemo('preview')} />
 
-      {/* ③ Was du machen kannst */}
+      {/* ④ Was du machen kannst */}
       <section className="mx-auto w-full max-w-5xl px-5 py-12 md:py-16">
         <h2 className="text-center text-balance text-xl font-bold text-foreground md:text-3xl">
           {t('landing.features.title')}

@@ -243,3 +243,45 @@ weniger Scrollen bis zur Aussage.
 Offen: Die Landing Page ist öffentlich erreichbar, hat aber **keinen Footer mit
 Impressum/Datenschutz**. Für ein öffentliches Angebot in Deutschland separat zu
 klären (eigene Seiten + Footer-Links).
+
+## J. Abschnitt „So läuft eine Messung ab" (Stand 2026-08-16)
+
+Rückmeldung: Der **geführte** Charakter der Messungen kam nicht rüber. Die Seite
+zeigte nur das *Ergebnis* einer Messung (Duschkopf ≈ 120 €/Jahr), nie den Weg
+dahin – die offene Frage „muss ich das können, brauche ich Werkzeug?" blieb
+unbeantwortet. Vorhandene Assets lagen ungenutzt herum: das Erklär-Video, die
+1-2-3-Anleitungen, die eingebaute Stoppuhr.
+
+Neuer Abschnitt ② (vor „So sieht's mit Daten aus"), damit die Seite erst *wie es
+geht* und dann *was rauskommt* beantwortet:
+
+| Schritt | Mock | Aussage |
+|---|---|---|
+| ① Anleitung | echtes `showerhead.mp4` + die 1-2-3-Schritte aus dem Runner | „Es wird dir gezeigt" |
+| ② Messen | Stoppuhr 00:12 + Stopp-Knopf | „Die App stoppt für dich" |
+| ③ Ergebnis | 12 L/min · Rating „hoch" · ≈ 120 €/Jahr | „Du bekommst eine Einordnung in Euro" |
+
+Bewusste Entscheidungen:
+
+- **Ein Beispiel statt eines Katalogs.** Alle neun Checks aufzulisten hätte die
+  Seite verlängert und „kann ich das?" schlechter beantwortet als ein
+  durchgespielter Fall.
+- **Sprache des Runners übernommen** (Info · Messen · Ergebnis, vgl.
+  `measurements.common.phase*`), damit die Landing verspricht, was die App hält.
+- **Video wird erst bei Sichtkontakt geladen** (IntersectionObserver,
+  `rootMargin: 200px`). ~460 KB dürfen nicht das Mobilfunk-Volumen von Besuchern
+  belasten, die nie so weit scrollen. `prefers-reduced-motion` unterdrückt den
+  Autostart.
+- **Kein Zustand ohne Inhalt.** Das Video ist hochkant und füllt nur einen
+  schmalen Streifen; daneben steht dauerhaft die echte 1-2-3-Anleitung. Fehlt das
+  Video (Codec, langsame Leitung, noch nicht geladen), rückt die Anleitung in die
+  Mitte – nie eine leere Fläche.
+- **Auf dem Handy als Zeilen** (Mock links, Text rechts) statt drei
+  Hochkant-Karten; Mock-Typografie dafür verkleinert.
+
+Ebenfalls geschärft: Hero-Subline nennt jetzt „Geführte Messungen mit Video und
+Stoppuhr", und die Kachel „Selbst messen" nennt statt „einfach" die belegbaren
+Zahlen „9 Checks, je 2–5 Minuten" (aus `MEASUREMENT_CATALOG.estimatedMinutes`).
+
+Seitenhöhe bei 390 px: 2740 px → 3416 px. Der Abschnitt kostet Länge – er
+schließt aber die Lücke zwischen Versprechen und Ergebnis, die vorher offen war.
