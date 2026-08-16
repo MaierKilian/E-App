@@ -32,10 +32,16 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-4"
       onClick={onClose}
     >
+      {/*
+        Höhe begrenzen und innen scrollen lassen: Sonst wächst ein längeres
+        Fenster aus dem Bild heraus – auf dem Handy besonders, sobald die
+        Tastatur aufgeht und die untere Hälfte verdeckt. `overscroll-contain`
+        verhindert, dass die Seite dahinter mitscrollt.
+      */}
       <div
         role="dialog"
         aria-modal="true"
-        className="glass-floating w-full max-w-md rounded-3xl p-5 animate-step-in"
+        className="glass-floating animate-step-in max-h-[85dvh] w-full max-w-md overflow-y-auto overscroll-contain rounded-3xl p-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="flex items-start justify-between gap-4 mb-4">

@@ -107,6 +107,29 @@ body {
 }
 
 /*
+ * Kein Auto-Zoom beim Antippen von Eingabefeldern (iOS Safari).
+ *
+ * Safari zoomt die Seite hinein, sobald ein fokussiertes Feld kleiner als 16px
+ * ist – und zoomt danach NICHT von selbst zurück. Die App gestaltet Felder aber
+ * durchgehend mit `text-sm` (14px), weshalb das überall auftrat: Zählerstand,
+ * Tarif, Anmeldung, Onboarding, Feedback.
+ *
+ * Deshalb hier zentral statt in 17 Komponenten. Nur auf echten Touch-Geräten,
+ * damit die kompakte Optik am Schreibtisch erhalten bleibt.
+ *
+ * Bewusst NICHT über `maximum-scale=1` im Viewport-Meta gelöst: Das verhindert
+ * zwar denselben Zoom, nimmt aber allen Nutzern das manuelle Vergrößern –
+ * inklusive derer, die darauf angewiesen sind.
+ */
+@media (hover: none) and (pointer: coarse) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    font-size: 16px;
+  }
+}
+
+/*
  * Liquid-Glass-Hintergrund.
  * Ruhige Basisfläche pro Theme. Darüber liegen langsam driftende
  * Verlaufs-„Blobs" (.app-backdrop::before / ::after) für lebendige Tiefe.

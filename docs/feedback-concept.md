@@ -164,6 +164,9 @@ dann, wenn der Nutzer ohnehin zu schreiben beginnt.
   Reihenfolge sichtbar, statt sie nur zu hoffen.
 - **Der Zeichenzähler erscheint erst ab 200 verbleibenden Zeichen.** Vorher wäre
   er nur Ballast, der zum Kürzen erzieht.
+- **Der Autofokus greift nur mit Maus/Trackpad.** Auf dem Handy riss er beim
+  Antippen eines Gesichts sofort die Tastatur hoch und schob das halbe Formular
+  aus dem Bild. Dort ist der gesparte Tipp den Sprung nicht wert.
 
 **Bewusst nicht enthalten:** Pflicht-E-Mail, Sterne-Bewertung, NPS-Skala,
 Screenshot-Upload, mehrseitige Formulare.

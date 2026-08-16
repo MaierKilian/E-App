@@ -50,12 +50,17 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
     void track('feedback_opened', { source })
   }, [source])
 
-  // Sobald eine Stimmung gewählt ist, in den Freitext springen – so kostet das
-  // Schreiben keinen zweiten Tipp. Bewusst NICHT schon beim Öffnen: Auf dem
-  // Handy schöbe sich sonst sofort die Tastatur über die Stimmungsauswahl, also
-  // über genau den Schritt, mit dem das Fenster beginnt.
+  // Nach der Stimmungswahl in den Freitext springen – aber nur mit Maus/Trackpad.
+  //
+  // Auf dem Handy war genau das störend: Ein Tipp auf ein Gesicht riss sofort
+  // die Tastatur hoch, schob das halbe Formular aus dem Bild und ließ den
+  // Absenden-Knopf hinter der Browser-Leiste verschwinden. Dort ist ein
+  // gesparter Tipp den Sprung nicht wert; am Schreibtisch kostet der Fokus
+  // dagegen nichts und spart einen Klick.
   useEffect(() => {
-    if (sentiment) textRef.current?.focus()
+    if (!sentiment) return
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+    if (finePointer) textRef.current?.focus()
   }, [sentiment])
 
   // Nach dem Abschicken von selbst schließen – die Bestätigung ist kurz, ein
