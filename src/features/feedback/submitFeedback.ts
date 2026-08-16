@@ -24,6 +24,11 @@ export interface FeedbackInput {
   source: FeedbackSource
   /** Route, auf der das Fenster geöffnet wurde (vom Router, nicht aus window). */
   route: string
+  /**
+   * Darf für Rückfragen geantwortet werden? Nur für angemeldete Nutzer
+   * anbietbar – bei Gästen gibt es keine Adresse.
+   */
+  contactOk: boolean
 }
 
 /**
@@ -78,6 +83,12 @@ export async function submitFeedback(input: FeedbackInput): Promise<void> {
     // Wer – bei Gästen nur die technische ID des anonymen Kontos.
     uid: user.uid,
     isGuest: user.isAnonymous,
+
+    // Rückfragen: Die Adresse wandert nur mit, wenn der Nutzer aktiv zustimmt.
+    // Aus einer Handvoll Textmeldungen werden so ein paar echte Gespräche –
+    // in der Frühphase mehr wert als jede Kennzahl.
+    contactOk: input.contactOk,
+    contactEmail: input.contactOk ? (user.email ?? null) : null,
 
     createdAt: serverTimestamp(),
   })

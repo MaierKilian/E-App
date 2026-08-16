@@ -6,6 +6,7 @@ import type { LucideIcon } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { OptionChip } from '@/components/ui/OptionChip'
 import { useFeedbackStore, type FeedbackSource } from '@/store/feedbackStore'
+import { useUser } from '@/store/authStore'
 import { track } from '@/features/analytics/analytics'
 import {
   CATEGORIES,
@@ -22,6 +23,9 @@ const SENTIMENT_ICONS: Record<Sentiment, LucideIcon> = {
   good: Smile,
 }
 
+/** Ab hier wird der Zeichenzähler eingeblendet (vorher nur Ballast). */
+const COUNTER_THRESHOLD = FEEDBACK_TEXT_LIMIT - 200
+
 type Phase = 'form' | 'sending' | 'done' | 'error'
 
 /**
@@ -29,21 +33,16 @@ type Phase = 'form' | 'sending' | 'done' | 'error'
  * `Modal` rendert seine Kinder nur im geöffneten Zustand, dadurch startet das
  * Formular bei jedem Öffnen von selbst leer – ganz ohne Zurücksetz-Effekt.
  */
-interface FeedbackFormProps {
-  source: FeedbackSource
-  onClose: () => void
-  /** Meldet den Erfolg nach oben, damit die Überschrift mitwechselt. */
-  onSubmitted: () => void
-}
-
 function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
   const { t } = useTranslation()
   const location = useLocation()
+  const user = useUser()
   const markSubmitted = useFeedbackStore((s) => s.markSubmitted)
 
   const [sentiment, setSentiment] = useState<Sentiment | null>(null)
   const [category, setCategory] = useState<FeedbackCategory | null>(null)
   const [text, setText] = useState('')
+  const [contactOk, setContactOk] = useState(false)
   const [phase, setPhase] = useState<Phase>('form')
   const textRef = useRef<HTMLTextAreaElement>(null)
 
@@ -63,7 +62,7 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
   // zusätzlicher Klick wäre nur Arbeit ohne Aussage.
   useEffect(() => {
     if (phase !== 'done') return
-    const timer = window.setTimeout(onClose, 1800)
+    const timer = window.setTimeout(onClose, 2200)
     return () => window.clearTimeout(timer)
   }, [phase, onClose])
 
@@ -71,12 +70,20 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
     if (!sentiment || phase === 'sending') return
     setPhase('sending')
     try {
-      await submitFeedback({ sentiment, category, text, source, route: location.pathname })
+      await submitFeedback({
+        sentiment,
+        category,
+        text,
+        source,
+        route: location.pathname,
+        contactOk,
+      })
       markSubmitted()
       void track('feedback_submitted', {
         sentiment,
         category: category ?? 'none',
         hasText: text.trim().length > 0,
+        contactOk,
       })
       setPhase('done')
       onSubmitted()
@@ -93,15 +100,20 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
         <span className="grid h-12 w-12 place-items-center rounded-full bg-primary/10 text-primary">
           <CheckCircle2 className="h-6 w-6" />
         </span>
-        <p className="text-sm text-muted">{t('feedback.thanksBody')}</p>
+        <p className="text-sm text-muted">
+          {contactOk ? t('feedback.thanksBodyContact') : t('feedback.thanksBody')}
+        </p>
       </div>
     )
   }
 
+  const remaining = FEEDBACK_TEXT_LIMIT - text.length
+
   return (
     <div className="space-y-4">
-      {/* Stimmung – der einzige Pflichtschritt. */}
-      <div className="flex justify-center gap-3">
+      {/* Stimmung – der einzige Pflichtschritt. Beschriftet, weil drei nackte
+          Gesichter offen lassen, was das mittlere bedeutet. */}
+      <div className="grid grid-cols-3 gap-2">
         {SENTIMENTS.map((value) => {
           const Icon = SENTIMENT_ICONS[value]
           const active = sentiment === value
@@ -112,13 +124,16 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
               onClick={() => setSentiment(value)}
               aria-pressed={active}
               aria-label={t(`feedback.sentiment.${value}`)}
-              className={`focus-ring grid h-14 w-14 place-items-center rounded-2xl border transition-[transform,background-color,color] duration-200 active:scale-95 ${
+              className={`focus-ring flex flex-col items-center gap-1 rounded-2xl border px-2 py-2.5 transition-[transform,background-color,color] duration-200 active:scale-95 ${
                 active
-                  ? 'scale-105 border-primary bg-primary/10 text-primary'
+                  ? 'border-primary bg-primary/10 text-primary'
                   : 'border-border text-muted hover:bg-surface-2 hover:text-foreground'
               }`}
             >
               <Icon className="h-7 w-7" strokeWidth={active ? 2.2 : 1.6} />
+              <span className="text-[11px] font-medium leading-none">
+                {t(`feedback.sentimentShort.${value}`)}
+              </span>
             </button>
           )
         })}
@@ -136,10 +151,12 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
         ))}
       </div>
 
-      {/* Freitext – optional, aber das eigentlich Wertvolle. */}
-      <div>
-        <label htmlFor="feedback-text" className="sr-only">
-          {t('feedback.textLabel')}
+      {/* Die eigentliche Frage. Sie richtet sich nach der Stimmung: „Was hat
+          dich gestört?" bringt bei einem zufriedenen Nutzer nichts, und eine
+          allgemeine Frage bringt bei niemandem etwas. */}
+      <div className="space-y-1.5">
+        <label htmlFor="feedback-text" className="block text-sm font-semibold text-foreground">
+          {sentiment ? t(`feedback.ask.${sentiment}`) : t('feedback.ask.none')}
         </label>
         <textarea
           id="feedback-text"
@@ -147,10 +164,36 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
           value={text}
           onChange={(e) => setText(e.target.value.slice(0, FEEDBACK_TEXT_LIMIT))}
           rows={4}
-          placeholder={t('feedback.placeholder')}
-          className="w-full resize-none rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+          disabled={!sentiment}
+          placeholder={sentiment ? t(`feedback.placeholder.${sentiment}`) : ''}
+          className="w-full resize-none rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground transition-opacity focus:outline-none focus:ring-2 focus:ring-primary/40 disabled:opacity-50"
         />
+        {remaining <= FEEDBACK_TEXT_LIMIT - COUNTER_THRESHOLD && (
+          <p className="text-right text-[11px] text-muted">
+            {t('feedback.remaining', { count: remaining })}
+          </p>
+        )}
       </div>
+
+      {/* Rückfragen: nur für Angemeldete – bei Gästen gibt es keine Adresse. */}
+      {user?.email && (
+        <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-border bg-surface-2/40 px-3 py-2.5">
+          <input
+            type="checkbox"
+            checked={contactOk}
+            onChange={(e) => setContactOk(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--primary)]"
+          />
+          <span className="min-w-0">
+            <span className="block text-xs font-medium text-foreground">
+              {t('feedback.contact.label')}
+            </span>
+            <span className="block text-[11px] leading-snug text-muted">
+              {t('feedback.contact.hint', { email: user.email })}
+            </span>
+          </span>
+        </label>
+      )}
 
       <p className="flex items-start gap-1.5 text-[11px] leading-snug text-muted">
         <Info className="mt-px h-3.5 w-3.5 shrink-0" />
@@ -167,7 +210,7 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
         type="button"
         onClick={() => void handleSubmit()}
         disabled={!sentiment || phase === 'sending'}
-        className="w-full rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+        className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {phase === 'sending' ? t('feedback.sending') : t('feedback.submit')}
       </button>
@@ -175,14 +218,21 @@ function FeedbackForm({ source, onClose, onSubmitted }: FeedbackFormProps) {
   )
 }
 
+interface FeedbackFormProps {
+  source: FeedbackSource
+  onClose: () => void
+  /** Meldet den Erfolg nach oben, damit die Überschrift mitwechselt. */
+  onSubmitted: () => void
+}
+
 /**
  * Das Feedback-Fenster. Genau ein Exemplar hängt im `Layout`; geöffnet wird es
  * über `useFeedbackStore().openFeedback(source)` – aus der Kopfzeile, dem
  * Konto-Menü, den Einstellungen oder (Phase 2) einer automatischen Nachfrage.
  *
- * Bewusst kurz gehalten: Stimmung (ein Klick, allein schon auswertbar),
- * optionale Einordnung, optionaler Freitext. Jedes zusätzliche Pflichtfeld
- * kostet spürbar Beteiligung – siehe docs/feedback-concept.md, §1 und §3.
+ * Aufbau in drei Schritten, siehe docs/feedback-concept.md §3: Stimmung (ein
+ * Klick, allein schon auswertbar) → optionale Einordnung → Freitext unter einer
+ * Frage, die sich nach der Stimmung richtet.
  */
 export function FeedbackModal() {
   const { t } = useTranslation()

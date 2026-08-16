@@ -214,6 +214,9 @@ async function claimMailQuota() {
 /** Baut den Mailtext: Freitext zuerst, Kontext darunter. */
 function buildMailBody(data, feedbackId) {
   const context = [
+    // Ganz nach oben: Wer geantwortet werden darf, ist die wichtigste
+    // Handlungsanweisung der ganzen Mail.
+    ['Rückfragen erlaubt', data.contactOk ? `JA → ${data.contactEmail || 'ohne Adresse'}` : 'nein'],
     ['Seite', data.route],
     ['Version', data.appVersion],
     ['Sprache', data.language],
@@ -261,7 +264,10 @@ exports.onFeedbackCreated = onDocumentCreated(
 
     const sentiment = SENTIMENT_LABEL[data.sentiment] || data.sentiment || '–'
     const category = CATEGORY_LABEL[data.category] || 'ohne Einordnung'
-    const subject = `[E-App] ${sentiment} · ${category} · ${data.route || '/'}`
+    // Ein „✉" im Betreff macht die Feedbacks sichtbar, bei denen sich eine
+    // Antwort lohnt – ohne die Mail öffnen zu müssen.
+    const reply = data.contactOk ? '✉ ' : ''
+    const subject = `[E-App] ${reply}${sentiment} · ${category} · ${data.route || '/'}`
 
     try {
       const response = await fetch('https://api.resend.com/emails', {

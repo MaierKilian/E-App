@@ -1744,25 +1744,51 @@
   "feedback": {
     "open": "Give feedback",
     "short": "Feedback",
-    "title": "What was missing or annoying?",
+    "title": "How was it for you?",
     "settingsHint": "Criticism and ideas help us most",
     "sentiment": {
       "bad": "Frustrating",
       "neutral": "It was okay",
       "good": "Worked well"
     },
+    "sentimentShort": {
+      "bad": "Poor",
+      "neutral": "Okay",
+      "good": "Good"
+    },
     "category": {
       "bug": "Bug",
       "idea": "Idea",
       "other": "Other"
     },
+    "ask": {
+      "none": "Pick above how it went for you.",
+      "bad": "What bothered you?",
+      "neutral": "What is still missing?",
+      "good": "What helped – and what would you improve next?"
+    },
+    "placeholder": {
+      "bad": "What happened, and what did you expect instead?",
+      "neutral": "What would have to change for you to recommend it?",
+      "good": "What worked well? And what is still missing?"
+    },
+    "remaining": "{{count}} characters left",
+    "contact": {
+      "label": "You may contact me with follow-up questions",
+      "hint": "We only write to {{email}} if we genuinely need to ask something."
+    },
+    "discover": {
+      "title": "New: Feedback",
+      "body": "Tell us anytime what you notice – we read every message.",
+      "ack": "Got it"
+    },
     "textLabel": "Your feedback",
-    "placeholder": "What did you notice? The more specific, the better.",
     "contextHint": "Page, app version and device are sent along automatically.",
     "submit": "Send",
     "sending": "Sending …",
     "thanksTitle": "Thank you!",
     "thanksBody": "We read every single message.",
+    "thanksBodyContact": "We read every message and will get back to you if anything is unclear.",
     "error": "That didn't work. Please try again."
   },
   "demo": {

@@ -1744,25 +1744,51 @@
   "feedback": {
     "open": "Feedback geben",
     "short": "Feedback",
-    "title": "Was hat gefehlt oder gestört?",
+    "title": "Wie war es für dich?",
     "settingsHint": "Kritik und Ideen helfen uns am meisten",
     "sentiment": {
       "bad": "Hat mich gestört",
       "neutral": "Geht so",
       "good": "Hat gut geklappt"
     },
+    "sentimentShort": {
+      "bad": "Schlecht",
+      "neutral": "Geht so",
+      "good": "Gut"
+    },
     "category": {
       "bug": "Fehler",
       "idea": "Idee",
       "other": "Sonstiges"
     },
+    "ask": {
+      "none": "Wähle oben, wie es für dich war.",
+      "bad": "Was hat dich gestört?",
+      "neutral": "Was fehlt dir noch?",
+      "good": "Was hat geholfen – und was würdest du als Nächstes verbessern?"
+    },
+    "placeholder": {
+      "bad": "Was ist passiert, und was hattest du stattdessen erwartet?",
+      "neutral": "Was müsste sich ändern, damit du es weiterempfehlen würdest?",
+      "good": "Was hat gut funktioniert? Und was fehlt dir noch?"
+    },
+    "remaining": "Noch {{count}} Zeichen",
+    "contact": {
+      "label": "Ich bin für Rückfragen erreichbar",
+      "hint": "Wir schreiben nur bei echten Rückfragen an {{email}}."
+    },
+    "discover": {
+      "title": "Neu: Feedback",
+      "body": "Sag uns hier jederzeit, was dir auffällt – wir lesen jede Rückmeldung.",
+      "ack": "Verstanden"
+    },
     "textLabel": "Dein Feedback",
-    "placeholder": "Was ist dir aufgefallen? Je konkreter, desto besser.",
     "contextHint": "Seite, App-Version und Gerät werden automatisch mitgesendet.",
     "submit": "Absenden",
     "sending": "Wird gesendet …",
     "thanksTitle": "Danke!",
     "thanksBody": "Wir lesen jedes Feedback.",
+    "thanksBodyContact": "Wir lesen jedes Feedback und melden uns, falls wir Rückfragen haben.",
     "error": "Das hat leider nicht geklappt. Bitte versuch es noch einmal."
   },
   "demo": {

@@ -80,6 +80,22 @@ kommt nicht in Frage.
 Manche Nutzer suchen so etwas reflexhaft in den Einstellungen. Das abzufangen
 sind wenige Zeilen und erhöht die Trefferquote spürbar.
 
+### 2.3 Einmaliger Entdeck-Hinweis
+
+Ein bewusst ruhiger Knopf hat einen Preis: Er wird übersehen. Deshalb zeigt der
+Knopf **einmal pro Nutzer** eine kleine Sprechblase darunter – „Neu: Feedback ·
+Sag uns hier jederzeit, was dir auffällt" mit einem „Verstanden"-Knopf.
+
+- Gespeichert als `hintSeen` im `feedbackStore`, erscheint also genau einmal.
+- Erscheint **nicht** in Onboarding, Anmeldung oder Beitritt – dort steckt der
+  Nutzer mitten in einer Aufgabe.
+- 1,5 Sekunden Verzögerung, damit er nicht in den Seitenaufbau platzt.
+- Wer den Knopf von sich aus drückt, hat den Hinweis nicht mehr nötig: Er gilt
+  dann als gesehen.
+
+Bewusst **kein Modal**: Ein Overlay für ein Nebenangebot wäre die aufdringlichste
+mögliche Lösung für das kleinste Problem.
+
 ### 2.3 Verworfen
 
 - **Floating Action Button unten rechts.** Kollidiert mobil mit der BottomNav
@@ -91,19 +107,27 @@ sind wenige Zeilen und erhöht die Trefferquote spürbar.
 
 ## 3. Das Formular
 
-Ein Modal (`ui/Modal.tsx`) mit genau drei Elementen:
+Ein Modal (`ui/Modal.tsx`) mit genau drei Schritten:
 
 ```
 ┌─────────────────────────────────────────┐
-│  Was hat gefehlt oder gestört?      [×] │
+│  Wie war es für dich?               [×] │
 │                                         │
-│      ☹️        😐        🙂             │   ← 1 Klick, Pflicht
+│   ┌──────┐  ┌──────┐  ┌──────┐          │
+│   │  ☹️   │  │  😐  │  │  🙂  │          │   ← 1 Klick, Pflicht
+│   │Schlecht│ │Geht so│ │ Gut │          │      MIT Beschriftung
+│   └──────┘  └──────┘  └──────┘          │
 │                                         │
 │  [ Fehler ] [ Idee ] [ Sonstiges ]      │   ← 1 Klick, optional
 │                                         │
+│  Was hat dich gestört?                  │   ← Frage folgt der Stimmung
 │  ┌───────────────────────────────────┐  │
-│  │ (Autofokus, optional)             │  │   ← Freitext
+│  │ Was ist passiert, und was hattest │  │   ← Platzhalter ebenfalls
+│  │ du stattdessen erwartet?          │  │
 │  └───────────────────────────────────┘  │
+│                                         │
+│  ☐ Ich bin für Rückfragen erreichbar    │   ← nur für Angemeldete
+│    Wir schreiben nur … an dich@mail.de  │
 │                                         │
 │  ℹ️ Seite, App-Version und Gerät werden │
 │     automatisch mitgesendet.            │
@@ -111,6 +135,35 @@ Ein Modal (`ui/Modal.tsx`) mit genau drei Elementen:
 │              [    Absenden    ]         │
 └─────────────────────────────────────────┘
 ```
+
+### Warum die Frage der Stimmung folgt
+
+**Die wichtigste Einzelentscheidung im Dialog.** Eine feste Frage passt
+höchstens einem Drittel der Nutzer:
+
+| Stimmung | Frage | Platzhalter |
+|---|---|---|
+| ☹️ | Was hat dich gestört? | Was ist passiert, und was hattest du stattdessen erwartet? |
+| 😐 | Was fehlt dir noch? | Was müsste sich ändern, damit du es weiterempfehlen würdest? |
+| 🙂 | Was hat geholfen – und was würdest du als Nächstes verbessern? | Was hat gut funktioniert? Und was fehlt dir noch? |
+
+„Was hat dich gestört?" bringt bei einem zufriedenen Nutzer nichts – der
+schreibt dann gar nichts. Eine allgemeine Frage („Dein Feedback") bringt bei
+niemandem etwas, weil sie keine Richtung vorgibt. Auch die 🙂-Variante fragt
+bewusst nach dem nächsten Schritt, statt sich Lob abzuholen.
+
+Der Fensteltitel bleibt dagegen neutral (**„Wie war es für dich?"**) und passt
+damit zum ersten Schritt – der Stimmungswahl. Die scharfe Frage erscheint genau
+dann, wenn der Nutzer ohnehin zu schreiben beginnt.
+
+### Weitere Entscheidungen
+
+- **Die Gesichter sind beschriftet.** Drei nackte Symbole lassen offen, was das
+  mittlere bedeutet – gerade auf dem Handy.
+- **Das Textfeld ist gesperrt, bis eine Stimmung gewählt ist.** Es macht die
+  Reihenfolge sichtbar, statt sie nur zu hoffen.
+- **Der Zeichenzähler erscheint erst ab 200 verbleibenden Zeichen.** Vorher wäre
+  er nur Ballast, der zum Kürzen erzieht.
 
 **Bewusst nicht enthalten:** Pflicht-E-Mail, Sterne-Bewertung, NPS-Skala,
 Screenshot-Upload, mehrseitige Formulare.
@@ -120,12 +173,23 @@ Screenshot-Upload, mehrseitige Formulare.
 Bei unter ~100 Nutzern ist die Kennzahl statistisch wertlos, kostet aber einen
 kompletten Schritt im Ablauf. In der Frühphase zählt ausschließlich Text.
 
+### Rückfragen – der größte Hebel
+
+**Checkbox „Ich bin für Rückfragen erreichbar"**, nur für angemeldete Nutzer
+(bei Gästen gibt es keine Adresse). Nutzt die vorhandene Konto-Mail, kein Tippen
+nötig. Aus einer Handvoll Textmeldungen werden so ein paar echte Gespräche – in
+der Frühphase mehr wert als jede Kennzahl.
+
+Damit das im Alltag nicht untergeht, zieht sich die Zustimmung durch die ganze
+Kette: Sie steht als **erste Zeile im Mail-Kontext**, und der Betreff bekommt
+ein **`✉`** vorangestellt. So ist im Postfach ohne Öffnen sichtbar, wo eine
+Antwort möglich ist.
+
 ### Nach dem Absenden
 
-- Bestätigung: „Danke – wir lesen jedes Feedback." Kurz, dann Modal schließen.
-- **Checkbox „Für Rückfragen erreichbar"** (nutzt die vorhandene Konto-Mail,
-  kein Tippen nötig). Aus 20 Textfeedbacks werden so ein paar echte Gespräche –
-  in der Frühphase mehr wert als jede Kennzahl.
+Kurze Bestätigung, dann schließt das Fenster von selbst. Der Text richtet sich
+danach, ob Rückfragen erlaubt wurden – wer zugestimmt hat, soll wissen, dass
+tatsächlich jemand schreiben könnte.
 
 ---
 
@@ -268,7 +332,7 @@ Ereignisse über das vorhandene `track()`:
 | Event | Parameter |
 |---|---|
 | `feedback_opened` | `source` |
-| `feedback_submitted` | `sentiment`, `category`, `hasText` |
+| `feedback_submitted` | `sentiment`, `category`, `hasText`, `contactOk` |
 | `feedback_dismissed` | `source`, `dismissCount` |
 
 **Zwei Regeln:**
@@ -365,6 +429,9 @@ in einer serverlosen Umgebung anfälliger.
 - [x] i18n-Strings in `de.json` **und** `en.json`
 - [x] Analytics-Events (§7)
 - [x] Cloud Function `onFeedbackCreated` + Mailversand (§8)
+- [x] Nachschärfung nach dem ersten Live-Test: stimmungsabhängige Frage,
+      beschriftete Gesichter, Rückfrage-Checkbox, einmaliger Entdeck-Hinweis
+      (§2.3, §3)
 
 **Voraussetzungen außerhalb des Codes** (nur vom Projekt-Inhaber machbar,
 Anleitung in `docs/feedback-mail-setup.md`):
@@ -378,7 +445,8 @@ Anleitung in `docs/feedback-mail-setup.md`):
 - [ ] Zweiter Auslöser (3. Versuch / ~7 Tage) als Modal
 
 ### Phase 3 – Komfort
-- [ ] Checkbox „Für Rückfragen erreichbar" (§3)
+- [x] Checkbox „Für Rückfragen erreichbar" (§3) – vorgezogen, weil sie den
+      Ertrag pro Rückmeldung am stärksten erhöht
 - [ ] Tages-Digest statt Einzelmails, sobald das Volumen steigt (§8.1)
 - [ ] *Optional, bewusst zurückgestellt:* Screenshot-Anhang – `html2canvas`,
       Dateigröße und Datenschutz für vergleichsweise wenig Ertrag

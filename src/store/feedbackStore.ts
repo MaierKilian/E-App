@@ -33,6 +33,8 @@ interface FeedbackState {
   dismissCount: number
   /** Wie oft wurde insgesamt Feedback abgeschickt? */
   submitCount: number
+  /** Wurde der einmalige Hinweis auf den Feedback-Knopf schon gezeigt? */
+  hintSeen: boolean
 
   /** Wurde in dieser Sitzung schon von selbst gefragt? (nicht gespeichert) */
   promptedThisSession: boolean
@@ -49,6 +51,8 @@ interface FeedbackState {
   markDismissed: () => void
   /** Feedback wurde erfolgreich abgeschickt. */
   markSubmitted: () => void
+  /** Der einmalige Hinweis auf den Knopf wurde gesehen. */
+  markHintSeen: () => void
   resetFeedbackHistory: () => void
 }
 
@@ -70,6 +74,7 @@ export const useFeedbackStore = create<FeedbackState>()(
       lastSubmittedAt: null,
       dismissCount: 0,
       submitCount: 0,
+      hintSeen: false,
 
       promptedThisSession: false,
       open: false,
@@ -82,8 +87,15 @@ export const useFeedbackStore = create<FeedbackState>()(
         set((s) => ({ dismissCount: s.dismissCount + 1, lastPromptedAt: Date.now() })),
       markSubmitted: () =>
         set((s) => ({ lastSubmittedAt: Date.now(), submitCount: s.submitCount + 1 })),
+      markHintSeen: () => set({ hintSeen: true }),
       resetFeedbackHistory: () =>
-        set({ lastPromptedAt: null, lastSubmittedAt: null, dismissCount: 0, submitCount: 0 }),
+        set({
+          lastPromptedAt: null,
+          lastSubmittedAt: null,
+          dismissCount: 0,
+          submitCount: 0,
+          hintSeen: false,
+        }),
     }),
     {
       name: 'eapp-feedback',
@@ -94,6 +106,7 @@ export const useFeedbackStore = create<FeedbackState>()(
         lastSubmittedAt: s.lastSubmittedAt,
         dismissCount: s.dismissCount,
         submitCount: s.submitCount,
+        hintSeen: s.hintSeen,
       }),
     },
   ),
