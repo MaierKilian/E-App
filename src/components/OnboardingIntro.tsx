@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Droplet, TrendingUp, Lightbulb, ChevronRight, ChevronLeft, UserPlus, TrendingDown } from 'lucide-react'
@@ -29,9 +29,13 @@ export function OnboardingIntro() {
   // Die Komponente bleibt dauerhaft gemountet (rendert nur `null`, wenn gesehen).
   // Beim (Wieder-)Öffnen – auch über „Einführung erneut ansehen" in den
   // Einstellungen – immer beim ersten Beat starten statt beim zuletzt gezeigten.
-  useEffect(() => {
+  // Bewusst während des Renderns statt im Effekt: So erscheint nie kurz der alte
+  // Beat, und es entsteht kein zweiter Renderdurchlauf nach dem Malen.
+  const [seenBefore, setSeenBefore] = useState(introSeen)
+  if (seenBefore !== introSeen) {
+    setSeenBefore(introSeen)
     if (!introSeen) setIndex(0)
-  }, [introSeen])
+  }
 
   // Auf der Landing Page („/") nie anzeigen – dort ist die Seite selbst das
   // Value-Intro; das Vollbild-Overlay würde sie sonst verdecken.

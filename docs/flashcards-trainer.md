@@ -277,8 +277,7 @@ zerstören Lernstände über Wochen.
 - `npm test` (Vitest, `tests/unit/`) läuft ohne Emulator in Sekunden;
   `npm run test:rules` bleibt für die Firestore-Regeln
 - `.github/workflows/ci.yml` prüft Push und Pull-Request: Tests, Typprüfung,
-  Build. Lint ist noch nicht blockierend (drei Altlast-Verstöße in der
-  bestehenden Oberfläche)
+  Build und Lint – alle blockierend
 - Getestet werden Zusagen, nicht Zahlen: Monotonie (bessere Note ⇒ nie kürzeres
   Intervall), Rückfall holt binnen eines Tages zurück, Obergrenzen, Idempotenz
   und Kommutativität des Log-Merges, inkrementelle Ableitung = vollständige

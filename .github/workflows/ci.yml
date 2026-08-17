@@ -26,10 +26,6 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    # Noch nicht blockierend: In der bestehenden Oberfläche stehen drei
-    # Altlast-Verstöße (setState im Effekt, Fast-Refresh-Export). Sobald die
-    # bereinigt sind, kann continue-on-error entfallen.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

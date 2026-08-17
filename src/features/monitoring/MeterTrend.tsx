@@ -30,11 +30,3 @@ export function TrendBadge({ trend, compact }: { trend: ConsumptionTrend; compac
     </span>
   )
 }
-
-/** Lesbarer Text „heute / vor N Tagen abgelesen" (oder null ohne Ablesung). */
-export function useLastReadingText(days: number | undefined): string | null {
-  const { t } = useTranslation()
-  if (days === undefined) return null
-  if (days === 0) return t('monitoring.overview.readToday')
-  return t('monitoring.overview.readDaysAgo', { count: days })
-}

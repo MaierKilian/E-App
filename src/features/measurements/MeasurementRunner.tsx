@@ -58,12 +58,17 @@ export function MeasurementRunner() {
   const [justSaved, setJustSaved] = useState<SavedState | null>(null)
 
   // Wechselt der Raum (z. B. „auto weiter" durch die Räume), Ablauf zurücksetzen.
-  useEffect(() => {
+  // Bewusst während des Renderns statt im Effekt: Sonst zeigt der neue Raum für
+  // einen Bildaufbau lang noch den Stand des vorherigen.
+  const runKey = `${roomKey ?? ''}|${skipIntro}`
+  const [activeRunKey, setActiveRunKey] = useState(runKey)
+  if (activeRunKey !== runKey) {
+    setActiveRunKey(runKey)
     setPhase(skipIntro ? 'run' : 'intro')
     setMaxReached(skipIntro ? 1 : 0)
     setOutcome(null)
     setJustSaved(null)
-  }, [roomKey, skipIntro])
+  }
 
   // Erfolgs-Zwischenschritt: nach kurzer Anzeige automatisch weiter.
   useEffect(() => {

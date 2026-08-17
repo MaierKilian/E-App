@@ -6,7 +6,8 @@ import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
 import { ENERGY_META } from './energyConfig'
 import { sortByDate, consumptionTrend, daysSinceLastReading } from './readings'
 import { Sparkline } from './Sparkline'
-import { TrendBadge, useLastReadingText } from './MeterTrend'
+import { TrendBadge } from './MeterTrend'
+import { useLastReadingText } from './useLastReadingText'
 
 /**
  * Beispiel-Verlauf (monoton steigende Zählerstände) für die Ghost-Vorschau im
