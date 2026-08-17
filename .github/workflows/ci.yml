@@ -1,0 +1,40 @@
+name: CI
+
+# Prüft jeden Push und jede Pull-Request: Unit-Tests, Typprüfung, Build.
+# Läuft absichtlich getrennt von den Deploy-Workflows, damit ein roter Test die
+# Veröffentlichung nicht unbemerkt mitzieht – und damit Feature-Branches
+# überhaupt geprüft werden (die Deploys laufen nur auf main).
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Reine Logik-Tests (Karteikarten-Engine u. a.), kein Emulator nötig.
+      - run: npm test
+      # `npm run build` führt zugleich die Typprüfung aus (tsc -b && vite build).
+      - run: npm run build
+
+  lint:
+    runs-on: ubuntu-latest
+    # Noch nicht blockierend: In der bestehenden Oberfläche stehen drei
+    # Altlast-Verstöße (setState im Effekt, Fast-Refresh-Export). Sobald die
+    # bereinigt sind, kann continue-on-error entfallen.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint

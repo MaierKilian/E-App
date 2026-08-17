@@ -10,6 +10,8 @@
     "deploy:firebase": "npm run build:firebase && firebase deploy --only hosting",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test": "vitest run tests/unit",
+    "test:watch": "vitest tests/unit",
     "test:rules": "firebase emulators:exec --only firestore --project eapp-rules-tests \"vitest run tests/firestore.rules.test.ts\""
   },
   "dependencies": {

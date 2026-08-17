@@ -1,6 +1,6 @@
 // Karteikarten für den HTW-GEIT-Wissensbereich (Phase 1).
 //
-// Datenmodell nach docs/flashcards-roadmap.md (Format „Hybrid": Bild UND/ODER
+// Datenmodell nach docs/flashcards-trainer.md (Format „Hybrid": Bild UND/ODER
 // Text). In Phase 1 sind die Karten TEXT-basiert und bewusst als BEISPIEL
 // gekennzeichnet (`placeholder: true`) – sie zeigen Aufbau und Bedienung, bevor
 // die echten GoodNotes-Karten (als Bilder) eingepflegt werden.
