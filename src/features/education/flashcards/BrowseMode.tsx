@@ -1,17 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Check, ChevronLeft, ChevronRight, RotateCw, X } from 'lucide-react'
+import { FlipCard } from './CardFace'
 import type { FlashcardSet } from './flashcardsContent'
 
 /**
- * Fokussierter Vollbild-Lernmodus für ein Karteikartenset.
+ * Blätter-Modus: ein Set der Reihe nach durchsehen, ohne Bewertung und ohne
+ * Wirkung auf den Zeitplan.
  *
- * Bewusst ablenkungsfrei: eigenes Overlay über der gesamten App (kein Header,
- * keine Chips, keine Bottom-Nav). Große Karte in der Bildschirmmitte, antippen
- * zum 3D-Umdrehen, Wischen oder Pfeile zum Blättern. Phase 1 ohne Bewertung –
- * die Selbstbewertung (Nochmal/Gut …) und der Fortschritt folgen in Phase 2.
+ * Bewusst als eigener Modus neben dem Trainer erhalten: Vor einer Klausur will
+ * man ein Set manchmal einfach überfliegen, ohne dass jede Karte den
+ * Wiederholungsplan verschiebt. Wer lernen will, nimmt `StudySession`.
  */
-export function StudyMode({ set, onExit }: { set: FlashcardSet; onExit: () => void }) {
+export function BrowseMode({ set, onExit }: { set: FlashcardSet; onExit: () => void }) {
   const { t } = useTranslation()
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
@@ -172,17 +173,7 @@ export function StudyMode({ set, onExit }: { set: FlashcardSet; onExit: () => vo
             onTouchStart={onTouchStart}
             onTouchEnd={onTouchEnd}
           >
-            <button
-              type="button"
-              onClick={flip}
-              aria-label={t('education.flashcards.flip')}
-              className="flip-card focus-ring block h-full max-h-[60vh] w-full max-w-xl"
-            >
-              <div className={`flip-inner ${flipped ? 'is-flipped' : ''}`}>
-                <CardFace side="front" text={card.frontText ?? ''} tags={card.tags} />
-                <CardFace side="back" text={card.backText ?? ''} />
-              </div>
-            </button>
+            <FlipCard card={card} flipped={flipped} onFlip={flip} />
           </div>
 
           <p className="text-center text-xs text-muted">{t('education.flashcards.tapHint')}</p>
@@ -211,48 +202,6 @@ export function StudyMode({ set, onExit }: { set: FlashcardSet; onExit: () => vo
             </button>
           </div>
         </>
-      )}
-    </div>
-  )
-}
-
-/** Eine Kartenseite (Vorder-/Rückseite). Text zentriert, scrollbar bei Bedarf. */
-function CardFace({
-  side,
-  text,
-  tags,
-}: {
-  side: 'front' | 'back'
-  text: string
-  tags?: string[]
-}) {
-  const { t } = useTranslation()
-  return (
-    <div
-      className={`flip-face ${side === 'back' ? 'flip-face-back' : ''} glass flex flex-col rounded-3xl p-6`}
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-semibold uppercase tracking-wide text-muted">
-          {side === 'front' ? t('education.flashcards.front') : t('education.flashcards.back')}
-        </span>
-        <RotateCw className="h-4 w-4 text-muted" />
-      </div>
-      <div className="flex flex-1 items-center justify-center overflow-y-auto py-4">
-        <p className="text-center text-lg font-medium leading-relaxed text-foreground">{text}</p>
-      </div>
-      {tags && tags.length > 0 ? (
-        <div className="flex flex-wrap justify-center gap-1.5">
-          {tags.map((tag) => (
-            <span
-              key={tag}
-              className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-medium text-muted"
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-      ) : (
-        <span className="h-5" aria-hidden />
       )}
     </div>
   )

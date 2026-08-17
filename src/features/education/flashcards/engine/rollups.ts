@@ -76,6 +76,42 @@ export function dailyRollups(entries: LogEntry[], cutoffHour: number): Record<st
   return out
 }
 
+/**
+ * Schreibt neue Einträge in bestehende Aggregate fort – ohne alles neu zu
+ * rechnen. `knownCardIds` sind die Karten, die vor diesen Einträgen schon
+ * bewertet waren; nur daran lässt sich „erstmals bewertet" exakt erkennen.
+ * Die Menge wird dabei ergänzt, damit mehrere Aufrufe hintereinander stimmen.
+ */
+export function applyToRollups(
+  rollups: Record<string, DayRollup>,
+  entries: LogEntry[],
+  knownCardIds: Set<string>,
+  cutoffHour: number,
+): Record<string, DayRollup> {
+  const out = { ...rollups }
+
+  for (const entry of [...entries].sort((a, b) => a.ts - b.ts)) {
+    if (entry.kind !== 'review') continue
+    const day = dayKey(entry.ts, cutoffHour)
+    const prev = out[day] ?? emptyRollup(day)
+    const isFirstEver = !knownCardIds.has(entry.cardId)
+    if (isFirstEver) knownCardIds.add(entry.cardId)
+
+    out[day] = {
+      ...prev,
+      reviews: prev.reviews + 1,
+      passed: prev.passed + (isPassed(entry.grade) ? 1 : 0),
+      correct: prev.correct + (isCorrect(entry.grade) ? 1 : 0),
+      again: prev.again + (entry.grade === 1 ? 1 : 0),
+      cram: prev.cram + (entry.mode === 'cram' ? 1 : 0),
+      newCards: prev.newCards + (isFirstEver ? 1 : 0),
+      msTotal: prev.msTotal + Math.max(0, entry.msToFlip) + Math.max(0, entry.msToGrade),
+    }
+  }
+
+  return out
+}
+
 /** Serie aufeinanderfolgender Lerntage. */
 export interface StreakInfo {
   current: number

@@ -315,7 +315,7 @@ auf `main` gemäß `CLAUDE.md`).
 | Phase | Inhalt | Ergebnis |
 |---|---|---|
 | **P0** ✅ | Modell, Ereignis-Log (IndexedDB), Scheduler-Schnittstelle + FSRS/SM-2/Leitner, Ableitung, Tages-Aggregate, Test-Setup + CI | Fundament, keine Änderung an der Oberfläche |
-| **P1** | Session-Reducer, Warteschlange, neuer Lernmodus mit drei Knöpfen, Relearning in der Session, Undo, Wiedereinstieg, Abschluss-Screen, `flashcardStore` | Trainer läuft lokal |
+| **P1** ✅ | Session-Reducer, Warteschlange, neuer Lernmodus mit drei Knöpfen, Relearning in der Session, Undo, Wiedereinstieg, Abschluss-Screen, `flashcardStore` | Trainer läuft lokal |
 | **P2** | `/lernen` mit „Heute", Fälligkeits-Zähler in Semester/Modul/Set, Ziel-Ring, Serie | täglich benutzbar |
 | **P3** | Statistik v1: Heatmap, Wiederholungen/Tag, Fälligkeits-Prognose, Quoten, Kartenzustände | Statistik-Seite |
 | **P4** | Presets, Expertenparameter, Simulator-Vorschau, Intervall auf den Knöpfen | Algorithmus anpassbar |
@@ -345,7 +345,32 @@ Kommilitonen zu teilen wirft Moderation und Urheberrecht auf und bleibt außen v
 
 ---
 
-## 13. Was in Phase 0 entstanden ist
+## 13. Was in Phase 1 entstanden ist
+
+| Datei | Inhalt |
+|---|---|
+| `engine/queue.ts` | Warteschlange aus Relearning, Wiederholungen und neuen Karten; Tageslimits, Verschachtelung über Fächer, Sprint- und Schwierig-Filter |
+| `engine/session.ts` | Ablauf als reiner Reducer: umdrehen, bewerten, Wiedervorlage in derselben Runde, Rückgängig, aussetzen, vertagen, Zusammenfassung |
+| `store/flashcardStore.ts` | Einstellungen und laufende Runde in localStorage, abgeleiteter Zustand aus IndexedDB, Schreiben ins Ereignis-Log |
+| `flashcards/StudySession.tsx` | Trainer-Oberfläche: drei Knöpfe mit Intervall-Vorschau, Fortschritt, Tastatur, Abschluss-Screen |
+| `flashcards/BrowseMode.tsx` | bisheriger Blätter-Modus, unverändert erhalten |
+| `flashcards/CardFace.tsx` | geteilte Karte für beide Modi |
+| `flashcards/cardIndex.ts` | Brücke zwischen Karteninhalt und Engine |
+
+Zwei Festlegungen, die beim Bauen entstanden sind:
+
+- **Rückgängig ohne Gegen-Einträge.** Eine Bewertung bleibt genau eine Bewertung
+  lang in der Sitzung liegen und wird erst mit der nächsten endgültig ins Log
+  geschrieben. So bleibt das Log unveränderlich, und höchstens die allerletzte
+  Bewertung ist flüchtig.
+- **Neue Karten verlassen die Runde nicht nach einem „Gewusst".** Sie laufen erst
+  durch die Lernschritte (1 min → 10 min), brauchen also zwei „Gewusst". Neues
+  Material sofort auf Tage zu vertagen wäre der klassische Fehler: Beim ersten
+  Durchgang ist eine Karte gesehen, nicht gelernt.
+
+---
+
+## 14. Was in Phase 0 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -361,18 +386,16 @@ Kommilitonen zu teilen wirft Moderation und Urheberrecht auf und bleibt außen v
 | `engine/log.ts` | Einträge erzeugen, Vereinigungs-Merge, Monatspakete |
 | `engine/time.ts` | Lerntage mit einstellbarer Tagesgrenze |
 | `lib/reviewLog.ts` | IndexedDB-Anbindung mit Rückfallebene |
-| `tests/unit/` | 95 Tests über alle drei Verfahren, Ableitung, Log, Aggregate, Zeit, Parameter |
-| `.github/workflows/ci.yml` | Tests, Typprüfung, Build auf jedem Push |
-
-Noch nichts davon ist an die Oberfläche angeschlossen – das ist Phase 1.
+| `tests/unit/` | Tests über alle drei Verfahren, Ableitung, Log, Aggregate, Zeit, Parameter |
+| `.github/workflows/ci.yml` | Tests, Typprüfung, Build und Lint auf jedem Push |
 
 ---
 
-## 14. Nächster Schritt
+## 15. Nächster Schritt
 
-**Phase 1**: Warteschlange und Session-Reducer, danach der neue Lernmodus mit
-drei Bewertungsknöpfen anstelle des heutigen Blätter-Modus (der als „Blättern"
-erhalten bleibt).
+**Phase 2**: eigene Route `/lernen` mit der „Heute"-Ansicht, Fälligkeits-Zähler
+auf Semester-, Modul- und Set-Ebene, Ziel-Ring und Serie. Damit wird der Trainer
+vom Unterpunkt zum täglichen Einstieg.
 
 Inhaltlich unabhängig davon: ein **Pilot-Set** aus echtem GoodNotes-Material
 (15–30 Karten eines überschaubaren Fachs, Vorder- und Rückseiten als Bilder),

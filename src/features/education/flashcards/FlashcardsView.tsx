@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, ChevronRight, Layers } from 'lucide-react'
+import { ArrowLeft, BookOpen, GraduationCap, Layers } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
-import { StudyMode } from './StudyMode'
+import { BrowseMode } from './BrowseMode'
+import { StudySession } from './StudySession'
+import { cardsOfSet } from './cardIndex'
 import {
   FLASHCARDS_PLACEHOLDER,
   SEMESTERS,
@@ -115,15 +117,17 @@ function ModuleGrid({
   )
 }
 
-/** Ebene 3: Sets eines Moduls – Antippen startet den Lernmodus. */
+/** Ebene 3: Sets eines Moduls – lernen (Trainer) oder nur durchblättern. */
 function ModuleDetail({
   module,
   onBack,
-  onStart,
+  onStudy,
+  onBrowse,
 }: {
   module: FlashcardSubject
   onBack: () => void
-  onStart: (set: FlashcardSet) => void
+  onStudy: (set: FlashcardSet) => void
+  onBrowse: (set: FlashcardSet) => void
 }) {
   const { t } = useTranslation()
   const sets = setsForSubject(module.id)
@@ -135,24 +139,34 @@ function ModuleDetail({
         <h2 className="text-xl font-bold">{module.title}</h2>
         {module.description && <p className="mt-1 text-sm text-muted">{module.description}</p>}
       </div>
-      <div className="glass overflow-hidden rounded-3xl">
-        {sets.map((set, i) => (
-          <button
-            key={set.id}
-            type="button"
-            onClick={() => onStart(set)}
-            className={`focus-ring flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition-colors hover:bg-surface-2/50 ${
-              i > 0 ? 'border-t border-border/60' : ''
-            }`}
-          >
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-medium">{set.title}</span>
-              <span className="mt-0.5 block text-xs text-muted">
+      <div className="space-y-3">
+        {sets.map((set) => (
+          <Card key={set.id} className="space-y-3">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{set.title}</p>
+              <p className="mt-0.5 text-xs text-muted">
                 {t('education.flashcards.cardCount', { count: set.cards.length })}
-              </span>
-            </span>
-            <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
-          </button>
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => onStudy(set)}
+                className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+              >
+                <GraduationCap className="h-4 w-4" />
+                {t('education.flashcards.study')}
+              </button>
+              <button
+                type="button"
+                onClick={() => onBrowse(set)}
+                className="focus-ring flex items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground"
+              >
+                <BookOpen className="h-4 w-4" />
+                {t('education.flashcards.browse')}
+              </button>
+            </div>
+          </Card>
         ))}
       </div>
     </div>
@@ -161,17 +175,23 @@ function ModuleDetail({
 
 /**
  * Karteikarten im HTW-GEIT-Bereich mit Studien-Hierarchie:
- * Semester (Kacheln) → Module (Kacheln) → Sets → Vollbild-Lernmodus.
+ * Semester (Kacheln) → Module (Kacheln) → Sets → Vollbild (Trainer oder Blättern).
  */
 export function FlashcardsView() {
   const [semester, setSemester] = useState<number | null>(null)
   const [module, setModule] = useState<FlashcardSubject | null>(null)
-  const [activeSet, setActiveSet] = useState<FlashcardSet | null>(null)
+  const [studySet, setStudySet] = useState<FlashcardSet | null>(null)
+  const [browseSet, setBrowseSet] = useState<FlashcardSet | null>(null)
 
   let content
   if (module) {
     content = (
-      <ModuleDetail module={module} onBack={() => setModule(null)} onStart={setActiveSet} />
+      <ModuleDetail
+        module={module}
+        onBack={() => setModule(null)}
+        onStudy={setStudySet}
+        onBrowse={setBrowseSet}
+      />
     )
   } else if (semester != null) {
     content = (
@@ -184,7 +204,15 @@ export function FlashcardsView() {
   return (
     <>
       {content}
-      {activeSet && <StudyMode set={activeSet} onExit={() => setActiveSet(null)} />}
+      {studySet && (
+        <StudySession
+          cards={cardsOfSet(studySet.id)}
+          title={studySet.title}
+          scope={studySet.id}
+          onExit={() => setStudySet(null)}
+        />
+      )}
+      {browseSet && <BrowseMode set={browseSet} onExit={() => setBrowseSet(null)} />}
     </>
   )
 }

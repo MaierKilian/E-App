@@ -12,12 +12,14 @@
 
 import type { LogEntry } from '@/features/education/flashcards/engine/types'
 import type { DerivedSnapshot } from '@/features/education/flashcards/engine/derive'
+import type { DayRollup } from '@/features/education/flashcards/engine/rollups'
 
 const DB_NAME = 'eapp-flashcards'
 const DB_VERSION = 1
 const STORE_ENTRIES = 'entries'
 const STORE_META = 'meta'
 const SNAPSHOT_KEY = 'snapshot'
+const ROLLUPS_KEY = 'rollups'
 
 /**
  * Rückfallebene ohne IndexedDB (Server-Rendering, abgeschaltete Speicherung,
@@ -25,7 +27,10 @@ const SNAPSHOT_KEY = 'snapshot'
  * benutzbar, verliert den Fortschritt aber beim Neuladen – besser als ein
  * harter Fehler mitten in einer Lernsession.
  */
-const memory = { entries: new Map<string, LogEntry>(), snapshot: null as DerivedSnapshot | null }
+const memory = {
+  entries: new Map<string, LogEntry>(),
+  meta: {} as Record<string, unknown>,
+}
 let useMemory = false
 
 let dbPromise: Promise<IDBDatabase | null> | null = null
@@ -124,24 +129,42 @@ export async function countEntries(): Promise<number> {
   return result ?? 0
 }
 
-/** Zuletzt gespeicherter abgeleiteter Zustand (reiner Beschleuniger). */
-export async function loadSnapshot(): Promise<DerivedSnapshot | null> {
+/** Beliebigen abgeleiteten Wert lesen (Schnappschuss, Tages-Aggregate). */
+async function loadMeta<T>(key: string): Promise<T | null> {
   const db = await openDb()
-  if (!db) return memory.snapshot
-  const result = await tx<DerivedSnapshot>(db, STORE_META, 'readonly', (store) =>
-    store.get(SNAPSHOT_KEY),
-  )
+  if (!db) return (memory.meta[key] as T) ?? null
+  const result = await tx<T>(db, STORE_META, 'readonly', (store) => store.get(key))
   return result ?? null
 }
 
-/** Abgeleiteten Zustand sichern, damit der nächste Start nicht alles neu rechnet. */
-export async function saveSnapshot(snapshot: DerivedSnapshot): Promise<void> {
+/** Beliebigen abgeleiteten Wert sichern. */
+async function saveMeta(key: string, value: unknown): Promise<void> {
   const db = await openDb()
   if (!db) {
-    memory.snapshot = snapshot
+    memory.meta[key] = value
     return
   }
-  await tx(db, STORE_META, 'readwrite', (store) => store.put(snapshot, SNAPSHOT_KEY))
+  await tx(db, STORE_META, 'readwrite', (store) => store.put(value, key))
+}
+
+/** Zuletzt gespeicherter abgeleiteter Zustand (reiner Beschleuniger). */
+export function loadSnapshot(): Promise<DerivedSnapshot | null> {
+  return loadMeta<DerivedSnapshot>(SNAPSHOT_KEY)
+}
+
+/** Abgeleiteten Zustand sichern, damit der nächste Start nicht alles neu rechnet. */
+export function saveSnapshot(snapshot: DerivedSnapshot): Promise<void> {
+  return saveMeta(SNAPSHOT_KEY, snapshot)
+}
+
+/** Zuletzt gespeicherte Tages-Aggregate. */
+export function loadRollups(): Promise<Record<string, DayRollup> | null> {
+  return loadMeta<Record<string, DayRollup>>(ROLLUPS_KEY)
+}
+
+/** Tages-Aggregate sichern. */
+export function saveRollups(rollups: Record<string, DayRollup>): Promise<void> {
+  return saveMeta(ROLLUPS_KEY, rollups)
 }
 
 /**
@@ -150,7 +173,7 @@ export async function saveSnapshot(snapshot: DerivedSnapshot): Promise<void> {
  */
 export async function clearReviewLog(): Promise<void> {
   memory.entries.clear()
-  memory.snapshot = null
+  memory.meta = {}
   const db = await openDb()
   if (!db) return
   await tx(db, STORE_ENTRIES, 'readwrite', (store) => store.clear())
