@@ -316,7 +316,7 @@ auf `main` gemäß `CLAUDE.md`).
 |---|---|---|
 | **P0** ✅ | Modell, Ereignis-Log (IndexedDB), Scheduler-Schnittstelle + FSRS/SM-2/Leitner, Ableitung, Tages-Aggregate, Test-Setup + CI | Fundament, keine Änderung an der Oberfläche |
 | **P1** ✅ | Session-Reducer, Warteschlange, neuer Lernmodus mit drei Knöpfen, Relearning in der Session, Undo, Wiedereinstieg, Abschluss-Screen, `flashcardStore` | Trainer läuft lokal |
-| **P2** | `/lernen` mit „Heute", Fälligkeits-Zähler in Semester/Modul/Set, Ziel-Ring, Serie | täglich benutzbar |
+| **P2** ✅ | `/lernen` mit „Heute", Fälligkeits-Zähler in Semester/Modul/Set, Ziel-Ring, Serie | täglich benutzbar |
 | **P3** | Statistik v1: Heatmap, Wiederholungen/Tag, Fälligkeits-Prognose, Quoten, Kartenzustände | Statistik-Seite |
 | **P4** | Presets, Expertenparameter, Simulator-Vorschau, Intervall auf den Knöpfen | Algorithmus anpassbar |
 | **P5** | `flashcardSync.ts`, Firestore-Regeln, Offline, Gast→Konto-Übernahme | geräteübergreifend |
@@ -345,7 +345,29 @@ Kommilitonen zu teilen wirft Moderation und Urheberrecht auf und bleibt außen v
 
 ---
 
-## 13. Was in Phase 1 entstanden ist
+## 13. Was in Phase 2 entstanden ist
+
+| Datei | Inhalt |
+|---|---|
+| `flashcards/LearnPage.tsx` | „Heute" unter `/lernen`: Tagesring, Serie, Aufschlüsselung (Nochmal · Wiederholung · Neu), „Jetzt lernen"/„Weiterlernen", Module mit Zählern |
+| `flashcards/useFlashcards.ts` | React-Anbindung: Laden des Lernstands, minütliche Uhr, Fälligkeits-Zähler, Tagesfortschritt, Serie |
+| `engine/queue.ts` | ergänzt um `todayProgress` |
+| `flashcards/FlashcardsView.tsx` | Fälligkeits-Zähler auf Semester-, Modul- und Set-Ebene, angepinnter Einstieg „Heute lernen" |
+
+Eine Festlegung, die ein Test im Browser erzwungen hat: **Karten in den
+Lernschritten zählen als „in Arbeit", nicht als geschafft.** Wer eine neue Karte
+einmal wusste, sieht sie in zehn Minuten wieder – sie sofort abzuhaken würde den
+Tagesfortschritt schönen und ihn später wieder schrumpfen lassen. Die
+Bezugsgröße des Rings ist deshalb „abgehakt + in Arbeit + offen" und bleibt über
+den Tag stabil.
+
+Nicht enthalten und bewusst offen: ein Einstieg von der Startseite oder ein
+sechster Eintrag in der Navigationsleiste. Der Zugang läuft über `/lernen` und
+die angepinnte Karte im Wissensbereich.
+
+---
+
+## 14. Was in Phase 1 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -370,7 +392,7 @@ Zwei Festlegungen, die beim Bauen entstanden sind:
 
 ---
 
-## 14. Was in Phase 0 entstanden ist
+## 15. Was in Phase 0 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -391,11 +413,12 @@ Zwei Festlegungen, die beim Bauen entstanden sind:
 
 ---
 
-## 15. Nächster Schritt
+## 16. Nächster Schritt
 
-**Phase 2**: eigene Route `/lernen` mit der „Heute"-Ansicht, Fälligkeits-Zähler
-auf Semester-, Modul- und Set-Ebene, Ziel-Ring und Serie. Damit wird der Trainer
-vom Unterpunkt zum täglichen Einstieg.
+**Phase 3**: Statistik v1 – Kalender-Heatmap, Wiederholungen je Tag,
+Fälligkeits-Prognose über 30 Tage, beide Quoten und die Verteilung der
+Kartenzustände. Die Datengrundlage dafür (Ereignis-Log und Tages-Aggregate)
+liegt seit Phase 0 bereit.
 
 Inhaltlich unabhängig davon: ein **Pilot-Set** aus echtem GoodNotes-Material
 (15–30 Karten eines überschaubaren Fachs, Vorder- und Rückseiten als Bilder),

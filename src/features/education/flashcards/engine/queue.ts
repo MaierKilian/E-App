@@ -17,7 +17,7 @@ import type { CardState } from './types'
 import { newCardState } from './types'
 import type { SchedulerParams } from './params'
 import { isUnlimitedReviews } from './params'
-import { dayKey } from './time'
+import { dayKey, dayStart } from './time'
 
 /** Eine Karte, wie die Warteschlange sie sieht – Inhalt bleibt außen vor. */
 export interface QueueCard {
@@ -159,6 +159,48 @@ export function dueCounts(input: BuildQueueInput): DueCounts {
     total: relearning + review + fresh,
     backlog,
   }
+}
+
+/** Tagesfortschritt eines Kartenstapels. */
+export interface TodayProgress {
+  /** Heute bewertet und im Tagesrhythmus – für heute wirklich abgehakt. */
+  done: number
+  /**
+   * Heute bewertet, aber noch in den Lernschritten und gerade nicht fällig:
+   * Diese Karten kommen im Lauf des Tages zurück.
+   */
+  inProgress: number
+}
+
+/**
+ * Wie weit ist der Tag mit diesem Stapel?
+ *
+ * Entscheidend ist die Trennung von „abgehakt" und „in Arbeit": Eine neue Karte,
+ * die man einmal gewusst hat, steht in zehn Minuten wieder an – sie als erledigt
+ * zu zählen, würde den Fortschritt schönen und ihn später wieder schrumpfen
+ * lassen. Gezählt wird kartenweise, nicht je Bewertung: Wer eine Karte dreimal
+ * gesehen hat, hat eine Karte geschafft, nicht drei.
+ */
+export function todayProgress(
+  cards: QueueCard[],
+  states: Record<string, CardState>,
+  now: number,
+  cutoffHour: number,
+): TodayProgress {
+  const start = dayStart(now, cutoffHour)
+  let done = 0
+  let inProgress = 0
+
+  for (const card of cards) {
+    const state = states[card.cardId]
+    if (!state || state.lastReviewed == null || state.lastReviewed < start) continue
+    // Aktuell fällige Karten stehen bereits in der Warteschlange und zählen dort.
+    if (state.due <= now) continue
+    if (state.status === 'young' || state.status === 'mature') done++
+    else if (state.status === 'learning' || state.status === 'relearning') inProgress++
+  }
+
+  return { done, inProgress }
 }
 
 /** Reihenfolge der fälligen Wiederholungen gemäß Einstellung. */

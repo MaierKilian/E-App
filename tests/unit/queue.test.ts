@@ -1,7 +1,13 @@
 // Bau der Lern-Warteschlange.
 
 import { describe, expect, it } from 'vitest'
-import { buildQueue, doneToday, dueCounts, type QueueCard } from '@/features/education/flashcards/engine/queue'
+import {
+  buildQueue,
+  doneToday,
+  dueCounts,
+  todayProgress,
+  type QueueCard,
+} from '@/features/education/flashcards/engine/queue'
 import { normalizeParams } from '@/features/education/flashcards/engine/params'
 import { getScheduler } from '@/features/education/flashcards/engine/scheduler'
 import { newCardState, type CardState } from '@/features/education/flashcards/engine/types'
@@ -165,6 +171,48 @@ describe('Heute bereits erledigt', () => {
 
   it('ist an einem Tag ohne Bewertungen null', () => {
     expect(doneToday({}, NOW, 4)).toEqual({ reviews: 0, newCards: 0 })
+  })
+})
+
+describe('Tagesfortschritt', () => {
+  const cards = [card('a'), card('b'), card('c')]
+
+  it('hakt nur Karten ab, die für heute wirklich durch sind', () => {
+    const states = {
+      a: { ...due('a', 5), lastReviewed: NOW - 3600_000 }, // heute bewertet, vertagt
+      b: { ...due('b', -1), lastReviewed: NOW - 3600_000 }, // heute bewertet, wieder fällig
+      c: { ...due('c', 5), lastReviewed: NOW - 5 * DAY }, // vor Tagen bewertet
+    }
+    expect(todayProgress(cards, states, NOW, 4)).toEqual({ done: 1, inProgress: 0 })
+  })
+
+  it('zählt Karten in den Lernschritten als „in Arbeit", nicht als erledigt', () => {
+    // Eine neue Karte, einmal gewusst: Sie steht in zehn Minuten wieder an.
+    // Sie jetzt als geschafft zu zählen, würde den Fortschritt schönen – und ihn
+    // später wieder schrumpfen lassen.
+    const states = {
+      a: {
+        ...newCardState('a'),
+        status: 'learning' as const,
+        reps: 1,
+        intervalDays: 10 / 1440,
+        due: NOW + 10 * 60_000,
+        lastReviewed: NOW - 60_000,
+      },
+    }
+    expect(todayProgress(cards, states, NOW, 4)).toEqual({ done: 0, inProgress: 1 })
+  })
+
+  it('zählt eine Karte einmal, egal wie oft sie heute dran war', () => {
+    const states = { a: { ...due('a', 5), reps: 9, lastReviewed: NOW - 60_000 } }
+    expect(todayProgress(cards, states, NOW, 4).done).toBe(1)
+  })
+
+  it('rechnet Bewertungen aus der Nacht noch dem Vortag zu', () => {
+    const night = new Date(2026, 1, 16, 2, 0).getTime() // 02:00, Tagesgrenze 4 Uhr
+    const states = { a: { ...due('a', 5), lastReviewed: night - 3600_000 } }
+    expect(todayProgress(cards, states, night, 4).done).toBe(1)
+    expect(todayProgress(cards, states, NOW, 4).done).toBe(0)
   })
 })
 
