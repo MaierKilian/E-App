@@ -56,7 +56,20 @@ function Face({
         <RotateCw className="h-4 w-4 text-muted" />
       </div>
       <div className="flex flex-1 items-center justify-center overflow-y-auto py-4">
-        <p className="text-center text-lg font-medium leading-relaxed text-foreground">{text}</p>
+        {/*
+         * Zeilenumbrüche im Inhalt bleiben erhalten (`whitespace-pre-line`):
+         * Klausurantworten sind oft Aufzählungen, und die als Fließtext
+         * darzustellen macht sie unlesbar. Mehrzeilige Antworten stehen deshalb
+         * linksbündig, einzeilige bleiben zentriert. Lange Antworten bekommen
+         * eine Stufe kleinere Schrift, damit sie ohne Scrollen passen.
+         */}
+        <p
+          className={`whitespace-pre-line font-medium leading-relaxed text-foreground ${
+            text.includes('\n') ? 'w-full text-left' : 'text-center'
+          } ${text.length > 220 ? 'text-base' : 'text-lg'}`}
+        >
+          {text}
+        </p>
       </div>
       {tags && tags.length > 0 ? (
         <div className="flex flex-wrap justify-center gap-1.5">

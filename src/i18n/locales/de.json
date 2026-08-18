@@ -1504,7 +1504,6 @@
     "flashcards": {
       "title": "Karteikarten",
       "subtitle": "Fächerweise auf Klausuren vorbereiten – Karte antippen zum Umdrehen.",
-      "placeholderNote": "Beispiel-Karten zur Vorschau. Die vollständigen, professionell aufbereiteten Sets folgen schrittweise.",
       "chooseSemester": "Wähle dein Semester.",
       "semester": "{{n}}. Semester",
       "comingSoon": "Bald verfügbar",
@@ -1627,7 +1626,8 @@
         "longestStreak_other": "längste Serie {{count}}",
         "seconds_one": "{{count}} s",
         "seconds_other": "{{count}} s"
-      }
+      },
+      "exampleBadge": "Beispielkarten"
     },
     "quiz": {
       "question": "Frage",

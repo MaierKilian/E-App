@@ -1504,7 +1504,6 @@
     "flashcards": {
       "title": "Flashcards",
       "subtitle": "Prepare for exams subject by subject – tap a card to flip it.",
-      "placeholderNote": "Sample cards for preview. The full, professionally prepared sets will follow step by step.",
       "chooseSemester": "Choose your semester.",
       "semester": "Semester {{n}}",
       "comingSoon": "Coming soon",
@@ -1627,7 +1626,8 @@
         "longestStreak_other": "longest streak {{count}}",
         "seconds_one": "{{count}} s",
         "seconds_other": "{{count}} s"
-      }
+      },
+      "exampleBadge": "Sample cards"
     },
     "quiz": {
       "question": "Question",

@@ -8,7 +8,6 @@ import { StudySession } from './StudySession'
 import { allCards, cardsOfSemester, cardsOfSet, cardsOfSubject } from './cardIndex'
 import { useDueCounts, useFlashcardsReady, useNow } from './useFlashcards'
 import {
-  FLASHCARDS_PLACEHOLDER,
   SEMESTERS,
   cardCountForSubject,
   modulesForSemester,
@@ -111,9 +110,6 @@ function SemesterGrid({ now, onSelect }: { now: number; onSelect: (semester: num
           )
         })}
       </div>
-      {FLASHCARDS_PLACEHOLDER && (
-        <p className="px-1 text-xs text-muted">{t('education.flashcards.placeholderNote')}</p>
-      )}
     </div>
   )
 }
@@ -208,7 +204,13 @@ function ModuleDetail({
                 <p className="truncate text-sm font-semibold">{set.title}</p>
                 <p className="mt-0.5 text-xs text-muted">
                   {t('education.flashcards.cardCount', { count: set.cards.length })}
+                  {set.description ? ` · ${set.description}` : ''}
                 </p>
+                {set.placeholder && (
+                  <p className="mt-1.5 inline-block rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
+                    {t('education.flashcards.exampleBadge')}
+                  </p>
+                )}
               </div>
               <SetBadge setId={set.id} now={now} />
             </div>

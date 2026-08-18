@@ -439,7 +439,34 @@ Zwei Festlegungen, die beim Bauen entstanden sind:
 
 ---
 
-## 17. Nächster Schritt
+## 17. Inhalt
+
+| Modul | Semester | Sets | Karten | Art |
+|---|---|---|---|---|
+| Thermodynamik & Wärmeübertragung | 2 | 1 | 6 | Beispielkarten |
+| Heizungstechnik & Hydraulik | 3 | 1 | 5 | Beispielkarten |
+| Strömungsmaschinen | 3 | 1 | 5 | Beispielkarten |
+| **Elektrische Anlagen im Gebäude** | 4 | 7 | 59 | echter Prüfungsstoff |
+
+„Elektrische Anlagen im Gebäude" ist aus einer zusammengefassten Altklausur des
+Fachs aufgebaut: Themengebiete und Aufgabenreihenfolge übernommen, Formulierungen
+und Erklärungen neu gefasst. Aufgaben, die eine Skizze verlangen, wurden in
+Wissensfragen überführt; Mehrfachauswahl-Aufgaben in offene Fragen samt Begründung
+(die Lösungsvorlage markierte die richtige Antwort nicht).
+
+Zwei Angaben der Vorlage sind dabei berichtigt worden: Grundlagen der
+Instandhaltung sind **DIN 31051** (Vorlage: 31041), und für elektrische Anlagen
+und Betriebsmittel gilt **BGV A3 / DGUV Vorschrift 3** (Vorlage: BGV A2) – A2
+regelt Betriebsärzte und Fachkräfte für Arbeitssicherheit.
+
+Sets ohne echten Prüfungsstoff tragen `placeholder: true` und werden in der
+Oberfläche als „Beispielkarten" gekennzeichnet. `tests/unit/content.test.ts`
+prüft Eindeutigkeit und Stabilität der Karten-IDs, vollständige Vorder- und
+Rückseiten und die Zuordnung zu Modul und Semester.
+
+---
+
+## 18. Nächster Schritt
 
 **Phase 4**: Einstellungen – vier Presets als Hauptbedienung, Expertenparameter
 darunter, Simulator-Vorschau („bei diesen Werten siehst du eine gewusste Karte
