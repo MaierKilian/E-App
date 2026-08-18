@@ -317,7 +317,7 @@ auf `main` gemäß `CLAUDE.md`).
 | **P0** ✅ | Modell, Ereignis-Log (IndexedDB), Scheduler-Schnittstelle + FSRS/SM-2/Leitner, Ableitung, Tages-Aggregate, Test-Setup + CI | Fundament, keine Änderung an der Oberfläche |
 | **P1** ✅ | Session-Reducer, Warteschlange, neuer Lernmodus mit drei Knöpfen, Relearning in der Session, Undo, Wiedereinstieg, Abschluss-Screen, `flashcardStore` | Trainer läuft lokal |
 | **P2** ✅ | `/lernen` mit „Heute", Fälligkeits-Zähler in Semester/Modul/Set, Ziel-Ring, Serie | täglich benutzbar |
-| **P3** | Statistik v1: Heatmap, Wiederholungen/Tag, Fälligkeits-Prognose, Quoten, Kartenzustände | Statistik-Seite |
+| **P3** ✅ | Statistik v1: Heatmap, Wiederholungen/Tag, Fälligkeits-Prognose, Quoten, Kartenzustände | Statistik-Seite |
 | **P4** | Presets, Expertenparameter, Simulator-Vorschau, Intervall auf den Knöpfen | Algorithmus anpassbar |
 | **P5** | `flashcardSync.ts`, Firestore-Regeln, Offline, Gast→Konto-Übernahme | geräteübergreifend |
 | **P6** | Klausurtermine, Bereitschafts-Score, gemessene gegen gewünschte Behaltensquote, Problemkarten, Export | Klausurvorbereitung im engeren Sinn |
@@ -345,7 +345,33 @@ Kommilitonen zu teilen wirft Moderation und Urheberrecht auf und bleibt außen v
 
 ---
 
-## 13. Was in Phase 2 entstanden ist
+## 13. Was in Phase 3 entstanden ist
+
+| Datei | Inhalt |
+|---|---|
+| `engine/stats.ts` | Heatmap-Zellen, Balken je Tag, Fälligkeits-Prognose, Zustands-Verteilung, Kennzahlen eines Zeitraums – alles rein |
+| `engine/rollups.ts` | Tages-Aggregate um Reifegrade ergänzt (`byMaturity`) |
+| `flashcards/StatsCharts.tsx` | Heatmap, gestapelte Tagesbalken, Prognose-Balken, Zustandsbalken – schlichtes HTML/SVG, keine Diagramm-Bibliothek |
+| `flashcards/StatsView.tsx` | Statistik-Seite unter `/lernen/statistik`, Zeitraum 7/30/90 Tage |
+| `index.css` | geprüfte Diagramm-Rampe `--chart-1` … `--chart-4` je Theme |
+
+Drei Festlegungen:
+
+- **Reifegrad kommt aus dem Ereignis, nicht aus dem heutigen Zustand.** Wie reif
+  eine Karte vor drei Wochen war, verrät nur das damals protokollierte Intervall
+  (`scheduledDays`). Genau dafür steht es im Log.
+- **Eine Farbfamilie in vier Helligkeitsstufen statt vier bunter Farben.** Die
+  Reife einer Karte ist eine Reihenfolge, und die soll man in der Farbe sehen.
+  Nebeneffekt: keine Verwechslungsgefahr bei Farbfehlsichtigkeit. Die Stufen sind
+  gegen die Kartenfläche geprüft (monotone Helligkeit, Abstand je Stufe,
+  Randstufen mit mindestens 2:1 Kontrast) – im Dunkelmodus dreht die Rampe.
+- **Die Aggregate sind wegwerfbar.** Statt die gespeicherte Form zu migrieren,
+  wechselt der Schlüssel auf `rollups.v2`; die Aggregate entstehen aus dem
+  Ereignis-Log in Sekunden neu.
+
+---
+
+## 14. Was in Phase 2 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -367,7 +393,7 @@ die angepinnte Karte im Wissensbereich.
 
 ---
 
-## 14. Was in Phase 1 entstanden ist
+## 15. Was in Phase 1 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -392,7 +418,7 @@ Zwei Festlegungen, die beim Bauen entstanden sind:
 
 ---
 
-## 15. Was in Phase 0 entstanden ist
+## 16. Was in Phase 0 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -413,12 +439,12 @@ Zwei Festlegungen, die beim Bauen entstanden sind:
 
 ---
 
-## 16. Nächster Schritt
+## 17. Nächster Schritt
 
-**Phase 3**: Statistik v1 – Kalender-Heatmap, Wiederholungen je Tag,
-Fälligkeits-Prognose über 30 Tage, beide Quoten und die Verteilung der
-Kartenzustände. Die Datengrundlage dafür (Ereignis-Log und Tages-Aggregate)
-liegt seit Phase 0 bereit.
+**Phase 4**: Einstellungen – vier Presets als Hauptbedienung, Expertenparameter
+darunter, Simulator-Vorschau („bei diesen Werten siehst du eine gewusste Karte
+wieder in ~4 Tagen") und das voraussichtliche Intervall auf den
+Bewertungsknöpfen. Letzteres steht seit Phase 1 schon dort.
 
 Inhaltlich unabhängig davon: ein **Pilot-Set** aus echtem GoodNotes-Material
 (15–30 Karten eines überschaubaren Fachs, Vorder- und Rückseiten als Bilder),

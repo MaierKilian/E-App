@@ -89,6 +89,36 @@
   color-scheme: light;
 }
 
+/*
+ * Diagramm-Rampe der Lern-Statistik.
+ *
+ * Bewusst EINE Farbfamilie in vier Stufen statt vier bunter Farben: Die Reife
+ * einer Karte (neu → Lernschritt → jung → reif) ist eine Reihenfolge, und die
+ * soll man in der Farbe sehen. Nebeneffekt: keine Verwechslungsgefahr bei
+ * Farbfehlsichtigkeit, weil die Stufen sich in der Helligkeit unterscheiden.
+ *
+ * Die Stufen sind gegen die jeweilige Kartenfläche geprüft (monotone Helligkeit,
+ * Abstand je Stufe, hellste bzw. dunkelste Stufe mit mindestens 2:1 Kontrast).
+ * Im Dunkelmodus dreht sich die Rampe: dort wird „reif" heller, nicht dunkler.
+ */
+:root,
+[data-theme='light'],
+[data-theme='htw'],
+[data-theme='amber'] {
+  --chart-1: #38bdf8;
+  --chart-2: #0ea5e9;
+  --chart-3: #0369a1;
+  --chart-4: #0c4a6e;
+}
+
+[data-theme='dark'],
+[data-theme='midnight'] {
+  --chart-1: #075985;
+  --chart-2: #0284c7;
+  --chart-3: #38bdf8;
+  --chart-4: #7dd3fc;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }

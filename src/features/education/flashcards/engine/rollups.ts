@@ -10,9 +10,30 @@
 // Sie werden getrennt ausgewiesen (`cram`), damit beide Fragen beantwortbar
 // bleiben.
 
-import type { LogEntry } from './types'
-import { isCorrect, isPassed } from './types'
+import type { LogEntry, ReviewEntry } from './types'
+import { MATURE_THRESHOLD_DAYS, isCorrect, isPassed } from './types'
 import { DAY_MS, dayKey, dayStart } from './time'
+
+/**
+ * Reifegrad einer Karte IM MOMENT der Bewertung – abgeleitet aus dem damals
+ * geplanten Intervall. Genau dafür wird `scheduledDays` mitprotokolliert: Der
+ * heutige Kartenzustand verrät nicht mehr, wie reif eine Karte vor drei Wochen
+ * war, das Ereignis schon.
+ */
+export type Maturity = 'new' | 'learning' | 'young' | 'mature'
+
+export type MaturityCounts = Record<Maturity, number>
+
+/** Reifegrad einer protokollierten Bewertung. */
+export function maturityOf(entry: ReviewEntry): Maturity {
+  if (entry.scheduledDays <= 0) return 'new'
+  if (entry.scheduledDays < 1) return 'learning'
+  return entry.scheduledDays < MATURE_THRESHOLD_DAYS ? 'young' : 'mature'
+}
+
+function emptyMaturity(): MaturityCounts {
+  return { new: 0, learning: 0, young: 0, mature: 0 }
+}
 
 /** Kennzahlen eines Lerntags. */
 export interface DayRollup {
@@ -32,6 +53,8 @@ export interface DayRollup {
   cram: number
   /** Aufgewendete Lernzeit in ms (Umdrehen + Bewerten). */
   msTotal: number
+  /** Bewertungen nach Reifegrad der Karte zum Zeitpunkt der Bewertung. */
+  byMaturity: MaturityCounts
 }
 
 function emptyRollup(day: string): DayRollup {
@@ -44,6 +67,7 @@ function emptyRollup(day: string): DayRollup {
     newCards: 0,
     cram: 0,
     msTotal: 0,
+    byMaturity: emptyMaturity(),
   }
 }
 
@@ -66,6 +90,7 @@ export function dailyRollups(entries: LogEntry[], cutoffHour: number): Record<st
     if (entry.grade === 1) r.again++
     if (entry.mode === 'cram') r.cram++
     r.msTotal += Math.max(0, entry.msToFlip) + Math.max(0, entry.msToGrade)
+    r.byMaturity[maturityOf(entry)]++
 
     if (!seen.has(entry.cardId)) {
       seen.add(entry.cardId)
@@ -106,10 +131,15 @@ export function applyToRollups(
       cram: prev.cram + (entry.mode === 'cram' ? 1 : 0),
       newCards: prev.newCards + (isFirstEver ? 1 : 0),
       msTotal: prev.msTotal + Math.max(0, entry.msToFlip) + Math.max(0, entry.msToGrade),
+      byMaturity: addMaturity(prev.byMaturity, maturityOf(entry)),
     }
   }
 
   return out
+}
+
+function addMaturity(counts: MaturityCounts, key: Maturity): MaturityCounts {
+  return { ...counts, [key]: counts[key] + 1 }
 }
 
 /** Serie aufeinanderfolgender Lerntage. */
@@ -175,7 +205,22 @@ export function sumRollups(rollups: DayRollup[]): Omit<DayRollup, 'day'> {
       newCards: acc.newCards + r.newCards,
       cram: acc.cram + r.cram,
       msTotal: acc.msTotal + r.msTotal,
+      byMaturity: {
+        new: acc.byMaturity.new + r.byMaturity.new,
+        learning: acc.byMaturity.learning + r.byMaturity.learning,
+        young: acc.byMaturity.young + r.byMaturity.young,
+        mature: acc.byMaturity.mature + r.byMaturity.mature,
+      },
     }),
-    { reviews: 0, passed: 0, correct: 0, again: 0, newCards: 0, cram: 0, msTotal: 0 },
+    {
+      reviews: 0,
+      passed: 0,
+      correct: 0,
+      again: 0,
+      newCards: 0,
+      cram: 0,
+      msTotal: 0,
+      byMaturity: emptyMaturity(),
+    },
   )
 }

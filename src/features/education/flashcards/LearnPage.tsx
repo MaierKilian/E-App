@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { ChevronRight, Flame, GraduationCap, Layers, Play } from 'lucide-react'
+import { BarChart3, ChevronRight, Flame, GraduationCap, Layers, Play } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useFlashcardStore } from '@/store/flashcardStore'
@@ -137,13 +137,22 @@ export function LearnPage() {
             />
           ))}
         </div>
-        <Link
-          to="/education"
-          className="focus-ring flex items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground"
-        >
-          <Layers className="h-4 w-4" />
-          {t('education.flashcards.allSets')}
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            to="/lernen/statistik"
+            className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground"
+          >
+            <BarChart3 className="h-4 w-4" />
+            {t('education.flashcards.stats.title')}
+          </Link>
+          <Link
+            to="/education"
+            className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground"
+          >
+            <Layers className="h-4 w-4" />
+            {t('education.flashcards.allSets')}
+          </Link>
+        </div>
       </section>
 
       {stack && (

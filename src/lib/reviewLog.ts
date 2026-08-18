@@ -19,7 +19,10 @@ const DB_VERSION = 1
 const STORE_ENTRIES = 'entries'
 const STORE_META = 'meta'
 const SNAPSHOT_KEY = 'snapshot'
-const ROLLUPS_KEY = 'rollups'
+// v2: Die Aggregate tragen seit Phase 3 die Reifegrade. Ein neuer Schlüssel
+// verwirft die alte Form, statt sie zu migrieren – sie entsteht aus dem
+// Ereignis-Log ohnehin in Sekunden neu.
+const ROLLUPS_KEY = 'rollups.v2'
 
 /**
  * Rückfallebene ohne IndexedDB (Server-Rendering, abgeschaltete Speicherung,

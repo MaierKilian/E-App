@@ -11,6 +11,7 @@ import { MeterDetailPage } from '@/features/monitoring/MeterDetailPage'
 import { ReportsPage } from '@/features/reports/ReportsPage'
 import { EducationPage } from '@/features/education/EducationPage'
 import { LearnPage } from '@/features/education/flashcards/LearnPage'
+import { StatsView } from '@/features/education/flashcards/StatsView'
 import { TipsPage } from '@/features/tips/TipsPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { DataResetPage } from '@/features/settings/DataResetPage'
@@ -85,6 +86,7 @@ export function App() {
             {/* Täglicher Einstieg in den Karteikarten-Trainer – bewusst eine
                 eigene Route und nicht fünf Ebenen tief im Wissensbereich. */}
             <Route path="/lernen" element={<LearnPage />} />
+            <Route path="/lernen/statistik" element={<StatsView />} />
             <Route path="/tipps" element={<TipsPage />} />
             <Route path="/einstellungen" element={<SettingsPage />} />
             <Route path="/einstellungen/daten" element={<DataResetPage />} />
