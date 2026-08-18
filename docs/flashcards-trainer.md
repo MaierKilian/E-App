@@ -318,7 +318,7 @@ auf `main` gemäß `CLAUDE.md`).
 | **P1** ✅ | Session-Reducer, Warteschlange, neuer Lernmodus mit drei Knöpfen, Relearning in der Session, Undo, Wiedereinstieg, Abschluss-Screen, `flashcardStore` | Trainer läuft lokal |
 | **P2** ✅ | `/lernen` mit „Heute", Fälligkeits-Zähler in Semester/Modul/Set, Ziel-Ring, Serie | täglich benutzbar |
 | **P3** ✅ | Statistik v1: Heatmap, Wiederholungen/Tag, Fälligkeits-Prognose, Quoten, Kartenzustände | Statistik-Seite |
-| **P4** | Presets, Expertenparameter, Simulator-Vorschau, Intervall auf den Knöpfen | Algorithmus anpassbar |
+| **P4** ✅ | Vier Presets als Lerntempo, Intervall auf den Bewertungsknöpfen. Expertenparameter und Simulator bewusst NICHT gebaut – siehe unten | Algorithmus anpassbar |
 | **P5** | `flashcardSync.ts`, Firestore-Regeln, Offline, Gast→Konto-Übernahme | geräteübergreifend |
 | **P6** | Klausurtermine, Bereitschafts-Score, gemessene gegen gewünschte Behaltensquote, Problemkarten, Export | Klausurvorbereitung im engeren Sinn |
 | **P7** | `cloze`, `numeric` mit Toleranz, `occlusion`, KaTeX, Prüfungssimulation | GEIT-taugliche Kartenarten |
@@ -345,7 +345,31 @@ Kommilitonen zu teilen wirft Moderation und Urheberrecht auf und bleibt außen v
 
 ---
 
-## 13. Was in Phase 3 entstanden ist
+## 13. Was in Phase 4 entstanden ist
+
+Statt des geplanten Expertenmodus mit Simulator gibt es **nur die vier Presets**
+– als eigene Seite `/lernen/tempo`, erreichbar von „Heute" und aus den
+Einstellungen. Begründung: Zwanzig Einzelparameter versteht niemand, und wer sie
+falsch setzt, macht sich den Lernplan kaputt. Der Simulator wäre die Antwort auf
+ein Problem gewesen, das ohne Einzelparameter nicht entsteht.
+
+Verständlich wird die Wahl nicht durch Erklärtext, sondern durch die **gerechnete
+Folge**: Zu jedem Preset steht „Gewusste Karte kommt in X wieder" – mit dem
+echten Verfahren aus einer Beispielkarte berechnet, nicht getextet. Von locker
+nach intensiv sind das 3 Monate → 1 Monat → 27 Tage → 16 Tage; ein Test hält
+fest, dass diese Reihe streng fallend bleibt, sonst führt die Anzeige in die Irre.
+
+| Datei | Inhalt |
+|---|---|
+| `flashcards/PaceView.tsx` | Tempo-Auswahl: vier Karten mit gerechneter Folge und Tagesmenge, dazu „Was die Zahlen bedeuten" |
+| `flashcards/intervalText.ts` | Intervall-Formatierung, geteilt von Trainer und Tempo-Auswahl |
+| `engine/params.ts` | `currentPreset` – das aktive Preset wird aus den Werten abgeleitet, nicht zusätzlich gespeichert |
+| `flashcards/LearnPage.tsx` | die drei Nebenwege (Tempo · Statistik · Alle Sets) als eine ruhige Liste statt Knopfreihe |
+| `settings/SettingsPage.tsx` | Abschnitt „Lernen" mit Verweis auf dieselbe Seite |
+
+---
+
+## 14. Was in Phase 3 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -371,7 +395,7 @@ Drei Festlegungen:
 
 ---
 
-## 14. Was in Phase 2 entstanden ist
+## 15. Was in Phase 2 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -393,7 +417,7 @@ die angepinnte Karte im Wissensbereich.
 
 ---
 
-## 15. Was in Phase 1 entstanden ist
+## 16. Was in Phase 1 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -418,7 +442,7 @@ Zwei Festlegungen, die beim Bauen entstanden sind:
 
 ---
 
-## 16. Was in Phase 0 entstanden ist
+## 17. Was in Phase 0 entstanden ist
 
 | Datei | Inhalt |
 |---|---|
@@ -439,7 +463,7 @@ Zwei Festlegungen, die beim Bauen entstanden sind:
 
 ---
 
-## 17. Inhalt
+## 18. Inhalt
 
 | Modul | Semester | Sets | Karten | Art |
 |---|---|---|---|---|
@@ -466,12 +490,15 @@ Rückseiten und die Zuordnung zu Modul und Semester.
 
 ---
 
-## 18. Nächster Schritt
+## 19. Nächster Schritt
 
-**Phase 4**: Einstellungen – vier Presets als Hauptbedienung, Expertenparameter
-darunter, Simulator-Vorschau („bei diesen Werten siehst du eine gewusste Karte
-wieder in ~4 Tagen") und das voraussichtliche Intervall auf den
-Bewertungsknöpfen. Letzteres steht seit Phase 1 schon dort.
+Funktional ist der Trainer damit fertig für den täglichen Gebrauch. Was bleibt,
+ist **Inhalt**: weitere Module aus Altklausuren und GoodNotes-Sets. Der Ablauf
+steht (siehe §18), pro Fach sind es wenige Stunden Arbeit.
+
+Verschoben, bis ein konkreter Bedarf besteht: geräteübergreifende
+Synchronisation (P5), Klausur-Bereitschaft mit Terminen (P6), weitere
+Kartenarten wie Lückentext und Rechenkarten (P7), eigene Karten (P8).
 
 Inhaltlich unabhängig davon: ein **Pilot-Set** aus echtem GoodNotes-Material
 (15–30 Karten eines überschaubaren Fachs, Vorder- und Rückseiten als Bilder),

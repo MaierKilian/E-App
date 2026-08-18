@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   BarChart3,
   MessageSquarePlus,
+  GraduationCap,
+  SlidersHorizontal,
 } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUser, useIsAuthenticated } from '@/store/authStore'
@@ -150,6 +152,16 @@ export function SettingsPage() {
             })}
           </div>
         </div>
+      </SettingsSection>
+
+      {/* Lernen */}
+      <SettingsSection title={t('settings.learning')} icon={GraduationCap}>
+        <SettingsRow
+          icon={SlidersHorizontal}
+          title={t('education.flashcards.pace.title')}
+          subtitle={t('education.flashcards.pace.settingsHint')}
+          to="/lernen/tempo"
+        />
       </SettingsSection>
 
       {/* Hilfe */}

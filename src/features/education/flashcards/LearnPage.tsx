@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
-import { BarChart3, ChevronRight, Flame, GraduationCap, Layers, Play } from 'lucide-react'
+import { BarChart3, ChevronRight, Flame, GraduationCap, Layers, Play, SlidersHorizontal } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useFlashcardStore } from '@/store/flashcardStore'
@@ -9,7 +10,14 @@ import { StudySession } from './StudySession'
 import { allCards, cardsOfSubject } from './cardIndex'
 import { FLASHCARD_SUBJECTS, type FlashcardSubject } from './flashcardsContent'
 import type { QueueCard } from './engine/queue'
-import { useDueCounts, useFlashcardsReady, useNow, useStreak, useTodayProgress } from './useFlashcards'
+import {
+  useDueCounts,
+  useFlashcardsReady,
+  useNow,
+  usePaceLabel,
+  useStreak,
+  useTodayProgress,
+} from './useFlashcards'
 
 /** Der gerade geöffnete Lernstapel. */
 interface Stack {
@@ -36,6 +44,7 @@ export function LearnPage() {
   const counts = useDueCounts(cards, now)
   const progress = useTodayProgress(cards, now)
   const streak = useStreak(now)
+  const pace = usePaceLabel()
 
   const session = useFlashcardStore((s) => s.session)
   const sessionScope = useFlashcardStore((s) => s.sessionScope)
@@ -137,21 +146,16 @@ export function LearnPage() {
             />
           ))}
         </div>
-        <div className="flex gap-2">
-          <Link
-            to="/lernen/statistik"
-            className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground"
-          >
-            <BarChart3 className="h-4 w-4" />
-            {t('education.flashcards.stats.title')}
-          </Link>
-          <Link
-            to="/education"
-            className="focus-ring flex flex-1 items-center justify-center gap-1.5 rounded-2xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground"
-          >
-            <Layers className="h-4 w-4" />
-            {t('education.flashcards.allSets')}
-          </Link>
+        <div className="glass overflow-hidden rounded-3xl">
+          <NavRow
+            icon={SlidersHorizontal}
+            label={t('education.flashcards.pace.title')}
+            value={pace}
+            to="/lernen/tempo"
+            first
+          />
+          <NavRow icon={BarChart3} label={t('education.flashcards.stats.title')} to="/lernen/statistik" />
+          <NavRow icon={Layers} label={t('education.flashcards.allSets')} to="/education" />
         </div>
       </section>
 
@@ -164,6 +168,35 @@ export function LearnPage() {
         />
       )}
     </div>
+  )
+}
+
+/** Zeile zu einer Nebenansicht – Icon, Bezeichnung, optionaler aktueller Wert. */
+function NavRow({
+  icon: Icon,
+  label,
+  value,
+  to,
+  first,
+}: {
+  icon: LucideIcon
+  label: string
+  value?: string
+  to: string
+  first?: boolean
+}) {
+  return (
+    <Link
+      to={to}
+      className={`focus-ring flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-surface-2/50 ${
+        first ? '' : 'border-t border-border/60'
+      }`}
+    >
+      <Icon className="h-4.5 w-4.5 shrink-0 text-muted" />
+      <span className="min-w-0 flex-1 truncate text-sm font-medium">{label}</span>
+      {value && <span className="shrink-0 text-xs text-muted">{value}</span>}
+      <ChevronRight className="h-5 w-5 shrink-0 text-muted" />
+    </Link>
   )
 }
 

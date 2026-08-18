@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import type { TFunction } from 'i18next'
 import { Check, Clock, PauseCircle, Undo2, X } from 'lucide-react'
 import { useFlashcardStore } from '@/store/flashcardStore'
 import { FlipCard } from './CardFace'
@@ -9,6 +8,7 @@ import type { QueueCard } from './engine/queue'
 import { canUndo, currentCard, doneCount, sessionSummary } from './engine/session'
 import { schedulerFor } from './engine/scheduler'
 import { GRADES_FOR_SCALE, type Grade } from './engine/types'
+import { formatInterval } from './intervalText'
 
 /** Anzeigename einer Note – die Beschriftung der Bewertungsknöpfe. */
 const GRADE_KEY: Record<Grade, string> = { 1: 'again', 2: 'hard', 3: 'good', 4: 'easy' }
@@ -304,17 +304,4 @@ function Stat({ label, value }: { label: string; value: string }) {
       <dt className="mt-0.5 text-[11px] text-muted">{label}</dt>
     </div>
   )
-}
-
-/**
- * Intervall lesbar machen: Minuten unterhalb eines Tages, sonst Tage, Monate
- * oder Jahre. Diese Angabe steht auf den Bewertungsknöpfen und macht den
- * Algorithmus für den Lernenden nachvollziehbar.
- */
-function formatInterval(days: number, t: TFunction): string {
-  if (days < 1 / 24) return t('education.flashcards.inMinutes', { count: Math.max(1, Math.round(days * 1440)) })
-  if (days < 1) return t('education.flashcards.inHours', { count: Math.max(1, Math.round(days * 24)) })
-  if (days < 30) return t('education.flashcards.inDays', { count: Math.round(days) })
-  if (days < 365) return t('education.flashcards.inMonths', { count: Math.round(days / 30) })
-  return t('education.flashcards.inYears', { count: Math.round((days / 365) * 10) / 10 })
 }

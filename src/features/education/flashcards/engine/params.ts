@@ -141,6 +141,25 @@ export const PRESETS: Record<PresetId, Partial<SchedulerParams>> = {
   },
 }
 
+/**
+ * Welches Preset gerade eingestellt ist – oder null, wenn die Werte zu keinem
+ * passen (nur möglich, wenn Parameter von Hand gesetzt wurden).
+ *
+ * Bewusst aus den Werten abgeleitet statt zusätzlich gespeichert: So kann der
+ * gespeicherte Zustand nicht behaupten, „Intensiv" zu sein, während andere Werte
+ * gelten.
+ */
+export function currentPreset(p: SchedulerParams): PresetId | null {
+  for (const id of Object.keys(PRESETS) as PresetId[]) {
+    const preset = PRESETS[id]
+    const matches = Object.entries(preset).every(
+      ([key, value]) => p[key as keyof SchedulerParams] === value,
+    )
+    if (matches) return id
+  }
+  return null
+}
+
 /** Baut einen vollständigen Parametersatz aus einem Preset. */
 export function paramsFromPreset(preset: PresetId): SchedulerParams {
   return { ...DEFAULT_PARAMS, ...PRESETS[preset] }

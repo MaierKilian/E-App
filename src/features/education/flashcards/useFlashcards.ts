@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useFlashcardStore } from '@/store/flashcardStore'
+import { currentPreset } from './engine/params'
 import {
   doneToday,
   dueCounts,
@@ -78,4 +80,17 @@ export function useStreak(now: number): StreakInfo {
   const params = useFlashcardStore((s) => s.params)
   const rollups = useFlashcardStore((s) => s.rollups)
   return streakInfo(rollups, now, params.dayCutoffHour)
+}
+
+/**
+ * Name des eingestellten Lerntempos - fuer die Zeile auf der Heute-Seite.
+ * Faellt auf "Eigene Werte" zurueck, falls die Parameter zu keinem Preset passen.
+ */
+export function usePaceLabel(): string {
+  const { t } = useTranslation()
+  const params = useFlashcardStore((s) => s.params)
+  const active = currentPreset(params)
+  return active
+    ? t(`education.flashcards.pace.presets.${active}.name`)
+    : t('education.flashcards.pace.custom')
 }

@@ -10,11 +10,14 @@ import {
   DEFAULT_FSRS_WEIGHTS,
   DEFAULT_PARAMS,
   PRESETS,
+  currentPreset,
   isUnlimitedReviews,
   normalizeParams,
   paramsFromPreset,
   type PresetId,
 } from '@/features/education/flashcards/engine/params'
+import { getScheduler } from '@/features/education/flashcards/engine/scheduler'
+import { newCardState } from '@/features/education/flashcards/engine/types'
 
 describe('Presets', () => {
   const ids = Object.keys(PRESETS) as PresetId[]
@@ -84,5 +87,44 @@ describe('Absichern der Werte', () => {
 
   it('fällt bei leeren Leitner-Boxen auf die Standardboxen zurück', () => {
     expect(normalizeParams({ leitnerBoxDays: [] }).leitnerBoxDays).toEqual(DEFAULT_PARAMS.leitnerBoxDays)
+  })
+})
+
+describe('Aktives Preset erkennen', () => {
+  it('erkennt jedes Preset an seinen Werten', () => {
+    for (const id of Object.keys(PRESETS) as PresetId[]) {
+      expect(currentPreset(paramsFromPreset(id))).toBe(id)
+    }
+  })
+
+  it('meldet ohne Einstellung „Standard" – das ist der Auslieferungszustand', () => {
+    expect(currentPreset(DEFAULT_PARAMS)).toBe('standard')
+    expect(currentPreset(normalizeParams())).toBe('standard')
+  })
+
+  it('meldet null, wenn die Werte zu keinem Preset passen', () => {
+    expect(currentPreset(normalizeParams({ requestRetention: 0.83 }))).toBeNull()
+  })
+
+  it('unterscheidet die Presets nach dem Intervall einer gewussten Karte', () => {
+    // Das ist die Zahl, die in der Tempo-Auswahl steht: Sie muss von locker
+    // nach intensiv streng kürzer werden, sonst führt die Anzeige in die Irre.
+    const sample = {
+      ...newCardState('x'),
+      status: 'young' as const,
+      reps: 4,
+      intervalDays: 10,
+      stability: 10,
+      difficulty: 5,
+      lastReviewed: 0,
+    }
+    const order: PresetId[] = ['relaxed', 'standard', 'intensive', 'sprint']
+    const intervals = order.map((id) => {
+      const p = paramsFromPreset(id)
+      return getScheduler(p.algorithm).preview(sample, 10 * 86_400_000, p)[3]
+    })
+    for (let i = 1; i < intervals.length; i++) {
+      expect(intervals[i]).toBeLessThan(intervals[i - 1])
+    }
   })
 })

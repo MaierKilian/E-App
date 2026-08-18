@@ -1627,7 +1627,38 @@
         "seconds_one": "{{count}} s",
         "seconds_other": "{{count}} s"
       },
-      "exampleBadge": "Beispielkarten"
+      "exampleBadge": "Beispielkarten",
+      "pace": {
+        "title": "Lerntempo",
+        "intro": "Wie dicht der Trainer dich wiederholen lässt. Alles andere – wann welche Karte kommt – rechnet die App daraus selbst.",
+        "settingsHint": "Wie dicht der Karteikarten-Trainer wiederholt",
+        "custom": "Eigene Werte",
+        "explainTitle": "Was die Zahlen bedeuten",
+        "explainBody": "Die obere Zeile ist der Kern: Sie zeigt, wann du eine sicher gewusste Karte wiedersiehst. Kürzer heißt öfter üben und mehr behalten, länger heißt weniger Aufwand und etwas mehr Vergessen. Den Abstand rechnet die App für jede Karte einzeln – je nachdem, wie gut sie bei dir sitzt. Die Zahlen unten begrenzen, wie viel an einem Tag zusammenkommt.",
+        "explainSafe": "Umstellen ist gefahrlos: Dein Lernstand bleibt vollständig erhalten, die neue Einstellung gilt ab der nächsten Bewertung. Du kannst jederzeit zurückwechseln.",
+        "presets": {
+          "relaxed": {
+            "name": "Locker",
+            "when": "Nebenbei im Semester, wenig täglicher Aufwand."
+          },
+          "standard": {
+            "name": "Standard",
+            "when": "Der Normalfall – guter Kompromiss aus Aufwand und Behalten."
+          },
+          "intensive": {
+            "name": "Intensiv",
+            "when": "Prüfungsphase: dichter wiederholen, mehr neues Material."
+          },
+          "sprint": {
+            "name": "Klausur-Sprint",
+            "when": "Letzte Tage vor der Klausur, ohne Tagesgrenze."
+          }
+        },
+        "factInterval": "Gewusste Karte kommt {{interval}} wieder",
+        "factVolume": "bis {{news}} neue und {{reviews}} zu wiederholende Karten pro Tag",
+        "factVolumeUnlimited_one": "bis {{count}} neue Karte pro Tag, Wiederholungen ohne Grenze",
+        "factVolumeUnlimited_other": "bis {{count}} neue Karten pro Tag, Wiederholungen ohne Grenze"
+      }
     },
     "quiz": {
       "question": "Frage",
@@ -1840,7 +1871,8 @@
         "title": "Alles zurücksetzen",
         "desc": "Löscht alle Nutzerdaten (Profil, Messungen, Tarife, Zählerstände, Lernfortschritt). Theme und Sprache bleiben erhalten; die Einführung wird wieder angezeigt."
       }
-    }
+    },
+    "learning": "Lernen"
   },
   "feedback": {
     "open": "Feedback geben",

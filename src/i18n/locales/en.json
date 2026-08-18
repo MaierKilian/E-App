@@ -1627,7 +1627,38 @@
         "seconds_one": "{{count}} s",
         "seconds_other": "{{count}} s"
       },
-      "exampleBadge": "Sample cards"
+      "exampleBadge": "Sample cards",
+      "pace": {
+        "title": "Study pace",
+        "intro": "How closely the trainer repeats your cards. Everything else – which card comes when – the app works out from this.",
+        "settingsHint": "How closely the flashcard trainer repeats",
+        "custom": "Custom values",
+        "explainTitle": "What the numbers mean",
+        "explainBody": "The top line is the key one: it shows when you see a card you knew well again. Shorter means more practice and better retention, longer means less effort and a bit more forgetting. The app computes the gap per card, depending on how well it sticks with you. The numbers below cap how much piles up in a single day.",
+        "explainSafe": "Switching is safe: your progress is kept in full, the new setting applies from your next rating. You can switch back any time.",
+        "presets": {
+          "relaxed": {
+            "name": "Relaxed",
+            "when": "Alongside the semester, little daily effort."
+          },
+          "standard": {
+            "name": "Standard",
+            "when": "The normal case – a good balance of effort and retention."
+          },
+          "intensive": {
+            "name": "Intensive",
+            "when": "Exam season: repeat more closely, more new material."
+          },
+          "sprint": {
+            "name": "Exam sprint",
+            "when": "Final days before the exam, no daily cap."
+          }
+        },
+        "factInterval": "A card you knew returns {{interval}}",
+        "factVolume": "up to {{news}} new and {{reviews}} review cards per day",
+        "factVolumeUnlimited_one": "up to {{count}} new card per day, reviews uncapped",
+        "factVolumeUnlimited_other": "up to {{count}} new cards per day, reviews uncapped"
+      }
     },
     "quiz": {
       "question": "Question",
@@ -1840,7 +1871,8 @@
         "title": "Reset everything",
         "desc": "Deletes all user data (profile, measurements, tariffs, meter readings, learning progress). Theme and language are kept; the introduction is shown again."
       }
-    }
+    },
+    "learning": "Learning"
   },
   "feedback": {
     "open": "Give feedback",
