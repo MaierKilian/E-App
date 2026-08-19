@@ -38,3 +38,42 @@ export function fmtDate(iso: string | undefined, language: string): string {
 export function todayIso(): string {
   return new Date().toISOString().slice(0, 10)
 }
+
+/** Kurzes Datum (TT.MM.JJJJ o. Ä.), leersicher – für enge Kacheln/Zeilen. */
+export function fmtDateShort(iso: string | undefined, language: string): string {
+  if (!iso) return '-'
+  const d = new Date(iso.length <= 10 ? `${iso}T00:00:00` : iso)
+  if (Number.isNaN(d.getTime())) return '-'
+  return new Intl.DateTimeFormat(language, { dateStyle: 'short' }).format(d)
+}
+
+/** Umlaut-/Sonderzeichen-Ersetzungen für Dateinamen. */
+const SLUG_MAP: Record<string, string> = {
+  ä: 'ae', ö: 'oe', ü: 'ue', Ä: 'Ae', Ö: 'Oe', Ü: 'Ue', ß: 'ss',
+}
+
+/**
+ * Macht aus einem freien Text (z. B. dem Objektnamen) einen dateinamens-
+ * tauglichen Slug: Umlaute ausgeschrieben, Diakritika entfernt, alles andere
+ * zu Bindestrichen. Leerer/fehlender Text ergibt einen leeren String.
+ */
+export function fileSlug(input: string | undefined, maxLength = 40): string {
+  if (!input) return ''
+  const mapped = input.replace(/[äöüÄÖÜß]/g, (ch) => SLUG_MAP[ch] ?? ch)
+  return mapped
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Za-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, maxLength)
+    .replace(/-+$/, '')
+}
+
+/**
+ * Baut den Dateinamen eines Berichts: `E-App-<Typ>[-<Objekt>]-<Datum>.pdf`.
+ * Der Objektteil entfällt, wenn kein verwertbarer Name vorliegt.
+ */
+export function reportFileName(typeLabel: string, objectName: string | undefined): string {
+  const parts = ['E-App', fileSlug(typeLabel, 24), fileSlug(objectName), todayIso()].filter(Boolean)
+  return `${parts.join('-')}.pdf`
+}

@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import { PdfKit } from './pdf/pdfKit'
-import { fmtDate, fmtNum, numberFmt, todayIso } from './pdf/format'
+import { fmtDate, fmtNum, numberFmt, reportFileName } from './pdf/format'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import { fillMeasurements } from './generateMeasurementsPdf'
 import { fillMonitoring } from './generateMonitoringPdf'
@@ -35,25 +35,30 @@ export function generateGesamtPdf(args: GenerateGesamtArgs): void {
   const { variant, options, t, language, profile, measurements, monitoring } = args
   const kit = new PdfKit()
 
+  const objectName = profile.profileName?.trim() || undefined
+
   kit.headerBand({
     title: t('report.pdf.total.title'),
-    subtitle: profile.profileName?.trim() || t('report.pdf.total.subtitle'),
+    subtitle: objectName,
+    meta: t('report.pdf.total.subtitle'),
     date: t('report.pdf.dateLine', { date: fmtDate(new Date().toISOString(), language) }),
   })
 
   writeProfileHead(kit, t, language, profile)
 
   kit.gap(8)
-  fillMeasurements(kit, { variant, options, t, language, data: measurements }, false)
+  kit.sectionTitle(t('report.pdf.section.measurements'))
+  fillMeasurements(kit, { variant, options, t, language, data: measurements, objectName }, false)
 
   kit.gap(10)
-  fillMonitoring(kit, { variant, options, t, language, data: monitoring }, false)
+  kit.sectionTitle(t('report.pdf.section.monitoring'))
+  fillMonitoring(kit, { variant, options, t, language, data: monitoring, objectName }, false)
 
   kit.finalizeFooters(
     (n, total) => t('report.pdf.page', { n, total }),
     t('report.pdf.footnote'),
   )
-  kit.save(`E-App-${t('report.types.total.title')}-Bericht-${todayIso()}.pdf`)
+  kit.save(reportFileName(t('report.types.total.title'), objectName))
 }
 
 /** Kurzer Profilkopf als Label/Wert-Tabelle. */

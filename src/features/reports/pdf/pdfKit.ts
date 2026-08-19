@@ -46,8 +46,13 @@ export function ratingColor(rating: 'good' | 'medium' | 'elevated' | 'high'): RG
 }
 
 /**
- * Ersetzt gängige Unicode-Sonderzeichen durch Latin-1-feste Entsprechungen.
- * (Tiefstellungen ₀–₉, Pfeile, Anführungszeichen, Auf-/Abwärtspfeile …)
+ * Ersetzt Unicode-Zeichen, die die Standardschrift nicht darstellen kann.
+ *
+ * Die jsPDF-Standardfonts sind mit `WinAnsiEncoding` (CP1252) eingebettet.
+ * Darin liegen Gedankenstrich, Mittelpunkt, typografische Anführungszeichen,
+ * Auslassungspunkte, Aufzählungspunkt und € – die bleiben deshalb erhalten.
+ * Ersetzt werden nur Zeichen außerhalb von CP1252 (Tiefstellungen, Pfeile,
+ * schmale Leerzeichen), die sonst als Müll oder Kästchen erscheinen.
  */
 export function toLatin1(input: string): string {
   if (!input) return ''
@@ -57,12 +62,7 @@ export function toLatin1(input: string): string {
     .replace(/[→➜➔]/g, '->')
     .replace(/[↑]/g, '+')
     .replace(/[↓]/g, '-')
-    .replace(/[•·]/g, '-')
-    .replace(/[„“”‟]/g, '"')
-    .replace(/[‘’‚]/g, "'")
-    .replace(/[–—]/g, '-')
-    .replace(/[…]/g, '...')
-    .replace(/[\u00A0\u2007\u202F\u2009\u2002\u2003]/g, " ")
+    .replace(/[\u2007\u202F\u2009\u2002\u2003]/g, ' ')
 }
 
 /** Eine Kennzahl-Kachel. */
@@ -96,7 +96,10 @@ export interface BarItem {
 /** Optionen für Kopfbalken. */
 export interface HeaderBandOptions {
   title: string
+  /** Zweite Zeile – üblicherweise das Objekt (Profilname). */
   subtitle?: string
+  /** Dritte Zeile – Umfang/Zeitraum des Berichts. */
+  meta?: string
   date?: string
 }
 
@@ -152,8 +155,12 @@ export class PdfKit {
 
   // --- Text-Bausteine ---
 
-  /** Schlichter Kopf (weiß/grau/schwarz): dunkles Logo, Titel, Datum, feine Trennlinie. */
-  headerBand({ title, subtitle, date }: HeaderBandOptions): void {
+  /**
+   * Schlichter Kopf (weiß/grau/schwarz): dunkles Logo, Titel, Objekt, Umfang,
+   * Datum, feine Trennlinie. `subtitle` und `meta` werden als eigene Zeilen
+   * untereinander gesetzt; fehlende Zeilen rücken nicht nach unten durch.
+   */
+  headerBand({ title, subtitle, meta, date }: HeaderBandOptions): void {
     const top = MARGIN_TOP
     // Logo dunkel (Vektor).
     this.drawLogo(MARGIN_X, top - 7, 22, PALETTE.ink)
@@ -164,11 +171,21 @@ export class PdfKit {
     this.setColor(PALETTE.ink)
     this.doc.text(toLatin1(title), textX, top + 8)
 
+    // Zeilen unter dem Titel in fester Reihenfolge, jeweils 12 pt Abstand.
+    let lineY = top + 22
     if (subtitle) {
-      this.doc.setFont('helvetica', 'normal')
+      this.doc.setFont('helvetica', 'bold')
       this.doc.setFontSize(9.5)
+      this.setColor(PALETTE.body)
+      this.doc.text(toLatin1(subtitle), textX, lineY)
+      lineY += 12
+    }
+    if (meta) {
+      this.doc.setFont('helvetica', 'normal')
+      this.doc.setFontSize(8.5)
       this.setColor(PALETTE.muted)
-      this.doc.text(toLatin1(subtitle), textX, top + 22)
+      this.doc.text(toLatin1(meta), textX, lineY)
+      lineY += 12
     }
 
     if (date) {
@@ -178,7 +195,7 @@ export class PdfKit {
       this.doc.text(toLatin1(date), PAGE_W - MARGIN_X, top + 8, { align: 'right' })
     }
 
-    const ruleY = top + 32
+    const ruleY = Math.max(top + 32, lineY - 2)
     this.setDraw(PALETTE.hair)
     this.doc.setLineWidth(0.8)
     this.doc.line(MARGIN_X, ruleY, PAGE_W - MARGIN_X, ruleY)

@@ -1,6 +1,14 @@
 import type { TFunction } from 'i18next'
 import { PdfKit, type KpiCard } from './pdf/pdfKit'
-import { numberFmt, currencyFmt, fmtVal, fmtCur, fmtDate, todayIso } from './pdf/format'
+import {
+  numberFmt,
+  currencyFmt,
+  fmtVal,
+  fmtCur,
+  fmtDate,
+  fmtDateShort,
+  reportFileName,
+} from './pdf/format'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import type { MonitoringReportData, MonitoringEntry } from './monitoringReportData'
 
@@ -16,6 +24,8 @@ export interface GenerateMonitoringArgs {
   t: TFunction
   language: string
   data: MonitoringReportData
+  /** Objektname (Profilname) für Kopfzeile und Dateiname. */
+  objectName?: string
 }
 
 export function generateMonitoringPdf(args: GenerateMonitoringArgs): void {
@@ -25,21 +35,27 @@ export function generateMonitoringPdf(args: GenerateMonitoringArgs): void {
     (n, total) => args.t('report.pdf.page', { n, total }),
     args.t('report.pdf.footnote'),
   )
-  kit.save(`E-App-${args.t('report.types.monitoring.title')}-Bericht-${todayIso()}.pdf`)
+  kit.save(reportFileName(args.t('report.types.monitoring.title'), args.objectName))
 }
 
 /** Schreibt den Monitoring-Abschnitt (auch vom Gesamt-Bericht genutzt). */
 export function fillMonitoring(
   kit: PdfKit,
-  { variant, options, t, language, data }: GenerateMonitoringArgs,
+  { variant, options, t, language, data, objectName }: GenerateMonitoringArgs,
   withHeader = true,
 ): void {
   if (withHeader) {
     kit.headerBand({
       title: t('report.pdf.monitoring.title'),
-      subtitle: rangeSubtitle(t, data.rangeDays),
+      subtitle: objectName,
+      meta: periodLine(t, language, data),
       date: t('report.pdf.dateLine', { date: fmtDate(new Date().toISOString(), language) }),
     })
+  } else {
+    // Im Gesamt-Bericht trägt der Kopf bereits das Objekt – hier genügt die
+    // Zeitraum-Zeile über dem Abschnitt.
+    kit.subtle(periodLine(t, language, data))
+    kit.gap(4)
   }
 
   if (data.entries.length === 0) {
@@ -57,10 +73,41 @@ export function fillMonitoring(
   })
 }
 
-/** Untertitel mit dem ausgewerteten Zeitraum. */
-function rangeSubtitle(t: TFunction, rangeDays: MonitoringReportData['rangeDays']): string {
-  const key = rangeDays === null ? 'all' : `d${rangeDays}`
-  return t('report.pdf.monitoring.subtitle', { range: t(`report.range.${key}`) })
+/**
+ * Zeitraum-Zeile für den Kopf: gewählter Umfang, tatsächlich ausgewerteter
+ * Datumsbereich und Anzahl Ablesungen – „Zeitraum: Alle" allein sagt nichts.
+ */
+function periodLine(t: TFunction, language: string, data: MonitoringReportData): string {
+  const key = data.rangeDays === null ? 'all' : `d${data.rangeDays}`
+  const parts = [t('report.pdf.monitoring.subtitle', { range: t(`report.range.${key}`) })]
+  if (data.from && data.to) {
+    parts.push(
+      t('report.pdf.range', {
+        from: fmtDateShort(data.from, language),
+        to: fmtDateShort(data.to, language),
+      }),
+    )
+  }
+  if (data.readingCount > 0) {
+    parts.push(t('report.pdf.readingsCount', { count: data.readingCount }))
+  }
+  return parts.join(' · ')
+}
+
+/** „Basis: 35 ct/kWh" – macht die Kostenherleitung im Bericht nachvollziehbar. */
+function priceSub(t: TFunction, language: string, e: MonitoringEntry): string | undefined {
+  if (e.priceWork === undefined || !e.priceUnit) return undefined
+  const fmt = numberFmt(language, 2)
+  return t('report.kpi.sub.basis', { value: `${fmt.format(e.priceWork)} ${e.priceUnit}` })
+}
+
+/** Datumsbereich der Ablesungen eines Trägers, für die Kachel-Unterzeile. */
+function windowSub(t: TFunction, language: string, e: MonitoringEntry): string | undefined {
+  if (!e.windowFrom || !e.windowTo) return undefined
+  return t('report.pdf.range', {
+    from: fmtDateShort(e.windowFrom, language),
+    to: fmtDateShort(e.windowTo, language),
+  })
 }
 
 /** Kompakte Zähler-Karte (Kurzfassung): Stand, Verbrauch, Vergleich, Kosten + kleines Diagramm. */
@@ -91,16 +138,32 @@ function writeShortEntry(
 
   if (options.kpis) {
     const cards: KpiCard[] = [
-      { value: fmtVal(e.currentValue, e.unit, num), label: t('report.kpi.currentValue') },
-      { value: fmtVal(e.consumption, e.unit, num), label: t('report.kpi.consumption') },
+      {
+        value: fmtVal(e.currentValue, e.unit, num),
+        label: t('report.kpi.currentValue'),
+        sub: e.currentDate
+          ? t('report.kpi.sub.asOf', { date: fmtDateShort(e.currentDate, language) })
+          : undefined,
+      },
+      {
+        value: fmtVal(e.consumption, e.unit, num),
+        label: t('report.kpi.consumption'),
+        sub: windowSub(t, language, e),
+      },
     ]
     if (e.hasCost && e.costYear !== undefined) {
-      cards.push({ value: fmtCur(e.costYear, cur), label: t('report.kpi.costYear') })
+      cards.push({
+        value: fmtCur(e.costYear, cur),
+        label: t('report.kpi.costYear'),
+        sub: priceSub(t, language, e),
+      })
     }
     kit.kpiCards(cards, cards.length >= 3 ? 3 : 2)
   }
 
-  if (options.comparison) {
+  // Nur zeigen, wenn es einen Vergleichswert gibt – ein Label ohne Zahl
+  // erklärt nichts.
+  if (options.comparison && e.changePercent !== undefined) {
     kit.trendBadge(e.changePercent, t('report.trend.vsPrevious'))
   }
 
@@ -142,19 +205,41 @@ function writeLongEntry(
   }
 
   if (options.kpis) {
+    // Unterzeilen benennen die Basis jeder Zahl – „Hochrechnung / Jahr" ohne
+    // Mittelungszeitraum wäre eine Prognose ohne Herkunft.
+    const basisDays =
+      e.days !== undefined ? t('report.kpi.sub.basisDays', { count: e.days }) : undefined
     const cards: KpiCard[] = [
-      { value: fmtVal(e.currentValue, e.unit, num), label: t('report.kpi.currentValue') },
-      { value: fmtVal(e.consumption, e.unit, num), label: t('report.kpi.consumption') },
-      { value: fmtVal(e.perDay, e.unit, num), label: t('report.kpi.perDay') },
-      { value: fmtVal(e.projectedYear, e.unit, num), label: t('report.kpi.projectedYear') },
+      {
+        value: fmtVal(e.currentValue, e.unit, num),
+        label: t('report.kpi.currentValue'),
+        sub: e.currentDate
+          ? t('report.kpi.sub.asOf', { date: fmtDateShort(e.currentDate, language) })
+          : undefined,
+      },
+      {
+        value: fmtVal(e.consumption, e.unit, num),
+        label: t('report.kpi.consumption'),
+        sub: windowSub(t, language, e),
+      },
+      { value: fmtVal(e.perDay, e.unit, num), label: t('report.kpi.perDay'), sub: basisDays },
+      {
+        value: fmtVal(e.projectedYear, e.unit, num),
+        label: t('report.kpi.projectedYear'),
+        sub: basisDays,
+      },
     ]
     if (e.hasCost && e.costYear !== undefined) {
-      cards.push({ value: fmtCur(e.costYear, cur), label: t('report.kpi.costYear') })
+      cards.push({
+        value: fmtCur(e.costYear, cur),
+        label: t('report.kpi.costYear'),
+        sub: priceSub(t, language, e),
+      })
     }
     kit.kpiCards(cards, 3)
   }
 
-  if (options.comparison) {
+  if (options.comparison && e.changePercent !== undefined) {
     kit.trendBadge(e.changePercent, t('report.trend.vsPrevious'))
     kit.gap(2)
   }

@@ -157,7 +157,11 @@
       "categories": "Trades",
       "previewTitle": "Preview",
       "export": "Export as PDF",
-      "allHint": "No selection = all."
+      "exporting": "Creating PDF …",
+      "exportDone": "PDF created.",
+      "exportError": "Export failed. Please try again.",
+      "comparisonHint": "Comparing to the previous period requires a fixed range (7, 30 or 90 days).",
+      "minSelectionHint": "At least one selection required."
     },
     "contents": {
       "charts": "Charts",
@@ -180,7 +184,13 @@
       "perDay": "Avg. per day",
       "projectedYear": "Projection / year",
       "costYear": "Cost / year",
-      "savingsTotal": "Total savings potential"
+      "savingsTotal": "Total savings potential",
+      "sub": {
+        "asOf": "As of {{date}}",
+        "basis": "Based on: {{value}}",
+        "basisDays_one": "Based on: avg. over {{count}} day",
+        "basisDays_other": "Based on: avg. over {{count}} days"
+      }
     },
     "trend": {
       "up": "rising",
@@ -220,7 +230,10 @@
         "measurements": "No measurements completed yet.",
         "monitoring": "No energy sources active.",
         "noReading": "No reading yet"
-      }
+      },
+      "range": "{{from}} – {{to}}",
+      "readingsCount_one": "{{count}} reading",
+      "readingsCount_other": "{{count}} readings"
     },
     "overview": {
       "hint": "You set scope and time range in the next step.",

@@ -1,7 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FileText, Download, Ruler, Gauge, Layers, ChevronLeft, ChevronDown, Check, Sparkles } from 'lucide-react'
+import {
+  FileText,
+  Download,
+  Ruler,
+  Gauge,
+  Layers,
+  ChevronLeft,
+  ChevronDown,
+  Check,
+  CheckCircle2,
+  AlertCircle,
+  Sparkles,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { SelectChip } from '@/components/ui/SelectChip'
@@ -234,6 +246,9 @@ interface BuilderProps {
   onBack: () => void
 }
 
+/** Zustand der Export-Schaltfläche (steuert Label und Rückmeldung). */
+type ExportStatus = 'idle' | 'busy' | 'done' | 'error'
+
 /** Builder: Variante, Inhalte, Zeitraum, Auswahl + Vorschau + Export. */
 function ReportBuilder({ type, onBack }: BuilderProps) {
   const { t, i18n } = useTranslation()
@@ -241,17 +256,9 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
   const profile = useOnboardingStore((s) => s.data)
   const results = useMeasurementsStore((s) => s.results)
   const readingsByType = useReadingsStore((s) => s.readings)
-  const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
-
-  const [variant, setVariant] = useState<ReportVariant>('short')
-  const [options, setOptions] = useState<ReportContentOptions>(() => defaultContentOptions('short'))
-  const [rangeDays, setRangeDays] = useState<RangeDays>(30)
-  const [meters, setMeters] = useState<EnergyType[]>([])
-  const [categories, setCategories] = useState<MeasurementCategory[]>([])
-  const [busy, setBusy] = useState(false)
-  // Erweiterte Optionen (Inhalte, Zeitraum, Zähler, Gewerke) standardmäßig
-  // eingeklappt – der Standard ist bewusst schlank (nur Umfang + Export).
-  const [advanced, setAdvanced] = useState(false)
+  // Ganzer Tarif-State: der Bericht rechnet Kosten für jeden Träger mit
+  // hinterlegtem Preis, nicht nur für Strom.
+  const tariff = useTariffStore()
 
   const showMonitoring = type === 'monitoring' || type === 'total'
   const showMeasurements = type === 'measurements' || type === 'total'
@@ -262,44 +269,80 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
     [],
   )
 
+  const [variant, setVariant] = useState<ReportVariant>('short')
+  const [options, setOptions] = useState<ReportContentOptions>(() => defaultContentOptions('short'))
+  // Selbst gesetzte Inhalts-Häkchen überleben einen Variantenwechsel; alle
+  // übrigen folgen weiter den Defaults der jeweiligen Variante.
+  const [touched, setTouched] = useState<Set<keyof ReportContentOptions>>(() => new Set())
+  const [rangeDays, setRangeDays] = useState<RangeDays>(30)
+  // Auswahl ist explizit: anfangs alles gewählt, Tippen wählt ab. Mindestens
+  // ein Eintrag bleibt stehen (sonst wäre der Bericht leer).
+  const [meters, setMeters] = useState<EnergyType[]>(() => meterTypes)
+  const [categories, setCategories] = useState<MeasurementCategory[]>(() => catTypes)
+  const [status, setStatus] = useState<ExportStatus>('idle')
+  // Erweiterte Optionen (Inhalte, Zeitraum, Zähler, Gewerke) standardmäßig
+  // eingeklappt – der Standard ist bewusst schlank (nur Umfang + Export).
+  const [advanced, setAdvanced] = useState(false)
+
+  // Der Vergleich braucht ein gleich langes Fenster davor – bei „Alle" gibt es keins.
+  const comparisonAvailable = rangeDays !== null
+
   const changeVariant = (v: ReportVariant) => {
     setVariant(v)
-    setOptions(defaultContentOptions(v))
+    setOptions((prev) => {
+      const next = defaultContentOptions(v)
+      for (const key of touched) next[key] = prev[key]
+      return next
+    })
   }
 
-  const toggleOption = (key: keyof ReportContentOptions) =>
+  const toggleOption = (key: keyof ReportContentOptions) => {
+    setTouched((cur) => new Set(cur).add(key))
     setOptions((o) => ({ ...o, [key]: !o[key] }))
+  }
 
   const toggleMeter = (m: EnergyType) =>
-    setMeters((cur) => (cur.includes(m) ? cur.filter((x) => x !== m) : [...cur, m]))
+    setMeters((cur) =>
+      cur.includes(m) ? (cur.length > 1 ? cur.filter((x) => x !== m) : cur) : [...cur, m],
+    )
 
   const toggleCategory = (c: MeasurementCategory) =>
-    setCategories((cur) => (cur.includes(c) ? cur.filter((x) => x !== c) : [...cur, c]))
+    setCategories((cur) =>
+      cur.includes(c) ? (cur.length > 1 ? cur.filter((x) => x !== c) : cur) : [...cur, c],
+    )
+
+  // Objektname für Kopfzeile und Dateiname des PDF.
+  const objectName = (profile.profileName ?? '').trim() || undefined
+
+  // „Erstellt"-Meldung nach kurzer Zeit wieder ausblenden.
+  const resetTimer = useRef<number | undefined>(undefined)
+  useEffect(() => () => window.clearTimeout(resetTimer.current), [])
 
   const handleExport = async () => {
-    setBusy(true)
+    window.clearTimeout(resetTimer.current)
+    setStatus('busy')
     try {
       if (type === 'measurements') {
         const data = buildMeasurementsReportData({ results, categories })
         const { generateMeasurementsPdf } = await import('./generateMeasurementsPdf')
-        generateMeasurementsPdf({ variant, options, t, language: i18n.language, data })
+        generateMeasurementsPdf({ variant, options, t, language: i18n.language, data, objectName })
       } else if (type === 'monitoring') {
         const data = buildMonitoringReportData({
           profile,
           readingsByType,
           rangeDays,
-          workPriceCt,
+          tariff,
           types: meters,
         })
         const { generateMonitoringPdf } = await import('./generateMonitoringPdf')
-        generateMonitoringPdf({ variant, options, t, language: i18n.language, data })
+        generateMonitoringPdf({ variant, options, t, language: i18n.language, data, objectName })
       } else {
         const mData = buildMeasurementsReportData({ results, categories })
         const monData = buildMonitoringReportData({
           profile,
           readingsByType,
           rangeDays,
-          workPriceCt,
+          tariff,
           types: meters,
         })
         const { generateGesamtPdf } = await import('./generateGesamtPdf')
@@ -319,12 +362,15 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
           monitoring: monData,
         })
       }
-    } finally {
-      setBusy(false)
+      setStatus('done')
+      resetTimer.current = window.setTimeout(() => setStatus('idle'), 4000)
+    } catch (error) {
+      // Ohne sichtbare Meldung würde der Button einfach wieder aktiv werden
+      // und der Nutzer stünde ohne PDF und ohne Erklärung da.
+      console.error('[reports] PDF-Export fehlgeschlagen', error)
+      setStatus('error')
     }
   }
-
-  const needsSelection = (showMonitoring && meterTypes.length > 0) || showMeasurements
 
   return (
     <div className="space-y-3 pb-24">
@@ -383,7 +429,12 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
                   <>
                     <ToggleChip label={t('report.contents.charts')} active={options.charts} onClick={() => toggleOption('charts')} />
                     <ToggleChip label={t('report.contents.kpis')} active={options.kpis} onClick={() => toggleOption('kpis')} />
-                    <ToggleChip label={t('report.contents.comparison')} active={options.comparison} onClick={() => toggleOption('comparison')} />
+                    <ToggleChip
+                      label={t('report.contents.comparison')}
+                      active={options.comparison && comparisonAvailable}
+                      disabled={!comparisonAvailable}
+                      onClick={() => toggleOption('comparison')}
+                    />
                     <ToggleChip label={t('report.contents.history')} active={options.history} onClick={() => toggleOption('history')} />
                   </>
                 )}
@@ -395,6 +446,9 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
                   </>
                 )}
               </div>
+              {showMonitoring && !comparisonAvailable && (
+                <p className="mt-2 text-xs text-muted">{t('report.builder.comparisonHint')}</p>
+              )}
             </div>
 
             {showMonitoring && (
@@ -421,11 +475,14 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
                     <SelectChip
                       key={m}
                       label={t(`monitoring.energyTypes.${m}`)}
-                      selected={meters.length === 0 || meters.includes(m)}
+                      selected={meters.includes(m)}
                       onClick={() => toggleMeter(m)}
                     />
                   ))}
                 </div>
+                {meters.length === 1 && (
+                  <p className="mt-2 text-xs text-muted">{t('report.builder.minSelectionHint')}</p>
+                )}
               </div>
             )}
 
@@ -437,30 +494,51 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
                     <SelectChip
                       key={c}
                       label={t(`measurements.categories.${c}`)}
-                      selected={categories.length === 0 || categories.includes(c)}
+                      selected={categories.includes(c)}
                       onClick={() => toggleCategory(c)}
                     />
                   ))}
                 </div>
+                {categories.length === 1 && (
+                  <p className="mt-2 text-xs text-muted">{t('report.builder.minSelectionHint')}</p>
+                )}
               </div>
             )}
-
-            {needsSelection && <p className="text-xs text-muted">{t('report.builder.allHint')}</p>}
           </div>
         )}
       </div>
 
       {/* Fixe Export-Leiste – immer erreichbar */}
       <div className="glass-bar fixed inset-x-0 z-30 border-t border-border/60 bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]">
-        <div className="mx-auto flex max-w-3xl px-4 py-3">
+        <div className="mx-auto max-w-3xl px-4 py-3">
+          {/* Rückmeldung direkt über dem Button – ein still fehlgeschlagener
+              Export wäre sonst nicht von einem erfolgreichen zu unterscheiden. */}
+          {status === 'error' && (
+            <p
+              role="alert"
+              className="mb-2 flex items-center gap-1.5 text-sm font-medium text-rose-600 dark:text-rose-400"
+            >
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              {t('report.builder.exportError')}
+            </p>
+          )}
+          {status === 'done' && (
+            <p
+              role="status"
+              className="mb-2 flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400"
+            >
+              <CheckCircle2 className="h-4 w-4 shrink-0" />
+              {t('report.builder.exportDone')}
+            </p>
+          )}
           <button
             type="button"
             onClick={handleExport}
-            disabled={busy}
+            disabled={status === 'busy'}
             className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-base font-semibold text-primary-foreground shadow-[0_4px_14px_color-mix(in_srgb,var(--primary)_35%,transparent)] transition-[transform,background-color] duration-200 active:scale-[0.98] disabled:opacity-60"
           >
             <Download className="w-5 h-5" />
-            {t('report.builder.export')}
+            {status === 'busy' ? t('report.builder.exporting') : t('report.builder.export')}
           </button>
         </div>
       </div>
@@ -577,22 +655,27 @@ interface ToggleChipProps {
   label: string
   active: boolean
   onClick: () => void
+  /** Inhalt ist in der aktuellen Konstellation nicht verfügbar. */
+  disabled?: boolean
 }
 
 /** Toggle-Chip für an-/abwählbare Inhalte (mit Häkchen wenn aktiv). */
-function ToggleChip({ label, active, onClick }: ToggleChipProps) {
+function ToggleChip({ label, active, onClick, disabled = false }: ToggleChipProps) {
   return (
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       aria-pressed={active}
-      className={`focus-ring inline-flex items-center gap-1.5 rounded-2xl px-3.5 py-2 text-sm font-medium transition-[transform,background-color,color] duration-200 active:scale-[0.94] ${
-        active
-          ? 'bg-primary text-primary-foreground border border-primary'
-          : 'glass text-muted hover:bg-surface-2/70'
+      className={`focus-ring inline-flex items-center gap-1.5 rounded-2xl px-3.5 py-2 text-sm font-medium transition-[transform,background-color,color] duration-200 ${
+        disabled
+          ? 'glass cursor-not-allowed text-muted opacity-45'
+          : active
+            ? 'bg-primary text-primary-foreground border border-primary active:scale-[0.94]'
+            : 'glass text-muted hover:bg-surface-2/70 active:scale-[0.94]'
       }`}
     >
-      {active && <Check className="w-3.5 h-3.5" />}
+      {active && !disabled && <Check className="w-3.5 h-3.5" />}
       {label}
     </button>
   )

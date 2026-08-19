@@ -157,7 +157,11 @@
       "categories": "Gewerke",
       "previewTitle": "Vorschau",
       "export": "Als PDF exportieren",
-      "allHint": "Keine Auswahl = alle."
+      "exporting": "PDF wird erstellt …",
+      "exportDone": "PDF erstellt.",
+      "exportError": "Export fehlgeschlagen. Bitte erneut versuchen.",
+      "comparisonHint": "Der Vergleich zur Vorperiode braucht einen festen Zeitraum (7, 30 oder 90 Tage).",
+      "minSelectionHint": "Mindestens eine Auswahl nötig."
     },
     "contents": {
       "charts": "Diagramme",
@@ -180,7 +184,13 @@
       "perDay": "Ø pro Tag",
       "projectedYear": "Hochrechnung / Jahr",
       "costYear": "Kosten / Jahr",
-      "savingsTotal": "Sparpotenzial gesamt"
+      "savingsTotal": "Sparpotenzial gesamt",
+      "sub": {
+        "asOf": "Stand {{date}}",
+        "basis": "Basis: {{value}}",
+        "basisDays_one": "Basis: Ø über {{count}} Tag",
+        "basisDays_other": "Basis: Ø über {{count}} Tage"
+      }
     },
     "trend": {
       "up": "steigend",
@@ -220,7 +230,10 @@
         "measurements": "Noch keine Messungen erledigt.",
         "monitoring": "Keine Energieträger aktiv.",
         "noReading": "Noch keine Ablesung"
-      }
+      },
+      "range": "{{from}} – {{to}}",
+      "readingsCount_one": "{{count}} Ablesung",
+      "readingsCount_other": "{{count}} Ablesungen"
     },
     "overview": {
       "hint": "Umfang und Zeitraum legst du im nächsten Schritt fest.",

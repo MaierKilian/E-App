@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
 import { PdfKit, ratingColor, type KpiCard } from './pdf/pdfKit'
-import { numberFmt, currencyFmt, fmtVal, fmtCur, fmtDate, todayIso } from './pdf/format'
+import { numberFmt, currencyFmt, fmtVal, fmtCur, fmtDate, reportFileName } from './pdf/format'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import type {
   MeasurementsReportData,
@@ -19,6 +19,8 @@ export interface GenerateMeasurementsArgs {
   t: TFunction
   language: string
   data: MeasurementsReportData
+  /** Objektname (Profilname) für Kopfzeile und Dateiname. */
+  objectName?: string
 }
 
 export function generateMeasurementsPdf(args: GenerateMeasurementsArgs): void {
@@ -28,7 +30,7 @@ export function generateMeasurementsPdf(args: GenerateMeasurementsArgs): void {
     (n, total) => args.t('report.pdf.page', { n, total }),
     args.t('report.pdf.footnote'),
   )
-  kit.save(`E-App-${args.t('report.types.measurements.title')}-Bericht-${todayIso()}.pdf`)
+  kit.save(reportFileName(args.t('report.types.measurements.title'), args.objectName))
 }
 
 /**
@@ -37,7 +39,7 @@ export function generateMeasurementsPdf(args: GenerateMeasurementsArgs): void {
  */
 export function fillMeasurements(
   kit: PdfKit,
-  { variant, options, t, language, data }: GenerateMeasurementsArgs,
+  { variant, options, t, language, data, objectName }: GenerateMeasurementsArgs,
   withHeader = true,
 ): void {
   const num = numberFmt(language, 1)
@@ -46,7 +48,8 @@ export function fillMeasurements(
   if (withHeader) {
     kit.headerBand({
       title: t('report.pdf.measurements.title'),
-      subtitle: t('report.pdf.measurements.subtitle'),
+      subtitle: objectName,
+      meta: t('report.pdf.measurements.subtitle'),
       date: t('report.pdf.dateLine', { date: fmtDate(new Date().toISOString(), language) }),
     })
   }
