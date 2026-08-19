@@ -2,8 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Thermometer, Droplets, Wind, PiggyBank, ChevronRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { RatingBadge } from '../RatingBadge'
-import { RATING_COLOR } from '../rating'
+import { ResultHero } from '../ResultHero'
 import type { ResultProps } from '../runnerTypes'
 import {
   rateTemperatureInBand,
@@ -89,27 +88,12 @@ export function RoomTemperatureResult({ result }: ResultProps) {
 
   return (
     <div className="space-y-4">
-      <div className="glass relative overflow-hidden rounded-3xl p-5">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundColor: `color-mix(in srgb, ${RATING_COLOR[result.rating]} 7%, transparent)`,
-          }}
-        />
-        <div className="relative flex flex-col items-center gap-2 py-1 text-center">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-5xl font-bold tabular-nums text-foreground">{fmt(temp, 1)}</span>
-            <span className="text-lg font-medium text-muted">
-              {t('measurements.room_temperature.run.tempUnit')}
-            </span>
-          </div>
-          <RatingBadge rating={result.rating} />
-          <p className="mt-1 text-sm text-muted">
-            {t(`measurements.room_temperature.result.summary.${result.rating}`)}
-          </p>
-        </div>
-      </div>
+      <ResultHero
+        rating={result.rating}
+        value={fmt(temp, 1)}
+        unit={t('measurements.room_temperature.run.tempUnit')}
+        summary={t(`measurements.room_temperature.result.summary.${result.rating}`)}
+      />
 
       <ul className="glass space-y-4 rounded-3xl p-5">
         <StatusRow

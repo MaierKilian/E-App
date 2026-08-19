@@ -5,6 +5,8 @@
 // verschwindet. Das prüft hier ein Test, statt es in der Dokumentation zu hoffen.
 
 import { describe, expect, it } from 'vitest'
+import deLocale from '@/i18n/locales/de.json'
+import enLocale from '@/i18n/locales/en.json'
 import {
   FLASHCARD_SETS,
   FLASHCARD_SUBJECTS,
@@ -70,4 +72,35 @@ describe('Karteninhalt', () => {
       expect(typeof set.placeholder === 'boolean' || set.placeholder === undefined).toBe(true)
     }
   })
+})
+
+describe('Bewertungsskala', () => {
+  // Vorher hatte fast jeder Check eigene Labels für dieselbe vierstufige Skala
+  // ("sparsam" / "Sehr gut" / "Alles frei"). Nebeneinander wirkte das zufällig.
+  // Ein Override ist nur noch gerechtfertigt, wenn er den Befund benennt.
+  const RATINGS = ['good', 'medium', 'elevated', 'high'] as const
+
+  for (const [locale, dict] of [
+    ['de', deLocale],
+    ['en', enLocale],
+  ] as const) {
+    it(`ist in ${locale} vollständig`, () => {
+      const m = (dict as Record<string, never>)['measurements']
+      for (const r of RATINGS) {
+        expect(typeof m.ratings[r], `${locale}/${r}`).toBe('string')
+        expect((m.ratings[r] as string).length, `${locale}/${r}`).toBeGreaterThan(0)
+      }
+    })
+
+    it(`hat in ${locale} zu jedem Override alle vier Stufen`, () => {
+      const m = (dict as Record<string, never>)['measurements']
+      for (const [check, node] of Object.entries(m)) {
+        const overrides = (node as { result?: { ratings?: Record<string, string> } })?.result?.ratings
+        if (!overrides) continue
+        for (const r of RATINGS) {
+          expect(typeof overrides[r], `${locale}/${check}/${r}`).toBe('string')
+        }
+      }
+    })
+  }
 })

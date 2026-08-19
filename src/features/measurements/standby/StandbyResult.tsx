@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { RatingBadge } from '../RatingBadge'
-import { RATING_COLOR } from '../rating'
+import { ResultHero } from '../ResultHero'
 import type { ResultProps } from '../runnerTypes'
 import type { StandbyDeviceType } from './standby'
 
@@ -56,37 +55,21 @@ export function StandbyResult({ result }: ResultProps) {
 
   return (
     <div className="space-y-4">
-      <div className="glass relative overflow-hidden rounded-3xl p-5">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundColor: `color-mix(in srgb, ${RATING_COLOR[result.rating]} 7%, transparent)`,
-          }}
-        />
-        <div className="relative flex flex-col items-center gap-2 py-1 text-center">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-5xl font-bold tabular-nums text-foreground">
-              {fmt(annualCost)}
-            </span>
-            <span className="text-lg font-medium text-muted">
-              {t('measurements.standby.result.costPerYear')}
-            </span>
-          </div>
-          <p className="text-sm text-muted">
-            {t('measurements.standby.result.costPerMonth', { value: fmt(monthlyCost) })}
-          </p>
-          <RatingBadge rating={result.rating} />
-          <p className="mt-1 text-sm text-muted">
-            {t(`measurements.standby.result.summary.${result.rating}`)}
-          </p>
-          {isEstimated && (
-            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
-              {t('measurements.standby.result.estimated')}
-            </span>
-          )}
-        </div>
-      </div>
+      <ResultHero
+        rating={result.rating}
+        value={fmt(annualCost)}
+        unit={t('measurements.standby.result.costPerYear')}
+        summary={t(`measurements.standby.result.summary.${result.rating}`)}
+      >
+        <p className="text-sm text-muted">
+          {t('measurements.standby.result.costPerMonth', { value: fmt(monthlyCost) })}
+        </p>
+        {isEstimated && (
+          <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
+            {t('measurements.standby.result.estimated')}
+          </span>
+        )}
+      </ResultHero>
 
       {/* Mini-Kacheln: Standby-Leistung & Jahresverbrauch */}
       <div className="grid grid-cols-2 gap-2">

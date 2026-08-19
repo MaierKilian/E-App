@@ -3,7 +3,7 @@ import { Sofa, Check, Info, Ruler, Link2 } from 'lucide-react'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { DEFAULT_COMFORT_BAND } from '../room_temperature/roomClimate'
-import { RATING_COLOR } from '../rating'
+import { ResultHero } from '../ResultHero'
 import { instanceKey } from '../rooms'
 import type { ResultProps } from '../runnerTypes'
 import { contextNotes } from './context'
@@ -28,7 +28,6 @@ import {
 export function FurnitureSpacingResult({ result }: ResultProps) {
   const { t } = useTranslation()
   const underfloor = (result.details?.underfloor ?? 0) === 1
-  const color = RATING_COLOR[result.rating]
   // Über alle bekannten Befunde lesen: Welche Fragen gestellt wurden, hängt vom
   // Raumtyp ab und kann sich zwischen App-Ständen geändert haben.
   const answers: FurnitureAnswers = {}
@@ -65,34 +64,12 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
 
   return (
     <div className="space-y-4">
-      <div className="glass relative overflow-hidden rounded-3xl p-5">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{ backgroundColor: `color-mix(in srgb, ${color} 7%, transparent)` }}
-        />
-        <div className="relative flex flex-col items-center gap-2 py-1 text-center">
-          <span
-            className="grid h-12 w-12 place-items-center rounded-2xl"
-            style={{ backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)`, color }}
-          >
-            <Sofa className="h-6 w-6" />
-          </span>
-          <span
-            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
-            style={{
-              color,
-              backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)`,
-              border: `1px solid color-mix(in srgb, ${color} 32%, transparent)`,
-            }}
-          >
-            {t(`measurements.furniture_spacing.result.ratings.${result.rating}`)}
-          </span>
-          <p className="mt-1 max-w-sm text-sm text-muted">
-            {t(`measurements.furniture_spacing.result.summary.${result.rating}`)}
-          </p>
-        </div>
-      </div>
+      <ResultHero
+        rating={result.rating}
+        icon={Sofa}
+        badgeLabel={t(`measurements.furniture_spacing.result.ratings.${result.rating}`)}
+        summary={t(`measurements.furniture_spacing.result.summary.${result.rating}`)}
+      />
 
       {distanceCm !== undefined && (
         <div className="glass rounded-3xl p-5">

@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { RatingBadge } from '../RatingBadge'
-import { RATING_COLOR } from '../rating'
+import { ResultHero } from '../ResultHero'
 import { HOT_WATER_SOURCES } from './hotWaterEnergy'
 import type { ResultProps } from '../runnerTypes'
 
@@ -50,25 +49,12 @@ export function ShowerheadResult({ result }: ResultProps) {
 
   return (
     <div className="space-y-4">
-      <div className="glass relative overflow-hidden rounded-3xl p-5">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{ backgroundColor: `color-mix(in srgb, ${RATING_COLOR[result.rating]} 7%, transparent)` }}
-        />
-        <div className="relative flex flex-col items-center gap-2 py-1 text-center">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-5xl font-bold tabular-nums text-foreground">{fmt(flow, 1)}</span>
-            <span className="text-lg font-medium text-muted">
-              {t('measurements.showerhead.result.flowUnit')}
-            </span>
-          </div>
-          <RatingBadge rating={result.rating} />
-          <p className="mt-1 text-sm text-muted">
-            {t(`measurements.showerhead.result.summary.${result.rating}`)}
-          </p>
-        </div>
-      </div>
+      <ResultHero
+        rating={result.rating}
+        value={fmt(flow, 1)}
+        unit={t('measurements.showerhead.result.flowUnit')}
+        summary={t(`measurements.showerhead.result.summary.${result.rating}`)}
+      />
 
       <div className="grid grid-cols-3 gap-2">
         <MiniTile

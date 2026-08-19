@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { RatingBadge } from '../RatingBadge'
-import { RATING_COLOR } from '../rating'
+import { ResultHero } from '../ResultHero'
 import type { ResultProps } from '../runnerTypes'
 import { freezerTempStatus, type FrostLevel } from './freezer'
 
@@ -47,47 +46,25 @@ export function FreezerResult({ result }: ResultProps) {
 
   return (
     <div className="space-y-4">
-      <div className="glass relative overflow-hidden rounded-3xl p-5">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundColor: `color-mix(in srgb, ${RATING_COLOR[result.rating]} 7%, transparent)`,
-          }}
-        />
-        <div className="relative flex flex-col items-center gap-2 py-1 text-center">
-          {hasFrost && avoidable > 0 ? (
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-4xl font-bold tabular-nums text-foreground">
-                ≈ {fmt(avoidable)}
+      <ResultHero
+        rating={result.rating}
+        value={hasFrost && avoidable > 0 ? `≈ ${fmt(avoidable)}` : t('measurements.freezer.result.allGood')}
+        unit={hasFrost && avoidable > 0 ? t('measurements.freezer.result.costPerYear') : undefined}
+        summary={t(`measurements.freezer.result.summary.${result.rating}`)}
+      >
+        {hasFrost && avoidable > 0 && (
+          <>
+            <p className="text-xs text-muted">
+              {t(`measurements.freezer.result.method.${methodIdx === 2 ? 'measured' : 'estimate'}`)}
+            </p>
+            {estimated && (
+              <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
+                {t('measurements.freezer.result.estimated')}
               </span>
-              <span className="text-lg font-medium text-muted">
-                {t('measurements.freezer.result.costPerYear')}
-              </span>
-            </div>
-          ) : (
-            <span className="text-3xl font-bold text-foreground">
-              {t('measurements.freezer.result.allGood')}
-            </span>
-          )}
-          <RatingBadge rating={result.rating} />
-          <p className="mt-1 text-sm text-muted">
-            {t(`measurements.freezer.result.summary.${result.rating}`)}
-          </p>
-          {hasFrost && avoidable > 0 && (
-            <>
-              <p className="text-xs text-muted">
-                {t(`measurements.freezer.result.method.${methodIdx === 2 ? 'measured' : 'estimate'}`)}
-              </p>
-              {estimated && (
-                <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
-                  {t('measurements.freezer.result.estimated')}
-                </span>
-              )}
-            </>
-          )}
-        </div>
-      </div>
+            )}
+          </>
+        )}
+      </ResultHero>
 
       <div className="flex flex-wrap gap-2">
         <Chip label={t(`measurements.freezer.result.frostChips.${frost}`)} />

@@ -1,16 +1,7 @@
 import { useTranslation } from 'react-i18next'
-import { RATING_COLOR } from '../rating'
+import { MetricTiles } from '../MetricTiles'
+import { ResultHero } from '../ResultHero'
 import type { ResultProps } from '../runnerTypes'
-
-/** Kleine Kennzahl-Kachel (Label oben, Wert unten). */
-function MiniTile({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="glass flex flex-col items-center gap-1 rounded-2xl p-3 text-center">
-      <span className="text-[11px] text-muted">{label}</span>
-      <span className="text-sm font-semibold tabular-nums text-foreground">{value}</span>
-    </div>
-  )
-}
 
 /** Knapper Tipp-Chip. */
 function Chip({ label }: { label: string }) {
@@ -39,67 +30,43 @@ export function HotWaterWaitResult({ result }: ResultProps) {
 
   return (
     <div className="space-y-4">
-      <div className="glass relative overflow-hidden rounded-3xl p-5">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundColor: `color-mix(in srgb, ${RATING_COLOR[result.rating]} 7%, transparent)`,
-          }}
-        />
-        <div className="relative flex flex-col items-center gap-2 py-1 text-center">
-          {fixture && (
-            <span className="text-xs font-medium text-muted">
-              {t(`measurements.hot_water_wait.fixtures.${fixture}`)}
-            </span>
-          )}
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-5xl font-bold tabular-nums text-foreground">{nf(seconds)}</span>
-            <span className="text-lg font-medium text-muted">
-              {t('measurements.hot_water_wait.result.secondsUnit')}
-            </span>
-          </div>
-          <span
-            className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold"
-            style={{
-              color: RATING_COLOR[result.rating],
-              backgroundColor: `color-mix(in srgb, ${RATING_COLOR[result.rating]} 14%, transparent)`,
-              border: `1px solid color-mix(in srgb, ${RATING_COLOR[result.rating]} 32%, transparent)`,
-            }}
-          >
-            {t(`measurements.hot_water_wait.result.ratings.${result.rating}`)}
-          </span>
-          <p className="mt-1 max-w-sm text-sm text-muted">
-            {t('measurements.hot_water_wait.result.explanation', {
-              seconds: nf(seconds),
-              liters: nf(litersPerDraw, 1),
-            })}
-          </p>
-        </div>
-      </div>
+      <ResultHero
+        rating={result.rating}
+        eyebrow={fixture ? t(`measurements.hot_water_wait.fixtures.${fixture}`) : undefined}
+        value={nf(seconds)}
+        unit={t('measurements.hot_water_wait.result.secondsUnit')}
+        summary={t('measurements.hot_water_wait.result.explanation', {
+          liters: nf(litersPerDraw, 1),
+        })}
+      />
 
-      {/* Kennzahlen */}
-      <div className="grid grid-cols-3 gap-2">
-        <MiniTile
-          label={t('measurements.hot_water_wait.result.perDraw')}
-          value={`${nf(litersPerDraw, 1)} L`}
-        />
-        <MiniTile
-          label={t('measurements.hot_water_wait.result.perYear')}
-          value={`${nf(litersPerYear)} L`}
-        />
-        <MiniTile
-          label={t('measurements.hot_water_wait.result.savingYear')}
-          value={`≈ ${nf(yearlySaving)} €`}
-        />
-      </div>
+      {/* Gemessen und hochgerechnet sichtbar getrennt. */}
+      <MetricTiles
+        metrics={[
+          {
+            label: t('measurements.hot_water_wait.result.perDraw'),
+            value: `${nf(litersPerDraw, 1)} L`,
+          },
+          {
+            label: t('measurements.hot_water_wait.result.perYear'),
+            value: `${nf(litersPerYear)} L`,
+            estimated: true,
+          },
+          {
+            label: t('measurements.hot_water_wait.result.savingYear'),
+            value: `≈ ${nf(yearlySaving)} €`,
+            estimated: true,
+          },
+        ]}
+      />
 
-      {/* Wiederverwendungs-Ideen */}
+      {/* Beiläufige Ideen – bewusst zurückgenommen, damit sie die Kennzahlen
+          nicht optisch überstrahlen. */}
       <div className="glass rounded-3xl p-4">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+        <p className="mb-2 text-xs text-muted">
           {t('measurements.hot_water_wait.result.reuseTitle')}
-        </h3>
-        <div className="flex flex-wrap gap-2">
+        </p>
+        <div className="flex flex-wrap gap-1.5">
           {reuse.map((label) => (
             <Chip key={label} label={label} />
           ))}

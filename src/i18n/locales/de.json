@@ -246,10 +246,10 @@
     "difficultyLabel": "Schwierigkeit",
     "minutesUnit": "Min.",
     "ratings": {
-      "good": "sparsam",
-      "medium": "mittel",
-      "high": "hoch",
-      "elevated": "auffällig"
+      "good": "Sehr gut",
+      "medium": "Gut",
+      "elevated": "Auffällig",
+      "high": "Hoch"
     },
     "views": {
       "recommended": "Empfohlen",
@@ -294,7 +294,8 @@
       "progress": "{{current}} / {{total}}",
       "phaseIntro": "Info",
       "phaseRun": "Messen",
-      "phaseResult": "Ergebnis"
+      "phaseResult": "Ergebnis",
+      "estimated": "geschätzt"
     },
     "showerhead": {
       "title": "Duschkopf-Test",
@@ -714,23 +715,17 @@
       },
       "result": {
         "secondsUnit": "Sek.",
-        "explanation": "Bis warmes Wasser da war, vergingen {{seconds}} Sek. In dieser Zeit flossen rund {{liters}} L Trinkwasser ungenutzt ab – das ließe sich auffangen und weiternutzen.",
+        "explanation": "In dieser Zeit flossen rund {{liters}} L Trinkwasser ungenutzt ab.",
         "perDraw": "pro Zapfung",
         "perYear": "pro Jahr",
-        "savingYear": "Potenzial/Jahr",
-        "reuseTitle": "Aufgefangenes Wasser nutzen für",
+        "savingYear": "Wasserkosten/Jahr",
+        "reuseTitle": "Aufgefangen lässt es sich nutzen für",
         "reuse": [
           "Pflanzen gießen",
           "Putzwasser",
           "Reinigung",
           "Toilettenspülung"
-        ],
-        "ratings": {
-          "good": "Sehr gut",
-          "medium": "Gut",
-          "elevated": "Auffällig",
-          "high": "Hoch"
-        }
+        ]
       }
     },
     "furniture_spacing": {
