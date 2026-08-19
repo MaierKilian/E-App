@@ -820,7 +820,7 @@
         "findingsTitle": "Befunde",
         "allClear": "Nichts blockiert die Heizfläche und der Temperaturfühler arbeitet frei. Beim Umstellen von Möbeln lohnt ein kurzer Blick, dass es so bleibt.",
         "mechanismTitle": "Warum das zählt",
-        "mechanism": "Die Wärme geht nicht verloren – der Heizkörper steht innerhalb der Gebäudehülle und gibt sie fast vollständig an den Raum ab. Verbrauch kostet es auf drei anderen Wegen: Der Temperaturfühler misst im Wärmestau zu warm und regelt zu früh ab, der Raum wird kühler und wird höher gedreht. An einer Außenwand steigt hinter dem Stau die Wandtemperatur und damit der Verlust nach außen. Und es braucht eine höhere Vorlauftemperatur für dieselbe Leistung – bei einer Wärmepumpe verschlechtert das direkt die Arbeitszahl.",
+        "mechanism": "Die Wärme geht nicht verloren – der Heizkörper steht innerhalb der Gebäudehülle und gibt sie fast vollständig an den Raum ab. Verbrauch kostet es auf drei anderen Wegen: Der Temperaturfühler misst im Wärmestau zu warm und regelt zu früh ab, der Raum wird kühler und wird höher gedreht. An einer Außenwand steigt hinter dem Stau die Wandtemperatur und damit der Verlust nach außen. Und es braucht eine höhere Vorlauftemperatur für dieselbe Leistung.",
         "findings": {
           "valve": {
             "partly": "Thermostatventil teilweise eingeschlossen",
@@ -885,7 +885,12 @@
           ]
         },
         "distanceTitle": "Gemessener Abstand",
-        "distanceContext": "Empfohlen sind mindestens {{target}} cm, damit Luft von unten frei nachströmen kann. Unter 5 cm ist die Luftzufuhr praktisch unterbunden."
+        "distanceContext": "Empfohlen sind mindestens {{target}} cm, damit Luft von unten frei nachströmen kann. Unter 5 cm ist die Luftzufuhr praktisch unterbunden.",
+        "notesTitle": "Zusammenhang",
+        "notes": {
+          "sensorAndCold": "Im Raumklima-Check war dieser Raum unterhalb seines Komfortbands – zusammen mit dem eingeschlossenen Fühler ergibt das ein bekanntes Muster: Der Fühler misst Stauwärme, regelt zu früh ab, der Raum bleibt kühl und wird von Hand höher gedreht. Den Fühler freizustellen wirkt hier mehr als jede Änderung am Thermostat.",
+          "heatPump": "Dein Profil enthält eine Wärmepumpe. Jede blockierte Heizfläche muss über eine höhere Vorlauftemperatur ausgeglichen werden – und die kostet bei einer Wärmepumpe unmittelbar Arbeitszahl. Die Blockade zu beheben wirkt hier stärker als bei einem Brennwertkessel."
+        }
       }
     },
     "base_load": {

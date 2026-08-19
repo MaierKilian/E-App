@@ -1,7 +1,12 @@
 import { useTranslation } from 'react-i18next'
-import { Sofa, Check, Info, Ruler } from 'lucide-react'
+import { Sofa, Check, Info, Ruler, Link2 } from 'lucide-react'
+import { useMeasurementsStore } from '@/store/measurementsStore'
+import { useOnboardingStore } from '@/store/onboardingStore'
+import { DEFAULT_COMFORT_BAND } from '../room_temperature/roomClimate'
 import { RATING_COLOR } from '../rating'
+import { instanceKey } from '../rooms'
 import type { ResultProps } from '../runnerTypes'
+import { contextNotes } from './context'
 import {
   ALL_FINDING_KEYS,
   rateFurniture,
@@ -45,6 +50,18 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
 
   const allClear = hasAnswers && findings.length === 0
   const distanceCm = result.details?.distanceCm
+
+  // Raumklima-Ergebnis desselben Raums und Wärmeerzeuger aus dem Profil: Erst
+  // daraus entstehen Aussagen, die diese Messung allein nicht hergibt.
+  const climate = useMeasurementsStore(
+    (s) => s.results[instanceKey('room_temperature', result.roomKey)],
+  )
+  const heatPump = useOnboardingStore((s) => s.data.heatGenerators.includes('heat_pump'))
+  const notes = contextNotes(findings, {
+    roomTempC: climate?.details?.temperature ?? climate?.primaryValue,
+    comfortMinC: climate?.details?.bandMin ?? (climate ? DEFAULT_COMFORT_BAND.min : undefined),
+    heatPump,
+  })
 
   return (
     <div className="space-y-4">
@@ -123,6 +140,22 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
                     {t(`measurements.furniture_spacing.result.findings.${f.key}.action`)}
                   </span>
                 </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {notes.length > 0 && (
+        <div className="glass rounded-3xl p-4">
+          <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted">
+            <Link2 className="h-4 w-4" />
+            {t('measurements.furniture_spacing.result.notesTitle')}
+          </h3>
+          <ul className="space-y-3">
+            {notes.map((note) => (
+              <li key={note} className="text-sm leading-relaxed text-foreground">
+                {t(`measurements.furniture_spacing.result.notes.${note}`)}
               </li>
             ))}
           </ul>

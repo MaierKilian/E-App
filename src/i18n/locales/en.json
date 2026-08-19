@@ -820,7 +820,7 @@
         "findingsTitle": "Findings",
         "allClear": "Nothing blocks the heat surface and the temperature sensor works freely. Worth a quick check whenever you rearrange furniture.",
         "mechanismTitle": "Why this matters",
-        "mechanism": "The heat is not lost – the radiator sits inside the building envelope and releases almost all of it into the room. It costs energy in three other ways: the temperature sensor reads the trapped heat, shuts off too early, the room stays cool and gets turned up by hand. On an external wall the trapped heat raises the wall temperature and with it the loss to the outside. And a higher flow temperature is needed for the same output – with a heat pump that directly worsens the coefficient of performance.",
+        "mechanism": "The heat is not lost – the radiator sits inside the building envelope and releases almost all of it into the room. It costs energy in three other ways: the temperature sensor reads the trapped heat, shuts off too early, the room stays cool and gets turned up by hand. On an external wall the trapped heat raises the wall temperature and with it the loss to the outside. And a higher flow temperature is needed for the same output.",
         "findings": {
           "valve": {
             "partly": "Thermostatic valve partly enclosed",
@@ -885,7 +885,12 @@
           ]
         },
         "distanceTitle": "Measured distance",
-        "distanceContext": "At least {{target}} cm is recommended so air can flow in freely from below. Under 5 cm the air intake is effectively cut off."
+        "distanceContext": "At least {{target}} cm is recommended so air can flow in freely from below. Under 5 cm the air intake is effectively cut off.",
+        "notesTitle": "Connection",
+        "notes": {
+          "sensorAndCold": "The room climate check measured this room below its comfort range – together with the enclosed sensor that forms a familiar pattern: the sensor reads trapped heat, shuts off too early, the room stays cool and gets turned up by hand. Freeing the sensor helps more here than any change at the thermostat.",
+          "heatPump": "Your profile includes a heat pump. Every blocked heat surface has to be compensated by a higher flow temperature – and with a heat pump that immediately costs efficiency. Clearing the obstruction is worth more here than with a condensing boiler."
+        }
       }
     },
     "base_load": {
