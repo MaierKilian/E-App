@@ -149,7 +149,9 @@
       "summaryContents": "{{selected}} von {{total}} Inhalten",
       "summaryAllMeters": "Alle Zähler",
       "summaryAllCategories": "Alle Gewerke",
-      "summaryAllRange": "Alle Ablesungen"
+      "summaryAllRange": "Alle Ablesungen",
+      "share": "PDF teilen",
+      "shareDone": "PDF geteilt."
     },
     "contents": {
       "charts": "Verbrauchsdiagramm",

@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 import { PdfKit } from './pdf/pdfKit'
 import { fmtDate, fmtNum, numberFmt, reportFileName } from './pdf/format'
+import type { ReportDocument } from './pdf/deliver'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import { fillMeasurements } from './generateMeasurementsPdf'
 import { fillMonitoring } from './generateMonitoringPdf'
@@ -31,7 +32,7 @@ export interface GenerateGesamtArgs {
   monitoring: MonitoringReportData
 }
 
-export function generateGesamtPdf(args: GenerateGesamtArgs): void {
+export function generateGesamtPdf(args: GenerateGesamtArgs): ReportDocument {
   const { variant, options, t, language, profile, measurements, monitoring } = args
   const kit = new PdfKit()
 
@@ -58,7 +59,7 @@ export function generateGesamtPdf(args: GenerateGesamtArgs): void {
     (n, total) => t('report.pdf.page', { n, total }),
     t('report.pdf.footnote'),
   )
-  kit.save(reportFileName(t('report.types.total.title'), objectName))
+  return { doc: kit.doc, fileName: reportFileName(t('report.types.total.title'), objectName) }
 }
 
 /** Kurzer Profilkopf als Label/Wert-Tabelle. */

@@ -149,7 +149,9 @@
       "summaryContents": "{{selected}} of {{total}} contents",
       "summaryAllMeters": "All meters",
       "summaryAllCategories": "All trades",
-      "summaryAllRange": "All readings"
+      "summaryAllRange": "All readings",
+      "share": "Share PDF",
+      "shareDone": "PDF shared."
     },
     "contents": {
       "charts": "Consumption chart",

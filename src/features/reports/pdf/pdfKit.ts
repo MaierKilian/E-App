@@ -634,11 +634,6 @@ export class PdfKit {
       this.doc.text(toLatin1(pageLabel(p, total)), PAGE_W - MARGIN_X, PAGE_H - 22, { align: 'right' })
     }
   }
-
-  /** Speichert das Dokument unter `name` (löst den Download aus). */
-  save(name: string): void {
-    this.doc.save(name)
-  }
 }
 
 // --- Formatierungs-Helfer (modul-lokal) ---

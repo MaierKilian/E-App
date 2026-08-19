@@ -1,6 +1,7 @@
 import type { TFunction } from 'i18next'
 import { PdfKit, ratingColor, type KpiCard } from './pdf/pdfKit'
 import { numberFmt, currencyFmt, fmtVal, fmtCur, fmtDate, reportFileName } from './pdf/format'
+import type { ReportDocument } from './pdf/deliver'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import type {
   MeasurementsReportData,
@@ -9,8 +10,8 @@ import type {
 } from './measurementsReportData'
 
 /**
- * Erzeugt den Messungen-Bericht (Kurz/Lang) als grafisches PDF und startet
- * den Download. Inhalte richten sich nach `options`.
+ * Erzeugt den Messungen-Bericht (Kurz/Lang) als grafisches PDF. Inhalte
+ * richten sich nach `options`; die Auslieferung übernimmt {@link deliverReport}.
  */
 
 export interface GenerateMeasurementsArgs {
@@ -23,14 +24,17 @@ export interface GenerateMeasurementsArgs {
   objectName?: string
 }
 
-export function generateMeasurementsPdf(args: GenerateMeasurementsArgs): void {
+export function generateMeasurementsPdf(args: GenerateMeasurementsArgs): ReportDocument {
   const kit = new PdfKit()
   fillMeasurements(kit, args)
   kit.finalizeFooters(
     (n, total) => args.t('report.pdf.page', { n, total }),
     args.t('report.pdf.footnote'),
   )
-  kit.save(reportFileName(args.t('report.types.measurements.title'), args.objectName))
+  return {
+    doc: kit.doc,
+    fileName: reportFileName(args.t('report.types.measurements.title'), args.objectName),
+  }
 }
 
 /**

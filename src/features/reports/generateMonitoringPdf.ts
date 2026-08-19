@@ -9,6 +9,7 @@ import {
   fmtDateShort,
   reportFileName,
 } from './pdf/format'
+import type { ReportDocument } from './pdf/deliver'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import type { MonitoringReportData, MonitoringEntry } from './monitoringReportData'
 
@@ -16,9 +17,10 @@ import type { MonitoringReportData, MonitoringEntry } from './monitoringReportDa
 const SHORT_HISTORY_ROWS = 8
 
 /**
- * Erzeugt den Monitoring-Bericht (Kurz/Lang) als grafisches PDF und startet
- * den Download. Kurz = kompakte Karten + kleines Diagramm; Lang = großes
- * Diagramm, volle KPI-Reihe, Vergleich und Ablese-Historie.
+ * Erzeugt den Monitoring-Bericht (Kurz/Lang) als grafisches PDF.
+ * Kurz = kompakte Karten + kleines Diagramm; Lang = große Diagramme, volle
+ * KPI-Reihe, Vergleich und Ablese-Historie. Die Auslieferung (Teilen oder
+ * Download) übernimmt {@link deliverReport}.
  */
 
 export interface GenerateMonitoringArgs {
@@ -31,14 +33,17 @@ export interface GenerateMonitoringArgs {
   objectName?: string
 }
 
-export function generateMonitoringPdf(args: GenerateMonitoringArgs): void {
+export function generateMonitoringPdf(args: GenerateMonitoringArgs): ReportDocument {
   const kit = new PdfKit()
   fillMonitoring(kit, args)
   kit.finalizeFooters(
     (n, total) => args.t('report.pdf.page', { n, total }),
     args.t('report.pdf.footnote'),
   )
-  kit.save(reportFileName(args.t('report.types.monitoring.title'), args.objectName))
+  return {
+    doc: kit.doc,
+    fileName: reportFileName(args.t('report.types.monitoring.title'), args.objectName),
+  }
 }
 
 /** Schreibt den Monitoring-Abschnitt (auch vom Gesamt-Bericht genutzt). */

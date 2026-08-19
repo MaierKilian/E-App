@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import {
   FileText,
   Download,
+  Share2,
   Ruler,
   Gauge,
   Layers,
@@ -21,12 +22,14 @@ import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore } from '@/store/tariffStore'
+import { useReportSettingsStore } from '@/store/reportSettingsStore'
 import { activeEnergyTypes } from '@/features/monitoring/energyConfig'
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import { anyResultFor } from '@/features/measurements/rooms'
 import type { MeasurementCategory } from '@/features/measurements/catalog'
 import type { EnergyType } from '@/store/readingsStore'
 import { fmtDateShort } from './pdf/format'
+import { canSharePdf, deliverReport } from './pdf/deliver'
 import { buildMeasurementsReportData } from './measurementsReportData'
 import {
   buildMonitoringReportData,
@@ -256,7 +259,7 @@ interface BuilderProps {
 }
 
 /** Zustand der Export-Schaltfläche (steuert Label und Rückmeldung). */
-type ExportStatus = 'idle' | 'busy' | 'done' | 'error'
+type ExportStatus = 'idle' | 'busy' | 'done' | 'shared' | 'error'
 
 /** Builder: Variante, Inhalte, Zeitraum, Auswahl + Vorschau + Export. */
 function ReportBuilder({ type, onBack }: BuilderProps) {
@@ -278,20 +281,30 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
     [],
   )
 
-  const [variant, setVariant] = useState<ReportVariant>('short')
-  const [options, setOptions] = useState<ReportContentOptions>(() => defaultContentOptions('short'))
-  // Selbst gesetzte Inhalts-Häkchen überleben einen Variantenwechsel; alle
-  // übrigen folgen weiter den Defaults der jeweiligen Variante.
-  const [touched, setTouched] = useState<Set<keyof ReportContentOptions>>(() => new Set())
-  // Zeitraum passend zu den vorhandenen Ablesungen vorbelegen – ein fester
-  // 30-Tage-Default träfe bei unregelmäßiger Ablesung oft gar keine Daten.
-  const [rangeDays, setRangeDays] = useState<RangeDays>(() =>
-    suggestRangeDays(readingsByType, meterTypes),
+  // Der Builder liest und schreibt direkt die zuletzt benutzten Einstellungen –
+  // wer monatlich denselben Bericht zieht, stellt ihn nicht jedes Mal neu ein.
+  const settings = useReportSettingsStore()
+  const { variant, options } = settings
+
+  // Gespeicherter Zeitraum gilt; ohne eigene Wahl passend zu den vorhandenen
+  // Ablesungen ableiten (ein fester Default traefe oft gar keine Daten).
+  const autoRange = useMemo(
+    () => suggestRangeDays(readingsByType, meterTypes),
+    [readingsByType, meterTypes],
   )
-  // Auswahl ist explizit: anfangs alles gewählt, Tippen wählt ab. Mindestens
-  // ein Eintrag bleibt stehen (sonst wäre der Bericht leer).
-  const [meters, setMeters] = useState<EnergyType[]>(() => meterTypes)
-  const [categories, setCategories] = useState<MeasurementCategory[]>(() => catTypes)
+  const rangeDays: RangeDays = settings.range === 'auto' ? autoRange : settings.range
+
+  // Gespeicherte Auswahl gegen die aktuell verfügbaren Einträge filtern – ein
+  // Profilwechsel kann Zähler oder Gewerke entfernt haben.
+  const meters = useMemo(() => {
+    const kept = settings.meters.filter((m) => meterTypes.includes(m))
+    return kept.length > 0 ? kept : meterTypes
+  }, [settings.meters, meterTypes])
+  const categories = useMemo(() => {
+    const kept = settings.categories.filter((c) => catTypes.includes(c))
+    return kept.length > 0 ? kept : catTypes
+  }, [settings.categories, catTypes])
+
   const [status, setStatus] = useState<ExportStatus>('idle')
   // Erweiterte Optionen (Inhalte, Zeitraum, Zähler, Gewerke) standardmäßig
   // eingeklappt – der Standard ist bewusst schlank (nur Umfang + Export).
@@ -300,29 +313,41 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
   // Der Vergleich braucht ein gleich langes Fenster davor – bei „Alle" gibt es keins.
   const comparisonAvailable = rangeDays !== null
 
+  // Auf dem Telefon ist das System-Teilen der natürliche Weg (Sichern, Mail,
+  // Messenger und Vorschau in einem Schritt); sonst bleibt es beim Download.
+  const shareable = useMemo(() => canSharePdf(), [])
+
   const changeVariant = (v: ReportVariant) => {
-    setVariant(v)
-    setOptions((prev) => {
-      const next = defaultContentOptions(v)
-      for (const key of touched) next[key] = prev[key]
-      return next
-    })
+    const next = defaultContentOptions(v)
+    // Selbst gesetzte Häkchen überleben den Variantenwechsel, alle übrigen
+    // folgen den Defaults der neuen Variante.
+    for (const key of settings.touched) next[key] = options[key]
+    settings.setVariant(v, next)
   }
 
   const toggleOption = (key: keyof ReportContentOptions) => {
-    setTouched((cur) => new Set(cur).add(key))
-    setOptions((o) => ({ ...o, [key]: !o[key] }))
+    const touched = settings.touched.includes(key)
+      ? settings.touched
+      : [...settings.touched, key]
+    settings.setOptions({ ...options, [key]: !options[key] }, touched)
   }
 
-  const toggleMeter = (m: EnergyType) =>
-    setMeters((cur) =>
-      cur.includes(m) ? (cur.length > 1 ? cur.filter((x) => x !== m) : cur) : [...cur, m],
-    )
+  // Mindestens ein Eintrag bleibt stehen – sonst wäre der Bericht leer.
+  const toggleMeter = (m: EnergyType) => {
+    if (meters.includes(m)) {
+      if (meters.length > 1) settings.setMeters(meters.filter((x) => x !== m))
+    } else {
+      settings.setMeters([...meters, m])
+    }
+  }
 
-  const toggleCategory = (c: MeasurementCategory) =>
-    setCategories((cur) =>
-      cur.includes(c) ? (cur.length > 1 ? cur.filter((x) => x !== c) : cur) : [...cur, c],
-    )
+  const toggleCategory = (c: MeasurementCategory) => {
+    if (categories.includes(c)) {
+      if (categories.length > 1) settings.setCategories(categories.filter((x) => x !== c))
+    } else {
+      settings.setCategories([...categories, c])
+    }
+  }
 
   // Objektname für Kopfzeile und Dateiname des PDF.
   const objectName = (profile.profileName ?? '').trim() || undefined
@@ -438,29 +463,18 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
     window.clearTimeout(resetTimer.current)
     setStatus('busy')
     try {
+      const common = { variant, options, t, language: i18n.language, objectName }
+      let report
+
       if (type === 'measurements' && measurementsData) {
         const { generateMeasurementsPdf } = await import('./generateMeasurementsPdf')
-        generateMeasurementsPdf({
-          variant,
-          options,
-          t,
-          language: i18n.language,
-          data: measurementsData,
-          objectName,
-        })
+        report = generateMeasurementsPdf({ ...common, data: measurementsData })
       } else if (type === 'monitoring' && monitoringData) {
         const { generateMonitoringPdf } = await import('./generateMonitoringPdf')
-        generateMonitoringPdf({
-          variant,
-          options,
-          t,
-          language: i18n.language,
-          data: monitoringData,
-          objectName,
-        })
+        report = generateMonitoringPdf({ ...common, data: monitoringData })
       } else if (measurementsData && monitoringData) {
         const { generateGesamtPdf } = await import('./generateGesamtPdf')
-        generateGesamtPdf({
+        report = generateGesamtPdf({
           variant,
           options,
           t,
@@ -476,7 +490,19 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
           monitoring: monitoringData,
         })
       }
-      setStatus('done')
+
+      if (!report) {
+        setStatus('idle')
+        return
+      }
+
+      const result = await deliverReport(report, t(`report.types.${type}.title`))
+      // Abbruch im System-Teilen-Dialog ist kein Fehler und keine Erfolgsmeldung.
+      if (result === 'cancelled') {
+        setStatus('idle')
+        return
+      }
+      setStatus(result === 'shared' ? 'shared' : 'done')
       resetTimer.current = window.setTimeout(() => setStatus('idle'), 4000)
     } catch (error) {
       // Ohne sichtbare Meldung würde der Button einfach wieder aktiv werden
@@ -605,7 +631,7 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
                       key={r.key}
                       label={t(`report.range.${r.key}`)}
                       selected={rangeDays === r.value}
-                      onClick={() => setRangeDays(r.value)}
+                      onClick={() => settings.setRange(r.value)}
                     />
                   ))}
                 </div>
@@ -667,13 +693,13 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
               {t('report.builder.exportError')}
             </p>
           )}
-          {status === 'done' && (
+          {(status === 'done' || status === 'shared') && (
             <p
               role="status"
               className="mb-2 flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400"
             >
               <CheckCircle2 className="h-4 w-4 shrink-0" />
-              {t('report.builder.exportDone')}
+              {t(status === 'shared' ? 'report.builder.shareDone' : 'report.builder.exportDone')}
             </p>
           )}
           <button
@@ -682,8 +708,10 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
             disabled={status === 'busy'}
             className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-base font-semibold text-primary-foreground shadow-[0_4px_14px_color-mix(in_srgb,var(--primary)_35%,transparent)] transition-[transform,background-color] duration-200 active:scale-[0.98] disabled:opacity-60"
           >
-            <Download className="w-5 h-5" />
-            {status === 'busy' ? t('report.builder.exporting') : t('report.builder.export')}
+            {shareable ? <Share2 className="w-5 h-5" /> : <Download className="w-5 h-5" />}
+            {status === 'busy'
+              ? t('report.builder.exporting')
+              : t(shareable ? 'report.builder.share' : 'report.builder.export')}
           </button>
         </div>
       </div>
