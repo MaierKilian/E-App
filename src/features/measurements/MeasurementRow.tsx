@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronRight, Check } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import type { MeasurementMeta } from './catalog'
 import type { MeasurementResult } from './types'
-import { RATING_COLOR } from './rating'
+import { RatingBadge } from './RatingBadge'
 
 /** Kleiner Schwierigkeits-Indikator als 1–3 Punkte. */
 function Difficulty({ level }: { level: 1 | 2 | 3 }) {
@@ -64,18 +64,16 @@ export function MeasurementRow({ meta, result }: RowProps) {
       </div>
 
       <div className="flex shrink-0 flex-col items-end gap-1 self-center">
-        {done ? (
+        {done && result ? (
           <>
-            <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary">
-              <Check className="h-3.5 w-3.5" />
-              {t('measurements.status.done')}
-            </span>
-            <span
-              className="text-sm font-semibold tabular-nums"
-              style={{ color: result ? RATING_COLOR[result.rating] : undefined }}
-            >
-              {valueText}
-            </span>
+            {/*
+              Die Bewertung stand hier nur in der Farbe des Werts – für sich
+              genommen weder lesbar (3,2:1) noch unterscheidbar (Gelb/Orange).
+              Jetzt trägt sie der Badge samt Wort; „Erledigt" entfällt, denn
+              dass etwas erledigt ist, sagt der Wert daneben bereits.
+            */}
+            <RatingBadge rating={result.rating} />
+            <span className="text-sm font-semibold tabular-nums text-foreground">{valueText}</span>
           </>
         ) : clickable ? (
           <ChevronRight className="h-5 w-5 text-muted" />

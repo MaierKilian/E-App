@@ -1,11 +1,11 @@
 import { Fragment, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronDown, ChevronRight, Check, Ban, RotateCcw } from 'lucide-react'
+import { ChevronDown, ChevronRight, Ban, RotateCcw } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { MeasurementMeta } from '../catalog'
 import type { MeasurementResult } from '../types'
-import { RATING_COLOR } from '../rating'
+import { RatingBadge } from '../RatingBadge'
 import { instanceKey } from '../rooms'
 
 /** Eine Messung innerhalb einer Gruppe, optional an einen konkreten Raum gebunden. */
@@ -92,13 +92,16 @@ function MiniCard({
 
       <div className="mt-1.5">
         {result ? (
-          <span
-            className="inline-flex items-center gap-1 text-xs font-semibold tabular-nums"
-            style={{ color: RATING_COLOR[result.rating] }}
-          >
-            <Check className="h-3 w-3" />
-            {value}
-          </span>
+          /*
+            Vorher trug allein die Textfarbe des Werts die Bewertung. Auf der
+            Kachel ist das doppelt heikel: 12 px in einem Ton mit 3,2:1, und
+            Gelb gegen Orange nicht zu unterscheiden. Badge mit Wort obenauf,
+            Wert in normaler Textfarbe darunter.
+          */
+          <div className="flex flex-col items-start gap-1">
+            <RatingBadge rating={result.rating} />
+            <span className="text-xs font-semibold tabular-nums text-foreground">{value}</span>
+          </div>
         ) : !clickable ? (
           <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">
             {t('measurements.status.soon')}

@@ -55,10 +55,13 @@ export const PALETTE = {
   shade: [244, 244, 245] as RGB, // --surface-2
   card: [250, 250, 250] as RGB, // --bg
   white: [255, 255, 255] as RGB,
-  good: [22, 163, 74] as RGB, // RATING_COLOR.good
-  medium: [217, 119, 6] as RGB, // RATING_COLOR.medium
-  elevated: [234, 88, 12] as RGB, // RATING_COLOR.elevated
-  high: [220, 38, 38] as RGB, // RATING_COLOR.high
+  // Bewertungsfarben: die HELLEN Werte aus src/index.css (--rating-*). Papier
+  // ist immer hell, deshalb gilt hier fest der Satz für helle Flächen; die
+  // dunklen Varianten der App wären auf Weiß nicht lesbar.
+  good: [21, 128, 61] as RGB, // #15803d
+  medium: [180, 83, 9] as RGB, // #b45309
+  elevated: [194, 65, 12] as RGB, // #c2410c
+  high: [185, 28, 28] as RGB, // #b91c1c
 }
 
 /** Rating-Schlüssel → Palette-Farbe (spiegelt measurements/rating.ts). */

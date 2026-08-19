@@ -18,6 +18,20 @@
   --color-success: var(--success);
 }
 
+/*
+ * Bewertungsfarben (good → medium → elevated → high).
+ *
+ * Sie sind je Theme definiert, nicht fest im JS: ein einziger Satz kann Hell
+ * und Dunkel nicht gleichzeitig bedienen. Die vorherigen festen Werte lagen
+ * auf hellem Grund bei 3,0–3,6:1 und damit unter der Lesbarkeitsschwelle;
+ * dunkelt man sie ab, fallen dafür die dunklen Themes durch. Deshalb hier
+ * dunkle Töne für helle Flächen und helle Töne für dunkle.
+ *
+ * Die Farbe steht nie allein für die Bewertung – daneben steht immer ihr
+ * Wort (RatingBadge): Gelb und Orange sind auch mit vollem Farbsehen kaum zu
+ * unterscheiden, „Gut" und „Auffällig" sehr wohl.
+ */
+
 /* Hell (Standard) */
 :root,
 [data-theme='light'] {
@@ -30,6 +44,10 @@
   --primary: #18181B;
   --primary-fg: #FFFFFF;
   --success: #5a8a1b;
+  --rating-good: #15803d;
+  --rating-medium: #b45309;
+  --rating-elevated: #c2410c;
+  --rating-high: #b91c1c;
   color-scheme: light;
 }
 
@@ -44,6 +62,10 @@
   --primary: #FAFAFA;
   --primary-fg: #09090B;
   --success: #10b981;
+  --rating-good: #4ade80;
+  --rating-medium: #fbbf24;
+  --rating-elevated: #fb923c;
+  --rating-high: #f87171;
   color-scheme: dark;
 }
 
@@ -58,6 +80,10 @@
   --primary: #f4f4f5;
   --primary-fg: #000000;
   --success: #10b981;
+  --rating-good: #4ade80;
+  --rating-medium: #fbbf24;
+  --rating-elevated: #fb923c;
+  --rating-high: #f87171;
   color-scheme: dark;
 }
 
@@ -72,6 +98,10 @@
   --primary: #5a8a1b;
   --primary-fg: #ffffff;
   --success: #5a8a1b;
+  --rating-good: #15803d;
+  --rating-medium: #b45309;
+  --rating-elevated: #c2410c;
+  --rating-high: #b91c1c;
   color-scheme: light;
 }
 
@@ -86,6 +116,10 @@
   --primary: #d97706;
   --primary-fg: #ffffff;
   --success: #6b8e23;
+  --rating-good: #15803d;
+  --rating-medium: #b45309;
+  --rating-elevated: #c2410c;
+  --rating-high: #b91c1c;
   color-scheme: light;
 }
 
