@@ -737,7 +737,7 @@
       "title": "Furniture spacing check",
       "short": "Check whether furniture or rugs are blocking your heating.",
       "intro": {
-        "lead": "Unobstructed heating surfaces release much more heat. Check room by room whether anything blocks it.",
+        "lead": "Unobstructed heat surfaces release their heat evenly – and the thermostat measures what it is supposed to measure. Check room by room what is in the way.",
         "stepsTitle": "How it works",
         "imageAlt": "Illustration: measuring the distance between a radiator and a sofa",
         "steps": [
@@ -748,24 +748,25 @@
         "detailsButton": "Details",
         "detailsTitle": "Why spacing matters",
         "details": [
-          "Unobstructed heating surfaces release noticeably more heat into the room – blocked ones lose part of it.",
-          "Aim to keep roughly 10 cm of clearance in front of radiators so the heat can circulate freely.",
-          "Sofas, cabinets, long curtains or covers placed right in front slow down heat output.",
-          "With underfloor heating, large flat furniture without legs and thick rugs hinder the output.",
-          "Check each room individually – often a small rearrangement already improves heating performance."
+          "Covered heat surfaces do not lose the heat – they release it delayed and unevenly.",
+          "The cost is indirect: an enclosed thermostat reads trapped heat, shuts off too early, and the room gets turned up by hand.",
+          "Leave roughly 10 cm of air in front of radiators so air can flow in from below.",
+          "Sofas, cabinets, long curtains or casings in front of them slow heat output.",
+          "With underfloor heating, large furniture without legs and thick rugs impede output – the system then needs a higher flow temperature.",
+          "Check each room individually – often a small rearrangement already improves heat output."
         ],
         "start": "Start check"
       },
       "run": {
         "radiatorTitle": "Radiator in the room",
         "underfloorTitle": "Underfloor heating in the room",
-        "radiator": {
-          "q1": "Is a large piece of furniture (sofa, cabinet, shelf) right in front of the radiator?",
-          "q2": "Is the radiator covered by a cover, curtain or shelf?"
-        },
-        "underfloor": {
-          "q1": "Are large flat furniture pieces without legs sitting directly on the floor (sofa, bed, cabinet)?",
-          "q2": "Is a large, thick rug lying on the heated area?"
+        "questions": {
+          "furniture": "Is a large piece of furniture (sofa, cabinet, shelf) standing directly in front of the radiator?",
+          "cover": "Is the radiator covered by a casing, curtain or shelf?",
+          "valve": "Is the thermostatic valve enclosed by furniture, casing or a curtain?",
+          "footless": "Is large furniture without legs standing flat on the floor (sofa, bed, cabinet)?",
+          "carpet": "Is a large, thick rug lying on the heated surface?",
+          "thermostat": "Is the room thermostat covered by furniture, a curtain or pictures?"
         },
         "options": {
           "no": "No",
@@ -776,26 +777,68 @@
       "result": {
         "ratings": {
           "good": "All clear",
-          "medium": "Minor",
+          "medium": "Minor point",
           "elevated": "Partly blocked",
           "high": "Heavily blocked"
         },
         "summary": {
-          "good": "Your heating surface is clear – it releases its full heat into the room.",
-          "medium": "Almost all clear – one small thing could still be improved.",
-          "elevated": "Parts of the heating surface are blocked – noticeable heat is lost here.",
-          "high": "The heating surface is heavily blocked – much of the heat never reaches the room."
+          "good": "Heat surface and controls work undisturbed – exactly as intended.",
+          "medium": "Almost everything is clear – one point slightly slows heat output.",
+          "elevated": "Heat is distributed unevenly – and the controls no longer work properly.",
+          "high": "Heat output and controls are clearly disturbed – the room needs a higher flow temperature than necessary."
+        },
+        "findingsTitle": "Findings",
+        "allClear": "Nothing blocks the heat surface and the temperature sensor works freely. Worth a quick check whenever you rearrange furniture.",
+        "mechanismTitle": "Why this matters",
+        "mechanism": "The heat is not lost – the radiator sits inside the building envelope and releases almost all of it into the room. It costs energy in three other ways: the temperature sensor reads the trapped heat, shuts off too early, the room stays cool and gets turned up by hand. On an external wall the trapped heat raises the wall temperature and with it the loss to the outside. And a higher flow temperature is needed for the same output – with a heat pump that directly worsens the coefficient of performance.",
+        "findings": {
+          "valve": {
+            "partly": "Thermostatic valve partly enclosed",
+            "yes": "Thermostatic valve in trapped heat",
+            "why": "The valve controls by the temperature it measures itself. Enclosed, it reads trapped heat instead of room temperature, closes too early, the room stays cool – and gets turned up by hand. The single most relevant finding in this check.",
+            "action": "Let air circulate freely around the valve head. Where that is impossible, a remote sensor or a thermostat with a detached sensor helps."
+          },
+          "cover": {
+            "partly": "Radiator partly covered",
+            "yes": "Radiator covered",
+            "why": "A casing, curtain or shelf slows the airflow through the radiator and shields its radiant heat. A fixed casing weighs more than a curtain because it acts permanently.",
+            "action": "Shorten the curtain to windowsill height, remove the shelf. A fixed casing needs openings at the bottom and top so air can flow through."
+          },
+          "furniture": {
+            "partly": "Furniture partly in front",
+            "yes": "Furniture directly in front",
+            "why": "Furniture directly in front deflects the warm air. The heat still reaches the room, but delayed and unevenly – and on an external wall the trapped heat warms the wall too.",
+            "action": "Leave roughly 10 cm of air in front of the radiator so air can flow in from below."
+          },
+          "footless": {
+            "partly": "Furniture partly without floor clearance",
+            "yes": "Large furniture without floor clearance",
+            "why": "Underfloor heating releases most of its heat as radiation across the open surface. Furniture without an air gap takes that area out of service – the remaining area has to compensate with a higher flow temperature.",
+            "action": "Choose furniture with legs or put it on glides. Even a few centimetres of air gap help."
+          },
+          "carpet": {
+            "partly": "Rug on part of the surface",
+            "yes": "Thick rug on the heated surface",
+            "why": "A rug acts as insulation above the heat surface. The system is designed around a low thermal resistance of the floor build-up; a thick rug exceeds it and forces a higher flow temperature.",
+            "action": "Use thin rugs approved for underfloor heating – marked by the symbol or by the stated thermal resistance."
+          },
+          "thermostat": {
+            "partly": "Room thermostat partly covered",
+            "yes": "Room thermostat covered",
+            "why": "The room thermostat controls the entire surface. Covered, it measures the air in its hiding place rather than the room – the surface heats too long or too briefly. With slow-responding underfloor heating this hits particularly hard.",
+            "action": "Keep the thermostat clear and uncovered, not behind a curtain, furniture or a picture. Direct sunlight and draughts distort the reading too."
+          }
         },
         "tipsTitle": "Recommendations",
         "tips": {
           "radiator": [
-            "Keep the radiator clear – leave some space around sofas/cabinets.",
-            "Avoid covers or long curtains in front of it.",
-            "Let room air flow freely around the thermostat valve."
+            "Keep the radiator clear – place sofa/cabinet with some distance.",
+            "No casing or long curtains in front of it.",
+            "Let air circulate freely around the thermostatic valve."
           ],
           "underfloor": [
             "Choose furniture with legs – an air gap to the floor helps.",
-            "Avoid large, thick rugs on the heated area.",
+            "Avoid large, thick rugs on the heated surface.",
             "Prefer thin rugs suitable for underfloor heating."
           ]
         }

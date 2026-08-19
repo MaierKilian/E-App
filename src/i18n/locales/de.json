@@ -737,7 +737,7 @@
       "title": "Möbel-Abstands-Check",
       "short": "Prüfe, ob Möbel oder Teppiche deine Heizung blockieren.",
       "intro": {
-        "lead": "Frei stehende Heizflächen geben deutlich mehr Wärme ab. Prüfe Raum für Raum, ob etwas die Wärme blockiert.",
+        "lead": "Frei stehende Heizflächen geben ihre Wärme gleichmäßig ab – und der Thermostat misst, was er messen soll. Prüfe Raum für Raum, was im Weg steht.",
         "stepsTitle": "So funktioniert’s",
         "imageAlt": "Illustration: Abstand zwischen Heizkörper und Sofa wird gemessen",
         "steps": [
@@ -748,10 +748,11 @@
         "detailsButton": "Details",
         "detailsTitle": "Warum der Abstand zählt",
         "details": [
-          "Frei stehende Heizflächen geben spürbar mehr Wärme an den Raum ab – verdeckte verlieren einen Teil davon.",
-          "Vor Heizkörpern sollten möglichst rund 10 cm Luft bleiben, damit die Wärme frei zirkulieren kann.",
-          "Sofas, Schränke, lange Vorhänge oder Verkleidungen direkt davor bremsen die Wärmeabgabe.",
-          "Bei Fußbodenheizung behindern großflächige Möbel ohne Füße und dicke Teppiche die Abgabe.",
+          "Verdeckte Heizflächen verlieren die Wärme nicht – sie geben sie verzögert und ungleichmäßig ab.",
+          "Teuer wird es indirekt: Ein eingeschlossener Thermostat misst Stauwärme, regelt zu früh ab, und der Raum wird von Hand höher gedreht.",
+          "Vor Heizkörpern sollten möglichst rund 10 cm Luft bleiben, damit Luft von unten nachströmen kann.",
+          "Sofas, Schränke, lange Vorhänge oder Verkleidungen davor bremsen die Wärmeabgabe.",
+          "Bei Fußbodenheizung behindern großflächige Möbel ohne Füße und dicke Teppiche die Abgabe – die Anlage braucht dann eine höhere Vorlauftemperatur.",
           "Prüfe jeden Raum einzeln – oft verbessert schon eine kleine Umstellung die Heizleistung."
         ],
         "start": "Check starten"
@@ -759,13 +760,13 @@
       "run": {
         "radiatorTitle": "Heizkörper im Raum",
         "underfloorTitle": "Fußbodenheizung im Raum",
-        "radiator": {
-          "q1": "Steht ein großes Möbel (Sofa, Schrank, Regal) direkt vor dem Heizkörper?",
-          "q2": "Ist der Heizkörper durch Verkleidung, Vorhang oder Ablage verdeckt?"
-        },
-        "underfloor": {
-          "q1": "Stehen großflächige Möbel ohne Füße direkt auf dem Boden (Sofa, Bett, Schrank)?",
-          "q2": "Liegt ein großer, dicker Teppich auf der beheizten Fläche?"
+        "questions": {
+          "furniture": "Steht ein großes Möbel (Sofa, Schrank, Regal) direkt vor dem Heizkörper?",
+          "cover": "Ist der Heizkörper durch Verkleidung, Vorhang oder Ablage verdeckt?",
+          "valve": "Ist das Thermostatventil von Möbel, Verkleidung oder Vorhang eingeschlossen?",
+          "footless": "Stehen großflächige Möbel ohne Füße direkt auf dem Boden (Sofa, Bett, Schrank)?",
+          "carpet": "Liegt ein großer, dicker Teppich auf der beheizten Fläche?",
+          "thermostat": "Ist der Raumthermostat durch Möbel, Vorhang oder Bilder verdeckt?"
         },
         "options": {
           "no": "Nein",
@@ -781,10 +782,52 @@
           "high": "Stark blockiert"
         },
         "summary": {
-          "good": "Deine Heizfläche ist frei – so gibt sie die volle Wärme an den Raum ab.",
-          "medium": "Fast alles frei – eine Kleinigkeit lässt sich noch verbessern.",
-          "elevated": "Teile der Heizfläche sind verdeckt – hier geht spürbar Wärme verloren.",
-          "high": "Die Heizfläche ist stark blockiert – ein Großteil der Wärme kommt nicht im Raum an."
+          "good": "Heizfläche und Regelung arbeiten ungestört – so ist es richtig.",
+          "medium": "Fast alles frei – ein Punkt bremst die Wärmeabgabe leicht.",
+          "elevated": "Die Wärme verteilt sich ungleichmäßig – und die Regelung arbeitet nicht mehr sauber.",
+          "high": "Wärmeabgabe und Regelung sind deutlich gestört – der Raum braucht dadurch eine höhere Vorlauftemperatur als nötig."
+        },
+        "findingsTitle": "Befunde",
+        "allClear": "Nichts blockiert die Heizfläche und der Temperaturfühler arbeitet frei. Beim Umstellen von Möbeln lohnt ein kurzer Blick, dass es so bleibt.",
+        "mechanismTitle": "Warum das zählt",
+        "mechanism": "Die Wärme geht nicht verloren – der Heizkörper steht innerhalb der Gebäudehülle und gibt sie fast vollständig an den Raum ab. Verbrauch kostet es auf drei anderen Wegen: Der Temperaturfühler misst im Wärmestau zu warm und regelt zu früh ab, der Raum wird kühler und wird höher gedreht. An einer Außenwand steigt hinter dem Stau die Wandtemperatur und damit der Verlust nach außen. Und es braucht eine höhere Vorlauftemperatur für dieselbe Leistung – bei einer Wärmepumpe verschlechtert das direkt die Arbeitszahl.",
+        "findings": {
+          "valve": {
+            "partly": "Thermostatventil teilweise eingeschlossen",
+            "yes": "Thermostatventil im Wärmestau",
+            "why": "Das Ventil regelt nach der Temperatur, die es selbst misst. Eingeschlossen misst es die Stauwärme statt der Raumtemperatur, schließt zu früh, der Raum bleibt kühl – und wird von Hand höher gedreht. Der energetisch wirksamste Befund dieses Checks.",
+            "action": "Ventilkopf frei umströmen lassen. Geht das nicht, hilft ein Fernfühler oder ein Thermostat mit abgesetztem Fühler."
+          },
+          "cover": {
+            "partly": "Heizkörper teilweise verdeckt",
+            "yes": "Heizkörper verdeckt",
+            "why": "Verkleidung, Vorhang oder Ablage bremsen die Luftströmung durch den Heizkörper und schirmen die Strahlungswärme ab. Ein fest verbautes Gehäuse wiegt dabei schwerer als ein Vorhang, weil es dauerhaft wirkt.",
+            "action": "Vorhang auf Fensterbankhöhe kürzen, Ablage entfernen. Eine feste Verkleidung braucht unten und oben eine Öffnung, damit Luft nachströmen kann."
+          },
+          "furniture": {
+            "partly": "Möbel teilweise davor",
+            "yes": "Möbel direkt davor",
+            "why": "Ein Möbel direkt davor lenkt die warme Luft um. Die Wärme kommt weiterhin im Raum an, aber verzögert und ungleichmäßig – und an einer Außenwand heizt der Stau die Wand mit.",
+            "action": "Rund 10 cm Luft vor dem Heizkörper lassen, damit die Luft von unten nachströmen kann."
+          },
+          "footless": {
+            "partly": "Möbel teilweise ohne Bodenabstand",
+            "yes": "Großflächige Möbel ohne Bodenabstand",
+            "why": "Fußbodenheizung gibt ihre Wärme überwiegend als Strahlung über die freie Fläche ab. Steht ein Möbel ohne Luftspalt darauf, fällt diese Fläche aus – die restliche Fläche muss es mit höherer Vorlauftemperatur ausgleichen.",
+            "action": "Möbel mit Füßen wählen oder auf Gleiter stellen. Schon wenige Zentimeter Luftspalt helfen."
+          },
+          "carpet": {
+            "partly": "Teppich auf Teilen der Fläche",
+            "yes": "Dicker Teppich auf der beheizten Fläche",
+            "why": "Ein Teppich wirkt als Dämmschicht über der Heizfläche. Die Auslegung geht von einem geringen Wärmedurchlasswiderstand des Bodenaufbaus aus; ein dicker Teppich überschreitet ihn und zwingt die Anlage zu höherer Vorlauftemperatur.",
+            "action": "Dünne, für Fußbodenheizung freigegebene Teppiche verwenden – erkennbar am Symbol oder am angegebenen Wärmedurchlasswiderstand."
+          },
+          "thermostat": {
+            "partly": "Raumthermostat teilweise verdeckt",
+            "yes": "Raumthermostat verdeckt",
+            "why": "Der Raumthermostat steuert die gesamte Fläche. Verdeckt misst er nicht die Raumtemperatur, sondern die Luft in seinem Versteck – die Fläche heizt zu lang oder zu kurz. Bei der trägen Fußbodenheizung wirkt sich das besonders stark aus.",
+            "action": "Thermostat frei und unverdeckt lassen, nicht hinter Vorhang, Möbel oder Bild. Auch direkte Sonne und Zugluft verfälschen die Messung."
+          }
         },
         "tipsTitle": "Empfehlungen",
         "tips": {

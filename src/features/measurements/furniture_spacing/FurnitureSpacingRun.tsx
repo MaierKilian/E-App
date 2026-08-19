@@ -3,35 +3,19 @@ import { useTranslation } from 'react-i18next'
 import { Flame, Grip } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { parseRoomKey } from '../rooms'
-import { rateFurniture, type FurnitureAnswer } from './furnitureSpacing'
+import {
+  questionKeys,
+  rateFurniture,
+  type FindingKey,
+  type FurnitureAnswer,
+  type FurnitureAnswers,
+} from './furnitureSpacing'
 import type { RunProps } from '../runnerTypes'
 
-interface QOption {
-  labelKey: string
-  value: FurnitureAnswer
-}
-interface Question {
-  textKey: string
-  options: QOption[]
-}
-
-const OPT3: QOption[] = [
+const OPTIONS: { labelKey: string; value: FurnitureAnswer }[] = [
   { labelKey: 'no', value: 0 },
   { labelKey: 'partly', value: 1 },
   { labelKey: 'yes', value: 2 },
-]
-const OPT_YESNO: QOption[] = [
-  { labelKey: 'no', value: 0 },
-  { labelKey: 'yes', value: 2 },
-]
-
-const RADIATOR_Q: Question[] = [
-  { textKey: 'radiator.q1', options: OPT3 },
-  { textKey: 'radiator.q2', options: OPT_YESNO },
-]
-const UNDERFLOOR_Q: Question[] = [
-  { textKey: 'underfloor.q1', options: OPT3 },
-  { textKey: 'underfloor.q2', options: OPT3 },
 ]
 
 /**
@@ -46,19 +30,24 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
   const underfloor = parsed
     ? rooms.find((r) => r.type === parsed.type)?.heatTransfer === 'underfloor'
     : false
-  const questions = underfloor ? UNDERFLOOR_Q : RADIATOR_Q
+  const keys = questionKeys(underfloor)
   const HeadIcon = underfloor ? Grip : Flame
 
-  const [answers, setAnswers] = useState<(FurnitureAnswer | undefined)[]>(
-    () => questions.map(() => undefined),
-  )
+  const [answers, setAnswers] = useState<FurnitureAnswers>({})
 
-  const canEvaluate = answers.every((a) => a !== undefined)
+  const canEvaluate = keys.every((k) => answers[k] !== undefined)
 
   function handleEvaluate() {
     if (!canEvaluate) return
-    const final = answers as FurnitureAnswer[]
-    const calc = rateFurniture(final)
+    const calc = rateFurniture(answers)
+    // Antworten einzeln mitspeichern, damit das Ergebnis die konkreten Befunde
+    // zeigen kann statt einer festen Empfehlungsliste.
+    const details: Record<string, number> = {
+      issues: calc.issues,
+      score: calc.score,
+      underfloor: underfloor ? 1 : 0,
+    }
+    for (const k of keys) details[`ans_${k}`] = answers[k] as FurnitureAnswer
     onEvaluate({
       result: {
         id: 'furniture_spacing',
@@ -66,7 +55,7 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
         primaryValue: calc.issues,
         unit: '',
         completedAt: new Date().toISOString(),
-        details: { issues: calc.issues, score: calc.score, underfloor: underfloor ? 1 : 0 },
+        details,
       },
     })
   }
@@ -80,21 +69,19 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
           : t('measurements.furniture_spacing.run.radiatorTitle')}
       </div>
 
-      {questions.map((q, qi) => (
-        <div key={q.textKey} className="glass rounded-3xl p-5">
+      {keys.map((key: FindingKey) => (
+        <div key={key} className="glass rounded-3xl p-5">
           <p className="font-medium text-foreground">
-            {t(`measurements.furniture_spacing.run.${q.textKey}`)}
+            {t(`measurements.furniture_spacing.run.questions.${key}`)}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {q.options.map((opt) => {
-              const selected = answers[qi] === opt.value
+            {OPTIONS.map((opt) => {
+              const selected = answers[key] === opt.value
               return (
                 <button
                   key={opt.labelKey}
                   type="button"
-                  onClick={() =>
-                    setAnswers((cur) => cur.map((a, i) => (i === qi ? opt.value : a)))
-                  }
+                  onClick={() => setAnswers((cur) => ({ ...cur, [key]: opt.value }))}
                   aria-pressed={selected}
                   className={`focus-ring rounded-2xl px-4 py-2 text-sm font-medium transition-[transform,background-color,color] active:scale-[0.97] ${
                     selected

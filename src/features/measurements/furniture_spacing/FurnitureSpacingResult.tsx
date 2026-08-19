@@ -1,20 +1,48 @@
 import { useTranslation } from 'react-i18next'
-import { Sofa, Check } from 'lucide-react'
+import { Sofa, Check, Info } from 'lucide-react'
 import { RATING_COLOR } from '../rating'
 import type { ResultProps } from '../runnerTypes'
+import {
+  questionKeys,
+  rateFurniture,
+  type FindingKey,
+  type FurnitureAnswer,
+  type FurnitureAnswers,
+} from './furnitureSpacing'
 
 /**
- * Ergebnis des Möbel-Abstands-Checks: qualitative 4-stufige Einordnung mit
- * konkreten, an die Wärmeübergabe angepassten Empfehlungen. Kein €-Wert.
+ * Ergebnis des Möbel-Abstands-Checks: qualitative 4-stufige Einordnung und –
+ * das Wesentliche – die **konkret zutreffenden** Befunde mit Begründung und
+ * Handlung, wichtigster zuerst. Kein €-Wert: Für die Wirkung eines verdeckten
+ * Heizkörpers gibt es keine belastbare Kostenbasis, eine Zahl wäre Scheinwissen.
+ *
+ * Ergebnisse aus älteren App-Ständen haben keine Einzelantworten gespeichert;
+ * für sie bleibt die frühere allgemeine Empfehlungsliste stehen.
  */
 export function FurnitureSpacingResult({ result }: ResultProps) {
   const { t } = useTranslation()
   const underfloor = (result.details?.underfloor ?? 0) === 1
   const color = RATING_COLOR[result.rating]
-  const tipsKey = underfloor ? 'underfloor' : 'radiator'
-  const tips = t(`measurements.furniture_spacing.result.tips.${tipsKey}`, {
-    returnObjects: true,
-  }) as string[]
+  const keys = questionKeys(underfloor)
+
+  const answers: FurnitureAnswers = {}
+  let hasAnswers = false
+  for (const key of keys) {
+    const value = result.details?.[`ans_${key}`]
+    if (value === undefined) continue
+    answers[key] = value as FurnitureAnswer
+    hasAnswers = true
+  }
+  const findings = hasAnswers ? rateFurniture(answers).findings : []
+
+  // Altbestand ohne Einzelantworten: frühere, allgemeine Empfehlungen.
+  const legacyTips = hasAnswers
+    ? []
+    : (t(`measurements.furniture_spacing.result.tips.${underfloor ? 'underfloor' : 'radiator'}`, {
+        returnObjects: true,
+      }) as string[])
+
+  const allClear = hasAnswers && findings.length === 0
 
   return (
     <div className="space-y-4">
@@ -47,19 +75,68 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
         </div>
       </div>
 
-      <div className="glass rounded-3xl p-4">
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
-          {t('measurements.furniture_spacing.result.tipsTitle')}
-        </h3>
-        <ul className="space-y-2.5">
-          {tips.map((tip) => (
-            <li key={tip} className="flex items-start gap-2.5 text-sm text-foreground">
-              <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <span>{tip}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {findings.length > 0 && (
+        <div className="glass rounded-3xl p-4">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+            {t('measurements.furniture_spacing.result.findingsTitle')}
+          </h3>
+          <ul className="space-y-4">
+            {findings.map((f: { key: FindingKey; level: string }) => (
+              <li key={f.key}>
+                <p className="text-sm font-semibold text-foreground">
+                  {t(`measurements.furniture_spacing.result.findings.${f.key}.${f.level}`)}
+                </p>
+                <p className="mt-1 text-xs leading-relaxed text-muted">
+                  {t(`measurements.furniture_spacing.result.findings.${f.key}.why`)}
+                </p>
+                <p className="mt-1.5 flex items-start gap-2 text-sm text-foreground">
+                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                  <span>
+                    {t(`measurements.furniture_spacing.result.findings.${f.key}.action`)}
+                  </span>
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {allClear && (
+        <div className="glass rounded-3xl p-4">
+          <p className="flex items-start gap-2.5 text-sm text-foreground">
+            <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <span>{t('measurements.furniture_spacing.result.allClear')}</span>
+          </p>
+        </div>
+      )}
+
+      {legacyTips.length > 0 && (
+        <div className="glass rounded-3xl p-4">
+          <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted">
+            {t('measurements.furniture_spacing.result.tipsTitle')}
+          </h3>
+          <ul className="space-y-2.5">
+            {legacyTips.map((tip) => (
+              <li key={tip} className="flex items-start gap-2.5 text-sm text-foreground">
+                <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>{tip}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {findings.length > 0 && (
+        <div className="glass rounded-3xl p-4">
+          <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted">
+            <Info className="h-4 w-4" />
+            {t('measurements.furniture_spacing.result.mechanismTitle')}
+          </h3>
+          <p className="text-xs leading-relaxed text-muted">
+            {t('measurements.furniture_spacing.result.mechanism')}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
