@@ -2,7 +2,11 @@
 // Kostenhochrechnung je Energieträger.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { buildMonitoringReportData, type TariffLike } from '@/features/reports/monitoringReportData'
+import {
+  buildMonitoringReportData,
+  suggestRangeDays,
+  type TariffLike,
+} from '@/features/reports/monitoringReportData'
 import type { MeterReading } from '@/store/readingsStore'
 import type { OnboardingData } from '@/types'
 
@@ -175,5 +179,37 @@ describe('buildMonitoringReportData', () => {
       types: ['electricity'],
     })
     expect(all.entries[0].changePercent).toBeUndefined()
+  })
+})
+
+describe('suggestRangeDays', () => {
+  it('waehlt den kuerzesten Zeitraum mit mindestens zwei Ablesungen', () => {
+    expect(
+      suggestRangeDays({ electricity: [reading(5, 100), reading(2, 110)] }, ['electricity']),
+    ).toBe(7)
+    expect(
+      suggestRangeDays({ electricity: [reading(25, 100), reading(2, 110)] }, ['electricity']),
+    ).toBe(30)
+    expect(
+      suggestRangeDays({ electricity: [reading(80, 100), reading(2, 110)] }, ['electricity']),
+    ).toBe(90)
+  })
+
+  it('faellt auf „Alle" zurueck, wenn kein festes Fenster zwei Ablesungen enthaelt', () => {
+    expect(
+      suggestRangeDays({ electricity: [reading(400, 100), reading(200, 110)] }, ['electricity']),
+    ).toBeNull()
+    expect(suggestRangeDays({ electricity: [reading(2, 100)] }, ['electricity'])).toBeNull()
+    expect(suggestRangeDays({}, ['electricity'])).toBeNull()
+  })
+
+  it('beruecksichtigt jeden Traeger einzeln', () => {
+    // Gas allein erfuellt das 30-Tage-Fenster, Strom nicht.
+    expect(
+      suggestRangeDays(
+        { electricity: [reading(300, 100)], gas: [reading(20, 500), reading(3, 520)] },
+        ['electricity', 'gas'],
+      ),
+    ).toBe(30)
   })
 })

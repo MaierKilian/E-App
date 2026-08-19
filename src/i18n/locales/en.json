@@ -98,25 +98,10 @@
   "report": {
     "title": "Reports",
     "subtitle": "Profile, measurements and monitoring as PDF.",
-    "variantTitle": "Report scope",
     "variant": {
       "short": "Short report",
       "long": "Detailed report"
     },
-    "previewTitle": "Preview",
-    "include": {
-      "profile": "Profile",
-      "measurements": "Measurements",
-      "monitoring": "Monitoring"
-    },
-    "counts": {
-      "profileReady": "Ready",
-      "measurements_one": "{{count}} measurement",
-      "measurements_other": "{{count}} measurements",
-      "meters_one": "{{count}} meter",
-      "meters_other": "{{count}} meters"
-    },
-    "export": "Export as PDF",
     "types": {
       "measurements": {
         "title": "Measurements",
@@ -149,19 +134,22 @@
     "builder": {
       "back": "Back",
       "variant": "Scope",
-      "variantHint": "Short: the essentials. Long: detailed with everything.",
       "customize": "Customize",
       "contents": "Contents",
       "range": "Period",
       "meters": "Meters",
       "categories": "Trades",
-      "previewTitle": "Preview",
       "export": "Export as PDF",
       "exporting": "Creating PDF …",
       "exportDone": "PDF created.",
       "exportError": "Export failed. Please try again.",
       "comparisonHint": "Comparing to the previous period requires a fixed range (7, 30 or 90 days).",
-      "minSelectionHint": "At least one selection required."
+      "minSelectionHint": "At least one selection required.",
+      "summaryAllContents": "All contents",
+      "summaryContents": "{{selected}} of {{total}} contents",
+      "summaryAllMeters": "All meters",
+      "summaryAllCategories": "All trades",
+      "summaryAllRange": "All readings"
     },
     "contents": {
       "charts": "Charts",
@@ -230,13 +218,9 @@
         "measurements": "No measurements completed yet.",
         "monitoring": "No energy sources active.",
         "noReading": "No reading yet"
-      },
-      "range": "{{from}} – {{to}}",
-      "readingsCount_one": "{{count}} reading",
-      "readingsCount_other": "{{count}} readings"
+      }
     },
     "overview": {
-      "hint": "You set scope and time range in the next step.",
       "recommended": "Recommended",
       "measStatus": "{{done}} / {{total}} checks",
       "measEmpty": "No checks yet",
@@ -244,7 +228,22 @@
       "monEmpty": "No readings yet",
       "totalReady": "Profile · Measurements · Monitoring",
       "totalEmpty": "Profile only – add data"
-    }
+    },
+    "facts": {
+      "period": "{{from}} – {{to}}",
+      "meters_one": "{{count}} meter",
+      "meters_other": "{{count}} meters",
+      "readings_one": "{{count}} reading",
+      "readings_other": "{{count}} readings",
+      "measurements_one": "{{count}} measurement",
+      "measurements_other": "{{count}} measurements",
+      "noData": "No data yet"
+    },
+    "variantDesc": {
+      "short": "The essentials at a glance.",
+      "long": "Detailed, with everything."
+    },
+    "variantExtra": "Adds: {{items}}"
   },
   "measurements": {
     "page": {

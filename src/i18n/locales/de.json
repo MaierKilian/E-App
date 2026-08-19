@@ -98,25 +98,10 @@
   "report": {
     "title": "Berichte",
     "subtitle": "Profil, Messungen und Monitoring als PDF.",
-    "variantTitle": "Berichtsumfang",
     "variant": {
       "short": "Kurzbericht",
       "long": "Langbericht"
     },
-    "previewTitle": "Vorschau",
-    "include": {
-      "profile": "Profil",
-      "measurements": "Messungen",
-      "monitoring": "Monitoring"
-    },
-    "counts": {
-      "profileReady": "Bereit",
-      "measurements_one": "{{count}} Messung",
-      "measurements_other": "{{count}} Messungen",
-      "meters_one": "{{count}} Zähler",
-      "meters_other": "{{count}} Zähler"
-    },
-    "export": "Als PDF exportieren",
     "types": {
       "measurements": {
         "title": "Messungen",
@@ -149,19 +134,22 @@
     "builder": {
       "back": "Zurück",
       "variant": "Umfang",
-      "variantHint": "Kurz: das Wichtigste. Lang: ausführlich mit allen Details.",
       "customize": "Anpassen",
       "contents": "Inhalte",
       "range": "Zeitraum",
       "meters": "Zähler",
       "categories": "Gewerke",
-      "previewTitle": "Vorschau",
       "export": "Als PDF exportieren",
       "exporting": "PDF wird erstellt …",
       "exportDone": "PDF erstellt.",
       "exportError": "Export fehlgeschlagen. Bitte erneut versuchen.",
       "comparisonHint": "Der Vergleich zur Vorperiode braucht einen festen Zeitraum (7, 30 oder 90 Tage).",
-      "minSelectionHint": "Mindestens eine Auswahl nötig."
+      "minSelectionHint": "Mindestens eine Auswahl nötig.",
+      "summaryAllContents": "Alle Inhalte",
+      "summaryContents": "{{selected}} von {{total}} Inhalten",
+      "summaryAllMeters": "Alle Zähler",
+      "summaryAllCategories": "Alle Gewerke",
+      "summaryAllRange": "Alle Ablesungen"
     },
     "contents": {
       "charts": "Diagramme",
@@ -230,13 +218,9 @@
         "measurements": "Noch keine Messungen erledigt.",
         "monitoring": "Keine Energieträger aktiv.",
         "noReading": "Noch keine Ablesung"
-      },
-      "range": "{{from}} – {{to}}",
-      "readingsCount_one": "{{count}} Ablesung",
-      "readingsCount_other": "{{count}} Ablesungen"
+      }
     },
     "overview": {
-      "hint": "Umfang und Zeitraum legst du im nächsten Schritt fest.",
       "recommended": "Empfohlen",
       "measStatus": "{{done}} / {{total}} Checks",
       "measEmpty": "Noch keine Checks",
@@ -244,7 +228,22 @@
       "monEmpty": "Noch keine Ablesungen",
       "totalReady": "Profil · Messungen · Monitoring",
       "totalEmpty": "Nur Profil – Daten ergänzen"
-    }
+    },
+    "facts": {
+      "period": "{{from}} – {{to}}",
+      "meters_one": "{{count}} Zähler",
+      "meters_other": "{{count}} Zähler",
+      "readings_one": "{{count}} Ablesung",
+      "readings_other": "{{count}} Ablesungen",
+      "measurements_one": "{{count}} Messung",
+      "measurements_other": "{{count}} Messungen",
+      "noData": "Noch keine Daten"
+    },
+    "variantDesc": {
+      "short": "Das Wichtigste auf einen Blick.",
+      "long": "Ausführlich mit allen Details."
+    },
+    "variantExtra": "Zusätzlich: {{items}}"
   },
   "measurements": {
     "page": {

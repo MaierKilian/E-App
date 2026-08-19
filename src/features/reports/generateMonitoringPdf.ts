@@ -82,14 +82,14 @@ function periodLine(t: TFunction, language: string, data: MonitoringReportData):
   const parts = [t('report.pdf.monitoring.subtitle', { range: t(`report.range.${key}`) })]
   if (data.from && data.to) {
     parts.push(
-      t('report.pdf.range', {
+      t('report.facts.period', {
         from: fmtDateShort(data.from, language),
         to: fmtDateShort(data.to, language),
       }),
     )
   }
   if (data.readingCount > 0) {
-    parts.push(t('report.pdf.readingsCount', { count: data.readingCount }))
+    parts.push(t('report.facts.readings', { count: data.readingCount }))
   }
   return parts.join(' · ')
 }
@@ -104,7 +104,7 @@ function priceSub(t: TFunction, language: string, e: MonitoringEntry): string | 
 /** Datumsbereich der Ablesungen eines Trägers, für die Kachel-Unterzeile. */
 function windowSub(t: TFunction, language: string, e: MonitoringEntry): string | undefined {
   if (!e.windowFrom || !e.windowTo) return undefined
-  return t('report.pdf.range', {
+  return t('report.facts.period', {
     from: fmtDateShort(e.windowFrom, language),
     to: fmtDateShort(e.windowTo, language),
   })

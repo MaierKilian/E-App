@@ -26,8 +26,13 @@ import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import { anyResultFor } from '@/features/measurements/rooms'
 import type { MeasurementCategory } from '@/features/measurements/catalog'
 import type { EnergyType } from '@/store/readingsStore'
+import { fmtDateShort } from './pdf/format'
 import { buildMeasurementsReportData } from './measurementsReportData'
-import { buildMonitoringReportData, type RangeDays } from './monitoringReportData'
+import {
+  buildMonitoringReportData,
+  suggestRangeDays,
+  type RangeDays,
+} from './monitoringReportData'
 import {
   defaultContentOptions,
   type ReportType,
@@ -241,6 +246,10 @@ const RANGE_OPTIONS: { key: string; value: RangeDays }[] = [
   { key: 'all', value: null },
 ]
 
+/** Inhalts-Schalter, die im jeweiligen Abschnitt überhaupt eine Wirkung haben. */
+const MONITORING_KEYS = ['charts', 'kpis', 'comparison', 'history'] as const
+const MEASUREMENT_KEYS = ['savings', 'tips', 'openMeasurements'] as const
+
 interface BuilderProps {
   type: ReportType
   onBack: () => void
@@ -274,7 +283,11 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
   // Selbst gesetzte Inhalts-Häkchen überleben einen Variantenwechsel; alle
   // übrigen folgen weiter den Defaults der jeweiligen Variante.
   const [touched, setTouched] = useState<Set<keyof ReportContentOptions>>(() => new Set())
-  const [rangeDays, setRangeDays] = useState<RangeDays>(30)
+  // Zeitraum passend zu den vorhandenen Ablesungen vorbelegen – ein fester
+  // 30-Tage-Default träfe bei unregelmäßiger Ablesung oft gar keine Daten.
+  const [rangeDays, setRangeDays] = useState<RangeDays>(() =>
+    suggestRangeDays(readingsByType, meterTypes),
+  )
   // Auswahl ist explizit: anfangs alles gewählt, Tippen wählt ab. Mindestens
   // ein Eintrag bleibt stehen (sonst wäre der Bericht leer).
   const [meters, setMeters] = useState<EnergyType[]>(() => meterTypes)
@@ -314,6 +327,109 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
   // Objektname für Kopfzeile und Dateiname des PDF.
   const objectName = (profile.profileName ?? '').trim() || undefined
 
+  // Beide Auswertungen sind reine Funktionen – einmal berechnet, versorgen sie
+  // die Fakten-Zeile und den Export, statt beim Tippen auf „Exportieren" neu
+  // zu laufen. So zeigt die Vorschau garantiert dieselben Zahlen wie das PDF.
+  const monitoringData = useMemo(
+    () =>
+      showMonitoring
+        ? buildMonitoringReportData({ profile, readingsByType, rangeDays, tariff, types: meters })
+        : undefined,
+    [showMonitoring, profile, readingsByType, rangeDays, tariff, meters],
+  )
+  const measurementsData = useMemo(
+    () => (showMeasurements ? buildMeasurementsReportData({ results, categories }) : undefined),
+    [showMeasurements, results, categories],
+  )
+
+  // Inhalts-Schalter, die für diesen Berichtstyp gelten und aktuell wirksam
+  // sind (der Vorperioden-Vergleich braucht einen festen Zeitraum).
+  const relevantKeys = useMemo<(keyof ReportContentOptions)[]>(() => {
+    const keys: (keyof ReportContentOptions)[] = []
+    if (showMonitoring) keys.push(...MONITORING_KEYS)
+    if (showMeasurements) keys.push(...MEASUREMENT_KEYS)
+    return keys.filter((k) => k !== 'comparison' || comparisonAvailable)
+  }, [showMonitoring, showMeasurements, comparisonAvailable])
+
+  // Was der Langbericht gegenüber dem Kurzbericht zusätzlich enthält – das ist
+  // die eigentliche Entscheidung hinter „Umfang".
+  const longExtras = useMemo(() => {
+    const short = defaultContentOptions('short')
+    const long = defaultContentOptions('long')
+    return relevantKeys.filter((k) => long[k] && !short[k]).map((k) => t(`report.contents.${k}`))
+  }, [relevantKeys, t])
+
+  // Fakten über das, was tatsächlich im PDF landet.
+  const facts = useMemo(() => {
+    const parts: string[] = []
+    if (monitoringData) {
+      const withData = monitoringData.entries.filter((e) => e.readingCount > 0).length
+      if (withData > 0) parts.push(t('report.facts.meters', { count: withData }))
+      if (monitoringData.readingCount > 0) {
+        parts.push(t('report.facts.readings', { count: monitoringData.readingCount }))
+      }
+    }
+    if (measurementsData && measurementsData.doneCount > 0) {
+      parts.push(t('report.facts.measurements', { count: measurementsData.doneCount }))
+    }
+    return parts
+  }, [monitoringData, measurementsData, t])
+
+  const period =
+    monitoringData?.from && monitoringData.to
+      ? t('report.facts.period', {
+          from: fmtDateShort(monitoringData.from, i18n.language),
+          to: fmtDateShort(monitoringData.to, i18n.language),
+        })
+      : undefined
+
+  // Zusammenfassung für den zugeklappten „Anpassen"-Bereich: der aktuelle
+  // Stand soll ablesbar sein, ohne aufzuklappen.
+  const customizeSummary = useMemo(() => {
+    const parts: string[] = []
+    const active = relevantKeys.filter((k) => options[k]).length
+    parts.push(
+      active === relevantKeys.length
+        ? t('report.builder.summaryAllContents')
+        : t('report.builder.summaryContents', { selected: active, total: relevantKeys.length }),
+    )
+    if (showMonitoring) {
+      // „Alle" allein waere zwischen den anderen Teilen nicht als Zeitraum
+      // erkennbar – hier deshalb ausgeschrieben.
+      parts.push(
+        rangeDays === null
+          ? t('report.builder.summaryAllRange')
+          : t(`report.range.d${rangeDays}`),
+      )
+      if (meterTypes.length > 1) {
+        parts.push(
+          meters.length === meterTypes.length
+            ? t('report.builder.summaryAllMeters')
+            : meters.map((m) => t(`monitoring.energyTypes.${m}`)).join(', '),
+        )
+      }
+    }
+    if (showMeasurements && catTypes.length > 1) {
+      parts.push(
+        categories.length === catTypes.length
+          ? t('report.builder.summaryAllCategories')
+          : categories.map((c) => t(`measurements.categories.${c}`)).join(', '),
+      )
+    }
+    return parts.join(' · ')
+  }, [
+    relevantKeys,
+    options,
+    showMonitoring,
+    showMeasurements,
+    rangeDays,
+    meters,
+    meterTypes,
+    categories,
+    catTypes,
+    t,
+  ])
+
   // „Erstellt"-Meldung nach kurzer Zeit wieder ausblenden.
   const resetTimer = useRef<number | undefined>(undefined)
   useEffect(() => () => window.clearTimeout(resetTimer.current), [])
@@ -322,29 +438,27 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
     window.clearTimeout(resetTimer.current)
     setStatus('busy')
     try {
-      if (type === 'measurements') {
-        const data = buildMeasurementsReportData({ results, categories })
+      if (type === 'measurements' && measurementsData) {
         const { generateMeasurementsPdf } = await import('./generateMeasurementsPdf')
-        generateMeasurementsPdf({ variant, options, t, language: i18n.language, data, objectName })
-      } else if (type === 'monitoring') {
-        const data = buildMonitoringReportData({
-          profile,
-          readingsByType,
-          rangeDays,
-          tariff,
-          types: meters,
+        generateMeasurementsPdf({
+          variant,
+          options,
+          t,
+          language: i18n.language,
+          data: measurementsData,
+          objectName,
         })
+      } else if (type === 'monitoring' && monitoringData) {
         const { generateMonitoringPdf } = await import('./generateMonitoringPdf')
-        generateMonitoringPdf({ variant, options, t, language: i18n.language, data, objectName })
-      } else {
-        const mData = buildMeasurementsReportData({ results, categories })
-        const monData = buildMonitoringReportData({
-          profile,
-          readingsByType,
-          rangeDays,
-          tariff,
-          types: meters,
+        generateMonitoringPdf({
+          variant,
+          options,
+          t,
+          language: i18n.language,
+          data: monitoringData,
+          objectName,
         })
+      } else if (measurementsData && monitoringData) {
         const { generateGesamtPdf } = await import('./generateGesamtPdf')
         generateGesamtPdf({
           variant,
@@ -358,8 +472,8 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
             buildingYear: profile.buildingYear,
             personsCount: profile.personsCount,
           },
-          measurements: mData,
-          monitoring: monData,
+          measurements: measurementsData,
+          monitoring: monitoringData,
         })
       }
       setStatus('done')
@@ -385,21 +499,45 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
 
       <h2 className="text-lg font-bold">{t(`report.types.${type}.title`)}</h2>
 
-      {/* Hero: elegante Papier-Vorschau des Berichts */}
-      <ReportPreview variant={variant} title={(profile.profileName ?? '').trim() || t('home.profileNameFallback')} />
+      {/* Kopf: kleines Papier-Motiv neben den Fakten, die wirklich im PDF
+          landen – Objekt, Umfang, Datenmenge, Zeitraum. */}
+      <Card className="!p-4">
+        <div className="flex items-center gap-4">
+          <ReportPreview variant={variant} />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-semibold text-foreground">
+              {objectName ?? t('home.profileNameFallback')}
+            </p>
+            <p className="mt-0.5 text-xs text-muted">
+              {t(`report.variant.${variant}`)} · PDF
+            </p>
+            <p className="mt-2 text-xs text-muted">
+              {facts.length > 0 ? facts.join(' · ') : t('report.facts.noData')}
+            </p>
+            {period && <p className="mt-0.5 text-xs text-muted">{period}</p>}
+          </div>
+        </div>
+      </Card>
 
       {/* Umfang – die eine sichtbare Entscheidung. Der Rest hat sinnvolle
           Defaults und liegt unter „Anpassen“. */}
       <Card>
         <SectionLabel>{t('report.builder.variant')}</SectionLabel>
-        <div className="flex flex-wrap gap-2">
-          <SelectChip
+        <div role="radiogroup" className="grid grid-cols-2 gap-2">
+          <VariantCard
             label={t('report.variant.short')}
+            description={t('report.variantDesc.short')}
             selected={variant === 'short'}
             onClick={() => changeVariant('short')}
           />
-          <SelectChip
+          <VariantCard
             label={t('report.variant.long')}
+            description={t('report.variantDesc.long')}
+            extra={
+              longExtras.length > 0
+                ? t('report.variantExtra', { items: longExtras.join(', ') })
+                : undefined
+            }
             selected={variant === 'long'}
             onClick={() => changeVariant('long')}
           />
@@ -412,11 +550,17 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
           type="button"
           onClick={() => setAdvanced((v) => !v)}
           aria-expanded={advanced}
-          className="focus-ring flex w-full items-center justify-between gap-2 rounded-2xl px-4 py-3 text-sm font-semibold text-foreground"
+          className="focus-ring flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left"
         >
-          {t('report.builder.customize')}
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold text-foreground">
+              {t('report.builder.customize')}
+            </span>
+            {/* Aktueller Stand ohne Aufklappen ablesbar. */}
+            <span className="mt-0.5 block truncate text-xs text-muted">{customizeSummary}</span>
+          </span>
           <ChevronDown
-            className={`h-4 w-4 text-muted transition-transform ${advanced ? 'rotate-180' : ''}`}
+            className={`h-4 w-4 shrink-0 text-muted transition-transform ${advanced ? 'rotate-180' : ''}`}
           />
         </button>
 
@@ -547,101 +691,109 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
 }
 
 /**
- * Elegante „Papier"-Vorschau des Berichts (stilisiertes Cover mit Kopfband,
- * Mini-Chart, Kennzahlen-Kacheln und angedeuteten Textzeilen). Kein echtes PDF –
- * ein hochwertiges Mockup, das den Bereich sofort greifbar und begehrenswert macht.
+ * Kompaktes „Papier"-Motiv des Berichts: Kopfzeile mit Trennlinie, Diagramm,
+ * Kennzahl-Kacheln und Tabellenzeilen – in derselben Reihenfolge und in denselben
+ * neutralen Tönen wie das erzeugte PDF. Bewusst textlos: bei dieser Größe wäre
+ * Text unlesbar, und erfundene Beschriftungen würden mehr versprechen als das
+ * PDF hält. Der Langbericht zeigt zusätzlich gestapelte Seiten.
  */
-function ReportPreview({ variant, title }: { variant: ReportVariant; title: string }) {
-  const { t, i18n } = useTranslation()
+function ReportPreview({ variant }: { variant: ReportVariant }) {
   const long = variant === 'long'
-  const dateLabel = `${new Intl.DateTimeFormat(i18n.language, {
-    month: 'long',
-    year: 'numeric',
-  }).format(new Date())} · ${t(`report.variant.${variant}`)}`
 
   return (
-    <div className="grid place-items-center">
-      <div className="relative w-[168px]">
-        {/* Gestapelte Seiten – deuten Mehrseitigkeit an (mehr beim Langbericht). */}
-        {long && (
-          <div className="absolute inset-x-3 -bottom-2 top-5 rotate-[7deg] origin-bottom rounded-2xl bg-zinc-300/80" />
-        )}
-        <div className="absolute inset-x-2.5 -bottom-1.5 top-4 rotate-[4deg] origin-bottom rounded-2xl bg-zinc-200" />
-        <div className="absolute inset-x-1.5 -bottom-0.5 top-2 -rotate-2 origin-bottom rounded-2xl bg-zinc-100 shadow-sm" />
+    <div aria-hidden="true" className="relative w-[76px] shrink-0">
+      {/* Gestapelte Seiten – deuten Mehrseitigkeit an (nur beim Langbericht). */}
+      {long && (
+        <>
+          <div className="absolute inset-x-2 -bottom-1 top-3 rotate-[6deg] origin-bottom rounded-lg bg-zinc-300/70" />
+          <div className="absolute inset-x-1 -bottom-0.5 top-2 rotate-[3deg] origin-bottom rounded-lg bg-zinc-200" />
+        </>
+      )}
 
-        {/* Vorderseite */}
-        <div className="relative aspect-[1/1.414] overflow-hidden rounded-2xl border border-black/5 bg-white shadow-[0_26px_50px_-18px_rgba(20,30,10,0.45)]">
-          <div
-            className="relative px-3 py-2.5 text-white"
-            style={{ background: 'linear-gradient(135deg,#5a8a1e,#3c5c14)' }}
-          >
-            <p className="text-[7px] font-extrabold tracking-[0.2em]">ENERGIEBERICHT</p>
-            <div className="absolute right-3 top-3 flex flex-col items-end gap-[2px]">
-              <span className="block h-[3px] w-[15px] rounded-sm bg-white/95" />
-              <span className="block h-[3px] w-[11px] rounded-sm bg-white/95" />
-              <span className="block h-[3px] w-[15px] rounded-sm bg-white/95" />
-            </div>
-            <h3 className="mt-2 truncate text-[11px] font-extrabold leading-tight">{title}</h3>
-            <p className="text-[7px] opacity-85">{dateLabel}</p>
+      {/* Vorderseite */}
+      <div className="relative aspect-[1/1.414] overflow-hidden rounded-lg border border-black/10 bg-white shadow-[0_10px_20px_-10px_rgba(20,30,10,0.45)]">
+        <div className="px-2 pt-2">
+          {/* Kopf: Logo-Andeutung, Titelbalken, feine Trennlinie – wie im PDF. */}
+          <div className="flex items-center gap-1">
+            <span className="h-2 w-2 shrink-0 rounded-[2px] bg-zinc-800" />
+            <span className="h-1.5 w-8 rounded-sm bg-zinc-800" />
+          </div>
+          <span className="mt-1 block h-[3px] w-10 rounded-sm bg-zinc-300" />
+          <span className="mt-1.5 block h-px w-full bg-zinc-200" />
+
+          {/* Diagramm */}
+          <div className="mt-1.5 h-[26px] w-full">
+            <svg viewBox="0 0 60 26" preserveAspectRatio="none" className="h-full w-full">
+              <polyline
+                points="0,22 10,18 20,20 30,11 40,13 50,6 60,3"
+                fill="none"
+                stroke="#27272a"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </div>
 
-          <div className="p-3">
-            <div className="mb-2 h-[52px] overflow-hidden rounded-lg border border-zinc-100 bg-zinc-50">
-              <svg viewBox="0 0 190 52" preserveAspectRatio="none" className="h-full w-full">
-                <defs>
-                  <linearGradient id="rp-grad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor="#5a8a1e" stopOpacity="0.35" />
-                    <stop offset="1" stopColor="#5a8a1e" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path
-                  d="M0,40 L26,34 L52,37 L78,22 L104,27 L130,14 L156,18 L190,8 L190,52 L0,52 Z"
-                  fill="url(#rp-grad)"
-                />
-                <path
-                  d="M0,40 L26,34 L52,37 L78,22 L104,27 L130,14 L156,18 L190,8"
-                  fill="none"
-                  stroke="#5a8a1e"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
-
-            <div className="mb-2.5 flex gap-1.5">
-              {['#f2b807', '#3b82f6', '#ef7c1b'].map((c) => (
-                <div key={c} className="flex-1 rounded-lg bg-zinc-100 p-1.5">
-                  <span className="mb-1.5 block h-3.5 w-3.5 rounded-md" style={{ background: c }} />
-                  <span className="block h-1.5 w-[70%] rounded bg-zinc-300" />
-                  <span className="mt-1 block h-1 w-[45%] rounded bg-zinc-200" />
-                </div>
-              ))}
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-              {[92, 100, 70, 84].slice(0, long ? 4 : 3).map((w, idx) => (
-                <span
-                  key={idx}
-                  className="block h-[5px] rounded bg-zinc-200"
-                  style={{ width: `${w}%` }}
-                />
-              ))}
-            </div>
+          {/* Kennzahl-Kacheln */}
+          <div className="mt-1.5 flex gap-1">
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="h-[13px] flex-1 rounded-[3px] bg-zinc-100" />
+            ))}
           </div>
 
-          <p className="absolute bottom-2 left-3 text-[6px] font-bold tracking-widest text-zinc-300">
-            E-APP · ENERGIEANALYSE
-          </p>
-        </div>
-
-        {/* PDF-Badge */}
-        <div className="absolute right-[-8px] top-3 flex items-center gap-1.5 rounded-full bg-zinc-900 px-2.5 py-1.5 text-[10px] font-bold text-white shadow-[0_8px_18px_-6px_rgba(0,0,0,0.5)]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#8fd14f]" />
-          PDF
+          {/* Tabellenzeilen */}
+          <div className="mt-1.5 flex flex-col gap-1">
+            {[100, 82, 92, 70].slice(0, long ? 4 : 2).map((w, i) => (
+              <span key={i} className="block h-[3px] rounded bg-zinc-200" style={{ width: `${w}%` }} />
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* PDF-Badge */}
+      <div className="absolute -right-1.5 top-1.5 rounded-full bg-zinc-900 px-1.5 py-0.5 text-[8px] font-bold leading-none text-white shadow-[0_4px_10px_-4px_rgba(0,0,0,0.6)]">
+        PDF
+      </div>
     </div>
+  )
+}
+
+interface VariantCardProps {
+  label: string
+  description: string
+  /** Was diese Variante zusätzlich enthält (nur beim Langbericht sinnvoll). */
+  extra?: string
+  selected: boolean
+  onClick: () => void
+}
+
+/**
+ * Umfang-Auswahl als Karte statt als Chip: der Unterschied zwischen Kurz- und
+ * Langbericht steht damit direkt an der Entscheidung.
+ */
+function VariantCard({ label, description, extra, selected, onClick }: VariantCardProps) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onClick}
+      className={`focus-ring rounded-2xl border p-3 text-left transition-[transform,background-color,border-color] duration-200 active:scale-[0.98] ${
+        selected
+          ? 'border-primary bg-primary/10'
+          : 'border-border bg-surface-2/40 hover:bg-surface-2/70'
+      }`}
+    >
+      <span className="flex items-center justify-between gap-1">
+        <span className={`text-sm font-semibold ${selected ? 'text-primary' : 'text-foreground'}`}>
+          {label}
+        </span>
+        {selected && <Check className="h-4 w-4 shrink-0 text-primary" />}
+      </span>
+      <span className="mt-1 block text-xs leading-snug text-muted">{description}</span>
+      {extra && <span className="mt-1 block text-xs leading-snug text-muted">{extra}</span>}
+    </button>
   )
 }
 

@@ -197,6 +197,29 @@ function buildEntry(
   return entry
 }
 
+/** Auswählbare Zeiträume, vom kürzesten zum längsten. */
+const RANGE_CANDIDATES: Exclude<RangeDays, null>[] = [7, 30, 90]
+
+/**
+ * Schlägt den Zeitraum vor, mit dem der Bericht nicht leer bleibt: der kürzeste,
+ * in dem mindestens ein Zähler zwei Ablesungen hat – sonst „Alle".
+ *
+ * Ein fester 30-Tage-Default liefert bei monatlicher oder unregelmäßiger
+ * Ablesung ein leeres Diagramm und Kennzahlen ohne Wert.
+ */
+export function suggestRangeDays(
+  readingsByType: Partial<Record<EnergyType, MeterReading[]>>,
+  types: EnergyType[],
+): RangeDays {
+  const nowMs = Date.now()
+  for (const days of RANGE_CANDIDATES) {
+    const fromMs = nowMs - days * MS_PER_DAY
+    const enough = types.some((type) => inWindow(readingsByType[type] ?? [], fromMs, nowMs).length >= 2)
+    if (enough) return days
+  }
+  return null
+}
+
 /**
  * Baut das Monitoring-Berichts-Datenobjekt.
  * Reine Funktion, robust bei < 2 Ablesungen.
