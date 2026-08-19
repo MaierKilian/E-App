@@ -709,9 +709,18 @@
       },
       "run": {
         "fixtureLabel": "Where are you measuring?",
-        "recommended": "Recommended",
         "instruction": "Turn the water fully to hot, start the stopwatch — and stop as soon as it gets clearly warm.",
-        "waterPrice": "Water price"
+        "waterPrice": "Water price",
+        "fixtureHints": {
+          "shower": "highest flow",
+          "bath": "highest flow",
+          "kitchen": "used often",
+          "washbasin": "short draws"
+        },
+        "stagnationHint": "Measure when the pipe has cooled down – ideally in the morning before the first draw. Shortly after showering the pipe is still warm and the reading comes out too low.",
+        "manualLabel": "Correct time",
+        "hintFixture": "Pick a tap first.",
+        "hintStopwatch": "Start the stopwatch and stop it once the water is warm."
       },
       "result": {
         "secondsUnit": "sec",

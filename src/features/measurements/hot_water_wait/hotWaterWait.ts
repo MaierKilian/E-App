@@ -19,7 +19,13 @@ export interface FixtureMeta {
   flowLpm: number
   /** Grobe Anzahl Warmwasser-Zapfungen pro Tag (Haushalt). */
   drawsPerDay: number
-  /** Als bevorzugter Messort hervorheben (großer Wasserdurchsatz). */
+  /**
+   * Bevorzugter Messort (großer Wasserdurchsatz).
+   *
+   * Steuert die Reihenfolge in {@link FIXTURE_ORDER}: empfohlene Stellen
+   * stehen vorn. Ein Badge an der Hälfte aller Optionen hätte nichts mehr
+   * ausgesagt.
+   */
   recommended: boolean
 }
 
@@ -31,6 +37,7 @@ export const FIXTURES: Record<FixtureType, FixtureMeta> = {
   washbasin: { flowLpm: 5, drawsPerDay: 5, recommended: false },
 }
 
+/** Anzeigereihenfolge: empfohlene Entnahmestellen zuerst. */
 export const FIXTURE_ORDER: FixtureType[] = ['shower', 'bath', 'kitchen', 'washbasin']
 
 export interface HotWaterWaitInput {

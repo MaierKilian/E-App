@@ -709,9 +709,18 @@
       },
       "run": {
         "fixtureLabel": "Wo misst du?",
-        "recommended": "Empfohlen",
         "instruction": "Stelle das Wasser voll auf warm, starte die Stoppuhr – und stoppe, sobald es deutlich warm wird.",
-        "waterPrice": "Wasserpreis"
+        "waterPrice": "Wasserpreis",
+        "fixtureHints": {
+          "shower": "größter Durchsatz",
+          "bath": "größter Durchsatz",
+          "kitchen": "häufig genutzt",
+          "washbasin": "kurze Zapfungen"
+        },
+        "stagnationHint": "Miss, wenn die Leitung ausgekühlt ist – am besten morgens vor der ersten Zapfung. Kurz nach dem Duschen ist das Rohr noch warm und der Wert zu niedrig.",
+        "manualLabel": "Zeit korrigieren",
+        "hintFixture": "Wähle zuerst eine Entnahmestelle.",
+        "hintStopwatch": "Stoppuhr starten und bei warmem Wasser stoppen."
       },
       "result": {
         "secondsUnit": "Sek.",
