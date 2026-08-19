@@ -11,7 +11,10 @@ export type ReportType = 'measurements' | 'monitoring' | 'total'
 /** An-/abwählbare Inhalte des Berichts (Builder). */
 export interface ReportContentOptions {
   // Monitoring
+  /** Verbrauch je Ablesezeitraum als Balken (die aussagekräftige Darstellung). */
   charts: boolean
+  /** Zusätzlich der kumulative Zählerstandsverlauf als Linie. */
+  readingCurve: boolean
   kpis: boolean
   comparison: boolean
   history: boolean
@@ -38,6 +41,7 @@ export function defaultContentOptions(variant: ReportVariant): ReportContentOpti
   const long = variant === 'long'
   return {
     charts: true,
+    readingCurve: long,
     kpis: true,
     comparison: true,
     history: long,

@@ -392,25 +392,33 @@ export class PdfKit {
     this.y = top + height
   }
 
-  /** Balkendiagramm (Vektor) für Verbrauch je Intervall. */
-  barChart(bars: BarItem[], opts: { height?: number; color?: RGB; language?: string } = {}): void {
-    const { height = 130, color = PALETTE.ink, language } = opts
+  /**
+   * Balkendiagramm (Vektor) für Verbrauch je Intervall. Über dem höchsten
+   * Balken steht sein Wert samt Einheit; die x-Labels werden ausgedünnt, sobald
+   * sie sonst überlappen würden.
+   */
+  barChart(
+    bars: BarItem[],
+    opts: { height?: number; color?: RGB; unit?: string; language?: string } = {},
+  ): void {
+    const { height = 130, color = PALETTE.ink, unit = '', language } = opts
     const clean = bars.filter((b) => Number.isFinite(b.value) && b.value >= 0)
     const labelArea = 24
-    const plotH = height - labelArea
+    const headPad = 12 // Platz für den Maximalwert über dem Balken
+    const plotH = height - labelArea - headPad
     this.ensure(height + 6)
     const top = this.y
-    const baseY = top + plotH
+    const baseY = top + headPad + plotH
 
     if (clean.length === 0) {
       this.setFill(PALETTE.card)
-      this.doc.roundedRect(MARGIN_X, top, CONTENT_W, plotH, 8, 8, 'F')
+      this.doc.roundedRect(MARGIN_X, top + headPad, CONTENT_W, plotH, 8, 8, 'F')
       this.y = top + height
       return
     }
 
     const max = Math.max(...clean.map((b) => b.value)) || 1
-    const gap = 8
+    const gap = clean.length > 16 ? 3 : 8
     const barW = Math.min(48, (CONTENT_W - gap * (clean.length - 1)) / clean.length)
     const totalW = barW * clean.length + gap * (clean.length - 1)
     const startX = MARGIN_X + (CONTENT_W - totalW) / 2
@@ -419,18 +427,34 @@ export class PdfKit {
     this.doc.setLineWidth(0.6)
     this.doc.line(MARGIN_X, baseY, MARGIN_X + CONTENT_W, baseY)
 
+    // Nur so viele x-Labels zeichnen, wie nebeneinander lesbar sind (~26 pt).
+    const step = Math.max(1, Math.ceil(26 / (barW + gap)))
+    const maxIndex = clean.findIndex((b) => b.value === max)
+
     clean.forEach((b, i) => {
       const x = startX + i * (barW + gap)
       const h = (b.value / max) * plotH
       this.setFill(color)
-      this.doc.roundedRect(x, baseY - h, barW, h, 3, 3, 'F')
-      this.doc.setFont('helvetica', 'normal')
-      this.doc.setFontSize(7)
-      this.setColor(PALETTE.muted)
-      this.doc.text(toLatin1(b.label), x + barW / 2, baseY + 12, { align: 'center', maxWidth: barW + gap })
+      this.doc.roundedRect(x, baseY - h, barW, Math.max(h, 0.8), 2, 2, 'F')
+
+      if (i === maxIndex) {
+        this.doc.setFont('helvetica', 'bold')
+        this.doc.setFontSize(7.5)
+        this.setColor(PALETTE.body)
+        const label = unit
+          ? `${formatTick(b.value, language)} ${unit}`
+          : formatTick(b.value, language)
+        this.doc.text(toLatin1(label), x + barW / 2, baseY - h - 4, { align: 'center' })
+      }
+
+      if (i % step === 0 || i === clean.length - 1) {
+        this.doc.setFont('helvetica', 'normal')
+        this.doc.setFontSize(7)
+        this.setColor(PALETTE.muted)
+        this.doc.text(toLatin1(b.label), x + barW / 2, baseY + 12, { align: 'center' })
+      }
     })
 
-    if (language) void language
     this.y = top + height
   }
 
@@ -490,12 +514,35 @@ export class PdfKit {
     this.y += 6
   }
 
-  /** Mehrspaltige Historien-Tabelle mit Kopfzeile. */
-  historyTable(headers: string[], rows: string[][]): void {
+  /**
+   * Mehrspaltige Tabelle mit Kopfzeile, optionaler Spaltenausrichtung und
+   * optionalen Spaltenanteilen. Bricht die Kopfzeile auf Folgeseiten mit um.
+   *
+   * @param align je Spalte 'left' oder 'right' (Standard: alles links)
+   * @param widths je Spalte ein Anteil an der Inhaltsbreite (Summe frei)
+   * @param emphasizeLast letzte Zeile fett – für Summenzeilen
+   */
+  table(
+    headers: string[],
+    rows: string[][],
+    opts: { align?: ('left' | 'right')[]; widths?: number[]; emphasizeLast?: boolean } = {},
+  ): void {
     if (rows.length === 0) return
     const cols = headers.length
-    const colW = CONTENT_W / cols
+    const { align = [], widths, emphasizeLast = false } = opts
     const rowH = 16
+
+    // Spaltenbreiten aus den Anteilen; ohne Angabe gleich breit.
+    const share = widths && widths.length === cols ? widths : new Array(cols).fill(1)
+    const total = share.reduce((a, b) => a + b, 0) || 1
+    const colW = share.map((w) => (CONTENT_W * w) / total)
+    const colX = colW.map((_, i) => MARGIN_X + colW.slice(0, i).reduce((a, b) => a + b, 0))
+
+    // x-Position und Ausrichtung einer Zelle (rechtsbündig = Spaltenende).
+    const cellPos = (i: number): { x: number; align: 'left' | 'right' } =>
+      align[i] === 'right'
+        ? { x: colX[i] + colW[i] - 6, align: 'right' }
+        : { x: colX[i] + 6, align: 'left' }
 
     const drawHead = () => {
       this.setFill(PALETTE.card)
@@ -504,28 +551,38 @@ export class PdfKit {
       this.doc.setFontSize(8.5)
       this.setColor(PALETTE.body)
       headers.forEach((h, i) => {
-        this.doc.text(toLatin1(h), MARGIN_X + i * colW + 6, this.y + 11)
+        const { x, align: a } = cellPos(i)
+        this.doc.text(toLatin1(h), x, this.y + 11, { align: a })
       })
       this.y += rowH + 2
     }
 
-    this.ensure(rowH * 2)
+    // Kopfzeile plus zwei Datenzeilen zusammenhalten – eine einzelne Zeile am
+    // Seitenende sieht nach Fehler aus.
+    this.ensure(rowH * 3 + 4)
     drawHead()
-    for (const row of rows) {
+    rows.forEach((row, r) => {
+      const bold = emphasizeLast && r === rows.length - 1
       this.ensure(rowH + 2)
       if (this.y === MARGIN_TOP) drawHead()
-      this.doc.setFont('helvetica', 'normal')
+      this.doc.setFont('helvetica', bold ? 'bold' : 'normal')
       this.doc.setFontSize(8.5)
-      this.setColor(PALETTE.body)
+      this.setColor(bold ? PALETTE.ink : PALETTE.body)
       row.forEach((cell, i) => {
-        this.doc.text(toLatin1(cell), MARGIN_X + i * colW + 6, this.y + 10)
+        const { x, align: a } = cellPos(i)
+        this.doc.text(toLatin1(cell), x, this.y + 10, { align: a, maxWidth: colW[i] - 12 })
       })
       this.setDraw(PALETTE.hair)
       this.doc.setLineWidth(0.4)
       this.doc.line(MARGIN_X, this.y + rowH, PAGE_W - MARGIN_X, this.y + rowH)
       this.y += rowH
-    }
+    })
     this.y += 8
+  }
+
+  /** Historien-Tabelle: Datum links, Zählerstand rechts. */
+  historyTable(headers: string[], rows: string[][]): void {
+    this.table(headers, rows, { align: ['left', 'right'] })
   }
 
   /** Listenzeile mit farbigem Punkt (z. B. Rating), Titel und rechtem Wert. */

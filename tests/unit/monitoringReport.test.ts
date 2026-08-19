@@ -182,6 +182,57 @@ describe('buildMonitoringReportData', () => {
   })
 })
 
+describe('Verbrauch je Ablesezeitraum', () => {
+  it('bildet ein Segment je Ablesepaar mit Tagesabstand', () => {
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: {
+        electricity: [reading(30, 1000), reading(20, 1100), reading(5, 1400)],
+      },
+      rangeDays: null,
+      tariff: TARIFF,
+      types: ['electricity'],
+    })
+
+    const segments = data.entries[0].segments
+    expect(segments).toHaveLength(2)
+    expect(segments[0]).toMatchObject({ value: 100, days: 10 })
+    expect(segments[1]).toMatchObject({ value: 300, days: 15 })
+    // Pro Tag: 10 vs. 20 – erst dadurch sind ungleich lange Zeitraeume vergleichbar.
+    expect(segments[0].value / segments[0].days).toBeCloseTo(10, 6)
+    expect(segments[1].value / segments[1].days).toBeCloseTo(20, 6)
+  })
+
+  it('ueberspringt ruecklaeufige Staende (Zaehlerwechsel) statt negativer Balken', () => {
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: {
+        electricity: [reading(30, 5000), reading(20, 0), reading(10, 150)],
+      },
+      rangeDays: null,
+      tariff: TARIFF,
+      types: ['electricity'],
+    })
+
+    const segments = data.entries[0].segments
+    expect(segments).toHaveLength(1)
+    expect(segments[0]).toMatchObject({ value: 150, days: 10 })
+  })
+
+  it('liefert die vollstaendige Historie; die Kuerzung passiert erst im PDF', () => {
+    const readings = Array.from({ length: 12 }, (_, i) => reading(120 - i * 10, 1000 + i * 50))
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: { electricity: readings },
+      rangeDays: null,
+      tariff: TARIFF,
+      types: ['electricity'],
+    })
+
+    expect(data.entries[0].history).toHaveLength(12)
+  })
+})
+
 describe('suggestRangeDays', () => {
   it('waehlt den kuerzesten Zeitraum mit mindestens zwei Ablesungen', () => {
     expect(

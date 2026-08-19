@@ -247,7 +247,7 @@ const RANGE_OPTIONS: { key: string; value: RangeDays }[] = [
 ]
 
 /** Inhalts-Schalter, die im jeweiligen Abschnitt überhaupt eine Wirkung haben. */
-const MONITORING_KEYS = ['charts', 'kpis', 'comparison', 'history'] as const
+const MONITORING_KEYS = ['charts', 'readingCurve', 'kpis', 'comparison', 'history'] as const
 const MEASUREMENT_KEYS = ['savings', 'tips', 'openMeasurements'] as const
 
 interface BuilderProps {
@@ -572,6 +572,7 @@ function ReportBuilder({ type, onBack }: BuilderProps) {
                 {showMonitoring && (
                   <>
                     <ToggleChip label={t('report.contents.charts')} active={options.charts} onClick={() => toggleOption('charts')} />
+                    <ToggleChip label={t('report.contents.readingCurve')} active={options.readingCurve} onClick={() => toggleOption('readingCurve')} />
                     <ToggleChip label={t('report.contents.kpis')} active={options.kpis} onClick={() => toggleOption('kpis')} />
                     <ToggleChip
                       label={t('report.contents.comparison')}

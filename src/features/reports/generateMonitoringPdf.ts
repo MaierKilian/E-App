@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import { PdfKit, type KpiCard } from './pdf/pdfKit'
+import { PdfKit, type KpiCard, type BarItem } from './pdf/pdfKit'
 import {
   numberFmt,
   currencyFmt,
@@ -11,6 +11,9 @@ import {
 } from './pdf/format'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import type { MonitoringReportData, MonitoringEntry } from './monitoringReportData'
+
+/** Höchstens so viele Historien-Zeilen im Kurzbericht; der Rest wird gezählt. */
+const SHORT_HISTORY_ROWS = 8
 
 /**
  * Erzeugt den Monitoring-Bericht (Kurz/Lang) als grafisches PDF und startet
@@ -66,11 +69,117 @@ export function fillMonitoring(
   const num = numberFmt(language, 1)
   const cur = currencyFmt(language)
 
+  if (options.kpis) writeSummaryTable(kit, t, num, cur, data)
+
   data.entries.forEach((e, idx) => {
+    // Im Langbericht bekommt jeder Zähler eine eigene Seite – sonst entscheidet
+    // der Zufall des Seitenumbruchs, wo ein Träger aufhört.
+    if (idx > 0) {
+      if (variant === 'long') kit.newPage()
+      else kit.gap(10)
+    }
     if (variant === 'short') writeShortEntry(kit, t, language, num, cur, e, options)
     else writeLongEntry(kit, t, language, num, cur, e, options)
-    if (idx < data.entries.length - 1) kit.gap(10)
   })
+}
+
+/**
+ * Übersicht über alle ausgewerteten Träger: Verbrauch, Hochrechnung und Kosten
+ * nebeneinander, mit Summe der Jahreskosten. Bei nur einem Träger mit Daten
+ * wiederholt sie nur dessen Kennzahlen und entfällt deshalb.
+ */
+function writeSummaryTable(
+  kit: PdfKit,
+  t: TFunction,
+  num: Intl.NumberFormat,
+  cur: Intl.NumberFormat,
+  data: MonitoringReportData,
+): void {
+  const withData = data.entries.filter((e) => e.consumption !== undefined)
+  if (withData.length < 2) return
+
+  const rows = withData.map((e) => [
+    t(`monitoring.energyTypes.${e.type}`),
+    fmtVal(e.consumption, e.unit, num),
+    fmtVal(e.projectedYear, e.unit, num),
+    e.costYear !== undefined ? fmtCur(e.costYear, cur) : '-',
+  ])
+
+  const costs = withData.map((e) => e.costYear).filter((c): c is number => c !== undefined)
+  if (costs.length > 1) {
+    rows.push([
+      t('report.pdf.monitoring.totalRow'),
+      '',
+      '',
+      fmtCur(costs.reduce((a, b) => a + b, 0), cur),
+    ])
+  }
+
+  kit.sectionTitle(t('report.pdf.monitoring.summary'))
+  kit.table(
+    [
+      t('report.pdf.monitoring.carrier'),
+      t('report.kpi.consumption'),
+      t('report.kpi.projectedYear'),
+      t('report.kpi.costYear'),
+    ],
+    rows,
+    {
+      align: ['left', 'right', 'right', 'right'],
+      widths: [1.3, 1, 1.1, 1],
+      emphasizeLast: costs.length > 1,
+    },
+  )
+  kit.gap(6)
+}
+
+/**
+ * Balken je Ablesezeitraum – bewusst als Verbrauch **pro Tag**. Absolute
+ * Intervallverbräuche wären nicht vergleichbar, sobald die Abstände zwischen
+ * den Ablesungen ungleich sind: ein Jahresintervall ergäbe zwangsläufig den
+ * höchsten Balken, ganz unabhängig vom Verbrauchsverhalten.
+ */
+function writeConsumptionChart(
+  kit: PdfKit,
+  t: TFunction,
+  language: string,
+  e: MonitoringEntry,
+  height: number,
+): void {
+  kit.body(t('report.pdf.monitoring.consumptionChart'), { size: 9, bold: true })
+  if (e.segments.length === 0) {
+    kit.subtle(t('report.pdf.monitoring.noSegments'))
+    return
+  }
+  const bars: BarItem[] = e.segments.map((seg) => ({
+    label: fmtDateShort(seg.to, language),
+    value: seg.value / seg.days,
+  }))
+  kit.barChart(bars, {
+    height,
+    unit: t('report.pdf.monitoring.perDayUnit', { unit: e.unit }),
+    language,
+  })
+}
+
+/** Historie mit ehrlichem Hinweis, wenn gekürzt wurde. */
+function writeHistory(
+  kit: PdfKit,
+  t: TFunction,
+  language: string,
+  num: Intl.NumberFormat,
+  e: MonitoringEntry,
+  maxRows?: number,
+): void {
+  if (e.history.length === 0) return
+  const newestFirst = [...e.history].reverse()
+  const shown = maxRows === undefined ? newestFirst : newestFirst.slice(0, maxRows)
+  kit.historyTable(
+    [t('report.pdf.monitoring.historyDate'), t('report.pdf.monitoring.historyValue')],
+    shown.map((r) => [fmtDate(r.date, language), fmtVal(r.value, e.unit, num)]),
+  )
+  const hidden = newestFirst.length - shown.length
+  if (hidden > 0) kit.subtle(t('report.pdf.monitoring.historyMore', { count: hidden }))
 }
 
 /**
@@ -131,7 +240,8 @@ function writeShortEntry(
   let est = 36
   if (options.kpis) est += 70
   if (options.comparison) est += 18
-  if (options.charts) est += 124
+  if (options.charts) est += 130
+  if (options.readingCurve) est += 124
   kit.ensure(est)
 
   kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
@@ -169,7 +279,19 @@ function writeShortEntry(
 
   if (options.charts) {
     kit.gap(6)
-    kit.lineChart(e.points, { height: 116, unit: e.unit, language })
+    writeConsumptionChart(kit, t, language, e, 116)
+  }
+
+  if (options.readingCurve) {
+    kit.gap(6)
+    kit.body(t('report.pdf.monitoring.readingCurveTitle'), { size: 9, bold: true })
+    kit.lineChart(e.points, { height: 110, unit: e.unit, language })
+  }
+
+  // Kurzbericht: nur die jüngsten Ablesungen, der Rest wird beziffert.
+  if (options.history) {
+    kit.gap(6)
+    writeHistory(kit, t, language, num, e, SHORT_HISTORY_ROWS)
   }
 }
 
@@ -192,7 +314,7 @@ function writeLongEntry(
 
   // Titel + Diagramm + KPIs zusammenhalten (Historie darf umbrechen).
   let est = 36
-  if (options.charts) est += 178
+  if (options.charts) est += 184
   if (options.kpis) est += 150
   if (options.comparison) est += 19
   kit.ensure(est)
@@ -200,7 +322,7 @@ function writeLongEntry(
   kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
 
   if (options.charts) {
-    kit.lineChart(e.points, { height: 170, unit: e.unit, language })
+    writeConsumptionChart(kit, t, language, e, 160)
     kit.gap(6)
   }
 
@@ -244,11 +366,13 @@ function writeLongEntry(
     kit.gap(2)
   }
 
-  if (options.history && e.history.length > 0) {
-    const headers = [t('report.pdf.monitoring.historyDate'), t('report.pdf.monitoring.historyValue')]
-    const rows = [...e.history]
-      .reverse()
-      .map((r) => [fmtDate(r.date, language), fmtVal(r.value, e.unit, num)])
-    kit.historyTable(headers, rows)
+  if (options.readingCurve) {
+    kit.gap(4)
+    kit.body(t('report.pdf.monitoring.readingCurveTitle'), { size: 9, bold: true })
+    kit.lineChart(e.points, { height: 150, unit: e.unit, language })
+    kit.gap(6)
   }
+
+  // Langbericht zeigt die vollständige Historie – hier ist Platz dafür.
+  if (options.history) writeHistory(kit, t, language, num, e)
 }

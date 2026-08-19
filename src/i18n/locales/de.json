@@ -152,13 +152,14 @@
       "summaryAllRange": "Alle Ablesungen"
     },
     "contents": {
-      "charts": "Diagramme",
+      "charts": "Verbrauchsdiagramm",
       "kpis": "Kennzahlen",
       "comparison": "Vergleich Vorperiode",
       "history": "Zählerhistorie",
       "savings": "Sparpotenzial",
       "tips": "Tipps",
-      "openMeasurements": "Offene Messungen"
+      "openMeasurements": "Offene Messungen",
+      "readingCurve": "Zählerstandsverlauf"
     },
     "range": {
       "d7": "7 Tage",
@@ -206,7 +207,15 @@
         "title": "Monitoring-Bericht",
         "subtitle": "Zeitraum: {{range}}",
         "historyDate": "Datum",
-        "historyValue": "Zählerstand"
+        "historyValue": "Zählerstand",
+        "summary": "Übersicht",
+        "carrier": "Energieträger",
+        "consumptionChart": "Verbrauch pro Tag je Ablesezeitraum",
+        "readingCurveTitle": "Zählerstandsverlauf",
+        "historyMore": "… und {{count}} weitere Ablesungen",
+        "totalRow": "Gesamt",
+        "noSegments": "Für einen Verbrauchsvergleich sind mindestens zwei Ablesungen nötig.",
+        "perDayUnit": "{{unit}}/Tag"
       },
       "total": {
         "title": "Gesamt-Energiebericht",

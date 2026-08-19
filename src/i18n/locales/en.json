@@ -152,13 +152,14 @@
       "summaryAllRange": "All readings"
     },
     "contents": {
-      "charts": "Charts",
+      "charts": "Consumption chart",
       "kpis": "Key figures",
       "comparison": "Previous period",
       "history": "Reading history",
       "savings": "Savings potential",
       "tips": "Tips",
-      "openMeasurements": "Open measurements"
+      "openMeasurements": "Open measurements",
+      "readingCurve": "Meter curve"
     },
     "range": {
       "d7": "7 days",
@@ -206,7 +207,15 @@
         "title": "Monitoring report",
         "subtitle": "Period: {{range}}",
         "historyDate": "Date",
-        "historyValue": "Meter value"
+        "historyValue": "Meter value",
+        "summary": "Overview",
+        "carrier": "Energy source",
+        "consumptionChart": "Consumption per day, by reading period",
+        "readingCurveTitle": "Meter reading curve",
+        "historyMore": "… and {{count}} more readings",
+        "totalRow": "Total",
+        "noSegments": "At least two readings are needed to compare consumption.",
+        "perDayUnit": "{{unit}}/day"
       },
       "total": {
         "title": "Overall energy report",

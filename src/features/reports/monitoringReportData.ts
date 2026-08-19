@@ -23,6 +23,18 @@ export interface ChartPoint {
   value: number
 }
 
+/** Verbrauch zwischen zwei aufeinanderfolgenden Ablesungen. */
+export interface ConsumptionSegment {
+  /** Datum der früheren Ablesung (ISO). */
+  from: string
+  /** Datum der späteren Ablesung (ISO). */
+  to: string
+  /** Verbrauch in der Einheit des Trägers. */
+  value: number
+  /** Tage zwischen beiden Ablesungen (mindestens 1). */
+  days: number
+}
+
 /** Auswertung eines Energieträgers für den Bericht. */
 export interface MonitoringEntry {
   type: EnergyType
@@ -59,7 +71,12 @@ export interface MonitoringEntry {
   changePercent?: number
   /** Diagramm-Punkte (gefiltert auf Zeitraum). */
   points: ChartPoint[]
-  /** Letzte Ablesungen für die Historie (neueste zuletzt). */
+  /**
+   * Verbrauch je Ablesezeitraum – die eigentlich interessante Größe. Der
+   * Zählerstand steigt monoton und sagt für sich genommen wenig aus.
+   */
+  segments: ConsumptionSegment[]
+  /** Alle Ablesungen im Zeitraum (älteste zuerst); Kürzung erfolgt im PDF. */
   history: MeterReading[]
 }
 
@@ -97,20 +114,40 @@ function consumptionOf(readings: MeterReading[]): number | undefined {
   return Number.isFinite(diff) && diff >= 0 ? diff : undefined
 }
 
-/** Filtert Ablesungen auf das Fenster [from, to] (inkl.). */
-function inWindow(readings: MeterReading[], fromMs: number, toMs: number): MeterReading[] {
-  return readings.filter((r) => {
-    const t = new Date(`${r.date}T00:00:00`).getTime()
-    return Number.isFinite(t) && t >= fromMs && t <= toMs
-  })
-}
-
 /** Tagesabstand zwischen zwei ISO-Daten (kann 0 sein). */
 function daysBetween(fromIso: string, toIso: string): number {
   const a = new Date(`${fromIso}T00:00:00`).getTime()
   const b = new Date(`${toIso}T00:00:00`).getTime()
   if (!Number.isFinite(a) || !Number.isFinite(b)) return 0
   return Math.round((b - a) / MS_PER_DAY)
+}
+
+/**
+ * Verbrauch je Ablesezeitraum. Rückläufige Differenzen (Zählerwechsel) werden
+ * übersprungen, statt einen negativen Balken zu erzeugen.
+ */
+function segmentsOf(readings: MeterReading[]): ConsumptionSegment[] {
+  const sorted = sortByDate(readings)
+  const out: ConsumptionSegment[] = []
+  for (let i = 1; i < sorted.length; i++) {
+    const diff = sorted[i].value - sorted[i - 1].value
+    if (!Number.isFinite(diff) || diff < 0) continue
+    out.push({
+      from: sorted[i - 1].date,
+      to: sorted[i].date,
+      value: diff,
+      days: Math.max(1, daysBetween(sorted[i - 1].date, sorted[i].date)),
+    })
+  }
+  return out
+}
+
+/** Filtert Ablesungen auf das Fenster [from, to] (inkl.). */
+function inWindow(readings: MeterReading[], fromMs: number, toMs: number): MeterReading[] {
+  return readings.filter((r) => {
+    const t = new Date(`${r.date}T00:00:00`).getTime()
+    return Number.isFinite(t) && t >= fromMs && t <= toMs
+  })
 }
 
 /** Wertet einen einzelnen Energieträger aus. */
@@ -135,6 +172,7 @@ function buildEntry(
     currentValue: latest?.value,
     currentDate: latest?.date,
     points: [],
+    segments: [],
     history: [],
   }
 
@@ -155,7 +193,8 @@ function buildEntry(
 
   entry.readingCount = windowReadings.length
   entry.points = windowReadings.map((r) => ({ date: r.date, value: r.value }))
-  entry.history = windowReadings.slice(-8)
+  entry.segments = segmentsOf(windowReadings)
+  entry.history = windowReadings
   if (windowReadings.length > 0) {
     entry.windowFrom = windowReadings[0].date
     entry.windowTo = windowReadings[windowReadings.length - 1].date
