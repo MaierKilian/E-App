@@ -97,7 +97,6 @@
   },
   "report": {
     "title": "Reports",
-    "subtitle": "Your energy report as a PDF.",
     "variant": {
       "short": "Short report",
       "long": "Detailed report"
@@ -189,8 +188,7 @@
       "measurements_one": "{{count}} measurement",
       "measurements_other": "{{count}} measurements",
       "noData": "No data yet",
-      "profileOnly": "Building data only",
-      "rangeEmpty": "No readings in this period"
+      "profileOnly": "Building data only"
     },
     "variantDesc": {
       "short": "The essentials at a glance.",

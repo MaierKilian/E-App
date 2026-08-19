@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { FileText, Download, Share2, Check, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Download, Share2, Check, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
@@ -21,7 +21,7 @@ import type { ReportSections, ReportVariant } from './reportTypes'
  * einzigen weiteren Stellschrauben – alles andere ergibt sich daraus.
  */
 export function ReportsPage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   const profile = useOnboardingStore((s) => s.data)
   const results = useMeasurementsStore((s) => s.results)
@@ -78,19 +78,14 @@ export function ReportsPage() {
   }
 
   return (
-    <div className="space-y-5 pb-24">
-      <header className="flex items-start gap-4">
-        <span className="grid place-items-center w-12 h-12 rounded-2xl bg-primary/10 text-primary shrink-0">
-          <FileText className="w-6 h-6" />
-        </span>
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold">{t('report.title')}</h1>
-          <p className="text-muted mt-1 text-sm">{t('report.subtitle')}</p>
-        </div>
-      </header>
+    // Ziel ist ein Bildschirm ohne Scrollen: Titel einzeilig, Umfang in der
+    // Kopfkarte, enge Abstände.
+    <div className="space-y-2.5 pb-24">
+      <h1 className="text-xl font-bold">{t('report.title')}</h1>
 
       <ReportSummary
         variant={settings.variant}
+        onVariantChange={settings.setVariant}
         sections={sections}
         monitoring={monitoringData}
         measurements={measurementsData}
@@ -98,26 +93,8 @@ export function ReportsPage() {
         objectName={(profile.profileName ?? '').trim() || undefined}
       />
 
-      <Card>
-        <SectionLabel>{t('report.builder.variant')}</SectionLabel>
-        <div role="radiogroup" className="grid grid-cols-2 gap-2">
-          <VariantCard
-            label={t('report.variant.short')}
-            description={t('report.variantDesc.short')}
-            selected={settings.variant === 'short'}
-            onClick={() => settings.setVariant('short')}
-          />
-          <VariantCard
-            label={t('report.variant.long')}
-            description={t('report.variantDesc.long')}
-            selected={settings.variant === 'long'}
-            onClick={() => settings.setVariant('long')}
-          />
-        </div>
-      </Card>
-
       <Card className="!p-0 overflow-hidden">
-        <div className="px-5 pt-5">
+        <div className="px-5 pt-4">
           <SectionLabel>{t('report.builder.sections')}</SectionLabel>
         </div>
         <SectionRow
@@ -151,14 +128,7 @@ export function ReportsPage() {
         >
           {/* Der Zeitraum gehört an das Monitoring – er verändert dessen
               Kennzahlen, nicht den Bericht als Ganzes. */}
-          <RangePicker
-            value={rangeDays}
-            onChange={settings.setRange}
-            from={monitoringData.from}
-            to={monitoringData.to}
-            readingCount={monitoringData.readingCount}
-            language={i18n.language}
-          />
+          <RangePicker value={rangeDays} onChange={settings.setRange} />
         </SectionRow>
       </Card>
 
@@ -177,6 +147,7 @@ export function ReportsPage() {
 
 interface SummaryProps {
   variant: ReportVariant
+  onVariantChange: (variant: ReportVariant) => void
   sections: ReportSections
   monitoring: ReturnType<typeof buildMonitoringReportData>
   measurements: ReturnType<typeof buildMeasurementsReportData>
@@ -184,9 +155,14 @@ interface SummaryProps {
   objectName?: string
 }
 
-/** Papier-Motiv neben den Fakten, die tatsächlich im PDF landen. */
+/**
+ * Kopfkarte: Papier-Motiv, die Fakten, die tatsächlich im PDF landen, und der
+ * Umfang. Der Umfang steht hier statt in einer eigenen Karte, damit Kopf,
+ * Inhalt und Schaltfläche zusammen auf einen Bildschirm passen.
+ */
 function ReportSummary({
   variant,
+  onVariantChange,
   sections,
   monitoring,
   measurements,
@@ -217,12 +193,24 @@ function ReportSummary({
           <p className="truncate text-sm font-semibold text-foreground">
             {objectName ?? t('home.profileNameFallback')}
           </p>
-          <p className="mt-0.5 text-xs text-muted">{t(`report.variant.${variant}`)} · PDF</p>
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-1 text-xs text-muted">
             {facts.length > 0 ? facts.join(' · ') : t('report.facts.profileOnly')}
           </p>
           {period && <p className="mt-0.5 text-xs text-muted">{period}</p>}
         </div>
+      </div>
+
+      <div className="mt-3">
+        <Segmented
+          ariaLabel={t('report.builder.variant')}
+          options={[
+            { key: 'short', label: t('report.variant.short') },
+            { key: 'long', label: t('report.variant.long') },
+          ]}
+          value={variant}
+          onChange={(key) => onVariantChange(key as ReportVariant)}
+        />
+        <p className="mt-2 text-xs text-muted">{t(`report.variantDesc.${variant}`)}</p>
       </div>
     </Card>
   )
@@ -253,7 +241,7 @@ function SectionRow({ label, detail, checked, disabled, onToggle, children }: Se
         aria-label={label}
         disabled={disabled && !checked}
         onClick={onToggle}
-        className={`focus-ring flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors ${
+        className={`focus-ring flex w-full items-center gap-3 px-5 py-3 text-left transition-colors ${
           disabled && !checked ? 'cursor-not-allowed opacity-45' : 'active:bg-surface-2/60'
         }`}
       >
@@ -267,12 +255,10 @@ function SectionRow({ label, detail, checked, disabled, onToggle, children }: Se
         >
           {checked && <Check className="h-4 w-4" />}
         </span>
-        <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold text-foreground">{label}</span>
-          <span className="mt-0.5 block truncate text-xs text-muted">{detail}</span>
-        </span>
+        <span className="flex-1 text-sm font-semibold text-foreground">{label}</span>
+        <span className="shrink-0 truncate text-xs text-muted">{detail}</span>
       </button>
-      {checked && children && <div className="px-5 pb-4 pl-14">{children}</div>}
+      {checked && children && <div className="px-5 pb-3 pl-14">{children}</div>}
     </div>
   )
 }
@@ -287,50 +273,23 @@ const RANGE_OPTIONS: { key: string; value: RangeDays }[] = [
 interface RangePickerProps {
   value: RangeDays
   onChange: (value: RangeDays) => void
-  from?: string
-  to?: string
-  readingCount: number
-  language: string
 }
 
 /**
  * Zeitraum als zusammenhängender Umschalter: eine Wahl auf einer Skala, nicht
- * vier lose Schaltflächen. Darunter steht, was daraus folgt.
+ * vier lose Schaltflächen. Was daraus folgt – Zähler, Ablesungen, Datumsbereich –
+ * steht bereits in der Kopfkarte und wird hier nicht wiederholt.
  */
-function RangePicker({ value, onChange, from, to, readingCount, language }: RangePickerProps) {
+function RangePicker({ value, onChange }: RangePickerProps) {
   const { t } = useTranslation()
 
   return (
-    <div>
-      <div
-        role="radiogroup"
-        aria-label={t('report.builder.range')}
-        className="flex rounded-2xl border border-border bg-surface-2/50 p-1"
-      >
-        {RANGE_OPTIONS.map((r) => {
-          const selected = value === r.value
-          return (
-            <button
-              key={r.key}
-              type="button"
-              role="radio"
-              aria-checked={selected}
-              onClick={() => onChange(r.value)}
-              className={`focus-ring flex-1 rounded-xl px-1 py-1.5 text-xs font-semibold transition-colors ${
-                selected ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted'
-              }`}
-            >
-              {t(`report.range.${r.key}`)}
-            </button>
-          )
-        })}
-      </div>
-      <p className="mt-2 text-xs text-muted">
-        {from && to
-          ? `${fmtPeriod(from, to, language)} · ${t('report.facts.readings', { count: readingCount })}`
-          : t('report.facts.rangeEmpty')}
-      </p>
-    </div>
+    <Segmented
+      ariaLabel={t('report.builder.range')}
+      options={RANGE_OPTIONS.map((r) => ({ key: r.key, label: t(`report.range.${r.key}`) }))}
+      value={RANGE_OPTIONS.find((r) => r.value === value)?.key ?? 'all'}
+      onChange={(key) => onChange(RANGE_OPTIONS.find((r) => r.key === key)?.value ?? null)}
+    />
   )
 }
 
@@ -440,97 +399,101 @@ function ShareBar({ variant, sections, monitoring, measurements, profile }: Shar
  * Kennzahl-Kacheln und Tabellenzeilen – in derselben Reihenfolge und in denselben
  * neutralen Tönen wie das erzeugte PDF. Bewusst textlos: bei dieser Größe wäre
  * Text unlesbar, und erfundene Beschriftungen würden mehr versprechen als das
- * PDF hält. Der Langbericht zeigt zusätzlich gestapelte Seiten.
+ * PDF hält. Als SVG mit viewBox gezeichnet, damit das Motiv bei jeder Größe
+ * vollständig bleibt. Der Langbericht zeigt zusätzlich gestapelte Seiten.
  */
 function ReportPreview({ variant }: { variant: ReportVariant }) {
   const long = variant === 'long'
+  const rows = long ? [84, 68, 76, 58] : [84, 68]
 
   return (
-    <div aria-hidden="true" className="relative w-[76px] shrink-0">
+    <div aria-hidden="true" className="relative w-[56px] shrink-0">
       {long && (
         <>
-          <div className="absolute inset-x-2 -bottom-1 top-3 rotate-[6deg] origin-bottom rounded-lg bg-zinc-300/70" />
-          <div className="absolute inset-x-1 -bottom-0.5 top-2 rotate-[3deg] origin-bottom rounded-lg bg-zinc-200" />
+          <div className="absolute inset-x-1.5 -bottom-1 top-2 rotate-[6deg] origin-bottom rounded-md bg-zinc-300/70" />
+          <div className="absolute inset-x-1 -bottom-0.5 top-1.5 rotate-[3deg] origin-bottom rounded-md bg-zinc-200" />
         </>
       )}
 
-      <div className="relative aspect-[1/1.414] overflow-hidden rounded-lg border border-black/10 bg-white shadow-[0_10px_20px_-10px_rgba(20,30,10,0.45)]">
-        <div className="px-2 pt-2">
-          {/* Kopf: Logo-Andeutung, Titelbalken, feine Trennlinie – wie im PDF. */}
-          <div className="flex items-center gap-1">
-            <span className="h-2 w-2 shrink-0 rounded-[2px] bg-zinc-800" />
-            <span className="h-1.5 w-8 rounded-sm bg-zinc-800" />
-          </div>
-          <span className="mt-1 block h-[3px] w-10 rounded-sm bg-zinc-300" />
-          <span className="mt-1.5 block h-px w-full bg-zinc-200" />
+      <div className="relative overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_10px_20px_-10px_rgba(20,30,10,0.45)]">
+        <svg viewBox="0 0 100 141" className="block w-full">
+          {/* Kopf: Logo-Andeutung, Titelbalken, Untertitel, Trennlinie. */}
+          <rect x="8" y="10" width="8" height="8" rx="1.5" fill="#27272a" />
+          <rect x="20" y="11" width="34" height="6" rx="1.5" fill="#27272a" />
+          <rect x="8" y="24" width="30" height="4" rx="1" fill="#d4d4d8" />
+          <rect x="8" y="33" width="84" height="1" fill="#e4e4e7" />
 
-          <div className="mt-1.5 h-[26px] w-full">
-            <svg viewBox="0 0 60 26" preserveAspectRatio="none" className="h-full w-full">
-              <polyline
-                points="0,22 10,18 20,20 30,11 40,13 50,6 60,3"
-                fill="none"
-                stroke="#27272a"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
+          {/* Diagramm */}
+          <polyline
+            points="8,58 22,50 36,54 50,42 64,45 78,34 92,30"
+            fill="none"
+            stroke="#27272a"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
 
-          <div className="mt-1.5 flex gap-1">
-            {[0, 1, 2].map((i) => (
-              <span key={i} className="h-[13px] flex-1 rounded-[3px] bg-zinc-100" />
-            ))}
-          </div>
+          {/* Kennzahl-Kacheln */}
+          {[8, 37, 66].map((x) => (
+            <rect key={x} x={x} y="68" width="26" height="16" rx="2.5" fill="#f4f4f5" />
+          ))}
 
-          <div className="mt-1.5 flex flex-col gap-1">
-            {[100, 82, 92, 70].slice(0, long ? 4 : 2).map((w, i) => (
-              <span
-                key={i}
-                className="block h-[3px] rounded bg-zinc-200"
-                style={{ width: `${w}%` }}
-              />
-            ))}
-          </div>
-        </div>
+          {/* Tabellenzeilen */}
+          {rows.map((w, i) => (
+            <rect key={i} x="8" y={94 + i * 9} width={w} height="3" rx="1.5" fill="#e4e4e7" />
+          ))}
+        </svg>
       </div>
 
-      <div className="absolute -right-1.5 top-1.5 rounded-full bg-zinc-900 px-1.5 py-0.5 text-[8px] font-bold leading-none text-white shadow-[0_4px_10px_-4px_rgba(0,0,0,0.6)]">
+      <div className="absolute -right-1 -top-1 rounded-full bg-zinc-900 px-1.5 py-0.5 text-[7px] font-bold leading-none text-white shadow-[0_4px_10px_-4px_rgba(0,0,0,0.6)]">
         PDF
       </div>
     </div>
   )
 }
 
-interface VariantCardProps {
+interface SegmentedOption {
+  key: string
   label: string
-  description: string
-  selected: boolean
-  onClick: () => void
 }
 
-/** Umfang-Auswahl als Karte: der Unterschied steht direkt an der Entscheidung. */
-function VariantCard({ label, description, selected, onClick }: VariantCardProps) {
+interface SegmentedProps {
+  ariaLabel: string
+  options: SegmentedOption[]
+  value: string
+  onChange: (key: string) => void
+}
+
+/**
+ * Zusammenhängender Umschalter für genau eine Wahl aus wenigen Möglichkeiten.
+ * Ein Element statt mehrerer freistehender Schaltflächen – dieselbe Form für
+ * Umfang und Zeitraum, damit beide als gleichartige Wahl lesbar sind.
+ */
+function Segmented({ ariaLabel, options, value, onChange }: SegmentedProps) {
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      onClick={onClick}
-      className={`focus-ring rounded-2xl border p-3 text-left transition-[transform,background-color,border-color] duration-200 active:scale-[0.98] ${
-        selected
-          ? 'border-primary bg-primary/10'
-          : 'border-border bg-surface-2/40 hover:bg-surface-2/70'
-      }`}
+    <div
+      role="radiogroup"
+      aria-label={ariaLabel}
+      className="flex rounded-2xl border border-border bg-surface-2/50 p-1"
     >
-      <span className="flex items-center justify-between gap-1">
-        <span className={`text-sm font-semibold ${selected ? 'text-primary' : 'text-foreground'}`}>
-          {label}
-        </span>
-        {selected && <Check className="h-4 w-4 shrink-0 text-primary" />}
-      </span>
-      <span className="mt-1 block text-xs leading-snug text-muted">{description}</span>
-    </button>
+      {options.map((o) => {
+        const selected = o.key === value
+        return (
+          <button
+            key={o.key}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            onClick={() => onChange(o.key)}
+            className={`focus-ring flex-1 rounded-xl px-1 py-1.5 text-xs font-semibold transition-colors ${
+              selected ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted'
+            }`}
+          >
+            {o.label}
+          </button>
+        )
+      })}
+    </div>
   )
 }
 

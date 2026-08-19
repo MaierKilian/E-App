@@ -97,7 +97,6 @@
   },
   "report": {
     "title": "Berichte",
-    "subtitle": "Dein Energiebericht als PDF.",
     "variant": {
       "short": "Kurzbericht",
       "long": "Langbericht"
@@ -189,8 +188,7 @@
       "measurements_one": "{{count}} Messung",
       "measurements_other": "{{count}} Messungen",
       "noData": "Noch keine Daten",
-      "profileOnly": "Nur Gebäudedaten",
-      "rangeEmpty": "Keine Ablesungen in diesem Zeitraum"
+      "profileOnly": "Nur Gebäudedaten"
     },
     "variantDesc": {
       "short": "Das Wichtigste auf einen Blick.",
