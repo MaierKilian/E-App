@@ -38,7 +38,7 @@ export function fillMonitoring(
   withHeader = true,
 ): void {
   if (withHeader) {
-    kit.headerBand({
+    kit.masthead({
       title: t('report.pdf.monitoring.title'),
       subtitle: objectName,
       meta: periodLine(t, language, data),
@@ -114,7 +114,7 @@ function writeSummaryTable(
     ])
   }
 
-  kit.sectionTitle(t('report.pdf.monitoring.summary'))
+  kit.subHead(t('report.pdf.monitoring.summary'), { keepWith: 3 * 19 })
   kit.table(
     [
       t('report.pdf.monitoring.carrier'),
@@ -149,16 +149,18 @@ function writeConsumptionChart(
   e: MonitoringEntry,
   height: number,
 ): void {
-  kit.body(t('report.pdf.monitoring.consumptionChart'), { size: 9, bold: true })
-
-  // Ein einzelner Balken ist kein Verlauf – dann lieber ein Satz.
-  if (e.segments.length < 2) {
-    kit.subtle(t('report.pdf.monitoring.noSegments'))
+  // Ein einzelner Balken ist kein Verlauf – dann steht statt des Diagramms
+  // der Grund dafür. Den Hinweis zur Balkenbreite gibt es nur, wenn es auch
+  // Balken gibt.
+  const drawable = e.segments.length >= 2
+  kit.chartCaption(
+    t('report.pdf.monitoring.consumptionChart'),
+    drawable ? t('report.pdf.monitoring.chartHint') : undefined,
+  )
+  if (!drawable) {
+    kit.intervalBarChart([], { emptyNote: t('report.pdf.monitoring.noSegments') })
     return
   }
-
-  kit.subtle(t('report.pdf.monitoring.chartHint'))
-  kit.gap(2)
 
   const bars: IntervalBar[] = e.segments.map((seg) => ({
     from: seg.from,
@@ -181,6 +183,27 @@ function writeConsumptionChart(
             }),
           }
         : undefined,
+  })
+}
+
+/**
+ * Zählerstandsverlauf als Linie. Unter zwei Ablesungen gibt es keine Linie –
+ * dann steht dort der Grund und keine leere Fläche.
+ */
+function writeReadingCurve(
+  kit: PdfKit,
+  t: TFunction,
+  language: string,
+  e: MonitoringEntry,
+  height: number,
+): void {
+  kit.chartCaption(t('report.pdf.monitoring.readingCurveTitle'))
+  kit.lineChart(e.points, {
+    height,
+    unit: e.unit,
+    language,
+    color: carrierColor(e),
+    emptyNote: t('report.pdf.monitoring.noCurve'),
   })
 }
 
@@ -330,8 +353,7 @@ function writeShortEntry(
   options: ReportContentOptions,
 ): void {
   if (e.currentValue === undefined) {
-    kit.ensure(52)
-    kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
+    kit.carrierHead(t(`monitoring.energyTypes.${e.type}`), carrierColor(e), { keepWith: 20 })
     kit.subtle(t('report.pdf.empty.noReading'))
     return
   }
@@ -344,7 +366,7 @@ function writeShortEntry(
   if (options.readingCurve) est += 124
   kit.ensure(est)
 
-  kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
+  kit.carrierHead(t(`monitoring.energyTypes.${e.type}`), carrierColor(e))
 
   if (options.kpis) {
     const cards = meterCards(t, language, num, numFine, cur, e, { withRate: false })
@@ -365,8 +387,7 @@ function writeShortEntry(
 
   if (options.readingCurve) {
     kit.gap(6)
-    kit.body(t('report.pdf.monitoring.readingCurveTitle'), { size: 9, bold: true })
-    kit.lineChart(e.points, { height: 110, unit: e.unit, language, color: carrierColor(e) })
+    writeReadingCurve(kit, t, language, e, 110)
   }
 
   // Kurzbericht: nur die jüngsten Ablesungen, der Rest wird beziffert.
@@ -388,8 +409,7 @@ function writeLongEntry(
   options: ReportContentOptions,
 ): void {
   if (e.currentValue === undefined) {
-    kit.ensure(52)
-    kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
+    kit.carrierHead(t(`monitoring.energyTypes.${e.type}`), carrierColor(e), { keepWith: 20 })
     kit.subtle(t('report.pdf.empty.noReading'))
     return
   }
@@ -401,7 +421,7 @@ function writeLongEntry(
   if (options.comparison) est += 19
   kit.ensure(est)
 
-  kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
+  kit.carrierHead(t(`monitoring.energyTypes.${e.type}`), carrierColor(e))
 
   if (options.charts) {
     writeConsumptionChart(kit, t, language, numFine, e, 165)
@@ -423,8 +443,7 @@ function writeLongEntry(
 
   if (options.readingCurve) {
     kit.gap(4)
-    kit.body(t('report.pdf.monitoring.readingCurveTitle'), { size: 9, bold: true })
-    kit.lineChart(e.points, { height: 150, unit: e.unit, language, color: carrierColor(e) })
+    writeReadingCurve(kit, t, language, e, 150)
     kit.gap(6)
   }
 

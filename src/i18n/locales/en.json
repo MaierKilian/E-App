@@ -152,7 +152,12 @@
         "title": "Measurements report",
         "subtitle": "Results, rating and savings potential",
         "progress": "Completed measurements",
-        "completed": "Completed measurements"
+        "completed": "Completed measurements",
+        "savings": "Savings potential",
+        "savingsValue": "Saves {{value}}",
+        "openMeasurements": "Open measurements",
+        "tips": "Tip",
+        "actionNeeded": "Needs action"
       },
       "monitoring": {
         "title": "Monitoring report",
@@ -171,15 +176,18 @@
         "chartHint": "One bar per reading period; wider bars cover longer periods.",
         "averageLine": "Avg. {{value}}",
         "staleReading_one": "Last reading {{count}} day ago – projection and costs are correspondingly uncertain.",
-        "staleReading_other": "Last reading {{count}} days ago – projection and costs are correspondingly uncertain."
+        "staleReading_other": "Last reading {{count}} days ago – projection and costs are correspondingly uncertain.",
+        "noCurve": "A curve needs at least two readings."
       },
       "empty": {
         "none": "none",
         "measurements": "No measurements completed yet.",
         "monitoring": "No energy sources active.",
-        "noReading": "No reading yet"
+        "noReading": "No reading yet",
+        "profile": "No profile details saved yet."
       },
-      "fileLabel": "Energy-report"
+      "fileLabel": "Energy-report",
+      "sectionCount": "Section {{n}} of {{total}}"
     },
     "overview": {
       "measEmpty": "No checks yet",

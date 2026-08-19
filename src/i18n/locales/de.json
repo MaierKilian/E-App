@@ -152,7 +152,12 @@
         "title": "Messungen-Bericht",
         "subtitle": "Ergebnisse, Bewertung und Sparpotenzial",
         "progress": "Erledigte Messungen",
-        "completed": "Erledigte Messungen"
+        "completed": "Erledigte Messungen",
+        "savings": "Sparpotenzial",
+        "savingsValue": "Sparpotenzial {{value}}",
+        "openMeasurements": "Offene Messungen",
+        "tips": "Tipp",
+        "actionNeeded": "Handlungsbedarf"
       },
       "monitoring": {
         "title": "Monitoring-Bericht",
@@ -171,15 +176,18 @@
         "chartHint": "Ein Balken je Ablesezeitraum; breitere Balken stehen für längere Zeiträume.",
         "averageLine": "Ø {{value}}",
         "staleReading_one": "Letzte Ablesung vor {{count}} Tag – Hochrechnung und Kosten sind entsprechend unsicher.",
-        "staleReading_other": "Letzte Ablesung vor {{count}} Tagen – Hochrechnung und Kosten sind entsprechend unsicher."
+        "staleReading_other": "Letzte Ablesung vor {{count}} Tagen – Hochrechnung und Kosten sind entsprechend unsicher.",
+        "noCurve": "Für eine Linie sind mindestens zwei Ablesungen nötig."
       },
       "empty": {
         "none": "keine",
         "measurements": "Noch keine Messungen erledigt.",
         "monitoring": "Keine Energieträger aktiv.",
-        "noReading": "Noch keine Ablesung"
+        "noReading": "Noch keine Ablesung",
+        "profile": "Noch keine Profilangaben hinterlegt."
       },
-      "fileLabel": "Energiebericht"
+      "fileLabel": "Energiebericht",
+      "sectionCount": "Abschnitt {{n}} von {{total}}"
     },
     "overview": {
       "measEmpty": "Noch keine Checks",

@@ -43,7 +43,7 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
   const options = defaultContentOptions(variant)
   const objectName = profile.profileName?.trim() || undefined
 
-  kit.headerBand({
+  kit.masthead({
     title: t('report.pdf.title'),
     subtitle: objectName,
     meta: sectionLine(t, sections),
@@ -53,22 +53,26 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
   // Nur bei mehreren Abschnitten braucht es Überschriften – bei einem einzelnen
   // Abschnitt wäre der Titel eine Wiederholung der Kopfzeile. Den Kopfbalken
   // zeichnen die Bausteine nie selbst, er steht bereits oben.
-  const multi = countSections(sections) > 1
+  const total = countSections(sections)
+  const multi = total > 1
+  // Nummerierte Abschnitte machen die Gliederung im Kopf schon vor dem Lesen
+  // sichtbar – und verraten, wie viel noch kommt.
+  let index = 0
+  const eyebrow = () =>
+    t('report.pdf.sectionCount', { n: ++index, total })
 
   if (sections.profile) {
-    if (multi) kit.sectionTitle(t('report.pdf.section.profile'))
+    if (multi) kit.sectionHeader(t('report.pdf.section.profile'), { eyebrow: eyebrow(), keepWith: 60 })
     writeProfile(kit, t, language, profile)
-    kit.gap(8)
   }
 
   if (sections.measurements) {
-    if (multi) kit.sectionTitle(t('report.pdf.section.measurements'))
+    if (multi) kit.sectionHeader(t('report.pdf.section.measurements'), { eyebrow: eyebrow(), keepWith: 70 })
     fillMeasurements(kit, { variant, options, t, language, data: measurements, objectName }, false)
-    kit.gap(10)
   }
 
   if (sections.monitoring) {
-    if (multi) kit.sectionTitle(t('report.pdf.section.monitoring'))
+    if (multi) kit.sectionHeader(t('report.pdf.section.monitoring'), { eyebrow: eyebrow(), keepWith: 70 })
     fillMonitoring(kit, { variant, options, t, language, data: monitoring, objectName }, false)
   }
 
@@ -104,5 +108,11 @@ function writeProfile(kit: PdfKit, t: TFunction, language: string, p: ProfileSum
   // Jahreszahl ohne Tausendertrennzeichen – „1.978" wäre schlicht falsch.
   if (p.buildingYear !== undefined) rows.push([L('buildingYear'), String(p.buildingYear)])
   if (p.personsCount !== undefined) rows.push([L('persons'), fmtNum(p.personsCount, num)])
+  // Ohne Angaben bliebe unter der Überschrift nichts stehen – das liest sich
+  // wie ein abgeschnittener Bericht, nicht wie ein leeres Profil.
+  if (rows.length === 0) {
+    kit.subtle(t('report.pdf.empty.profile'))
+    return
+  }
   kit.kvTable(rows)
 }
