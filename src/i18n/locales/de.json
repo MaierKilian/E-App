@@ -551,6 +551,7 @@
           "noticeable": "Spürbare Zugluft – Fenster/Türen abdichten.",
           "strong": "Starke Zugluft – Dichtungen prüfen lohnt sich."
         },
+        "targetBand": "Zielbereich {{min}}–{{max}} °C",
         "saving": {
           "title": "Mögliche Ersparnis",
           "perYear": "/ Jahr",

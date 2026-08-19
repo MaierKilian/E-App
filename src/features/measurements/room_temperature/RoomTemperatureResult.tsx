@@ -6,9 +6,9 @@ import { RatingBadge } from '../RatingBadge'
 import { RATING_COLOR } from '../rating'
 import type { ResultProps } from '../runnerTypes'
 import {
-  rateTemperature,
+  rateTemperatureInBand,
   rateHumidity,
-  SAVING_REFERENCE_TEMP,
+  DEFAULT_COMFORT_BAND,
   type DimensionStatus,
 } from './roomClimate'
 
@@ -62,14 +62,20 @@ export function RoomTemperatureResult({ result }: ResultProps) {
   })
 
   const temp = result.primaryValue
-  const tempStatus = rateTemperature(temp)
+  // Das Komfortband ist raumtypabhängig und wird beim Messen mitgespeichert –
+  // so bleibt ein altes Ergebnis stimmig, auch wenn sich Defaults später ändern.
+  const band = {
+    min: result.details?.bandMin ?? DEFAULT_COMFORT_BAND.min,
+    max: result.details?.bandMax ?? DEFAULT_COMFORT_BAND.max,
+  }
+  const tempStatus = rateTemperatureInBand(temp, band)
 
   // Anteilige Heiz-Einsparung (vom Runner berechnet, falls Raum zu warm war).
   const savingDeltaT = result.details?.savingDeltaT
   const savingPercent = result.details?.savingPercent
   const yearlySaving = result.details?.yearlySaving
   const savingEstimated = (result.details?.savingEstimated ?? 0) === 1
-  const savingReference = result.details?.savingReference ?? SAVING_REFERENCE_TEMP
+  const savingReference = result.details?.savingReference ?? band.max
   const hasSaving = Number.isFinite(savingDeltaT) && (savingDeltaT as number) > 0
 
   const hasHumidity = Number.isFinite(result.details?.humidity)
@@ -108,7 +114,10 @@ export function RoomTemperatureResult({ result }: ResultProps) {
       <ul className="glass space-y-4 rounded-3xl p-5">
         <StatusRow
           Icon={Thermometer}
-          label={t('measurements.room_temperature.result.dimensions.temperature')}
+          label={`${t('measurements.room_temperature.result.dimensions.temperature')} · ${t(
+            'measurements.room_temperature.result.targetBand',
+            { min: fmt(band.min), max: fmt(band.max) },
+          )}`}
           status={t(`measurements.room_temperature.result.status.${tempStatus}`)}
         />
         {hasHumidity && humidityStatus && (

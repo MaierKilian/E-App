@@ -42,14 +42,18 @@ export function RoomTemperatureRun({ onEvaluate, roomKey }: RunProps) {
   }).format(temperature)
 
   function handleEvaluate() {
+    const roomType = roomKey ? parseRoomKey(roomKey)?.type : undefined
     const calc = calcRoomClimate({
       temperature,
       humidity: humidityOn ? humidity : undefined,
       draft,
+      roomType,
     })
     const details: Record<string, number> = {
       temperature,
       draft: DRAFT_LEVELS.indexOf(draft),
+      bandMin: calc.band.min,
+      bandMax: calc.band.max,
     }
     if (humidityOn) details.humidity = humidity
 
@@ -60,7 +64,6 @@ export function RoomTemperatureRun({ onEvaluate, roomKey }: RunProps) {
       useReadingsStore.getState().readings,
       useTariffStore.getState(),
     )
-    const roomType = roomKey ? parseRoomKey(roomKey)?.type : undefined
     const area = roomType
       ? resolveRoomArea(profile.rooms, profile.livingArea, roomType)
       : { areaSqm: 0, estimated: true }
@@ -71,6 +74,7 @@ export function RoomTemperatureRun({ onEvaluate, roomKey }: RunProps) {
       livingArea: profile.livingArea,
       heatingOnlyCostEur:
         heating !== undefined ? heating.costEur * (1 - WARM_WATER_SHARE) : undefined,
+      referenceTemp: calc.band.max,
     })
     if (saving.deltaT > 0) {
       details.savingDeltaT = saving.deltaT

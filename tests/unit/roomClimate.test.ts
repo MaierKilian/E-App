@@ -9,11 +9,15 @@ import { describe, expect, it } from 'vitest'
 import {
   calcRoomClimate,
   calcRoomTempSaving,
+  comfortBand,
   displaySavingEur,
   rateTemperature,
+  COMFORT_BANDS,
+  DEFAULT_COMFORT_BAND,
   MIN_DISPLAY_EUR,
   SAVING_REFERENCE_TEMP,
 } from '@/features/measurements/room_temperature/roomClimate'
+import type { RoomType } from '@/types'
 
 describe('Raumklima – Bewertung vs. Ersparnis', () => {
   it('weist im Komfortband kein Sparpotenzial aus', () => {
@@ -96,5 +100,68 @@ describe('Raumklima – Einsparformel', () => {
     })
     expect(saving.share).toBe(0)
     expect(saving.yearlySaving).toBeUndefined()
+  })
+})
+
+describe('Raumklima – raumtypabhängiges Komfortband', () => {
+  it('bewertet 21 °C im Schlafzimmer als zu warm, im Wohnzimmer als optimal', () => {
+    expect(rateTemperature(21, 'bedroom')).toBe('tooWarm')
+    expect(rateTemperature(21, 'living_room')).toBe('optimal')
+  })
+
+  it('bewertet 23 °C im Bad als optimal', () => {
+    expect(rateTemperature(23, 'bathroom')).toBe('optimal')
+    expect(rateTemperature(23, 'living_room')).toBe('tooWarm')
+  })
+
+  it('fällt ohne Raumbezug auf das Default-Band zurück', () => {
+    expect(comfortBand(undefined)).toEqual(DEFAULT_COMFORT_BAND)
+    expect(SAVING_REFERENCE_TEMP).toBe(DEFAULT_COMFORT_BAND.max)
+  })
+
+  it('führt das angewandte Band im Ergebnis mit', () => {
+    const calc = calcRoomClimate({ temperature: 17, draft: 'none', roomType: 'bedroom' })
+    expect(calc.band).toEqual(COMFORT_BANDS.bedroom)
+    expect(calc.rating).toBe('good')
+  })
+
+  it('bezieht die Ersparnis auf die Obergrenze des Raumtyps', () => {
+    const band = COMFORT_BANDS.bedroom
+    const saving = calcRoomTempSaving({
+      temp: 21,
+      roomAreaSqm: 14,
+      areaEstimated: true,
+      livingArea: 80,
+      referenceTemp: band.max,
+    })
+    expect(saving.deltaT).toBe(21 - band.max)
+    expect(saving.percent).toBeCloseTo(0.18, 6)
+  })
+
+  it('hält für jeden Raumtyp ein plausibles Band vor', () => {
+    for (const [type, band] of Object.entries(COMFORT_BANDS) as [RoomType, typeof DEFAULT_COMFORT_BAND][]) {
+      expect(band.min, type).toBeLessThan(band.max)
+      expect(band.min, type).toBeGreaterThanOrEqual(12)
+      expect(band.max, type).toBeLessThanOrEqual(26)
+    }
+  })
+
+  it('bewertet in jedem Raumtyp die Bandmitte als optimal ohne Sparhinweis', () => {
+    for (const type of Object.keys(COMFORT_BANDS) as RoomType[]) {
+      const band = COMFORT_BANDS[type]
+      const temp = (band.min + band.max) / 2
+      const calc = calcRoomClimate({ temperature: temp, draft: 'none', roomType: type })
+      const saving = calcRoomTempSaving({
+        temp,
+        roomAreaSqm: 14,
+        areaEstimated: true,
+        livingArea: 80,
+        heatingOnlyCostEur: 1200,
+        referenceTemp: calc.band.max,
+      })
+      expect(calc.rating, type).toBe('good')
+      expect(saving.deltaT, type).toBe(0)
+      expect(saving.yearlySaving, type).toBeUndefined()
+    }
   })
 })

@@ -551,6 +551,7 @@
           "noticeable": "Noticeable draft – seal windows/doors.",
           "strong": "Strong draft – checking the seals pays off."
         },
+        "targetBand": "target {{min}}–{{max}} °C",
         "saving": {
           "title": "Potential saving",
           "perYear": "/ year",

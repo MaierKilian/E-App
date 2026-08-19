@@ -16,6 +16,7 @@ import {
 import type { OnboardingData } from '@/types'
 import type { MeasurementResult, MeasurementRating } from '@/features/measurements/types'
 import { resultSavingsEur } from '@/features/measurements/impact'
+import { DEFAULT_COMFORT_BAND } from '@/features/measurements/room_temperature/roomClimate'
 
 export type TipCategory = 'heating' | 'electricity' | 'water'
 
@@ -48,10 +49,10 @@ const RATING_ORDER: Record<MeasurementRating, number> = {
   high: 3,
 }
 
-// Schwellen für Raumklima-Befunde (an roomClimate.ts angelehnt).
-const ROOM_TARGET_C = 20 // Zieltemperatur → darüber gibt es Sparpotenzial
-const ROOM_WARM_C = 22 // spürbar zu warm (Optimum-Obergrenze)
-const ROOM_COLD_C = 18 // deutlich zu kühl → Auskühl-/Schimmel-Hinweis
+// Schwellen für Raumklima-Befunde. Das Komfortband ist raumtypabhängig und
+// steckt im Ergebnis (bandMin/bandMax) – feste Werte hier hätten z. B. ein
+// Schlafzimmer bei 17 °C fälschlich als „zu kalt" gemeldet.
+const ROOM_COLD_MARGIN_C = 2 // so weit unter dem Band → Auskühl-/Schimmel-Hinweis
 const HUMID_MAX = 60 // % – darüber zu feucht
 const HUMID_MIN = 40 // % – darunter zu trocken
 
@@ -85,6 +86,14 @@ function worstRating(results: Results, id: string): MeasurementRating | null {
 /** Temperatur eines Raum-Ergebnisses (aus details, sonst Hauptwert). */
 function tempOf(r: MeasurementResult): number {
   return r.details?.temperature ?? r.primaryValue
+}
+
+/** Beim Messen gespeichertes Komfortband; ältere Ergebnisse nutzen den Default. */
+function bandOf(r: MeasurementResult): { min: number; max: number } {
+  return {
+    min: r.details?.bandMin ?? DEFAULT_COMFORT_BAND.min,
+    max: r.details?.bandMax ?? DEFAULT_COMFORT_BAND.max,
+  }
 }
 
 /** Größter Standby-Verbraucher aus der `dev{index}_{type}`-Aufschlüsselung. */
@@ -211,9 +220,12 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
   if (roomTemp.length) {
     // Zu warm → senken (mit €-Ersparnis, wo Heizkosten bekannt sind).
     const warmSaving = Math.round(
-      roomTemp.reduce((s, r) => s + (tempOf(r) > ROOM_TARGET_C ? r.details?.yearlySaving ?? 0 : 0), 0),
+      roomTemp.reduce(
+        (s, r) => s + (tempOf(r) > bandOf(r).max ? r.details?.yearlySaving ?? 0 : 0),
+        0,
+      ),
     )
-    const anyWarm = roomTemp.some((r) => tempOf(r) > ROOM_WARM_C)
+    const anyWarm = roomTemp.some((r) => tempOf(r) > bandOf(r).max)
     if (warmSaving > 0) {
       tips.push({ id: 'room_temperature', icon: Thermometer, category: 'heating', savingEur: warmSaving })
     } else if (anyWarm) {
@@ -221,7 +233,7 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
     }
 
     // Zu kalt → nicht auskühlen lassen (Schimmel-/Effizienz-Hinweis).
-    if (roomTemp.some((r) => tempOf(r) < ROOM_COLD_C)) {
+    if (roomTemp.some((r) => tempOf(r) < bandOf(r).min - ROOM_COLD_MARGIN_C)) {
       tips.push({ id: 'room_cold', icon: ThermometerSnowflake, category: 'heating' })
     }
 
