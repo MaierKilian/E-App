@@ -49,6 +49,11 @@ export interface MonitoringEntry {
   currentValue?: number
   /** Datum des letzten Stands (ISO). */
   currentDate?: string
+  /**
+   * Tage seit der letzten Ablesung. Je größer, desto unsicherer sind
+   * Hochrechnung und Kosten – der Bericht muss das kenntlich machen.
+   */
+  currentAgeDays?: number
   /** Verbrauch im Zeitraum (Summe der Segmente). */
   consumption?: number
   /**
@@ -179,6 +184,14 @@ function buildEntry(
   if (all.length === 0) return entry
 
   const nowMs = Date.now()
+  if (latest) {
+    // Kalendertage zählen, nicht Millisekunden: sonst ergibt eine Ablesung von
+    // heute Vormittag „vor 1 Tag", je nach Uhrzeit des Berichts.
+    const now = new Date(nowMs)
+    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+    const readingMidnight = new Date(`${latest.date}T00:00:00`).getTime()
+    entry.currentAgeDays = Math.max(0, Math.round((todayMidnight - readingMidnight) / MS_PER_DAY))
+  }
   let windowReadings: MeterReading[]
   let prevReadings: MeterReading[] = []
 

@@ -65,6 +65,20 @@ export function toLatin1(input: string): string {
     .replace(/[\u2007\u202F\u2009\u2002\u2003]/g, ' ')
 }
 
+/** Wandelt einen Hex-Farbwert („#f59e0b") in ein RGB-Tripel. */
+export function hexToRgb(hex: string, fallback: RGB = PALETTE.ink): RGB {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim())
+  if (!m) return fallback
+  const n = parseInt(m[1], 16)
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+}
+
+/** Mischt eine Farbe mit Weiß auf (0 = Original, 1 = Weiß). */
+export function tint(color: RGB, amount: number): RGB {
+  const a = Math.min(1, Math.max(0, amount))
+  return color.map((c) => Math.round(c + (255 - c) * a)) as RGB
+}
+
 /** Eine Kennzahl-Kachel. */
 export interface KpiCard {
   value: string
@@ -87,10 +101,24 @@ export interface LineChartOptions {
   language?: string
 }
 
-/** Ein Balken für das Balkendiagramm. */
-export interface BarItem {
-  label: string
+/**
+ * Ein Balken über einem Zeitintervall. Die Breite ergibt sich aus der Länge des
+ * Intervalls, nicht aus der Anzahl der Balken – sonst stünde ein Balken für 253
+ * Tage gleich breit neben einem für 8 Tage.
+ */
+export interface IntervalBar {
+  /** ISO-Datum des Intervallanfangs. */
+  from: string
+  /** ISO-Datum des Intervallendes. */
+  to: string
+  /** Bereits normierter Wert, z. B. Verbrauch pro Tag. */
   value: number
+}
+
+/** Waagerechte Bezugslinie im Diagramm, etwa der Mittelwert. */
+export interface ChartReference {
+  value: number
+  label: string
 }
 
 /** Optionen für Kopfbalken. */
@@ -380,11 +408,12 @@ export class PdfKit {
     this.setColor(PALETTE.muted)
     const labelIdx = clean.length <= 2 ? [0, clean.length - 1] : [0, Math.floor((clean.length - 1) / 2), clean.length - 1]
     const seen = new Set<number>()
+    const spansYear = dayDiff(clean[0].date, clean[clean.length - 1].date) > 300
     for (const i of labelIdx) {
       if (seen.has(i)) continue
       seen.add(i)
       const align = i === 0 ? 'left' : i === clean.length - 1 ? 'right' : 'center'
-      this.doc.text(toLatin1(formatDateShort(clean[i].date, language)), sx(i), baseY + 14, {
+      this.doc.text(toLatin1(formatAxisDate(clean[i].date, language, spansYear)), sx(i), baseY + 14, {
         align: align as 'left' | 'center' | 'right',
       })
     }
@@ -393,66 +422,124 @@ export class PdfKit {
   }
 
   /**
-   * Balkendiagramm (Vektor) für Verbrauch je Intervall. Über dem höchsten
-   * Balken steht sein Wert samt Einheit; die x-Labels werden ausgedünnt, sobald
-   * sie sonst überlappen würden.
+   * Balkendiagramm über einer echten Zeitachse: jeder Balken deckt sein
+   * Ablese-Intervall ab, seine Breite entspricht dessen Länge. Mit y-Achse ab
+   * null, Gitterlinien, Datumsmarken und optionaler Bezugslinie – ohne Achse
+   * wäre nur der höchste Balken ablesbar.
    */
-  barChart(
-    bars: BarItem[],
-    opts: { height?: number; color?: RGB; unit?: string; language?: string } = {},
+  intervalBarChart(
+    bars: IntervalBar[],
+    opts: {
+      height?: number
+      color?: RGB
+      unit?: string
+      language?: string
+      reference?: ChartReference
+    } = {},
   ): void {
-    const { height = 130, color = PALETTE.ink, unit = '', language } = opts
+    const { height = 150, color = PALETTE.ink, unit = '', language, reference } = opts
     const clean = bars.filter((b) => Number.isFinite(b.value) && b.value >= 0)
-    const labelArea = 24
-    const headPad = 12 // Platz für den Maximalwert über dem Balken
+
+    const plotX = MARGIN_X + 40
+    const plotW = CONTENT_W - 40
+    const labelArea = 22 // Datumsmarken unter der Achse
+    const headPad = unit ? 13 : 4
     const plotH = height - labelArea - headPad
-    this.ensure(height + 6)
+
+    this.ensure(height + 8)
     const top = this.y
-    const baseY = top + headPad + plotH
+    const plotTop = top + headPad
+    const baseY = plotTop + plotH
+
+    // Einheit als Achsentitel oben links.
+    if (unit) {
+      this.doc.setFont('helvetica', 'normal')
+      this.doc.setFontSize(7.5)
+      this.setColor(PALETTE.muted)
+      this.doc.text(toLatin1(unit), MARGIN_X, top + 9)
+    }
 
     if (clean.length === 0) {
       this.setFill(PALETTE.card)
-      this.doc.roundedRect(MARGIN_X, top + headPad, CONTENT_W, plotH, 8, 8, 'F')
+      this.doc.roundedRect(MARGIN_X, plotTop, CONTENT_W, plotH, 8, 8, 'F')
       this.y = top + height
       return
     }
 
-    const max = Math.max(...clean.map((b) => b.value)) || 1
-    const gap = clean.length > 16 ? 3 : 8
-    const barW = Math.min(48, (CONTENT_W - gap * (clean.length - 1)) / clean.length)
-    const totalW = barW * clean.length + gap * (clean.length - 1)
-    const startX = MARGIN_X + (CONTENT_W - totalW) / 2
+    // Skala immer ab null – bei Verbrauchsmengen verzerrt ein abgeschnittener
+    // Nullpunkt die Verhältnisse.
+    const dataMax = Math.max(...clean.map((b) => b.value), reference?.value ?? 0)
+    const max = dataMax > 0 ? dataMax : 1
 
-    this.setDraw(PALETTE.hair)
+    // Gitter + y-Beschriftung (0 / Mitte / Max).
     this.doc.setLineWidth(0.6)
-    this.doc.line(MARGIN_X, baseY, MARGIN_X + CONTENT_W, baseY)
+    this.doc.setFont('helvetica', 'normal')
+    this.doc.setFontSize(7.5)
+    for (const frac of [1, 0.5, 0]) {
+      const gy = baseY - plotH * frac
+      this.setDraw(frac === 0 ? PALETTE.muted : PALETTE.hair)
+      this.doc.line(plotX, gy, plotX + plotW, gy)
+      this.setColor(PALETTE.muted)
+      this.doc.text(toLatin1(formatTick(max * frac, language)), plotX - 6, gy + 2.5, {
+        align: 'right',
+      })
+    }
 
-    // Nur so viele x-Labels zeichnen, wie nebeneinander lesbar sind (~26 pt).
-    const step = Math.max(1, Math.ceil(26 / (barW + gap)))
-    const maxIndex = clean.findIndex((b) => b.value === max)
+    // Balkenbreiten aus den Intervalllängen – aber mit Sockel: rein
+    // proportional verschwänden kurze Intervalle neben einem Jahresintervall zu
+    // Strichen. Jeder Balken bekommt die Hälfte der Gleichverteilung sicher,
+    // die andere Hälfte wird nach Länge verteilt.
+    const spans = clean.map((b) => Math.max(1, dayDiff(b.from, b.to)))
+    const totalSpan = spans.reduce((a, b) => a + b, 0)
+    const gap = clean.length > 1 ? Math.min(3, plotW / (clean.length * 6)) : 0
+    const usable = plotW - gap * (clean.length - 1)
+    const baseW = (usable * 0.5) / clean.length
+    const flexW = usable * 0.5
 
+    let x = plotX
+    const marks: { x: number; date: string }[] = [{ x: plotX, date: clean[0].from }]
     clean.forEach((b, i) => {
-      const x = startX + i * (barW + gap)
+      const w = baseW + (flexW * spans[i]) / totalSpan
       const h = (b.value / max) * plotH
       this.setFill(color)
-      this.doc.roundedRect(x, baseY - h, barW, Math.max(h, 0.8), 2, 2, 'F')
+      this.doc.roundedRect(x, baseY - h, w, Math.max(h, 0.8), 1.5, 1.5, 'F')
+      x += w + gap
+      marks.push({ x: Math.min(x, plotX + plotW), date: b.to })
+    })
 
-      if (i === maxIndex) {
-        this.doc.setFont('helvetica', 'bold')
-        this.doc.setFontSize(7.5)
-        this.setColor(PALETTE.body)
-        const label = unit
-          ? `${formatTick(b.value, language)} ${unit}`
-          : formatTick(b.value, language)
-        this.doc.text(toLatin1(label), x + barW / 2, baseY - h - 4, { align: 'center' })
-      }
+    // Bezugslinie (gestrichelt) samt Beschriftung am rechten Rand.
+    if (reference && reference.value > 0) {
+      const ry = baseY - (reference.value / max) * plotH
+      this.setDraw(PALETTE.body)
+      this.doc.setLineWidth(0.7)
+      this.doc.setLineDashPattern([2, 2], 0)
+      this.doc.line(plotX, ry, plotX + plotW, ry)
+      this.doc.setLineDashPattern([], 0)
+      this.doc.setFont('helvetica', 'bold')
+      this.doc.setFontSize(7)
+      const label = toLatin1(reference.label)
+      const lw = this.doc.getTextWidth(label)
+      // Hinterlegen, sonst steht die Beschriftung auf einem Balken.
+      this.setFill(PALETTE.white)
+      this.doc.rect(plotX + plotW - lw - 3, ry - 9.5, lw + 4, 9, 'F')
+      this.setColor(PALETTE.body)
+      this.doc.text(label, plotX + plotW - 1, ry - 3, { align: 'right' })
+    }
 
-      if (i % step === 0 || i === clean.length - 1) {
-        this.doc.setFont('helvetica', 'normal')
-        this.doc.setFontSize(7)
-        this.setColor(PALETTE.muted)
-        this.doc.text(toLatin1(b.label), x + barW / 2, baseY + 12, { align: 'center' })
-      }
+    // Datumsmarken: nur so viele, wie ohne Überlappung lesbar bleiben.
+    this.doc.setFont('helvetica', 'normal')
+    this.doc.setFontSize(7)
+    this.setColor(PALETTE.muted)
+    let lastLabelX = -Infinity
+    marks.forEach((m, i) => {
+      const isLast = i === marks.length - 1
+      if (!isLast && m.x - lastLabelX < 46) return
+      if (isLast && m.x - lastLabelX < 30) return
+      const align = i === 0 ? 'left' : isLast ? 'right' : 'center'
+      this.doc.text(toLatin1(formatAxisDate(m.date, language, totalSpan > 300)), m.x, baseY + 12, {
+        align: align as 'left' | 'center' | 'right',
+      })
+      lastLabelX = m.x
     })
 
     this.y = top + height
@@ -622,8 +709,16 @@ export class PdfKit {
     this.y += dy
   }
 
-  /** Schreibt Seitenzahlen + Fußnote auf alle Seiten. */
-  finalizeFooters(pageLabel: (n: number, total: number) => string, footnote: string): void {
+  /**
+   * Schreibt Seitenzahlen und Fußnote auf alle Seiten, ab Seite 2 zusätzlich
+   * eine schlanke Kopfzeile. Ohne sie wäre eine einzeln ausgedruckte Folgeseite
+   * keinem Objekt und keinem Bericht zuzuordnen.
+   */
+  finalizeFooters(
+    pageLabel: (n: number, total: number) => string,
+    footnote: string,
+    runningHead?: { left: string; right: string },
+  ): void {
     const total = this.doc.getNumberOfPages()
     for (let p = 1; p <= total; p++) {
       this.doc.setPage(p)
@@ -632,6 +727,17 @@ export class PdfKit {
       this.doc.setTextColor(PALETTE.muted[0], PALETTE.muted[1], PALETTE.muted[2])
       this.doc.text(toLatin1(footnote), MARGIN_X, PAGE_H - 22)
       this.doc.text(toLatin1(pageLabel(p, total)), PAGE_W - MARGIN_X, PAGE_H - 22, { align: 'right' })
+
+      if (p > 1 && runningHead) {
+        const y = MARGIN_TOP - 24
+        this.doc.setFontSize(8)
+        this.doc.setTextColor(PALETTE.muted[0], PALETTE.muted[1], PALETTE.muted[2])
+        this.doc.text(toLatin1(runningHead.left), MARGIN_X, y)
+        this.doc.text(toLatin1(runningHead.right), PAGE_W - MARGIN_X, y, { align: 'right' })
+        this.doc.setDrawColor(PALETTE.hair[0], PALETTE.hair[1], PALETTE.hair[2])
+        this.doc.setLineWidth(0.6)
+        this.doc.line(MARGIN_X, y + 5, PAGE_W - MARGIN_X, y + 5)
+      }
     }
   }
 }
@@ -643,6 +749,25 @@ function formatTick(value: number, language?: string): string {
   const abs = Math.abs(value)
   const digits = abs >= 100 ? 0 : abs >= 10 ? 1 : 2
   return new Intl.NumberFormat(language ?? 'de', { maximumFractionDigits: digits }).format(value)
+}
+
+/**
+ * Datumsmarke der Zeitachse. Über mehr als ein Jahr hinweg wäre „25.04." nicht
+ * eindeutig, deshalb kommt dort das Jahr dazu.
+ */
+function formatAxisDate(iso: string, language: string | undefined, withYear: boolean): string {
+  if (!withYear) return formatDateShort(iso, language)
+  const d = new Date(iso.length <= 10 ? `${iso}T00:00:00` : iso)
+  if (Number.isNaN(d.getTime())) return '-'
+  return new Intl.DateTimeFormat(language ?? 'de', { dateStyle: 'short' }).format(d)
+}
+
+/** Tagesabstand zwischen zwei ISO-Daten (für die Balkenbreiten). */
+function dayDiff(fromIso: string, toIso: string): number {
+  const a = new Date(`${fromIso}T00:00:00`).getTime()
+  const b = new Date(`${toIso}T00:00:00`).getTime()
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return 1
+  return Math.round((b - a) / 86_400_000)
 }
 
 function formatDateShort(iso: string, language?: string): string {

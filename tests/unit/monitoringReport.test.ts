@@ -233,6 +233,34 @@ describe('Verbrauch je Ablesezeitraum', () => {
   })
 })
 
+describe('Alter der letzten Ablesung', () => {
+  it('meldet die Tage seit der letzten Ablesung', () => {
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: { electricity: [reading(400, 1000), reading(120, 1500)] },
+      rangeDays: null,
+      tariff: TARIFF,
+      types: ['electricity'],
+    })
+
+    // Der Bericht warnt ab 120 Tagen – hier ist die Hochrechnung also als
+    // unsicher zu kennzeichnen.
+    expect(data.entries[0].currentAgeDays).toBe(120)
+  })
+
+  it('ist bei einer heutigen Ablesung null', () => {
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: { electricity: [reading(10, 1000), reading(0, 1100)] },
+      rangeDays: null,
+      tariff: TARIFF,
+      types: ['electricity'],
+    })
+
+    expect(data.entries[0].currentAgeDays).toBe(0)
+  })
+})
+
 describe('suggestRangeDays', () => {
   it('waehlt den kuerzesten Zeitraum mit mindestens zwei Ablesungen', () => {
     expect(

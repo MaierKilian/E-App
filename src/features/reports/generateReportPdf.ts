@@ -75,6 +75,7 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
   kit.finalizeFooters(
     (n, total) => t('report.pdf.page', { n, total }),
     t('report.pdf.footnote'),
+    { left: objectName ?? t('report.pdf.title'), right: sectionLine(t, sections) },
   )
   return { doc: kit.doc, fileName: reportFileName(t('report.pdf.fileLabel'), objectName) }
 }

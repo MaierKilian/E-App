@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
-import type { PdfKit, KpiCard, BarItem } from './pdf/pdfKit'
+import { hexToRgb, type PdfKit, type KpiCard, type IntervalBar, type RGB } from './pdf/pdfKit'
+import { ENERGY_META } from '@/features/monitoring/energyConfig'
 import {
   numberFmt,
   currencyFmt,
@@ -47,7 +48,7 @@ export function fillMonitoring(
     // Im Gesamt-Bericht trägt der Kopf bereits das Objekt – hier genügt die
     // Zeitraum-Zeile über dem Abschnitt.
     kit.subtle(periodLine(t, language, data))
-    kit.gap(4)
+    kit.gap(10)
   }
 
   if (data.entries.length === 0) {
@@ -55,10 +56,13 @@ export function fillMonitoring(
     return
   }
 
-  const num = numberFmt(language, 1)
+  // Mengen ohne Nachkommastellen (Zählerstände sind ohnehin nicht genauer),
+  // Tagesmittel mit zwei – sonst wären 0,22 m³/Tag schlicht „0".
+  const num = numberFmt(language, 0)
+  const numFine = numberFmt(language, 2)
   const cur = currencyFmt(language)
 
-  if (options.kpis) writeSummaryTable(kit, t, num, cur, data)
+  if (options.kpis) writeSummaryTable(kit, t, language, num, cur, data)
 
   data.entries.forEach((e, idx) => {
     // Im Langbericht bekommt jeder Zähler eine eigene Seite – sonst entscheidet
@@ -67,8 +71,8 @@ export function fillMonitoring(
       if (variant === 'long') kit.newPage()
       else kit.gap(10)
     }
-    if (variant === 'short') writeShortEntry(kit, t, language, num, cur, e, options)
-    else writeLongEntry(kit, t, language, num, cur, e, options)
+    if (variant === 'short') writeShortEntry(kit, t, language, num, numFine, cur, e, options)
+    else writeLongEntry(kit, t, language, num, numFine, cur, e, options)
   })
 }
 
@@ -80,6 +84,7 @@ export function fillMonitoring(
 function writeSummaryTable(
   kit: PdfKit,
   t: TFunction,
+  language: string,
   num: Intl.NumberFormat,
   cur: Intl.NumberFormat,
   data: MonitoringReportData,
@@ -89,6 +94,10 @@ function writeSummaryTable(
 
   const rows = withData.map((e) => [
     t(`monitoring.energyTypes.${e.type}`),
+    // Ohne die Zeitraumspalte wirkt eine Jahres-Hochrechnung unterhalb des
+    // Verbrauchs wie ein Rechenfehler – tatsächlich umfasst der Verbrauch dann
+    // mehr als ein Jahr.
+    e.days !== undefined ? t('report.facts.days', { count: e.days }) : '-',
     fmtVal(e.consumption, e.unit, num),
     fmtVal(e.projectedYear, e.unit, num),
     e.costYear !== undefined ? fmtCur(e.costYear, cur) : '-',
@@ -100,6 +109,7 @@ function writeSummaryTable(
       t('report.pdf.monitoring.totalRow'),
       '',
       '',
+      '',
       fmtCur(costs.reduce((a, b) => a + b, 0), cur),
     ])
   }
@@ -108,47 +118,155 @@ function writeSummaryTable(
   kit.table(
     [
       t('report.pdf.monitoring.carrier'),
+      t('report.pdf.monitoring.periodColumn'),
       t('report.kpi.consumption'),
       t('report.kpi.projectedYear'),
       t('report.kpi.costYear'),
     ],
     rows,
     {
-      align: ['left', 'right', 'right', 'right'],
-      widths: [1.3, 1, 1.1, 1],
+      align: ['left', 'right', 'right', 'right', 'right'],
+      widths: [1.15, 0.8, 1.05, 1.15, 0.95],
       emphasizeLast: costs.length > 1,
     },
   )
+  if (language) void language
   kit.gap(6)
 }
 
 /**
- * Balken je Ablesezeitraum – bewusst als Verbrauch **pro Tag**. Absolute
- * Intervallverbräuche wären nicht vergleichbar, sobald die Abstände zwischen
- * den Ablesungen ungleich sind: ein Jahresintervall ergäbe zwangsläufig den
- * höchsten Balken, ganz unabhängig vom Verbrauchsverhalten.
+ * Balken je Ablesezeitraum – als Verbrauch **pro Tag** und über einer echten
+ * Zeitachse. Absolute Intervallverbräuche wären nicht vergleichbar, sobald die
+ * Abstände zwischen den Ablesungen ungleich sind: ein Jahresintervall ergäbe
+ * zwangsläufig den höchsten Balken. Die gestrichelte Linie zeigt den Mittelwert
+ * über den gesamten Zeitraum, damit einzelne Intervalle einzuordnen sind.
  */
 function writeConsumptionChart(
   kit: PdfKit,
   t: TFunction,
   language: string,
+  num: Intl.NumberFormat,
   e: MonitoringEntry,
   height: number,
 ): void {
   kit.body(t('report.pdf.monitoring.consumptionChart'), { size: 9, bold: true })
-  if (e.segments.length === 0) {
+
+  // Ein einzelner Balken ist kein Verlauf – dann lieber ein Satz.
+  if (e.segments.length < 2) {
     kit.subtle(t('report.pdf.monitoring.noSegments'))
     return
   }
-  const bars: BarItem[] = e.segments.map((seg) => ({
-    label: fmtDateShort(seg.to, language),
+
+  kit.subtle(t('report.pdf.monitoring.chartHint'))
+  kit.gap(2)
+
+  const bars: IntervalBar[] = e.segments.map((seg) => ({
+    from: seg.from,
+    to: seg.to,
     value: seg.value / seg.days,
   }))
-  kit.barChart(bars, {
+  const unit = t('report.pdf.monitoring.perDayUnit', { unit: e.unit })
+
+  kit.intervalBarChart(bars, {
     height,
-    unit: t('report.pdf.monitoring.perDayUnit', { unit: e.unit }),
+    unit,
     language,
+    color: carrierColor(e),
+    reference:
+      e.perDay !== undefined
+        ? {
+            value: e.perDay,
+            label: t('report.pdf.monitoring.averageLine', {
+              value: `${num.format(e.perDay)} ${unit}`,
+            }),
+          }
+        : undefined,
   })
+}
+
+/** Akzentfarbe des Energieträgers – dieselbe wie in der App. */
+function carrierColor(e: MonitoringEntry): RGB {
+  return hexToRgb(ENERGY_META[e.type].accent)
+}
+
+/** Ab hier gilt eine Ablesung als zu alt, um daraus verlässlich hochzurechnen. */
+const STALE_AFTER_DAYS = 120
+
+/**
+ * Warnt, wenn die letzte Ablesung lange zurückliegt. Ohne den Hinweis liest
+ * sich eine Jahreshochrechnung aus anderthalb Jahre alten Daten wie ein
+ * aktueller Wert.
+ */
+function writeStaleNote(kit: PdfKit, t: TFunction, e: MonitoringEntry): void {
+  if (e.currentAgeDays === undefined || e.currentAgeDays < STALE_AFTER_DAYS) return
+  kit.subtle(t('report.pdf.monitoring.staleReading', { count: e.currentAgeDays }))
+}
+
+/**
+ * Kennzahl-Kacheln eines Trägers. Beim Zeitraum „Alle" beginnt das Fenster beim
+ * ersten Zählerstand – ist der null, sind „Aktueller Stand" und „Verbrauch"
+ * dieselbe Zahl. Dann tritt das Tagesmittel an die Stelle der Wiederholung.
+ */
+function meterCards(
+  t: TFunction,
+  language: string,
+  num: Intl.NumberFormat,
+  numFine: Intl.NumberFormat,
+  cur: Intl.NumberFormat,
+  e: MonitoringEntry,
+  opts: { withRate: boolean },
+): KpiCard[] {
+  const basisDays =
+    e.days !== undefined ? t('report.kpi.sub.basisDays', { count: e.days }) : undefined
+  const redundant = e.consumption !== undefined && e.consumption === e.currentValue
+
+  const cards: KpiCard[] = [
+    {
+      value: fmtVal(e.currentValue, e.unit, num),
+      label: t('report.kpi.currentValue'),
+      sub: e.currentDate
+        ? t('report.kpi.sub.asOf', { date: fmtDateShort(e.currentDate, language) })
+        : undefined,
+    },
+  ]
+
+  if (redundant) {
+    cards.push({
+      value: fmtVal(e.perDay, e.unit, numFine),
+      label: t('report.kpi.perDay'),
+      sub: basisDays,
+    })
+  } else {
+    cards.push({
+      value: fmtVal(e.consumption, e.unit, num),
+      label: t('report.kpi.consumption'),
+      sub: windowSub(language, e),
+    })
+  }
+
+  if (opts.withRate) {
+    if (!redundant) {
+      cards.push({
+        value: fmtVal(e.perDay, e.unit, numFine),
+        label: t('report.kpi.perDay'),
+        sub: basisDays,
+      })
+    }
+    cards.push({
+      value: fmtVal(e.projectedYear, e.unit, num),
+      label: t('report.kpi.projectedYear'),
+      sub: basisDays,
+    })
+  }
+
+  if (e.hasCost && e.costYear !== undefined) {
+    cards.push({
+      value: fmtCur(e.costYear, cur),
+      label: t('report.kpi.costYear'),
+      sub: priceSub(t, language, e),
+    })
+  }
+  return cards
 }
 
 /** Historie mit ehrlichem Hinweis, wenn gekürzt wurde. */
@@ -206,6 +324,7 @@ function writeShortEntry(
   t: TFunction,
   language: string,
   num: Intl.NumberFormat,
+  numFine: Intl.NumberFormat,
   cur: Intl.NumberFormat,
   e: MonitoringEntry,
   options: ReportContentOptions,
@@ -228,28 +347,9 @@ function writeShortEntry(
   kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
 
   if (options.kpis) {
-    const cards: KpiCard[] = [
-      {
-        value: fmtVal(e.currentValue, e.unit, num),
-        label: t('report.kpi.currentValue'),
-        sub: e.currentDate
-          ? t('report.kpi.sub.asOf', { date: fmtDateShort(e.currentDate, language) })
-          : undefined,
-      },
-      {
-        value: fmtVal(e.consumption, e.unit, num),
-        label: t('report.kpi.consumption'),
-        sub: windowSub(language, e),
-      },
-    ]
-    if (e.hasCost && e.costYear !== undefined) {
-      cards.push({
-        value: fmtCur(e.costYear, cur),
-        label: t('report.kpi.costYear'),
-        sub: priceSub(t, language, e),
-      })
-    }
+    const cards = meterCards(t, language, num, numFine, cur, e, { withRate: false })
     kit.kpiCards(cards, cards.length >= 3 ? 3 : 2)
+    writeStaleNote(kit, t, e)
   }
 
   // Nur zeigen, wenn es einen Vergleichswert gibt – ein Label ohne Zahl
@@ -260,13 +360,13 @@ function writeShortEntry(
 
   if (options.charts) {
     kit.gap(6)
-    writeConsumptionChart(kit, t, language, e, 116)
+    writeConsumptionChart(kit, t, language, numFine, e, 126)
   }
 
   if (options.readingCurve) {
     kit.gap(6)
     kit.body(t('report.pdf.monitoring.readingCurveTitle'), { size: 9, bold: true })
-    kit.lineChart(e.points, { height: 110, unit: e.unit, language })
+    kit.lineChart(e.points, { height: 110, unit: e.unit, language, color: carrierColor(e) })
   }
 
   // Kurzbericht: nur die jüngsten Ablesungen, der Rest wird beziffert.
@@ -282,6 +382,7 @@ function writeLongEntry(
   t: TFunction,
   language: string,
   num: Intl.NumberFormat,
+  numFine: Intl.NumberFormat,
   cur: Intl.NumberFormat,
   e: MonitoringEntry,
   options: ReportContentOptions,
@@ -303,43 +404,16 @@ function writeLongEntry(
   kit.sectionTitle(t(`monitoring.energyTypes.${e.type}`))
 
   if (options.charts) {
-    writeConsumptionChart(kit, t, language, e, 160)
+    writeConsumptionChart(kit, t, language, numFine, e, 165)
     kit.gap(6)
   }
 
   if (options.kpis) {
-    // Unterzeilen benennen die Basis jeder Zahl – „Hochrechnung / Jahr" ohne
-    // Mittelungszeitraum wäre eine Prognose ohne Herkunft.
-    const basisDays =
-      e.days !== undefined ? t('report.kpi.sub.basisDays', { count: e.days }) : undefined
-    const cards: KpiCard[] = [
-      {
-        value: fmtVal(e.currentValue, e.unit, num),
-        label: t('report.kpi.currentValue'),
-        sub: e.currentDate
-          ? t('report.kpi.sub.asOf', { date: fmtDateShort(e.currentDate, language) })
-          : undefined,
-      },
-      {
-        value: fmtVal(e.consumption, e.unit, num),
-        label: t('report.kpi.consumption'),
-        sub: windowSub(language, e),
-      },
-      { value: fmtVal(e.perDay, e.unit, num), label: t('report.kpi.perDay'), sub: basisDays },
-      {
-        value: fmtVal(e.projectedYear, e.unit, num),
-        label: t('report.kpi.projectedYear'),
-        sub: basisDays,
-      },
-    ]
-    if (e.hasCost && e.costYear !== undefined) {
-      cards.push({
-        value: fmtCur(e.costYear, cur),
-        label: t('report.kpi.costYear'),
-        sub: priceSub(t, language, e),
-      })
-    }
-    kit.kpiCards(cards, 3)
+    const cards = meterCards(t, language, num, numFine, cur, e, { withRate: true })
+    // Vier Kacheln als 2x2 statt 3+1 – eine einzelne Kachel in der zweiten
+    // Reihe wirkt wie ein Umbruchfehler.
+    kit.kpiCards(cards, cards.length === 4 ? 2 : 3)
+    writeStaleNote(kit, t, e)
   }
 
   if (options.comparison && e.changePercent !== undefined) {
@@ -350,7 +424,7 @@ function writeLongEntry(
   if (options.readingCurve) {
     kit.gap(4)
     kit.body(t('report.pdf.monitoring.readingCurveTitle'), { size: 9, bold: true })
-    kit.lineChart(e.points, { height: 150, unit: e.unit, language })
+    kit.lineChart(e.points, { height: 150, unit: e.unit, language, color: carrierColor(e) })
     kit.gap(6)
   }
 

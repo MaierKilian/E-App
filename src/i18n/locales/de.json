@@ -165,8 +165,13 @@
         "readingCurveTitle": "Zählerstandsverlauf",
         "historyMore": "… und {{count}} weitere Ablesungen",
         "totalRow": "Gesamt",
-        "noSegments": "Für einen Verbrauchsvergleich sind mindestens zwei Ablesungen nötig.",
-        "perDayUnit": "{{unit}}/Tag"
+        "noSegments": "Für einen Verlauf sind mindestens drei Ablesungen nötig.",
+        "perDayUnit": "{{unit}}/Tag",
+        "periodColumn": "Zeitraum",
+        "chartHint": "Ein Balken je Ablesezeitraum; breitere Balken stehen für längere Zeiträume.",
+        "averageLine": "Ø {{value}}",
+        "staleReading_one": "Letzte Ablesung vor {{count}} Tag – Hochrechnung und Kosten sind entsprechend unsicher.",
+        "staleReading_other": "Letzte Ablesung vor {{count}} Tagen – Hochrechnung und Kosten sind entsprechend unsicher."
       },
       "empty": {
         "none": "keine",
@@ -188,7 +193,9 @@
       "measurements_one": "{{count}} Messung",
       "measurements_other": "{{count}} Messungen",
       "noData": "Noch keine Daten",
-      "profileOnly": "Nur Gebäudedaten"
+      "profileOnly": "Nur Gebäudedaten",
+      "days_one": "{{count}} Tag",
+      "days_other": "{{count}} Tage"
     },
     "variantDesc": {
       "short": "Das Wichtigste auf einen Blick.",

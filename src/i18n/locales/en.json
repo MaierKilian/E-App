@@ -165,8 +165,13 @@
         "readingCurveTitle": "Meter reading curve",
         "historyMore": "… and {{count}} more readings",
         "totalRow": "Total",
-        "noSegments": "At least two readings are needed to compare consumption.",
-        "perDayUnit": "{{unit}}/day"
+        "noSegments": "A trend needs at least three readings.",
+        "perDayUnit": "{{unit}}/day",
+        "periodColumn": "Period",
+        "chartHint": "One bar per reading period; wider bars cover longer periods.",
+        "averageLine": "Avg. {{value}}",
+        "staleReading_one": "Last reading {{count}} day ago – projection and costs are correspondingly uncertain.",
+        "staleReading_other": "Last reading {{count}} days ago – projection and costs are correspondingly uncertain."
       },
       "empty": {
         "none": "none",
@@ -188,7 +193,9 @@
       "measurements_one": "{{count}} measurement",
       "measurements_other": "{{count}} measurements",
       "noData": "No data yet",
-      "profileOnly": "Building data only"
+      "profileOnly": "Building data only",
+      "days_one": "{{count}} day",
+      "days_other": "{{count}} days"
     },
     "variantDesc": {
       "short": "The essentials at a glance.",
