@@ -1,5 +1,11 @@
 import type { TFunction } from 'i18next'
-import { ratingColor, type PdfKit, type KpiCard, type ChecklistItem } from './pdf/pdfKit'
+import {
+  ratingColor,
+  type PdfKit,
+  type KpiCard,
+  type ChecklistItem,
+  type FindingCard,
+} from './pdf/pdfKit'
 import { numberFmt, currencyFmt, fmtVal, fmtCur, fmtDate } from './pdf/format'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import type {
@@ -21,6 +27,12 @@ export interface GenerateMeasurementsArgs {
   data: MeasurementsReportData
   /** Objektname (Profilname) für Kopfzeile und Dateiname. */
   objectName?: string
+  /**
+   * Die Zusammenfassung oben trägt Sparpotenzial und Handlungsbedarf bereits.
+   * Dann entfällt die Kennzahlreihe hier – zweimal dieselbe Zahl auf einer
+   * halben Seite liest niemand als Betonung, sondern als Versehen.
+   */
+  summarized?: boolean
 }
 
 /**
@@ -29,7 +41,7 @@ export interface GenerateMeasurementsArgs {
  */
 export function fillMeasurements(
   kit: PdfKit,
-  { variant, options, t, language, data, objectName }: GenerateMeasurementsArgs,
+  { variant, options, t, language, data, objectName, summarized = false }: GenerateMeasurementsArgs,
   withHeader = true,
 ): void {
   const num = numberFmt(language, 1)
@@ -44,7 +56,38 @@ export function fillMeasurements(
     })
   }
 
-  // Fortschritt als KPI-Reihe.
+  if (!summarized) writeProgressCards(kit, t, cur, data, options)
+
+  if (data.entries.length === 0) {
+    kit.subtle(t('report.pdf.empty.measurements'))
+  } else if (variant === 'short') {
+    writeFlatList(kit, t, num, cur, data.entries, options)
+  } else {
+    writeGrouped(kit, t, num, cur, data.groups, options)
+  }
+
+  // Offene Messungen (nur Lang + aktiviert).
+  if (variant === 'long' && options.openMeasurements && data.open.length > 0) {
+    kit.subHead(t('report.pdf.measurements.openMeasurements'), { keepWith: 44 })
+    const items: ChecklistItem[] = data.open.map((o) => ({
+      title: t(`measurements.${o.id}.title`),
+      tag: o.available ? t('measurements.status.available') : t('measurements.status.soon'),
+    }))
+    kit.checklist(items)
+  }
+}
+
+/**
+ * Kennzahlreihe des Messungen-Abschnitts. Nur nötig, wo keine Zusammenfassung
+ * über dem Bericht steht – etwa im Bericht, der allein aus Messungen besteht.
+ */
+function writeProgressCards(
+  kit: PdfKit,
+  t: TFunction,
+  cur: Intl.NumberFormat,
+  data: MeasurementsReportData,
+  options: ReportContentOptions,
+): void {
   const cards: KpiCard[] = [
     {
       value: `${data.doneCount} / ${data.totalCount}`,
@@ -73,24 +116,6 @@ export function fillMeasurements(
   }
   kit.kpiCards(cards, cards.length)
   kit.gap(4)
-
-  if (data.entries.length === 0) {
-    kit.subtle(t('report.pdf.empty.measurements'))
-  } else if (variant === 'short') {
-    writeFlatList(kit, t, num, cur, data.entries, options)
-  } else {
-    writeGrouped(kit, t, num, cur, data.groups, options)
-  }
-
-  // Offene Messungen (nur Lang + aktiviert).
-  if (variant === 'long' && options.openMeasurements && data.open.length > 0) {
-    kit.subHead(t('report.pdf.measurements.openMeasurements'), { keepWith: 44 })
-    const items: ChecklistItem[] = data.open.map((o) => ({
-      title: t(`measurements.${o.id}.title`),
-      tag: o.available ? t('measurements.status.available') : t('measurements.status.soon'),
-    }))
-    kit.checklist(items)
-  }
 }
 
 /** Flache Liste erledigter Messungen (Kurzfassung). */
@@ -102,7 +127,11 @@ function writeFlatList(
   entries: MeasurementEntry[],
   options: ReportContentOptions,
 ): void {
-  kit.subHead(t('report.pdf.measurements.completed'), { keepWith: 56 })
+  const first = entries[0]
+  const keepWith = first
+    ? kit.measureFindingCard(buildEntryCard(t, num, cur, first, options, false)) + 8
+    : 30
+  kit.subHead(t('report.pdf.measurements.completed'), { keepWith })
   for (const e of entries) writeEntryCard(kit, t, num, cur, e, options, false)
 }
 
@@ -116,7 +145,11 @@ function writeGrouped(
   options: ReportContentOptions,
 ): void {
   for (const g of groups) {
-    kit.subHead(t(`measurements.categories.${g.category}`), { keepWith: 60 })
+    const first = g.entries[0]
+    const keepWith = first
+      ? kit.measureFindingCard(buildEntryCard(t, num, cur, first, options, true)) + 8
+      : 30
+    kit.subHead(t(`measurements.categories.${g.category}`), { keepWith })
     for (const e of g.entries) writeEntryCard(kit, t, num, cur, e, options, true)
   }
 }
@@ -135,6 +168,18 @@ function writeEntryCard(
   options: ReportContentOptions,
   detailed: boolean,
 ): void {
+  kit.findingCard(buildEntryCard(t, num, cur, e, options, detailed))
+}
+
+/** Baut die Kartendaten eines Messergebnisses – ohne sie zu zeichnen. */
+function buildEntryCard(
+  t: TFunction,
+  num: Intl.NumberFormat,
+  cur: Intl.NumberFormat,
+  e: MeasurementEntry,
+  options: ReportContentOptions,
+  detailed: boolean,
+): FindingCard {
   const saving =
     options.savings && e.yearlySaving && e.yearlySaving > 0
       ? t('report.pdf.measurements.savingsValue', { value: fmtCur(e.yearlySaving, cur) })
@@ -147,7 +192,7 @@ function writeEntryCard(
       ? t(`measurements.${e.id}.result.tip.${e.rating}`, { defaultValue: '' })
       : ''
 
-  kit.findingCard({
+  return {
     color: ratingColor(e.rating),
     title: t(`measurements.${e.id}.title`),
     value: fmtVal(e.primaryValue, e.unit, num),
@@ -156,5 +201,5 @@ function writeEntryCard(
     summary: summary || undefined,
     tip: tip || undefined,
     tipLabel: t('report.pdf.measurements.tips'),
-  })
+  }
 }

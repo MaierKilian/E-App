@@ -187,7 +187,17 @@
         "profile": "No profile details saved yet."
       },
       "fileLabel": "Energy-report",
-      "sectionCount": "Section {{n}} of {{total}}"
+      "sectionCount": "Section {{n}} of {{total}}",
+      "summary": {
+        "title": "At a glance",
+        "costYear": "Energy costs / year",
+        "carrierCount_one": "across {{count}} energy source",
+        "carrierCount_other": "across {{count}} energy sources",
+        "savings": "Savings potential / year",
+        "savingsSub": "based on the measurements",
+        "actionNeeded": "Findings needing action",
+        "actionSub": "{{done}} of {{total}} measurements done"
+      }
     },
     "overview": {
       "measEmpty": "No checks yet",

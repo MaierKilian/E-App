@@ -175,6 +175,15 @@ export interface FindingCard {
   tipLabel?: string
 }
 
+/** Eine Leitkennzahl der Zusammenfassung. */
+export interface HeroStat {
+  label: string
+  value: string
+  /** Erläuterung unter dem Wert, z. B. der Zeitraum. */
+  sub?: string
+  color?: RGB
+}
+
 /** Eine offene Messung in der Checkliste. */
 export interface ChecklistItem {
   title: string
@@ -372,6 +381,70 @@ export class PdfKit {
   }
 
   /**
+   * Die Zusammenfassung über allen Abschnitten: getönte Fläche, Titel und die
+   * Zahlen, wegen derer der Bericht geöffnet wird.
+   *
+   * Sie steht bewusst vor dem ersten Abschnitt und trägt keine Nummer – sie ist
+   * kein Kapitel, sondern die Antwort. Ohne sie beginnt der Bericht mit dem
+   * Uninteressantesten, das er zu bieten hat (Baujahr, Wohnfläche), und die
+   * Zahlen, um die es geht, muss man sich aus drei Abschnitten zusammensuchen.
+   */
+  summaryPanel(title: string, stats: HeroStat[], note?: string): void {
+    const list = stats.filter(Boolean)
+    if (list.length === 0) return
+
+    const pad = 16
+    const cols = Math.min(list.length, 3)
+    const rows = Math.ceil(list.length / cols)
+    const colW = (CONTENT_W - pad * 2) / cols
+    const hasSub = list.some((s) => s.sub)
+    const rowH = hasSub ? 54 : 42
+    const noteLines = note ? this.wrap(note, CONTENT_W - pad * 2, { size: 8.5 }) : []
+
+    let panelH = pad + 14 + rows * rowH + pad - 6
+    if (noteLines.length > 0) panelH += noteLines.length * 11.5 + 4
+
+    this.ensure(panelH + 12)
+    const top = this.y
+
+    this.setFill(PALETTE.shade)
+    this.doc.roundedRect(MARGIN_X, top, CONTENT_W, panelH, 12, 12, 'F')
+    this.eyebrow(title, MARGIN_X + pad, top + pad + 2, PALETTE.muted)
+
+    list.forEach((stat, i) => {
+      const col = i % cols
+      const row = Math.floor(i / cols)
+      const x = MARGIN_X + pad + col * colW
+      const base = top + pad + 14 + row * rowH
+
+      // Trennstrich zwischen den Spalten statt Kachelrahmen: die Kennzahlen
+      // gehören zusammen, sie sind nicht drei einzelne Karten.
+      if (col > 0) {
+        this.setDraw(PALETTE.rule)
+        this.doc.setLineWidth(0.6)
+        this.doc.line(x - 10, base + 2, x - 10, base + rowH - 14)
+      }
+
+      const innerW = colW - 16
+      let size = 19
+      while (size > 11 && this.measure(stat.value, { size, bold: true }) > innerW) size -= 0.5
+      this.put(stat.value, x, base + 22, { size, bold: true, color: stat.color ?? PALETTE.ink })
+      this.put(stat.label, x, base + 34, { size: 8, color: PALETTE.muted, maxWidth: innerW })
+      if (stat.sub) {
+        this.put(stat.sub, x, base + 45, { size: 7.5, color: PALETTE.faint, maxWidth: innerW })
+      }
+    })
+
+    let ny = top + pad + 14 + rows * rowH - 4
+    for (const line of noteLines) {
+      ny += 11.5
+      this.put(line, MARGIN_X + pad, ny, { size: 8.5, color: PALETTE.body })
+    }
+
+    this.y = top + panelH
+  }
+
+  /**
    * Abschnittstitel der obersten Ebene (Profil / Messungen / Monitoring):
    * kräftiger Titel über einer Haarlinie, die links von einem kurzen dunklen
    * Stück angeschnitten wird. `keepWith` hält den Titel mit dem Anfang seines
@@ -536,27 +609,11 @@ export class PdfKit {
    * „Auffällig" sehr wohl.
    */
   findingCard(card: FindingCard): void {
-    const pad = 14
+    const { pad, textX, leftW, innerW, summaryLines, tipLines, tipTop, cardH } =
+      this.layoutFindingCard(card)
     const dotX = MARGIN_X + pad + 3.5
-    const textX = MARGIN_X + pad + 14
     const rightEdge = MARGIN_X + CONTENT_W - pad
-    const leftW = CONTENT_W * 0.52 - pad
-    const innerW = CONTENT_W - pad * 2
 
-    const summaryLines = card.summary ? this.wrap(card.summary, leftW, { size: 8.5 }) : []
-    const tipLines = card.tip ? this.wrap(card.tip, innerW - 20, { size: 8.5 }) : []
-
-    // Höhe beider Spalten getrennt bestimmen, die höhere gewinnt. Die Chips
-    // stehen nebeneinander, nicht gestapelt – gestapelt zwingen sie der Karte
-    // eine Höhe auf, die die linke Spalte nicht füllt.
-    let leftBottom = 28
-    if (summaryLines.length > 0) leftBottom += 4 + summaryLines.length * 11.5
-    const rightBottom = 28 + 5 + 13.5
-    let contentH = Math.max(leftBottom, rightBottom)
-    const tipTop = contentH + 8
-    if (tipLines.length > 0) contentH = tipTop + 14 + tipLines.length * 11.5 + 6
-
-    const cardH = contentH + pad
     this.ensure(cardH + 8)
     const top = this.y
 
@@ -613,6 +670,48 @@ export class PdfKit {
     }
 
     this.y = top + cardH + 8
+  }
+
+  /**
+   * Höhe einer Befund-Karte, ohne sie zu zeichnen. Damit kann ein Gruppentitel
+   * verlangen, mit seinem ersten Befund zusammenzubleiben, statt mit einer
+   * geschätzten Zahl – Karten sind je nach Text unterschiedlich hoch, und eine
+   * Überschrift allein am Seitenende ist ein Satzfehler.
+   */
+  measureFindingCard(card: FindingCard): number {
+    return this.layoutFindingCard(card).cardH
+  }
+
+  /** Gemeinsame Maßberechnung von {@link findingCard} und {@link measureFindingCard}. */
+  private layoutFindingCard(card: FindingCard): {
+    pad: number
+    textX: number
+    leftW: number
+    innerW: number
+    summaryLines: string[]
+    tipLines: string[]
+    tipTop: number
+    cardH: number
+  } {
+    const pad = 14
+    const textX = MARGIN_X + pad + 14
+    const leftW = CONTENT_W * 0.52 - pad
+    const innerW = CONTENT_W - pad * 2
+
+    const summaryLines = card.summary ? this.wrap(card.summary, leftW, { size: 8.5 }) : []
+    const tipLines = card.tip ? this.wrap(card.tip, innerW - 20, { size: 8.5 }) : []
+
+    // Höhe beider Spalten getrennt bestimmen, die höhere gewinnt. Die Chips
+    // stehen nebeneinander, nicht gestapelt – gestapelt zwingen sie der Karte
+    // eine Höhe auf, die die linke Spalte nicht füllt.
+    let leftBottom = 28
+    if (summaryLines.length > 0) leftBottom += 4 + summaryLines.length * 11.5
+    const rightBottom = 28 + 5 + 13.5
+    let contentH = Math.max(leftBottom, rightBottom)
+    const tipTop = contentH + 8
+    if (tipLines.length > 0) contentH = tipTop + 14 + tipLines.length * 11.5 + 6
+
+    return { pad, textX, leftW, innerW, summaryLines, tipLines, tipTop, cardH: contentH + pad }
   }
 
   /**

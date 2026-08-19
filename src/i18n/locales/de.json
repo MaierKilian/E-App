@@ -187,7 +187,17 @@
         "profile": "Noch keine Profilangaben hinterlegt."
       },
       "fileLabel": "Energiebericht",
-      "sectionCount": "Abschnitt {{n}} von {{total}}"
+      "sectionCount": "Abschnitt {{n}} von {{total}}",
+      "summary": {
+        "title": "Auf einen Blick",
+        "costYear": "Energiekosten / Jahr",
+        "carrierCount_one": "aus {{count}} Energieträger",
+        "carrierCount_other": "aus {{count}} Energieträgern",
+        "savings": "Sparpotenzial / Jahr",
+        "savingsSub": "aus den Messergebnissen",
+        "actionNeeded": "Befunde mit Handlungsbedarf",
+        "actionSub": "{{done}} von {{total}} Messungen erledigt"
+      }
     },
     "overview": {
       "measEmpty": "Noch keine Checks",

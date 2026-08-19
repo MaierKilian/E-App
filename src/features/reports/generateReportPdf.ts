@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
-import { PdfKit } from './pdf/pdfKit'
-import { fmtDate, fmtNum, numberFmt, reportFileName } from './pdf/format'
+import { PdfKit, ratingColor, type HeroStat } from './pdf/pdfKit'
+import { currencyFmt, fmtCur, fmtDate, fmtNum, numberFmt, reportFileName } from './pdf/format'
 import type { ReportDocument } from './pdf/deliver'
 import type { ReportSections, ReportVariant } from './reportTypes'
 import { defaultContentOptions } from './reportTypes'
@@ -50,6 +50,8 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
     date: t('report.pdf.dateLine', { date: fmtDate(new Date().toISOString(), language) }),
   })
 
+  const summarized = writeSummary(kit, t, language, sections, measurements, monitoring)
+
   // Nur bei mehreren Abschnitten braucht es Überschriften – bei einem einzelnen
   // Abschnitt wäre der Titel eine Wiederholung der Kopfzeile. Den Kopfbalken
   // zeichnen die Bausteine nie selbst, er steht bereits oben.
@@ -61,19 +63,25 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
   const eyebrow = () =>
     t('report.pdf.sectionCount', { n: ++index, total })
 
-  if (sections.profile) {
-    if (multi) kit.sectionHeader(t('report.pdf.section.profile'), { eyebrow: eyebrow(), keepWith: 60 })
-    writeProfile(kit, t, language, profile)
-  }
-
   if (sections.measurements) {
     if (multi) kit.sectionHeader(t('report.pdf.section.measurements'), { eyebrow: eyebrow(), keepWith: 70 })
-    fillMeasurements(kit, { variant, options, t, language, data: measurements, objectName }, false)
+    fillMeasurements(
+      kit,
+      { variant, options, t, language, data: measurements, objectName, summarized },
+      false,
+    )
   }
 
   if (sections.monitoring) {
     if (multi) kit.sectionHeader(t('report.pdf.section.monitoring'), { eyebrow: eyebrow(), keepWith: 70 })
     fillMonitoring(kit, { variant, options, t, language, data: monitoring, objectName }, false)
+  }
+
+  // Das Profil steht zuletzt: es sind Stammdaten, keine Aussage. Vorne
+  // eröffnete es den Bericht mit Baujahr und Wohnfläche.
+  if (sections.profile) {
+    if (multi) kit.sectionHeader(t('report.pdf.section.profile'), { eyebrow: eyebrow(), keepWith: 60 })
+    writeProfile(kit, t, language, profile)
   }
 
   kit.finalizeFooters(
@@ -92,10 +100,72 @@ function countSections(s: ReportSections): number {
 /** Kopfzeile: welche Abschnitte dieser Bericht enthält. */
 function sectionLine(t: TFunction, s: ReportSections): string {
   const parts: string[] = []
-  if (s.profile) parts.push(t('report.pdf.section.profile'))
   if (s.measurements) parts.push(t('report.pdf.section.measurements'))
   if (s.monitoring) parts.push(t('report.pdf.section.monitoring'))
+  if (s.profile) parts.push(t('report.pdf.section.profile'))
   return parts.join(' · ')
+}
+
+/**
+ * „Auf einen Blick": die drei Zahlen, wegen derer jemand den Bericht öffnet –
+ * was die Energie im Jahr kostet, was davon vermeidbar ist, und wie viele
+ * Befunde etwas verlangen. Sie standen bisher verstreut über drei Abschnitte,
+ * die Jahreskosten nur als Summenzeile einer Tabelle.
+ *
+ * Der Block entfällt, wenn keine dieser Zahlen vorliegt – eine Zusammenfassung
+ * ohne Inhalt ist schlechter als keine.
+ */
+function writeSummary(
+  kit: PdfKit,
+  t: TFunction,
+  language: string,
+  sections: ReportSections,
+  measurements: MeasurementsReportData,
+  monitoring: MonitoringReportData,
+): boolean {
+  const cur = currencyFmt(language)
+  const stats: HeroStat[] = []
+
+  const costs = sections.monitoring
+    ? monitoring.entries.map((e) => e.costYear).filter((c): c is number => c !== undefined)
+    : []
+  if (costs.length > 0) {
+    stats.push({
+      value: fmtCur(costs.reduce((a, b) => a + b, 0), cur),
+      label: t('report.pdf.summary.costYear'),
+      sub: t('report.pdf.summary.carrierCount', { count: costs.length }),
+    })
+  }
+
+  if (sections.measurements && measurements.savingsTotal > 0) {
+    stats.push({
+      value: fmtCur(measurements.savingsTotal, cur),
+      label: t('report.pdf.summary.savings'),
+      sub: t('report.pdf.summary.savingsSub'),
+      color: ratingColor('good'),
+    })
+  }
+
+  const coversMeasurements = sections.measurements && measurements.entries.length > 0
+  if (coversMeasurements) {
+    const needsAction = measurements.entries.filter(
+      (e) => e.rating === 'elevated' || e.rating === 'high',
+    ).length
+    stats.push({
+      value: String(needsAction),
+      label: t('report.pdf.summary.actionNeeded'),
+      sub: t('report.pdf.summary.actionSub', {
+        done: measurements.doneCount,
+        total: measurements.totalCount,
+      }),
+      color: needsAction > 0 ? ratingColor('elevated') : undefined,
+    })
+  }
+
+  if (stats.length === 0) return false
+  kit.summaryPanel(t('report.pdf.summary.title'), stats)
+  kit.gap(4)
+  return coversMeasurements
 }
 
 /** Profil-Abschnitt als Label/Wert-Tabelle. */
