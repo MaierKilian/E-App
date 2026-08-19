@@ -751,6 +751,7 @@
           "Verdeckte Heizflächen verlieren die Wärme nicht – sie geben sie verzögert und ungleichmäßig ab.",
           "Teuer wird es indirekt: Ein eingeschlossener Thermostat misst Stauwärme, regelt zu früh ab, und der Raum wird von Hand höher gedreht.",
           "Vor Heizkörpern sollten möglichst rund 10 cm Luft bleiben, damit Luft von unten nachströmen kann.",
+          "Wer einen Zollstock zur Hand hat, kann den Abstand direkt eingeben – der Check leitet die Bewertung dann daraus ab.",
           "Sofas, Schränke, lange Vorhänge oder Verkleidungen davor bremsen die Wärmeabgabe.",
           "Bei Fußbodenheizung behindern großflächige Möbel ohne Füße und dicke Teppiche die Abgabe – die Anlage braucht dann eine höhere Vorlauftemperatur.",
           "Prüfe jeden Raum einzeln – oft verbessert schon eine kleine Umstellung die Heizleistung."
@@ -798,7 +799,10 @@
           "kitchen": {
             "footless": "Steht die Einbauküche mit geschlossenem Sockel auf der beheizten Fläche?"
           }
-        }
+        },
+        "measureToggle": "Abstand gemessen",
+        "distanceUnit": "cm",
+        "distanceHint": "Abstand zwischen Möbelvorderkante und Heizkörper, auf Höhe der Luftöffnung unten. Empfohlen sind mindestens {{target}} cm freier Raum."
       },
       "result": {
         "ratings": {
@@ -879,7 +883,9 @@
             "Große, dicke Teppiche auf der beheizten Fläche vermeiden.",
             "Dünne, für Fußbodenheizung geeignete Teppiche bevorzugen."
           ]
-        }
+        },
+        "distanceTitle": "Gemessener Abstand",
+        "distanceContext": "Empfohlen sind mindestens {{target}} cm, damit Luft von unten frei nachströmen kann. Unter 5 cm ist die Luftzufuhr praktisch unterbunden."
       }
     },
     "base_load": {

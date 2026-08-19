@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next'
-import { Sofa, Check, Info } from 'lucide-react'
+import { Sofa, Check, Info, Ruler } from 'lucide-react'
 import { RATING_COLOR } from '../rating'
 import type { ResultProps } from '../runnerTypes'
 import {
   ALL_FINDING_KEYS,
   rateFurniture,
+  DISTANCE_TARGET_CM,
   type FindingKey,
   type FurnitureAnswer,
   type FurnitureAnswers,
@@ -43,6 +44,7 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
       }) as string[])
 
   const allClear = hasAnswers && findings.length === 0
+  const distanceCm = result.details?.distanceCm
 
   return (
     <div className="space-y-4">
@@ -74,6 +76,32 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
           </p>
         </div>
       </div>
+
+      {distanceCm !== undefined && (
+        <div className="glass rounded-3xl p-5">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <Ruler className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs uppercase tracking-wide text-muted">
+                {t('measurements.furniture_spacing.result.distanceTitle')}
+              </p>
+              <p className="text-2xl font-bold tabular-nums leading-tight text-foreground">
+                {distanceCm}
+                <span className="ml-1 text-sm font-medium text-muted">
+                  {t('measurements.furniture_spacing.run.distanceUnit')}
+                </span>
+              </p>
+            </div>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted">
+            {t('measurements.furniture_spacing.result.distanceContext', {
+              target: DISTANCE_TARGET_CM,
+            })}
+          </p>
+        </div>
+      )}
 
       {findings.length > 0 && (
         <div className="glass rounded-3xl p-4">

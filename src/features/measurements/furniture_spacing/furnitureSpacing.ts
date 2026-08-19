@@ -106,6 +106,43 @@ export interface FurnitureCalc {
 
 export type FurnitureAnswers = Partial<Record<FindingKey, FurnitureAnswer>>
 
+// --- Gemessener Abstand (optional) -------------------------------------------
+//
+// Der Check heißt „Abstands-Check", fragte aber nur ja/teilweise/nein. Wer einen
+// Zollstock zur Hand hat, kann den Abstand zwischen Möbel und Heizkörper direkt
+// eingeben; daraus wird dieselbe 0/1/2-Antwort abgeleitet. Bewusst optional –
+// die Aussage soll auch ohne Messgerät funktionieren.
+
+/** Empfohlener freier Abstand vor dem Heizkörper in cm. */
+export const DISTANCE_TARGET_CM = 10
+
+/** Darunter ist die Luftzufuhr von unten praktisch unterbunden (cm). */
+export const DISTANCE_BLOCKED_CM = 5
+
+export const DISTANCE_MIN_CM = 0
+export const DISTANCE_MAX_CM = 40
+export const DISTANCE_DEFAULT_CM = 10
+
+/**
+ * Übersetzt einen gemessenen Abstand in die Antwortstufe.
+ *
+ * Der Heizkörper arbeitet mit freier Konvektion: Luft strömt unten ein, erwärmt
+ * sich und tritt oben aus. Entscheidend ist der freie Querschnitt davor, nicht
+ * der Abstand als solcher – deshalb die grobe Dreiteilung statt einer
+ * Prozentkurve, die eine Genauigkeit vortäuschen würde.
+ */
+export function answerFromDistance(distanceCm: number): FurnitureAnswer {
+  if (!Number.isFinite(distanceCm)) return 0
+  if (distanceCm < DISTANCE_BLOCKED_CM) return 2
+  if (distanceCm < DISTANCE_TARGET_CM) return 1
+  return 0
+}
+
+/** Befunde, für die eine Abstandsmessung sinnvoll ist. */
+export function supportsDistance(key: FindingKey): boolean {
+  return key === 'furniture'
+}
+
 // Schwellen der 4-stufigen Ampel – als Anteil der erreichbaren Punkte, nicht
 // als absolute Summe. Sonst wäre dieselbe Antwort je nach Fragensatz
 // unterschiedlich streng bewertet, sobald ein Raumtyp anders gewichtete Fragen

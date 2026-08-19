@@ -751,6 +751,7 @@
           "Covered heat surfaces do not lose the heat – they release it delayed and unevenly.",
           "The cost is indirect: an enclosed thermostat reads trapped heat, shuts off too early, and the room gets turned up by hand.",
           "Leave roughly 10 cm of air in front of radiators so air can flow in from below.",
+          "If you have a folding rule at hand, enter the distance directly – the check then derives its rating from it.",
           "Sofas, cabinets, long curtains or casings in front of them slow heat output.",
           "With underfloor heating, large furniture without legs and thick rugs impede output – the system then needs a higher flow temperature.",
           "Check each room individually – often a small rearrangement already improves heat output."
@@ -798,7 +799,10 @@
           "kitchen": {
             "footless": "Do the fitted kitchen units sit with a closed plinth on the heated surface?"
           }
-        }
+        },
+        "measureToggle": "Distance measured",
+        "distanceUnit": "cm",
+        "distanceHint": "Distance between the front edge of the furniture and the radiator, level with the air inlet at the bottom. At least {{target}} cm of clear space is recommended."
       },
       "result": {
         "ratings": {
@@ -879,7 +883,9 @@
             "Avoid large, thick rugs on the heated surface.",
             "Prefer thin rugs suitable for underfloor heating."
           ]
-        }
+        },
+        "distanceTitle": "Measured distance",
+        "distanceContext": "At least {{target}} cm is recommended so air can flow in freely from below. Under 5 cm the air intake is effectively cut off."
       }
     },
     "base_load": {

@@ -7,9 +7,16 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  answerFromDistance,
   questionKeys,
   rateFurniture,
+  supportsDistance,
   ALL_FINDING_KEYS,
+  DISTANCE_BLOCKED_CM,
+  DISTANCE_DEFAULT_CM,
+  DISTANCE_MAX_CM,
+  DISTANCE_MIN_CM,
+  DISTANCE_TARGET_CM,
   RADIATOR_KEYS,
   UNDERFLOOR_KEYS,
   type FindingKey,
@@ -171,6 +178,18 @@ describe('Möbel-Abstand – Texte', () => {
       }
     })
 
+    it(`hat in ${locale} die Texte der Abstandsmessung`, () => {
+      for (const key of ['measureToggle', 'distanceUnit', 'distanceHint']) {
+        expect(typeof fs.run[key], `${locale}/run/${key}`).toBe('string')
+      }
+      for (const key of ['distanceTitle', 'distanceContext']) {
+        expect(typeof fs.result[key], `${locale}/result/${key}`).toBe('string')
+      }
+      // Die Empfehlung darf nicht doppelt gepflegt werden.
+      expect(fs.run.distanceHint, locale).toContain('{{target}}')
+      expect(fs.result.distanceContext, locale).toContain('{{target}}')
+    })
+
     it(`behauptet in ${locale} keinen Wärmeverlust mehr im Ergebnistext`, () => {
       // Fachlich falsch: Der Heizkörper steht innerhalb der Hülle, die Wärme
       // kommt im Raum an – gestört wird die Verteilung und die Regelung.
@@ -182,4 +201,80 @@ describe('Möbel-Abstand – Texte', () => {
       expect(fs.result.mechanism.length, locale).toBeGreaterThan(0)
     })
   }
+})
+
+describe('Möbel-Abstand – gemessener Abstand', () => {
+  it('wertet ab der Empfehlung als frei', () => {
+    expect(answerFromDistance(DISTANCE_TARGET_CM)).toBe(0)
+    expect(answerFromDistance(DISTANCE_TARGET_CM + 5)).toBe(0)
+    expect(answerFromDistance(DISTANCE_MAX_CM)).toBe(0)
+  })
+
+  it('wertet knapp darunter als teilweise', () => {
+    expect(answerFromDistance(DISTANCE_TARGET_CM - 1)).toBe(1)
+    expect(answerFromDistance(DISTANCE_BLOCKED_CM)).toBe(1)
+  })
+
+  it('wertet unterhalb der Blockadegrenze als blockiert', () => {
+    expect(answerFromDistance(DISTANCE_BLOCKED_CM - 1)).toBe(2)
+    expect(answerFromDistance(DISTANCE_MIN_CM)).toBe(2)
+  })
+
+  it('bleibt über den ganzen Eingabebereich monoton', () => {
+    let previous = answerFromDistance(DISTANCE_MIN_CM)
+    for (let cm = DISTANCE_MIN_CM; cm <= DISTANCE_MAX_CM; cm++) {
+      const current = answerFromDistance(cm)
+      expect(current, `${cm} cm`).toBeLessThanOrEqual(previous)
+      previous = current
+    }
+  })
+
+  it('fällt bei unbrauchbarer Eingabe auf „frei" zurück, statt zu beanstanden', () => {
+    expect(answerFromDistance(Number.NaN)).toBe(0)
+  })
+
+  it('hat einen Default innerhalb der Grenzen', () => {
+    expect(DISTANCE_DEFAULT_CM).toBeGreaterThanOrEqual(DISTANCE_MIN_CM)
+    expect(DISTANCE_DEFAULT_CM).toBeLessThanOrEqual(DISTANCE_MAX_CM)
+    expect(DISTANCE_BLOCKED_CM).toBeLessThan(DISTANCE_TARGET_CM)
+  })
+
+  it('bietet die Messung nur an, wo ein Abstand messbar ist', () => {
+    expect(supportsDistance('furniture')).toBe(true)
+    // Überbaute Einbaumöbel und Handtücher haben keinen sinnvollen Abstand;
+    // bei Fußbodenheizung ebenso wenig.
+    for (const key of ALL_KEYS.filter((k) => k !== 'furniture')) {
+      expect(supportsDistance(key), key).toBe(false)
+    }
+  })
+
+  it('liefert in jedem Fragensatz höchstens eine Abstandsfrage', () => {
+    const sets = [UNDERFLOOR_KEYS, ...ROOM_SETS.map((r) => questionKeys(false, r.room))]
+    for (const keys of sets) {
+      expect(keys.filter(supportsDistance).length, keys.join('/')).toBeLessThanOrEqual(1)
+    }
+  })
+
+  it('schlägt sich in der Gesamtbewertung nieder', () => {
+    const keys = questionKeys(false)
+    const rate = (cm: number) =>
+      rateFurniture({ ...allAnswers(keys, 0), furniture: answerFromDistance(cm) }).rating
+
+    expect(rate(DISTANCE_TARGET_CM)).toBe('good')
+    expect(rate(DISTANCE_TARGET_CM - 1)).toBe('medium')
+    expect(rate(DISTANCE_BLOCKED_CM - 1)).toBe('elevated')
+    expect(rate(0)).toBe('elevated')
+  })
+
+  it('ergibt dasselbe wie die gleichbedeutende Antwort per Button', () => {
+    const keys = questionKeys(false)
+    // 2 cm entspricht "Ja", 7 cm entspricht "Teilweise".
+    expect(rateFurniture({ ...allAnswers(keys, 0), furniture: answerFromDistance(2) })).toEqual(
+      rateFurniture({ ...allAnswers(keys, 0), furniture: 2 }),
+    )
+    expect(rateFurniture({ ...allAnswers(keys, 0), furniture: answerFromDistance(7) })).toEqual(
+      rateFurniture({ ...allAnswers(keys, 0), furniture: 1 }),
+    )
+  })
+
 })

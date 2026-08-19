@@ -1,11 +1,18 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Flame, Grip } from 'lucide-react'
+import { Flame, Grip, Ruler } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
+import { Stepper } from '@/components/ui/Stepper'
 import { parseRoomKey } from '../rooms'
 import {
+  answerFromDistance,
   questionKeys,
   rateFurniture,
+  supportsDistance,
+  DISTANCE_DEFAULT_CM,
+  DISTANCE_MAX_CM,
+  DISTANCE_MIN_CM,
+  DISTANCE_TARGET_CM,
   type FindingKey,
   type FurnitureAnswer,
   type FurnitureAnswers,
@@ -35,12 +42,26 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
   const HeadIcon = underfloor ? Grip : Flame
 
   const [answers, setAnswers] = useState<FurnitureAnswers>({})
+  // Abstandsmessung ist optional; vorbelegt, wenn im Profil ein Messgerät steht.
+  const hasMeter = useOnboardingStore((s) =>
+    s.data.instruments.some((i) => i.type === 'distance_meter'),
+  )
+  const [measureOn, setMeasureOn] = useState(hasMeter)
+  const [distanceCm, setDistanceCm] = useState(DISTANCE_DEFAULT_CM)
 
-  const canEvaluate = keys.every((k) => answers[k] !== undefined)
+  const distanceKey = keys.find(supportsDistance)
+  const measuring = measureOn && distanceKey !== undefined
+
+  /** Antworten inkl. der aus dem Abstand abgeleiteten Stufe. */
+  const effectiveAnswers: FurnitureAnswers = measuring
+    ? { ...answers, [distanceKey]: answerFromDistance(distanceCm) }
+    : answers
+
+  const canEvaluate = keys.every((k) => effectiveAnswers[k] !== undefined)
 
   function handleEvaluate() {
     if (!canEvaluate) return
-    const calc = rateFurniture(answers)
+    const calc = rateFurniture(effectiveAnswers)
     // Antworten einzeln mitspeichern, damit das Ergebnis die konkreten Befunde
     // zeigen kann statt einer festen Empfehlungsliste.
     const details: Record<string, number> = {
@@ -48,13 +69,16 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
       score: calc.score,
       underfloor: underfloor ? 1 : 0,
     }
-    for (const k of keys) details[`ans_${k}`] = answers[k] as FurnitureAnswer
+    for (const k of keys) details[`ans_${k}`] = effectiveAnswers[k] as FurnitureAnswer
+    if (measuring) details.distanceCm = distanceCm
     onEvaluate({
       result: {
         id: 'furniture_spacing',
         rating: calc.rating,
-        primaryValue: calc.issues,
-        unit: '',
+        // Mit Messung hat der Check endlich eine echte Messgröße; ohne bleibt
+        // die Zahl der Befunde der Hauptwert.
+        primaryValue: measuring ? distanceCm : calc.issues,
+        unit: measuring ? 'cm' : '',
         completedAt: new Date().toISOString(),
         details,
       },
@@ -79,6 +103,48 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
               `measurements.furniture_spacing.run.questions.${key}`,
             ])}
           </p>
+
+          {supportsDistance(key) && (
+            <label className="mt-3 flex cursor-pointer items-center justify-between gap-3 border-t border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] pt-3">
+              <span className="flex items-center gap-2 text-sm text-muted">
+                <Ruler className="h-4 w-4 text-primary" />
+                {t('measurements.furniture_spacing.run.measureToggle')}
+              </span>
+              <input
+                type="checkbox"
+                checked={measureOn}
+                onChange={(e) => setMeasureOn(e.target.checked)}
+                className="h-5 w-5 shrink-0 accent-[var(--primary)]"
+              />
+            </label>
+          )}
+
+          {measuring && key === distanceKey ? (
+            <div className="mt-4">
+              <div className="flex items-center justify-center gap-3">
+                <Stepper
+                  value={distanceCm}
+                  min={DISTANCE_MIN_CM}
+                  max={DISTANCE_MAX_CM}
+                  step={1}
+                  onChange={setDistanceCm}
+                />
+                <div className="flex min-w-20 items-baseline justify-center gap-1">
+                  <span className="text-3xl font-bold tabular-nums text-foreground">
+                    {distanceCm}
+                  </span>
+                  <span className="text-sm text-muted">
+                    {t('measurements.furniture_spacing.run.distanceUnit')}
+                  </span>
+                </div>
+              </div>
+              <p className="mt-3 text-xs leading-relaxed text-muted">
+                {t('measurements.furniture_spacing.run.distanceHint', {
+                  target: DISTANCE_TARGET_CM,
+                })}
+              </p>
+            </div>
+          ) : (
           <div className="mt-3 flex flex-wrap gap-2">
             {OPTIONS.map((opt) => {
               const selected = answers[key] === opt.value
@@ -99,6 +165,7 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
               )
             })}
           </div>
+          )}
         </div>
       ))}
 
