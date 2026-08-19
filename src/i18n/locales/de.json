@@ -555,8 +555,8 @@
           "title": "Mögliche Ersparnis",
           "perYear": "/ Jahr",
           "percentUnit": "Heizenergie",
-          "context": "{{percent}} % weniger Heizenergie bei {{delta}} °C über 20 °C – anteilig für diesen Raum. Orientierungswert (≈6 % je °C).",
-          "estimated": "geschätzt",
+          "context": "{{percent}} % weniger Heizenergie bei {{delta}} °C über {{reference}} °C – anteilig für diesen Raum. Grober Orientierungswert (≈6 % je °C), keine Prognose.",
+          "estimated": "grobe Schätzung",
           "cta": "Heizverbrauch & Preis eintragen"
         }
       }

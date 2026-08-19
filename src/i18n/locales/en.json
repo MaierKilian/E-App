@@ -555,8 +555,8 @@
           "title": "Potential saving",
           "perYear": "/ year",
           "percentUnit": "heating energy",
-          "context": "{{percent}}% less heating energy at {{delta}} °C above 20 °C – proportional for this room. Rule of thumb (≈6% per °C).",
-          "estimated": "estimated",
+          "context": "{{percent}}% less heating energy at {{delta}} °C above {{reference}} °C – proportional for this room. Rough guide value (≈6% per °C), not a forecast.",
+          "estimated": "rough estimate",
           "cta": "Add heating usage & price"
         }
       }

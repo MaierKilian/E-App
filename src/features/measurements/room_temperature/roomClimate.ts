@@ -125,8 +125,41 @@ export function calcRoomClimate(input: RoomClimateInput): RoomClimateResult {
 // --- Geldeinsparung durch niedrigere Raumtemperatur ---------------------------
 // Faustregel: ~6 % Heizenergie pro 1 °C unter dem bisherigen Niveau (breiter
 // Konsens; Hochschule Biberach 2011 maß real 7–8 %). Wir rechnen konservativ.
-export const TARGET_TEMP = 20
 export const PERCENT_PER_DEGREE = 0.06
+
+/**
+ * Bezugstemperatur der Einsparung: die **obere Grenze des Komfortbands**, nicht
+ * dessen Untergrenze.
+ *
+ * Wichtig, damit Bewertung und Ersparnis nicht widersprüchlich sind: Ein Raum
+ * innerhalb des Komfortbands wird als „optimal" bewertet – dann darf die App
+ * nicht gleichzeitig zum Absenken raten. Sparpotenzial gibt es erst, wenn die
+ * Temperatur das Band nach oben verlässt.
+ */
+export const SAVING_REFERENCE_TEMP = TEMP_OPTIMAL_MAX
+
+/**
+ * Unterhalb dieses Betrags wird **kein** €-Wert gezeigt.
+ *
+ * Die Rechnung ist eine Schätzung aus mehreren Schätzungen (Heizkosten-
+ * Hochrechnung, pauschaler Warmwasseranteil, verteilte Raumfläche, Faustregel
+ * %/°C). Kleinbeträge suggerieren eine Genauigkeit, die das Modell nicht
+ * hergibt – und rechtfertigen ohnehin keine Verhaltensänderung.
+ */
+export const MIN_DISPLAY_EUR = 20
+
+/** Schrittweite der Anzeige in €. Ein Punktwert auf den Euro genau wäre Schein-Genauigkeit. */
+export const EUR_ROUNDING_STEP = 5
+
+/**
+ * Rundet eine geschätzte Jahres-Ersparnis auf einen darstellbaren Wert.
+ * Liefert `undefined`, wenn der Betrag unter {@link MIN_DISPLAY_EUR} liegt –
+ * dann zeigt die UI nur die %-Aussage.
+ */
+export function displaySavingEur(value: number | undefined): number | undefined {
+  if (value === undefined || !Number.isFinite(value) || value < MIN_DISPLAY_EUR) return undefined
+  return Math.round(value / EUR_ROUNDING_STEP) * EUR_ROUNDING_STEP
+}
 
 export interface RoomTempSavingInput {
   /** Gemessene Raumtemperatur in °C. */
@@ -142,27 +175,41 @@ export interface RoomTempSavingInput {
    * der Wert (keine Ablesungen), wird nur die %/°C-Aussage geliefert, kein €.
    */
   heatingOnlyCostEur?: number
+  /**
+   * Obere Komfortgrenze dieses Raums in °C. Default: {@link SAVING_REFERENCE_TEMP}.
+   */
+  referenceTemp?: number
 }
 
 export interface RoomTempSaving {
-  /** Grad über der Zieltemperatur (0, wenn nicht zu warm). */
+  /** Grad über der Komfort-Obergrenze (0, wenn nicht zu warm). */
   deltaT: number
+  /** Bezugstemperatur, gegen die ΔT gebildet wurde (°C). */
+  referenceTemp: number
   /** Flächenanteil des Raums an der Wohnung (0..1). */
   share: number
   /** Relative Heizenergie-Einsparung (z. B. 0,18 = 18 %). */
   percent: number
-  /** Jährliche €-Einsparung; undefined ohne Heizkosten oder ohne ΔT. */
+  /** Jährliche €-Einsparung (ungerundet); undefined ohne Heizkosten oder ohne ΔT. */
   yearlySaving?: number
   /** true, wenn die Fläche aus dem Fallback (typischer Wert) stammt. */
   areaEstimated: boolean
 }
 
 /**
- * Anteilige Jahres-Einsparung eines Raums durch Absenken auf die Zieltemperatur.
+ * Anteilige Jahres-Einsparung eines Raums durch Absenken auf die Komfort-Obergrenze.
  * `yearlySaving = heizkostenOhneWarmwasser × Flächenanteil × 6 % × ΔT`.
+ *
+ * Grenzen des Modells (bewusst in Kauf genommen, siehe UI-Hinweis „Orientierungswert"):
+ * Die 6 %/°C gelten für die *gesamte* beheizte Fläche; die Aufteilung erfolgt hier
+ * nach Grundfläche, während die tatsächliche Heizlast eines Raums von seiner
+ * Hüllfläche (Außenwände, Fenster) abhängt. Bei Absenkung eines *einzelnen* Raums
+ * fließt zudem Wärme aus Nachbarräumen nach. Der Wert ist damit eine
+ * Größenordnung, keine Prognose.
  */
 export function calcRoomTempSaving(input: RoomTempSavingInput): RoomTempSaving {
-  const deltaT = Math.max(0, input.temp - TARGET_TEMP)
+  const referenceTemp = input.referenceTemp ?? SAVING_REFERENCE_TEMP
+  const deltaT = Math.max(0, input.temp - referenceTemp)
   const roomArea = Number.isFinite(input.roomAreaSqm) && input.roomAreaSqm > 0 ? input.roomAreaSqm : 0
   const living = Number.isFinite(input.livingArea) && input.livingArea > 0 ? input.livingArea : 0
   const share = living > 0 ? Math.min(1, roomArea / living) : 0
@@ -173,5 +220,5 @@ export function calcRoomTempSaving(input: RoomTempSavingInput): RoomTempSaving {
     yearlySaving = input.heatingOnlyCostEur * share * percent
   }
 
-  return { deltaT, share, percent, yearlySaving, areaEstimated: input.areaEstimated }
+  return { deltaT, referenceTemp, share, percent, yearlySaving, areaEstimated: input.areaEstimated }
 }

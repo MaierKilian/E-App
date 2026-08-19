@@ -5,7 +5,7 @@ import { SelectChip } from '@/components/ui/SelectChip'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore } from '@/store/tariffStore'
-import { calcRoomClimate, calcRoomTempSaving } from './roomClimate'
+import { calcRoomClimate, calcRoomTempSaving, displaySavingEur } from './roomClimate'
 import type { DraftLevel } from './roomClimate'
 import { annualHeatingCostEur, WARM_WATER_SHARE } from './heatingCost'
 import { resolveRoomArea } from './roomAreas'
@@ -75,8 +75,11 @@ export function RoomTemperatureRun({ onEvaluate, roomKey }: RunProps) {
     if (saving.deltaT > 0) {
       details.savingDeltaT = saving.deltaT
       details.savingPercent = Math.round(saving.percent * 100)
-      if (saving.yearlySaving !== undefined && saving.yearlySaving >= 1) {
-        details.yearlySaving = Math.round(saving.yearlySaving)
+      details.savingReference = saving.referenceTemp
+      // Gerundet und mit Mindestbetrag: alles darunter wäre Schein-Genauigkeit.
+      const eur = displaySavingEur(saving.yearlySaving)
+      if (eur !== undefined) {
+        details.yearlySaving = eur
         details.savingEstimated = saving.areaEstimated || (heating?.estimated ?? true) ? 1 : 0
       }
     }

@@ -8,6 +8,7 @@ import type { ResultProps } from '../runnerTypes'
 import {
   rateTemperature,
   rateHumidity,
+  SAVING_REFERENCE_TEMP,
   type DimensionStatus,
 } from './roomClimate'
 
@@ -68,6 +69,7 @@ export function RoomTemperatureResult({ result }: ResultProps) {
   const savingPercent = result.details?.savingPercent
   const yearlySaving = result.details?.yearlySaving
   const savingEstimated = (result.details?.savingEstimated ?? 0) === 1
+  const savingReference = result.details?.savingReference ?? SAVING_REFERENCE_TEMP
   const hasSaving = Number.isFinite(savingDeltaT) && (savingDeltaT as number) > 0
 
   const hasHumidity = Number.isFinite(result.details?.humidity)
@@ -154,6 +156,7 @@ export function RoomTemperatureResult({ result }: ResultProps) {
             {t('measurements.room_temperature.result.saving.context', {
               percent: savingPercent,
               delta: fmt(savingDeltaT as number, 1),
+              reference: fmt(savingReference, 0),
             })}
           </p>
           {yearlySaving !== undefined && savingEstimated && (
