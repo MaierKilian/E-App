@@ -1,3 +1,4 @@
+import type { RoomType } from '@/types'
 import type { MeasurementRating } from '../types'
 
 /**
@@ -19,6 +20,8 @@ export type FurnitureAnswer = 0 | 1 | 2
 export type FindingKey =
   // Heizkörper
   | 'furniture'
+  | 'builtin'
+  | 'towels'
   | 'cover'
   | 'valve'
   // Fußbodenheizung
@@ -29,9 +32,36 @@ export type FindingKey =
 export const RADIATOR_KEYS: FindingKey[] = ['furniture', 'cover', 'valve']
 export const UNDERFLOOR_KEYS: FindingKey[] = ['footless', 'carpet', 'thermostat']
 
-/** Fragenreihenfolge je Wärmeübergabe. */
-export function questionKeys(underfloor: boolean): FindingKey[] {
-  return underfloor ? UNDERFLOOR_KEYS : RADIATOR_KEYS
+/** Alle Befunde – für das Auslesen gespeicherter Ergebnisse. */
+export const ALL_FINDING_KEYS: FindingKey[] = [
+  'furniture',
+  'builtin',
+  'towels',
+  'cover',
+  'valve',
+  'footless',
+  'carpet',
+  'thermostat',
+]
+
+/**
+ * Erste Frage je Raumtyp bei Heizkörpern.
+ *
+ * „Steht ein Sofa davor?" trifft in der Küche niemand – dort ist der Heizkörper
+ * typischerweise von Einbaumöbeln überbaut, im Bad hängen Handtücher darüber.
+ * Der Raum ist über `roomKey` bekannt und wurde bisher nur für die Überschrift
+ * genutzt.
+ */
+const ROOM_PRIMARY_KEY: Partial<Record<RoomType, FindingKey>> = {
+  kitchen: 'builtin',
+  bathroom: 'towels',
+}
+
+/** Fragenreihenfolge je Wärmeübergabe und Raumtyp. */
+export function questionKeys(underfloor: boolean, roomType?: RoomType): FindingKey[] {
+  if (underfloor) return UNDERFLOOR_KEYS
+  const primary = (roomType && ROOM_PRIMARY_KEY[roomType]) ?? 'furniture'
+  return [primary, 'cover', 'valve']
 }
 
 /**
@@ -45,6 +75,9 @@ export function questionKeys(underfloor: boolean): FindingKey[] {
  */
 const WEIGHTS: Record<FindingKey, readonly [number, number]> = {
   furniture: [1, 3],
+  // Überbaute Einbaumöbel wiegen schwerer: dauerhaft und nicht umstellbar.
+  builtin: [2, 4],
+  towels: [1, 3],
   cover: [1, 3],
   valve: [2, 4],
   footless: [1, 3],
@@ -73,19 +106,24 @@ export interface FurnitureCalc {
 
 export type FurnitureAnswers = Partial<Record<FindingKey, FurnitureAnswer>>
 
-// Schwellen der 4-stufigen Ampel über die gewichtete Summe (max. 10).
-const SCORE_MEDIUM = 1
-const SCORE_ELEVATED = 3
-const SCORE_HIGH = 6
+// Schwellen der 4-stufigen Ampel – als Anteil der erreichbaren Punkte, nicht
+// als absolute Summe. Sonst wäre dieselbe Antwort je nach Fragensatz
+// unterschiedlich streng bewertet, sobald ein Raumtyp anders gewichtete Fragen
+// bekommt.
+const RATIO_ELEVATED = 0.25
+const RATIO_HIGH = 0.55
 
 /** Wertet die Antworten aus und leitet die einzelnen Befunde ab. */
 export function rateFurniture(answers: FurnitureAnswers): FurnitureCalc {
   const findings: Finding[] = []
   let score = 0
+  let maxScore = 0
 
-  for (const key of Object.keys(WEIGHTS) as FindingKey[]) {
+  for (const key of ALL_FINDING_KEYS) {
     const answer = answers[key]
-    if (answer === undefined || answer === 0) continue
+    if (answer === undefined) continue
+    maxScore += WEIGHTS[key][1]
+    if (answer === 0) continue
     const points = WEIGHTS[key][answer === 2 ? 1 : 0]
     score += points
     findings.push({ key, level: answer === 2 ? 'yes' : 'partly', points })
@@ -94,12 +132,13 @@ export function rateFurniture(answers: FurnitureAnswers): FurnitureCalc {
   // Wichtigster Befund zuerst; bei Gleichstand bleibt die Fragenreihenfolge.
   findings.sort((a, b) => b.points - a.points)
 
+  const ratio = maxScore > 0 ? score / maxScore : 0
   const rating: MeasurementRating =
-    score >= SCORE_HIGH
+    ratio >= RATIO_HIGH
       ? 'high'
-      : score >= SCORE_ELEVATED
+      : ratio >= RATIO_ELEVATED
         ? 'elevated'
-        : score >= SCORE_MEDIUM
+        : score > 0
           ? 'medium'
           : 'good'
 

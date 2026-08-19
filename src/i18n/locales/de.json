@@ -766,12 +766,38 @@
           "valve": "Ist das Thermostatventil von Möbel, Verkleidung oder Vorhang eingeschlossen?",
           "footless": "Stehen großflächige Möbel ohne Füße direkt auf dem Boden (Sofa, Bett, Schrank)?",
           "carpet": "Liegt ein großer, dicker Teppich auf der beheizten Fläche?",
-          "thermostat": "Ist der Raumthermostat durch Möbel, Vorhang oder Bilder verdeckt?"
+          "thermostat": "Ist der Raumthermostat durch Möbel, Vorhang oder Bilder verdeckt?",
+          "builtin": "Ist der Heizkörper von Einbaumöbeln, Arbeitsplatte oder Sockelblende überbaut?",
+          "towels": "Hängen Handtücher oder Wäsche über dem Heizkörper?"
         },
         "options": {
           "no": "Nein",
           "partly": "Teilweise",
           "yes": "Ja"
+        },
+        "questionsByRoom": {
+          "living_room": {
+            "furniture": "Steht ein Sofa, Sessel oder Sideboard direkt vor dem Heizkörper?"
+          },
+          "dining_room": {
+            "furniture": "Steht ein Esstisch, eine Bank oder ein Schrank direkt vor dem Heizkörper?"
+          },
+          "bedroom": {
+            "furniture": "Steht das Bett, ein Kleiderschrank oder eine Kommode direkt vor dem Heizkörper?",
+            "footless": "Steht das Bett oder ein Schrank ohne Füße direkt auf der beheizten Fläche?"
+          },
+          "children_room": {
+            "furniture": "Stehen Bett, Regal oder Spielzeugkisten direkt vor dem Heizkörper?"
+          },
+          "office": {
+            "furniture": "Steht ein Schreibtisch, Rollcontainer oder Regal direkt vor dem Heizkörper?"
+          },
+          "bathroom": {
+            "carpet": "Liegt ein großer Badvorleger dauerhaft auf der beheizten Fläche?"
+          },
+          "kitchen": {
+            "footless": "Steht die Einbauküche mit geschlossenem Sockel auf der beheizten Fläche?"
+          }
         }
       },
       "result": {
@@ -827,6 +853,18 @@
             "yes": "Raumthermostat verdeckt",
             "why": "Der Raumthermostat steuert die gesamte Fläche. Verdeckt misst er nicht die Raumtemperatur, sondern die Luft in seinem Versteck – die Fläche heizt zu lang oder zu kurz. Bei der trägen Fußbodenheizung wirkt sich das besonders stark aus.",
             "action": "Thermostat frei und unverdeckt lassen, nicht hinter Vorhang, Möbel oder Bild. Auch direkte Sonne und Zugluft verfälschen die Messung."
+          },
+          "builtin": {
+            "partly": "Heizkörper teilweise überbaut",
+            "yes": "Heizkörper von Einbaumöbeln überbaut",
+            "why": "In Küchen sitzt der Heizkörper oft hinter Sockelblende oder unter der Arbeitsplatte. Das ist der ungünstigste Fall: Die Luft kann nicht frei nachströmen, die Stauwärme steht dauerhaft am Ventil, und beheben lässt es sich nicht durch Umstellen.",
+            "action": "Sockelblende und Deckplatte mit Lüftungsgittern versehen – unten für die Zuluft, oben für die Abluft. Bei geplanter Küchenerneuerung den Heizkörper freistellen oder auf einen Sockelkonvektor mit Gebläse wechseln."
+          },
+          "towels": {
+            "partly": "Gelegentlich Handtücher über dem Heizkörper",
+            "yes": "Handtücher oder Wäsche über dem Heizkörper",
+            "why": "Textilien über dem Heizkörper wirken doppelt: Sie schirmen die Wärmeabgabe ab, und ihre Verdunstungskälte hält das Ventil länger offen. Im Bad kommt hinzu, dass die verdunstende Feuchte im Raum bleibt und dort gelüftet werden muss.",
+            "action": "Nasse Wäsche nicht auf dem Heizkörper trocknen. Handtuchhalter neben statt über dem Heizkörper anbringen; im Bad nach dem Duschen stoßlüften."
           }
         },
         "tipsTitle": "Empfehlungen",

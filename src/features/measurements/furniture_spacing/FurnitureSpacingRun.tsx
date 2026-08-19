@@ -30,7 +30,8 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
   const underfloor = parsed
     ? rooms.find((r) => r.type === parsed.type)?.heatTransfer === 'underfloor'
     : false
-  const keys = questionKeys(underfloor)
+  const roomType = parsed?.type
+  const keys = questionKeys(underfloor, roomType)
   const HeadIcon = underfloor ? Grip : Flame
 
   const [answers, setAnswers] = useState<FurnitureAnswers>({})
@@ -72,7 +73,11 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
       {keys.map((key: FindingKey) => (
         <div key={key} className="glass rounded-3xl p-5">
           <p className="font-medium text-foreground">
-            {t(`measurements.furniture_spacing.run.questions.${key}`)}
+            {/* Raumspezifische Formulierung, sonst die allgemeine. */}
+            {t([
+              `measurements.furniture_spacing.run.questionsByRoom.${roomType}.${key}`,
+              `measurements.furniture_spacing.run.questions.${key}`,
+            ])}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {OPTIONS.map((opt) => {

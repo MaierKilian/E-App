@@ -3,7 +3,7 @@ import { Sofa, Check, Info } from 'lucide-react'
 import { RATING_COLOR } from '../rating'
 import type { ResultProps } from '../runnerTypes'
 import {
-  questionKeys,
+  ALL_FINDING_KEYS,
   rateFurniture,
   type FindingKey,
   type FurnitureAnswer,
@@ -23,11 +23,11 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
   const { t } = useTranslation()
   const underfloor = (result.details?.underfloor ?? 0) === 1
   const color = RATING_COLOR[result.rating]
-  const keys = questionKeys(underfloor)
-
+  // Über alle bekannten Befunde lesen: Welche Fragen gestellt wurden, hängt vom
+  // Raumtyp ab und kann sich zwischen App-Ständen geändert haben.
   const answers: FurnitureAnswers = {}
   let hasAnswers = false
-  for (const key of keys) {
+  for (const key of ALL_FINDING_KEYS) {
     const value = result.details?.[`ans_${key}`]
     if (value === undefined) continue
     answers[key] = value as FurnitureAnswer

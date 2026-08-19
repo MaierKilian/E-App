@@ -766,12 +766,38 @@
           "valve": "Is the thermostatic valve enclosed by furniture, casing or a curtain?",
           "footless": "Is large furniture without legs standing flat on the floor (sofa, bed, cabinet)?",
           "carpet": "Is a large, thick rug lying on the heated surface?",
-          "thermostat": "Is the room thermostat covered by furniture, a curtain or pictures?"
+          "thermostat": "Is the room thermostat covered by furniture, a curtain or pictures?",
+          "builtin": "Is the radiator built over by fitted units, a worktop or a plinth panel?",
+          "towels": "Are towels or laundry hanging over the radiator?"
         },
         "options": {
           "no": "No",
           "partly": "Partly",
           "yes": "Yes"
+        },
+        "questionsByRoom": {
+          "living_room": {
+            "furniture": "Is a sofa, armchair or sideboard standing directly in front of the radiator?"
+          },
+          "dining_room": {
+            "furniture": "Is a dining table, bench or cabinet standing directly in front of the radiator?"
+          },
+          "bedroom": {
+            "furniture": "Is the bed, a wardrobe or a chest of drawers standing directly in front of the radiator?",
+            "footless": "Is the bed or a cabinet standing without legs directly on the heated surface?"
+          },
+          "children_room": {
+            "furniture": "Are the bed, shelves or toy boxes standing directly in front of the radiator?"
+          },
+          "office": {
+            "furniture": "Is a desk, pedestal or shelf standing directly in front of the radiator?"
+          },
+          "bathroom": {
+            "carpet": "Is a large bath mat permanently lying on the heated surface?"
+          },
+          "kitchen": {
+            "footless": "Do the fitted kitchen units sit with a closed plinth on the heated surface?"
+          }
         }
       },
       "result": {
@@ -827,6 +853,18 @@
             "yes": "Room thermostat covered",
             "why": "The room thermostat controls the entire surface. Covered, it measures the air in its hiding place rather than the room – the surface heats too long or too briefly. With slow-responding underfloor heating this hits particularly hard.",
             "action": "Keep the thermostat clear and uncovered, not behind a curtain, furniture or a picture. Direct sunlight and draughts distort the reading too."
+          },
+          "builtin": {
+            "partly": "Radiator partly built over",
+            "yes": "Radiator built over by fitted units",
+            "why": "In kitchens the radiator often sits behind a plinth panel or under the worktop. This is the worst case: air cannot flow in freely, trapped heat sits permanently at the valve, and it cannot be fixed by rearranging anything.",
+            "action": "Fit ventilation grilles into the plinth panel and the top cover – at the bottom for intake, at the top for outlet. When replacing the kitchen, free the radiator or switch to a plinth convector with a fan."
+          },
+          "towels": {
+            "partly": "Towels over the radiator now and then",
+            "yes": "Towels or laundry over the radiator",
+            "why": "Textiles over the radiator have a double effect: they shield the heat output, and their evaporative cooling keeps the valve open longer. In a bathroom the evaporated moisture also stays in the room and has to be ventilated out.",
+            "action": "Do not dry wet laundry on the radiator. Mount towel rails beside rather than above the radiator; ventilate thoroughly after showering."
           }
         },
         "tipsTitle": "Recommendations",
