@@ -97,71 +97,21 @@
   },
   "report": {
     "title": "Reports",
-    "subtitle": "Profile, measurements and monitoring as PDF.",
+    "subtitle": "Your energy report as a PDF.",
     "variant": {
       "short": "Short report",
       "long": "Detailed report"
     },
-    "types": {
-      "measurements": {
-        "title": "Measurements",
-        "description": "Results of your checks with rating and savings potential.",
-        "tags": [
-          "Rating",
-          "Savings",
-          "Tips"
-        ]
-      },
-      "monitoring": {
-        "title": "Monitoring",
-        "description": "Meter readings, consumption and trends as charts.",
-        "tags": [
-          "Readings",
-          "Trends",
-          "Charts"
-        ]
-      },
-      "total": {
-        "title": "Overall",
-        "description": "Profile, measurements and monitoring in one report.",
-        "tags": [
-          "Profile",
-          "Measurements",
-          "Monitoring"
-        ]
-      }
-    },
     "builder": {
-      "back": "Back",
       "variant": "Scope",
-      "customize": "Customize",
-      "contents": "Contents",
       "range": "Period",
-      "meters": "Meters",
-      "categories": "Trades",
       "export": "Export as PDF",
       "exporting": "Creating PDF …",
       "exportDone": "PDF created.",
       "exportError": "Export failed. Please try again.",
-      "comparisonHint": "Comparing to the previous period requires a fixed range (7, 30 or 90 days).",
-      "minSelectionHint": "At least one selection required.",
-      "summaryAllContents": "All contents",
-      "summaryContents": "{{selected}} of {{total}} contents",
-      "summaryAllMeters": "All meters",
-      "summaryAllCategories": "All trades",
-      "summaryAllRange": "All readings",
       "share": "Share PDF",
-      "shareDone": "PDF shared."
-    },
-    "contents": {
-      "charts": "Consumption chart",
-      "kpis": "Key figures",
-      "comparison": "Previous period",
-      "history": "Reading history",
-      "savings": "Savings potential",
-      "tips": "Tips",
-      "openMeasurements": "Open measurements",
-      "readingCurve": "Meter curve"
+      "shareDone": "PDF shared.",
+      "sections": "Contents"
     },
     "range": {
       "d7": "7 days",
@@ -190,7 +140,7 @@
       "vsPrevious": "vs. previous period"
     },
     "pdf": {
-      "title": "E-App – Energy report",
+      "title": "Energy report",
       "dateLine": "Created on {{date}}",
       "page": "Page {{n}} / {{total}}",
       "footnote": "Created with the E-App",
@@ -219,42 +169,36 @@
         "noSegments": "At least two readings are needed to compare consumption.",
         "perDayUnit": "{{unit}}/day"
       },
-      "total": {
-        "title": "Overall energy report",
-        "subtitle": "Profile, measurements and monitoring",
-        "profile": "Profile"
-      },
       "empty": {
         "none": "none",
         "measurements": "No measurements completed yet.",
         "monitoring": "No energy sources active.",
         "noReading": "No reading yet"
-      }
+      },
+      "fileLabel": "Energy-report"
     },
     "overview": {
-      "recommended": "Recommended",
-      "measStatus": "{{done}} / {{total}} checks",
       "measEmpty": "No checks yet",
-      "monStatus": "{{count}} meters with data",
-      "monEmpty": "No readings yet",
-      "totalReady": "Profile · Measurements · Monitoring",
-      "totalEmpty": "Profile only – add data"
+      "monEmpty": "No readings yet"
     },
     "facts": {
-      "period": "{{from}} – {{to}}",
       "meters_one": "{{count}} meter",
       "meters_other": "{{count}} meters",
       "readings_one": "{{count}} reading",
       "readings_other": "{{count}} readings",
       "measurements_one": "{{count}} measurement",
       "measurements_other": "{{count}} measurements",
-      "noData": "No data yet"
+      "noData": "No data yet",
+      "profileOnly": "Building data only",
+      "rangeEmpty": "No readings in this period"
     },
     "variantDesc": {
       "short": "The essentials at a glance.",
-      "long": "Detailed, with everything."
+      "long": "Detailed, with curves, history and tips."
     },
-    "variantExtra": "Adds: {{items}}"
+    "sectionDetail": {
+      "profile": "Building data"
+    }
   },
   "measurements": {
     "page": {

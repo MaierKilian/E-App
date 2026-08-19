@@ -97,71 +97,21 @@
   },
   "report": {
     "title": "Berichte",
-    "subtitle": "Profil, Messungen und Monitoring als PDF.",
+    "subtitle": "Dein Energiebericht als PDF.",
     "variant": {
       "short": "Kurzbericht",
       "long": "Langbericht"
     },
-    "types": {
-      "measurements": {
-        "title": "Messungen",
-        "description": "Ergebnisse deiner Checks mit Bewertung und Sparpotenzial.",
-        "tags": [
-          "Bewertung",
-          "Sparpotenzial",
-          "Tipps"
-        ]
-      },
-      "monitoring": {
-        "title": "Monitoring",
-        "description": "Zählerstände, Verbrauch und Trends als Diagramme.",
-        "tags": [
-          "Zählerstände",
-          "Trends",
-          "Diagramme"
-        ]
-      },
-      "total": {
-        "title": "Gesamt",
-        "description": "Profil, Messungen und Monitoring in einem Bericht.",
-        "tags": [
-          "Profil",
-          "Messungen",
-          "Monitoring"
-        ]
-      }
-    },
     "builder": {
-      "back": "Zurück",
       "variant": "Umfang",
-      "customize": "Anpassen",
-      "contents": "Inhalte",
       "range": "Zeitraum",
-      "meters": "Zähler",
-      "categories": "Gewerke",
       "export": "Als PDF exportieren",
       "exporting": "PDF wird erstellt …",
       "exportDone": "PDF erstellt.",
       "exportError": "Export fehlgeschlagen. Bitte erneut versuchen.",
-      "comparisonHint": "Der Vergleich zur Vorperiode braucht einen festen Zeitraum (7, 30 oder 90 Tage).",
-      "minSelectionHint": "Mindestens eine Auswahl nötig.",
-      "summaryAllContents": "Alle Inhalte",
-      "summaryContents": "{{selected}} von {{total}} Inhalten",
-      "summaryAllMeters": "Alle Zähler",
-      "summaryAllCategories": "Alle Gewerke",
-      "summaryAllRange": "Alle Ablesungen",
       "share": "PDF teilen",
-      "shareDone": "PDF geteilt."
-    },
-    "contents": {
-      "charts": "Verbrauchsdiagramm",
-      "kpis": "Kennzahlen",
-      "comparison": "Vergleich Vorperiode",
-      "history": "Zählerhistorie",
-      "savings": "Sparpotenzial",
-      "tips": "Tipps",
-      "openMeasurements": "Offene Messungen",
-      "readingCurve": "Zählerstandsverlauf"
+      "shareDone": "PDF geteilt.",
+      "sections": "Inhalt"
     },
     "range": {
       "d7": "7 Tage",
@@ -190,7 +140,7 @@
       "vsPrevious": "ggü. Vorperiode"
     },
     "pdf": {
-      "title": "E-App – Energiebericht",
+      "title": "Energiebericht",
       "dateLine": "Erstellt am {{date}}",
       "page": "Seite {{n}} / {{total}}",
       "footnote": "Erstellt mit der E-App",
@@ -219,42 +169,36 @@
         "noSegments": "Für einen Verbrauchsvergleich sind mindestens zwei Ablesungen nötig.",
         "perDayUnit": "{{unit}}/Tag"
       },
-      "total": {
-        "title": "Gesamt-Energiebericht",
-        "subtitle": "Profil, Messungen und Monitoring",
-        "profile": "Profil"
-      },
       "empty": {
         "none": "keine",
         "measurements": "Noch keine Messungen erledigt.",
         "monitoring": "Keine Energieträger aktiv.",
         "noReading": "Noch keine Ablesung"
-      }
+      },
+      "fileLabel": "Energiebericht"
     },
     "overview": {
-      "recommended": "Empfohlen",
-      "measStatus": "{{done}} / {{total}} Checks",
       "measEmpty": "Noch keine Checks",
-      "monStatus": "{{count}} Zähler mit Daten",
-      "monEmpty": "Noch keine Ablesungen",
-      "totalReady": "Profil · Messungen · Monitoring",
-      "totalEmpty": "Nur Profil – Daten ergänzen"
+      "monEmpty": "Noch keine Ablesungen"
     },
     "facts": {
-      "period": "{{from}} – {{to}}",
       "meters_one": "{{count}} Zähler",
       "meters_other": "{{count}} Zähler",
       "readings_one": "{{count}} Ablesung",
       "readings_other": "{{count}} Ablesungen",
       "measurements_one": "{{count}} Messung",
       "measurements_other": "{{count}} Messungen",
-      "noData": "Noch keine Daten"
+      "noData": "Noch keine Daten",
+      "profileOnly": "Nur Gebäudedaten",
+      "rangeEmpty": "Keine Ablesungen in diesem Zeitraum"
     },
     "variantDesc": {
       "short": "Das Wichtigste auf einen Blick.",
-      "long": "Ausführlich mit allen Details."
+      "long": "Ausführlich, mit Verlauf, Historie und Tipps."
     },
-    "variantExtra": "Zusätzlich: {{items}}"
+    "sectionDetail": {
+      "profile": "Gebäudedaten"
+    }
   },
   "measurements": {
     "page": {

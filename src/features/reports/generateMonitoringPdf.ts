@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import { PdfKit, type KpiCard, type BarItem } from './pdf/pdfKit'
+import type { PdfKit, KpiCard, BarItem } from './pdf/pdfKit'
 import {
   numberFmt,
   currencyFmt,
@@ -7,9 +7,8 @@ import {
   fmtCur,
   fmtDate,
   fmtDateShort,
-  reportFileName,
+  fmtPeriod,
 } from './pdf/format'
-import type { ReportDocument } from './pdf/deliver'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import type { MonitoringReportData, MonitoringEntry } from './monitoringReportData'
 
@@ -17,10 +16,8 @@ import type { MonitoringReportData, MonitoringEntry } from './monitoringReportDa
 const SHORT_HISTORY_ROWS = 8
 
 /**
- * Erzeugt den Monitoring-Bericht (Kurz/Lang) als grafisches PDF.
- * Kurz = kompakte Karten + kleines Diagramm; Lang = große Diagramme, volle
- * KPI-Reihe, Vergleich und Ablese-Historie. Die Auslieferung (Teilen oder
- * Download) übernimmt {@link deliverReport}.
+ * Der Monitoring-Abschnitt des Energieberichts. Wird von
+ * {@link generateReportPdf} in ein bestehendes Dokument geschrieben.
  */
 
 export interface GenerateMonitoringArgs {
@@ -31,19 +28,6 @@ export interface GenerateMonitoringArgs {
   data: MonitoringReportData
   /** Objektname (Profilname) für Kopfzeile und Dateiname. */
   objectName?: string
-}
-
-export function generateMonitoringPdf(args: GenerateMonitoringArgs): ReportDocument {
-  const kit = new PdfKit()
-  fillMonitoring(kit, args)
-  kit.finalizeFooters(
-    (n, total) => args.t('report.pdf.page', { n, total }),
-    args.t('report.pdf.footnote'),
-  )
-  return {
-    doc: kit.doc,
-    fileName: reportFileName(args.t('report.types.monitoring.title'), args.objectName),
-  }
 }
 
 /** Schreibt den Monitoring-Abschnitt (auch vom Gesamt-Bericht genutzt). */
@@ -195,12 +179,7 @@ function periodLine(t: TFunction, language: string, data: MonitoringReportData):
   const key = data.rangeDays === null ? 'all' : `d${data.rangeDays}`
   const parts = [t('report.pdf.monitoring.subtitle', { range: t(`report.range.${key}`) })]
   if (data.from && data.to) {
-    parts.push(
-      t('report.facts.period', {
-        from: fmtDateShort(data.from, language),
-        to: fmtDateShort(data.to, language),
-      }),
-    )
+    parts.push(fmtPeriod(data.from, data.to, language))
   }
   if (data.readingCount > 0) {
     parts.push(t('report.facts.readings', { count: data.readingCount }))
@@ -216,12 +195,9 @@ function priceSub(t: TFunction, language: string, e: MonitoringEntry): string | 
 }
 
 /** Datumsbereich der Ablesungen eines Trägers, für die Kachel-Unterzeile. */
-function windowSub(t: TFunction, language: string, e: MonitoringEntry): string | undefined {
+function windowSub(language: string, e: MonitoringEntry): string | undefined {
   if (!e.windowFrom || !e.windowTo) return undefined
-  return t('report.facts.period', {
-    from: fmtDateShort(e.windowFrom, language),
-    to: fmtDateShort(e.windowTo, language),
-  })
+  return fmtPeriod(e.windowFrom, e.windowTo, language)
 }
 
 /** Kompakte Zähler-Karte (Kurzfassung): Stand, Verbrauch, Vergleich, Kosten + kleines Diagramm. */
@@ -263,7 +239,7 @@ function writeShortEntry(
       {
         value: fmtVal(e.consumption, e.unit, num),
         label: t('report.kpi.consumption'),
-        sub: windowSub(t, language, e),
+        sub: windowSub(language, e),
       },
     ]
     if (e.hasCost && e.costYear !== undefined) {
@@ -347,7 +323,7 @@ function writeLongEntry(
       {
         value: fmtVal(e.consumption, e.unit, num),
         label: t('report.kpi.consumption'),
-        sub: windowSub(t, language, e),
+        sub: windowSub(language, e),
       },
       { value: fmtVal(e.perDay, e.unit, num), label: t('report.kpi.perDay'), sub: basisDays },
       {

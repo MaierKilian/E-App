@@ -1,14 +1,21 @@
-import type { MeasurementCategory } from '@/features/measurements/catalog'
-import type { EnergyType } from '@/store/readingsStore'
-import type { RangeDays } from './monitoringReportData'
-
 /** Kurz- oder Langfassung eines Berichts. */
 export type ReportVariant = 'short' | 'long'
 
-/** Die drei Berichtstypen. */
-export type ReportType = 'measurements' | 'monitoring' | 'total'
+/**
+ * Abschnitte des Berichts. Der Bericht ist die Summe der gewählten Abschnitte –
+ * es gibt keine vorgelagerte Wahl eines Berichtstyps mehr.
+ */
+export interface ReportSections {
+  profile: boolean
+  measurements: boolean
+  monitoring: boolean
+}
 
-/** An-/abwählbare Inhalte des Berichts (Builder). */
+/**
+ * Bausteine, aus denen ein Abschnitt aufgebaut wird. Sie werden nicht mehr
+ * einzeln bedient, sondern vollständig aus {@link defaultContentOptions}
+ * abgeleitet – die einzige Stellschraube ist der Umfang (kurz/lang).
+ */
 export interface ReportContentOptions {
   // Monitoring
   /** Verbrauch je Ablesezeitraum als Balken (die aussagekräftige Darstellung). */
@@ -24,19 +31,7 @@ export interface ReportContentOptions {
   openMeasurements: boolean
 }
 
-/** Vollständige Builder-Auswahl, die an die Generatoren übergeben wird. */
-export interface ReportBuilderState {
-  type: ReportType
-  variant: ReportVariant
-  options: ReportContentOptions
-  rangeDays: RangeDays
-  /** Ausgewählte Energieträger (leer = alle aktiven). */
-  meters: EnergyType[]
-  /** Ausgewählte Gewerke (leer = alle). */
-  categories: MeasurementCategory[]
-}
-
-/** Liefert die sinnvollen Default-Häkchen je Variante. */
+/** Bausteine je Umfang: kurz = das Wichtigste, lang = alles. */
 export function defaultContentOptions(variant: ReportVariant): ReportContentOptions {
   const long = variant === 'long'
   return {

@@ -1,7 +1,6 @@
 import type { TFunction } from 'i18next'
-import { PdfKit, ratingColor, type KpiCard } from './pdf/pdfKit'
-import { numberFmt, currencyFmt, fmtVal, fmtCur, fmtDate, reportFileName } from './pdf/format'
-import type { ReportDocument } from './pdf/deliver'
+import { ratingColor, type PdfKit, type KpiCard } from './pdf/pdfKit'
+import { numberFmt, currencyFmt, fmtVal, fmtCur, fmtDate } from './pdf/format'
 import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import type {
   MeasurementsReportData,
@@ -10,8 +9,8 @@ import type {
 } from './measurementsReportData'
 
 /**
- * Erzeugt den Messungen-Bericht (Kurz/Lang) als grafisches PDF. Inhalte
- * richten sich nach `options`; die Auslieferung übernimmt {@link deliverReport}.
+ * Der Messungen-Abschnitt des Energieberichts. Wird von
+ * {@link generateReportPdf} in ein bestehendes Dokument geschrieben.
  */
 
 export interface GenerateMeasurementsArgs {
@@ -22,19 +21,6 @@ export interface GenerateMeasurementsArgs {
   data: MeasurementsReportData
   /** Objektname (Profilname) für Kopfzeile und Dateiname. */
   objectName?: string
-}
-
-export function generateMeasurementsPdf(args: GenerateMeasurementsArgs): ReportDocument {
-  const kit = new PdfKit()
-  fillMeasurements(kit, args)
-  kit.finalizeFooters(
-    (n, total) => args.t('report.pdf.page', { n, total }),
-    args.t('report.pdf.footnote'),
-  )
-  return {
-    doc: kit.doc,
-    fileName: reportFileName(args.t('report.types.measurements.title'), args.objectName),
-  }
 }
 
 /**

@@ -47,6 +47,16 @@ export function fmtDateShort(iso: string | undefined, language: string): string 
   return new Intl.DateTimeFormat(language, { dateStyle: 'short' }).format(d)
 }
 
+/**
+ * Zeitraum als „von – bis". Fallen Anfang und Ende auf denselben Tag (nur eine
+ * Ablesung), steht dort nur dieses eine Datum statt einer Spanne von null Tagen.
+ */
+export function fmtPeriod(from: string, to: string, language: string): string {
+  const a = fmtDateShort(from, language)
+  const b = fmtDateShort(to, language)
+  return a === b ? a : `${a} – ${b}`
+}
+
 /** Umlaut-/Sonderzeichen-Ersetzungen für Dateinamen. */
 const SLUG_MAP: Record<string, string> = {
   ä: 'ae', ö: 'oe', ü: 'ue', Ä: 'Ae', Ö: 'Oe', Ü: 'Ue', ß: 'ss',
