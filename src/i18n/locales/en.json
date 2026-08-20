@@ -1790,6 +1790,8 @@
     "deleteConfirm": "Permanently delete this home? All measurements, meter readings and resident access will be lost for good.",
     "deleteYes": "Delete permanently",
     "limitReached": "Home limit reached.",
+    "loadError": "Your homes could not be loaded right now.",
+    "retry": "Try again",
     "share": {
       "title": "Share home",
       "explainer": "Send this link to your housemates. Anyone who opens it and signs in will see and edit this home together with you.",

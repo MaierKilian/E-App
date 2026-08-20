@@ -1,8 +1,19 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Plus, Check, Home, Share2, LogOut, Users, Trash2, SlidersHorizontal } from 'lucide-react'
+import {
+  Plus,
+  Check,
+  Home,
+  Share2,
+  LogOut,
+  Users,
+  Trash2,
+  SlidersHorizontal,
+  RotateCw,
+  CloudOff,
+} from 'lucide-react'
 import { useProfilesStore } from '@/store/profilesStore'
-import { useIsAuthenticated } from '@/store/authStore'
+import { useAuthStore, useIsAuthenticated } from '@/store/authStore'
 import { useSettingsStore } from '@/store/settingsStore'
 import {
   switchProfile,
@@ -10,19 +21,10 @@ import {
   leaveProfile,
   deleteActiveProfile,
   canCreateProfile,
+  retryLoadProfiles,
 } from '@/features/sync/cloudSync'
 import { ShareProfileDialog } from './ShareProfileDialog'
 
-/**
- * Wohnprofil-Auswahl im Zuhause-Bereich.
- *
- * Bei genau einer Wohnung bleibt nur eine schlanke „Weitere Wohnung hinzufügen"-
- * Zeile stehen – kein Raster, kein aktiver Haken, keine (destruktiven) Aktionen.
- * Ab zwei Wohnungen erscheint das Kachel-Raster (Spaltenzahl passt sich dynamisch
- * an) samt „Verwalten"-Umschalter, hinter dem Teilen/Verlassen/Löschen der aktiven
- * Wohnung liegen – so ist die Startseite aufgeräumt und das Löschen nicht mehr
- * dauerhaft präsent. Wird nur für angemeldete Nutzer mit geladenen Profilen gezeigt.
- */
 /**
  * Kürzt fürs Display gängige Straßen-Endungen (…straße/…strasse → …str.),
  * damit lange Adressen in die Kachel passen – ohne die gespeicherte
@@ -33,11 +35,31 @@ function shortenPlaceName(name: string): string {
   return name.replace(/stra(?:ß|ss)e\b/gi, (m) => (m[0] === 'S' ? 'Str.' : 'str.'))
 }
 
+/**
+ * Wohnprofil-Auswahl im Zuhause-Bereich.
+ *
+ * Bei genau einer Wohnung bleibt nur eine schlanke „Weitere Wohnung hinzufügen"-
+ * Zeile stehen – kein Raster, kein aktiver Haken, keine (destruktiven) Aktionen.
+ * Ab zwei Wohnungen erscheint das Kachel-Raster (Spaltenzahl passt sich dynamisch
+ * an) samt „Verwalten"-Umschalter, hinter dem Teilen/Verlassen/Löschen der aktiven
+ * Wohnung liegen – so ist die Startseite aufgeräumt und das Löschen nicht mehr
+ * dauerhaft präsent. Wird nur für angemeldete Nutzer mit geladenen Profilen gezeigt.
+ *
+ * **Startverhalten:** Solange Firebase den Anmeldestatus prüft und die Profile
+ * aus Firestore lädt, werden die Kacheln bereits aus dem persistierten
+ * Anzeige-Cache gezeigt (siehe `profilesStore`) – gedimmt und nicht bedienbar.
+ * Dadurch springt das Layout nicht mehr und die Wohnungen „ploppen" nicht
+ * verspätet auf. Erst nach erfolgreichem Laden (`status === 'ready'`) sind sie
+ * anklickbar, damit nie auf veralteten Daten gehandelt wird. Scheitert das
+ * Laden, erscheint statt eines stummen Nichts eine Zeile mit „Erneut versuchen".
+ */
 export function ProfileSwitcher() {
   const { t } = useTranslation()
   const isAuthenticated = useIsAuthenticated()
+  const initializing = useAuthStore((s) => s.initializing)
   const demoMode = useSettingsStore((s) => s.demoMode)
   const profiles = useProfilesStore((s) => s.profiles)
+  const cachedUid = useProfilesStore((s) => s.cachedUid)
   const activeId = useProfilesStore((s) => s.activeProfileId)
   const status = useProfilesStore((s) => s.status)
   const [busy, setBusy] = useState(false)
@@ -46,10 +68,38 @@ export function ProfileSwitcher() {
   const [confirmLeave, setConfirmLeave] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  // Nur für angemeldete Nutzer mit geladenen Profilen anzeigen – und nicht in
-  // der Demo (dort geht es um die Beispiel-Wohnung, nicht um echte Profile).
-  if (demoMode || !isAuthenticated || status !== 'ready' || profiles.length === 0) return null
+  // In der Demo geht es um die Beispiel-Wohnung, nicht um echte Profile.
+  if (demoMode) return null
 
+  // Noch am Anmelden/Laden? Der Cache darf einspringen – aber nur, wenn er zu
+  // einem Konto auf diesem Gerät gehört. Ein echter Gast sieht weiterhin nichts.
+  const loading = initializing || status === 'idle' || status === 'loading'
+  if (!isAuthenticated && !(initializing && cachedUid)) return null
+
+  // Laden gescheitert (Netz weg, Token-Refresh hakt): nicht stumm verschwinden.
+  // Im Hintergrund läuft die automatische Wiederholung, hier der manuelle Weg.
+  if (status === 'error') {
+    return (
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-surface-2/40 p-3">
+        <CloudOff className="h-4 w-4 shrink-0 text-muted" />
+        <p className="flex-1 text-xs text-muted">{t('profiles.loadError')}</p>
+        <button
+          type="button"
+          onClick={() => void retryLoadProfiles()}
+          className="focus-ring inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+        >
+          <RotateCw className="h-3.5 w-3.5" />
+          {t('profiles.retry')}
+        </button>
+      </div>
+    )
+  }
+
+  if (profiles.length === 0) return null
+
+  // Während des Ladens sind die Kacheln nur Vorschau – kein Wechseln, kein
+  // Anlegen und vor allem kein Löschen auf noch unbestätigtem Stand.
+  const locked = busy || loading
   const active = profiles.find((p) => p.id === activeId)
   const atProfileLimit = !canCreateProfile()
   const single = profiles.length === 1
@@ -195,7 +245,10 @@ export function ProfileSwitcher() {
   ) : null
 
   return (
-    <div>
+    <div
+      aria-busy={loading}
+      className={loading ? 'pointer-events-none opacity-60 transition-opacity' : undefined}
+    >
       {/* Kopfzeile mit „Verwalten" – immer sichtbar, sobald es eine aktive
           Wohnung gibt. So ist Teilen/Löschen auch bei nur einer Wohnung
           erreichbar (vorher erst ab zwei). */}
@@ -204,18 +257,22 @@ export function ProfileSwitcher() {
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
             {t('profiles.sectionTitle')}
           </p>
-          <button
-            type="button"
-            onClick={() => {
-              setManageOpen((open) => !open)
-              resetConfirms()
-            }}
-            aria-expanded={manageOpen}
-            className="focus-ring inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
-          >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
-            {t('profiles.manage')}
-          </button>
+          {/* „Verwalten" erst, wenn der Stand bestätigt ist – dahinter liegt
+              das Löschen. */}
+          {!loading && (
+            <button
+              type="button"
+              onClick={() => {
+                setManageOpen((open) => !open)
+                resetConfirms()
+              }}
+              aria-expanded={manageOpen}
+              className="focus-ring inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              {t('profiles.manage')}
+            </button>
+          )}
         </div>
       )}
 
@@ -224,7 +281,7 @@ export function ProfileSwitcher() {
         <button
           type="button"
           onClick={handleCreate}
-          disabled={busy}
+          disabled={locked}
           className="focus-ring flex w-full items-center gap-3 rounded-2xl border border-dashed border-border p-3.5 text-left text-muted transition-colors hover:border-primary hover:text-foreground disabled:opacity-60"
         >
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
@@ -244,7 +301,7 @@ export function ProfileSwitcher() {
                   key={p.id}
                   type="button"
                   onClick={() => handleSwitch(p.id)}
-                  disabled={busy}
+                  disabled={locked}
                   aria-pressed={isActive}
                   aria-label={fullName}
                   className={`focus-ring relative aspect-[4/3] overflow-hidden rounded-2xl transition-transform active:scale-[0.98] disabled:opacity-60 ${
@@ -290,7 +347,7 @@ export function ProfileSwitcher() {
               <button
                 type="button"
                 onClick={handleCreate}
-                disabled={busy}
+                disabled={locked}
                 className="focus-ring flex aspect-[4/3] flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border text-muted transition-colors hover:border-primary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-muted disabled:hover:border-border"
               >
                 <span className="grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary">
@@ -308,7 +365,7 @@ export function ProfileSwitcher() {
       )}
 
       {/* Aktionen der aktiven Wohnung – hinter „Verwalten", in beiden Fällen. */}
-      {manageOpen && manageActions}
+      {manageOpen && !loading && manageActions}
 
       {/* Hinweis zum Wechseln nur bei mehreren Wohnungen. */}
       {!single && (

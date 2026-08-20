@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { User, Palette, Settings, ChevronRight, LogOut, MessageSquarePlus } from 'lucide-react'
-import { useUser } from '@/store/authStore'
-import { useOnboardingStore } from '@/store/onboardingStore'
+import { useAuthStore, useUser } from '@/store/authStore'
 import { useAccountAvatarSrc } from '@/store/accountAvatarStore'
 import { useFeedbackStore } from '@/store/feedbackStore'
 import { Avatar } from '@/components/ui/Avatar'
@@ -22,16 +21,22 @@ export function ProfileMenu() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useUser()
-  const profileName = useOnboardingStore((s) => s.data.profileName)
+  // true, solange Firebase den gespeicherten Anmeldestatus noch wiederherstellt.
+  const initializing = useAuthStore((s) => s.initializing)
   const accountAvatar = useAccountAvatarSrc()
   const openFeedback = useFeedbackStore((s) => s.openFeedback)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   // Der Account-Avatar zeigt das selbst gewählte Konto-Foto (bzw. das
   // Google-Profilbild) – bewusst NICHT das Wohnungsfoto, damit Konto und
-  // Wohnprofil unterscheidbar bleiben. Ohne Bild dienen Anzeigename, E-Mail
-  // oder Profilname als Initialen-Grundlage.
-  const avatarName = user?.displayName || user?.email || profileName
+  // Wohnprofil unterscheidbar bleiben. Ohne Bild dienen Anzeigename oder E-Mail
+  // als Initialen-Grundlage.
+  //
+  // Der Wohnungsname ist hier bewusst KEIN Rückfall mehr: Er gehört zum
+  // Wohnprofil, nicht zum Konto – und weil `user` beim Start kurz `null` ist,
+  // blitzten sonst dessen Initialen auf („Bahnhofstraße 1" → „B1"), bevor
+  // Firebase die Sitzung wiederhergestellt hatte.
+  const avatarName = user?.displayName || user?.email || undefined
 
   useEffect(() => {
     if (!open) return
@@ -59,7 +64,13 @@ export function ProfileMenu() {
         aria-expanded={open}
         className="focus-ring grid h-9 w-9 place-items-center overflow-hidden rounded-full border border-border transition-transform hover:scale-105 active:scale-95"
       >
-        <Avatar src={accountAvatar} name={avatarName} size={34} />
+        {initializing ? (
+          // Anmeldestatus noch unklar: neutraler Platzhalter statt eines
+          // Avatars, der gleich darauf gegen den echten getauscht würde.
+          <span className="h-[34px] w-[34px] animate-pulse rounded-full bg-surface-2" />
+        ) : (
+          <Avatar src={accountAvatar} name={avatarName} size={34} />
+        )}
       </button>
 
       {open && (

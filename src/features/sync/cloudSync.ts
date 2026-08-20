@@ -179,8 +179,51 @@ async function activateProfile(pid: string) {
   }
 }
 
+/**
+ * Wartezeiten für die automatischen Wiederholungen, wenn das Laden der Profile
+ * scheitert (typisch: Netz kurz weg, Token-Refresh hakt). Danach wartet die App
+ * auf ein echtes Signal – `online` oder das Zurückholen des Tabs.
+ */
+const RETRY_DELAYS_MS = [2000, 5000, 15000]
+let retryTimer: ReturnType<typeof setTimeout> | null = null
+let retryAttempt = 0
+
+/** Bricht eine geplante Wiederholung ab (z. B. bei Kontowechsel oder Erfolg). */
+function cancelRetry() {
+  if (retryTimer) {
+    clearTimeout(retryTimer)
+    retryTimer = null
+  }
+  retryAttempt = 0
+}
+
+/** Plant die nächste automatische Wiederholung – bis die Staffel aufgebraucht ist. */
+function scheduleRetry() {
+  if (retryTimer) return
+  const delay = RETRY_DELAYS_MS[retryAttempt]
+  if (delay === undefined) return
+  retryAttempt += 1
+  retryTimer = setTimeout(() => {
+    retryTimer = null
+    void retryLoadProfiles()
+  }, delay)
+}
+
+/**
+ * Lädt die Profile erneut, wenn der letzte Versuch fehlgeschlagen ist.
+ * Wird automatisch (Staffel oben), bei `online` und beim Zurückholen des Tabs
+ * aufgerufen – und vom „Erneut versuchen"-Knopf im Wohnungs-Wechsler.
+ */
+export async function retryLoadProfiles() {
+  const uid = currentUid
+  if (!uid) return
+  if (useProfilesStore.getState().status !== 'error') return
+  await loadProfilesFor(uid)
+}
+
 /** Reagiert auf Login/Logout: Profile laden bzw. Migration durchführen. */
 async function onUserChange(uid: string | null) {
+  cancelRetry()
   teardownProfile()
   currentUid = uid
   currentPid = null
@@ -202,7 +245,22 @@ async function onUserChange(uid: string | null) {
     return
   }
 
+  await loadProfilesFor(uid)
+}
+
+/**
+ * Lädt die Profilliste eines Nutzers und aktiviert die passende Wohnung.
+ *
+ * Der persistierte Kachel-Cache (`profilesStore`) gehört nur dann zu diesem
+ * Nutzer, wenn `cachedUid` passt – sonst wird er verworfen, damit nie die
+ * Wohnungen eines fremden Kontos aufblitzen. Scheitert das Laden, bleibt es
+ * nicht bei einem toten `error`-Zustand: es wird automatisch wiederholt.
+ */
+async function loadProfilesFor(uid: string) {
   const profilesStore = useProfilesStore.getState()
+  if (profilesStore.cachedUid && profilesStore.cachedUid !== uid) {
+    profilesStore.clearCache()
+  }
   profilesStore.setStatus('loading')
 
   try {
@@ -219,17 +277,22 @@ async function onUserChange(uid: string | null) {
     // Nutzer hat zwischenzeitlich gewechselt? Dann verwerfen.
     if (currentUid !== uid) return
 
-    useProfilesStore.getState().setProfiles(metas)
+    useProfilesStore.getState().setProfiles(metas, uid)
 
     // Aktives Profil wählen: zuletzt geöffnetes, sonst das neueste.
     const persisted = useProfilesStore.getState().activeProfileId
     const activeId = metas.find((m) => m.id === persisted)?.id ?? metas[0].id
 
     await activateProfile(activeId)
-    if (currentUid === uid) useProfilesStore.getState().setStatus('ready')
+    if (currentUid === uid) {
+      useProfilesStore.getState().setStatus('ready')
+      cancelRetry()
+    }
   } catch (e) {
     console.warn('[cloudSync] Profile laden fehlgeschlagen:', e)
+    if (currentUid !== uid) return
     useProfilesStore.getState().setStatus('error')
+    scheduleRetry()
   }
 }
 
@@ -390,4 +453,15 @@ export function initCloudSync() {
       void onUserChange(uid)
     }
   })
+
+  // Nach einem gescheiterten Laden nicht auf einen manuellen Reload warten:
+  // Sobald wieder Netz da ist oder der Tab zurückgeholt wird, erneut versuchen.
+  if (typeof window !== 'undefined') {
+    window.addEventListener('online', () => void retryLoadProfiles())
+  }
+  if (typeof document !== 'undefined') {
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') void retryLoadProfiles()
+    })
+  }
 }

@@ -1790,6 +1790,8 @@
     "deleteConfirm": "Diese Wohnung endgültig löschen? Alle Messungen, Zählerstände und Bewohner-Zugänge gehen unwiderruflich verloren.",
     "deleteYes": "Endgültig löschen",
     "limitReached": "Limit an Wohnungen erreicht.",
+    "loadError": "Deine Wohnungen konnten gerade nicht geladen werden.",
+    "retry": "Erneut versuchen",
     "share": {
       "title": "Wohnung teilen",
       "explainer": "Schicke diesen Link an deine Mitbewohner. Wer ihn öffnet und sich anmeldet, sieht und bearbeitet diese Wohnung gemeinsam mit dir.",
