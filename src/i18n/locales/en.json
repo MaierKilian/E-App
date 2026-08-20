@@ -2073,83 +2073,84 @@
   },
   "tips": {
     "title": "Recommendations",
-    "subtitle": "Concrete measures for your home – sorted by impact.",
+    "subtitle": "Concrete steps for your home – no tradesperson needed, easiest first.",
     "empty": "Run a few measurements first – matching tips will appear here.",
     "savingPerYear": "{{value}} €/year",
     "savingRange": "~{{low}}–{{high}} €/year",
     "savingRangeShort": "~{{low}}–{{high}} €",
     "estimateNote": "rough estimate · per year",
-    "worthIt": "Worth it",
     "openSection": "Open measures",
-    "topTip": "Top tip",
+    "topTip": "Start here",
     "implementedLine": "{{done}} of {{total}} done",
     "entryTitle": "Your recommendations",
     "entryCount_one": "{{count}} measure for you",
     "entryCount_other": "{{count}} measures for you",
     "items": {
       "standby": {
-        "title": "Cut standby",
-        "reason": "Biggest standby item: your $t(measurements.standby.deviceTypes.{{deviceType}}) at {{watts}} W. A switchable power strip kills the constant draw."
+        "title": "Switch off standby",
+        "reason": "Biggest standby item: $t(measurements.standby.deviceTypes.{{deviceType}}) at {{watts}} W. Plug those devices into a switched power strip and turn them all off with one flick."
       },
       "showerhead": {
-        "title": "Save water in the shower",
-        "reason": "Your showerhead delivers {{flow}} L/min. A water-saving head (~8 L/min) cuts hot water noticeably – with full comfort."
+        "title": "Fit a low-flow showerhead",
+        "reason": "Your showerhead delivers {{flow}} L/min. A low-flow head (~8 L/min) screws onto the hose by hand – no tools, same shower feel."
       },
       "lighting": {
         "title": "Switch to LED",
-        "reason": "{{count}} bulbs still aren't LED. Switching pays off fast, especially where lights burn for hours."
+        "reason": "{{count}} lamps still aren't LED. Replace them one by one – start where the light burns longest each day."
       },
       "hot_water_wait": {
-        "title": "Reduce hot-water wait",
-        "reason": "About {{seconds}} s until warm water arrives – it runs off unused all that time. Insulated pipes or shorter runs help."
+        "title": "Catch the run-off water",
+        "reason": "It takes {{seconds}} s for hot water to arrive – about {{liters}} L runs off unused every time. Put a watering can or bucket underneath: for plants, cleaning or the toilet."
       },
       "fridge": {
-        "title": "Set the fridge warmer",
-        "reason": "{{temp}} °C is colder than needed. 7 °C is plenty – every degree warmer saves around 6 % power, safely."
+        "title": "Turn the fridge up",
+        "reason": "{{temp}} °C is colder than needed. Turn the dial down one notch – 7 °C is plenty, andeach degree warmer saves around 6 % electricity."
       },
       "fridge_warm": {
-        "title": "Set the fridge colder",
-        "reason": "{{temp}} °C is too warm for safe storage. Set it to 5–7 °C – cold enough without needless icing."
+        "title": "Turn the fridge down",
+        "reason": "{{temp}} °C is too warm for safe storage. Turn the dial up one notch until you reach 5–7 °C."
       },
       "freezer": {
         "title": "Defrost the freezer",
-        "reason": "A layer of ice drives up consumption. Defrosting costs nothing and saves noticeable power."
+        "reason": "A layer of ice drives consumption up. Switch it off, open the door, lay out towels – it costs you one afternoon."
       },
       "room_temperature": {
-        "title": "Lower room temperature",
-        "reason": "Just 1 °C less saves around 6 % heating energy – usually without any real loss of comfort."
+        "title": "Lower the room temperature",
+        "reason": "{{room}} is at {{temp}} °C. Turn the thermostat back half a notch: one degree less saves around 6 % heating energy and is barely noticeable.",
+        "reasonNoRoom": "It's {{temp}} °C here. Turn the thermostat back half a notch: one degree less saves around 6 % heating energy and is barely noticeable."
       },
       "room_cold": {
-        "title": "Don't let rooms cool down",
-        "reason": "Persistently cold, damp rooms invite mould. Steady, moderate heating is healthier and often more efficient than constant reheating."
+        "title": "Don't let the room go cold",
+        "reason": "{{room}} is at {{temp}} °C. Permanently cool rooms get damp and mould-prone. Set the thermostat to a low constant level instead of switching off and reheating later.",
+        "reasonNoRoom": "It's only {{temp}} °C here. Permanently cool rooms get damp and mould-prone. Set the thermostat to a low constant level instead of switching off and reheating later."
       },
       "humidity_high": {
-        "title": "Ventilate against damp",
-        "reason": "Humidity is too high – short bursts of ventilation several times a day prevent mould. A hygrometer keeps it in view."
+        "title": "Air out against damp",
+        "reason": "{{room}} is at {{humidity}} % humidity – too high. Air out two to three times a day for 5 minutes with the window wide open, instead of leaving it tilted.",
+        "reasonNoRoom": "Humidity is at {{humidity}} % – too high. Air out two to three times a day for 5 minutes with the window wide open, instead of leaving it tilted."
       },
       "humidity_low": {
-        "title": "Air is too dry",
-        "reason": "Very dry air irritates airways. Don't overheat and ventilate briefly – a hygrometer shows when it's right."
+        "title": "The air is too dry",
+        "reason": "{{room}} is at {{humidity}} % humidity – very dry, which irritates the airways. Shorter airing and not overheating usually does it.",
+        "reasonNoRoom": "Humidity is at {{humidity}} % – very dry, which irritates the airways. Shorter airing and not overheating usually does it."
       },
       "draft": {
-        "title": "Seal draughts",
-        "reason": "Noticeable draughts at windows or doors waste heat. Self-adhesive sealing strips close the gaps in minutes."
+        "title": "Seal the draught",
+        "reason": "{{room}}: there's a noticeable draught at a window or door. Self-adhesive sealing tape from the hardware store presses straight into the frame – peel, press, done.",
+        "reasonNoRoom": "There's a noticeable draught at a window or door. Self-adhesive sealing tape from the hardware store presses straight into the frame – peel, press, done."
       },
       "furniture_spacing": {
         "title": "Clear the radiator",
-        "reason": "Unobstructed heating surfaces release more heat. Reflective foil behind them puts extra degrees into the room, not the wall."
+        "reason": "Furniture or curtains sit too close and trap the heat. Move them back a little – from about 30 cm the warmth reaches the room."
       },
       "base_load": {
-        "title": "Track down always-on consumers",
-        "reason": "Your base load is {{watts}} W – even with nothing actively on. A plug-in meter helps you find the hidden always-on consumers."
+        "title": "Track down constant draws",
+        "reason": "Your base load is {{watts}} W – even with nothing running on purpose. The standby check shows you device by device where it comes from.",
+        "action": "Go to the standby check"
       },
       "smart_thermostat": {
-        "title": "Smart radiator thermostats",
-        "reason": "Automatic setback and schedules save heating energy without you having to think about it."
-      },
-      "owner_control": {
-        "title": "Add heating control",
-        "reason": "As an owner, central smart control pays off – schedules and setback for the whole home."
+        "title": "Smart thermostats",
+        "reason": "Automatic setback and schedules save heating energy without you thinking about it. You screw the thermostat heads on yourself – like a bottle cap, no need to drain anything."
       }
     },
     "potentialLabel": "Potential savings",
@@ -2162,7 +2163,12 @@
     "doneSection": "Done",
     "hiddenSection": "Hidden",
     "doneLine": "{{count}} done",
-    "allHandled": "All handled – nice! New measurements will surface fresh recommendations here."
+    "allHandled": "All handled – nice! New measurements will surface fresh recommendations here.",
+    "effortFree": "{{minutes}} min · free",
+    "effortCost": "{{minutes}} min · from €{{cost}}",
+    "effortHours": "{{hours}} h · free",
+    "quickWinSection": "Done right away",
+    "plannedSection": "Needs a little preparation"
   },
   "scan": {
     "button": "Scan",

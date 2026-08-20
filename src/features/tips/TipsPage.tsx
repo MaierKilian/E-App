@@ -10,10 +10,12 @@ import {
   X,
   RotateCcw,
   CheckCircle2,
+  ArrowRight,
 } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useTipsStore } from '@/store/tipsStore'
+import { roomLabel } from '@/features/measurements/rooms'
 import { buildTips, type Tip, type TipCategory } from './buildTips'
 
 /** Farbcodierung der Icon-Kachel je Gewerk (Structured-Stil, ruhige Akzente). */
@@ -36,6 +38,36 @@ function savingRange(eur: number): { low: number; high: number } {
   return { low, high }
 }
 
+/**
+ * Formatiert die Zahlen eines Tipps für die Zielsprache. Ohne das steht im
+ * deutschen Text „23.4 °C" – i18next interpoliert Zahlen unverändert.
+ */
+function localizeParams(
+  params: Record<string, string | number> | undefined,
+  language: string,
+): Record<string, string | number> {
+  if (!params) return {}
+  const fmt = new Intl.NumberFormat(language, { maximumFractionDigits: 1 })
+  return Object.fromEntries(
+    Object.entries(params).map(([k, v]) => [k, typeof v === 'number' ? fmt.format(v) : v]),
+  )
+}
+
+/**
+ * Aufwand und Kosten als ein Satz. „Lohnt sich" stand vorher auf jedem Tipp
+ * ohne €-Wert und sagte damit über keinen etwas aus – hier steht, worauf man
+ * sich einlässt, bevor man tippt.
+ */
+function useEffortLabel(tip: Tip): string {
+  const { t } = useTranslation()
+  if (tip.effortMinutes >= 60) {
+    return t('tips.effortHours', { hours: Math.round(tip.effortMinutes / 60) })
+  }
+  return tip.costEur > 0
+    ? t('tips.effortCost', { minutes: tip.effortMinutes, cost: tip.costEur })
+    : t('tips.effortFree', { minutes: tip.effortMinutes })
+}
+
 interface TipCardProps {
   tip: Tip
   done?: boolean
@@ -55,7 +87,19 @@ interface TipCardProps {
  */
 function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, onDismiss }: TipCardProps) {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const Icon = tip.icon
+  const effortLabel = useEffortLabel(tip)
+  // Raumbezogene Tipps nennen ihren Raum. Ohne ihn lesen sich „Raumtemperatur
+  // senken" und „Raum nicht auskühlen lassen" nebeneinander wie ein
+  // Widerspruch, statt zwei verschiedene Räume zu meinen.
+  const room = tip.room ? roomLabel(t, tip.room) : undefined
+  // Zahlen vor der Interpolation lokalisieren – i18next reicht sie sonst roh
+  // durch, und „23.4 °C" ist im Deutschen falsch geschrieben.
+  const params = localizeParams(tip.params, i18n.language)
+  const reasonKey = `tips.items.${tip.id}.${room ? 'reason' : 'reasonNoRoom'}`
+  const reason = t(reasonKey, { ...params, room, defaultValue: '' }) ||
+    t(`tips.items.${tip.id}.reason`, { ...params, room })
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
   const barPct =
     tip.savingEur && maxSaving > 0 ? Math.max(10, Math.round((tip.savingEur / maxSaving) * 100)) : 0
@@ -82,7 +126,7 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
         </button>
       )}
 
-      <div className="flex items-start gap-3 pr-6">
+      <div className="flex items-start gap-3 pr-8">
         <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${ACCENT[tip.category]}`}>
           <Icon className="h-5.5 w-5.5" />
         </span>
@@ -93,22 +137,36 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
               {t('tips.topTip')}
             </p>
           )}
-          <div className="flex items-start justify-between gap-2">
-            <p className={`font-semibold leading-tight text-foreground ${done ? 'line-through' : ''}`}>
-              {t(`tips.items.${tip.id}.title`, tip.params)}
-            </p>
-            {/* Qualitative Tipps (ohne €) tragen den „Lohnt sich"-Chip; €-Tipps
-                zeigen ihre Schätzung unten neben dem Wirkungsbalken. */}
-            {!tip.savingEur && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-surface-2/70 px-2.5 py-1 text-[11px] font-medium text-foreground/70 ring-1 ring-inset ring-black/5 dark:ring-white/10">
-                <Sparkles className="h-3 w-3" />
-                {t('tips.worthIt')}
-              </span>
-            )}
-          </div>
-          <p className="mt-1 text-sm leading-snug text-muted">
-            {t(`tips.items.${tip.id}.reason`, tip.params)}
+          {/* Titel über die volle Breite. Neben dem Aufwand-Chip blieben auf
+              einem schmalen Telefon keine 160 px übrig – „Raumtemperatur"
+              brach dort mitten im Wort um. */}
+          <p
+            className={`break-words font-semibold leading-tight text-foreground ${
+              done ? 'line-through' : ''
+            }`}
+          >
+            {t(`tips.items.${tip.id}.title`, params)}
           </p>
+          {/* Aufwand + Kosten auf jedem Tipp – die Frage, die vor dem Anfangen
+              zählt. Die €-Schätzung steht unten am Wirkungsbalken. */}
+          <span className="mt-1.5 inline-flex items-center rounded-full bg-surface-2/70 px-2.5 py-1 text-[11px] font-medium text-foreground/70 ring-1 ring-inset ring-black/5 dark:ring-white/10">
+            {effortLabel}
+          </span>
+          <p className="mt-1 text-sm leading-snug text-muted">{reason}</p>
+
+          {/* Weiterführende Aktion, wo der Tipp in der App weitergeht. */}
+          {tip.linkTo && !done && (
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => navigate(tip.linkTo as string)}
+                className="focus-ring inline-flex items-center gap-1 rounded-full text-sm font-medium text-foreground underline-offset-2 hover:underline"
+              >
+                {t(`tips.items.${tip.id}.action`)}
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
 
           {/* Wirkungsbalken + grobe €-Spanne – ruhig statt plakativ, klar als
               Schätzung erkennbar (kein centgenauer €-Klotz mehr). */}
@@ -206,8 +264,10 @@ export function TipsPage() {
     },
     { low: 0, high: 0 },
   )
-  // „Top-Tipp": der wirksamste offene €-Tipp (Liste ist bereits nach € sortiert).
-  const topId = maxSaving > 0 ? active.find((tip) => tip.savingEur === maxSaving)?.id : undefined
+  // „Fang hier an": der erste der sortierten Liste. Früher war es der Tipp mit
+  // dem höchsten €-Wert – der kann jetzt weiter unten stehen, weil Sofort- und
+  // Gratis-Maßnahmen vorgehen.
+  const topId = active[0]?.id
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
   // Fortschritt: Anteil erledigter Maßnahmen an allen (offen + erledigt).

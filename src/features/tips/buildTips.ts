@@ -10,13 +10,13 @@ import {
   Sofa,
   Gauge,
   ThermometerSun,
-  SlidersHorizontal,
   Wind,
 } from 'lucide-react'
-import type { OnboardingData } from '@/types'
+import type { OnboardingData, RoomType } from '@/types'
 import type { MeasurementResult, MeasurementRating } from '@/features/measurements/types'
 import { resultSavingsEur } from '@/features/measurements/impact'
 import { DEFAULT_COMFORT_BAND } from '@/features/measurements/room_temperature/roomClimate'
+import { parseRoomKey } from '@/features/measurements/rooms'
 
 export type TipCategory = 'heating' | 'electricity' | 'water'
 
@@ -34,10 +34,23 @@ export interface Tip {
   icon: LucideIcon
   /** Gewerk – steuert die Farbcodierung der Icon-Kachel. */
   category: TipCategory
-  /** Geschätzte Jahresersparnis in € (sortiert die Liste); leer = qualitativ. */
+  /** Geschätzte Jahresersparnis in € (leer = qualitativ). */
   savingEur?: number
+  /** Grober Zeitaufwand in Minuten. */
+  effortMinutes: number
+  /** Nötige Anschaffung in € (0 = kostet nichts). */
+  costEur: number
   /** Interpolationswerte für Titel/Begründung (konkrete Messwerte im Text). */
   params?: Record<string, string | number>
+  /**
+   * Raumbezug, wo das Ergebnis einen hat. Die Beschriftung entsteht erst in der
+   * Ansicht (braucht `t`); ohne sie stünden „Raumtemperatur senken" und „Räume
+   * nicht auskühlen lassen" unvermittelt nebeneinander und läsen sich wie ein
+   * Widerspruch, statt zwei verschiedene Räume zu meinen.
+   */
+  room?: { type: RoomType; index: number; total: number }
+  /** Zielseite einer weiterführenden Aktion (z. B. eine Messung in der App). */
+  linkTo?: string
 }
 
 type Results = Partial<Record<string, MeasurementResult>>
@@ -110,9 +123,53 @@ function biggestStandbyDevice(r: MeasurementResult | undefined): { type: string;
 }
 
 /**
- * Baut die personalisierte Empfehlungsliste. Messbasierte Tipps tragen ihren
- * €-Wert (und stehen oben), qualitative folgen in sinnvoller Reihenfolge.
- * Persona-Gating: fest installierte Maßnahmen nur für Eigentümer.
+ * Raumbezug eines Ergebnisses, samt Gesamtzahl gleichartiger Räume (für
+ * „Schlafzimmer 2"). Ohne den Bezug wäre bei mehreren Räumen nicht erkennbar,
+ * welcher gemeint ist.
+ */
+function roomOf(
+  r: MeasurementResult,
+  data: OnboardingData,
+): { type: RoomType; index: number; total: number } | undefined {
+  if (!r.roomKey) return undefined
+  const parsed = parseRoomKey(r.roomKey)
+  if (!parsed) return undefined
+  const entry = data.rooms.find((room) => room.type === parsed.type)
+  return { type: parsed.type, index: parsed.index, total: Math.max(1, entry?.count ?? 1) }
+}
+
+/**
+ * „Sofort und kostenlos" – Maßnahmen, für die es keinen Grund gibt, sie nicht
+ * heute zu erledigen. Sie stehen vor allem anderen, auch vor größeren
+ * Ersparnissen: Wer eine Liste aufschlägt, soll zuerst etwas finden, das er
+ * ohne Einkauf und ohne Termin abhaken kann.
+ */
+function isQuickWin(tip: Tip): boolean {
+  return tip.costEur === 0 && tip.effortMinutes <= 15
+}
+
+/**
+ * Reihenfolge der Empfehlungen: erst die Sofortmaßnahmen, dann der Rest –
+ * innerhalb beider Gruppen nach Ersparnis, bei Gleichstand nach Kosten und
+ * Aufwand. Reine €-Sortierung schob früher „Sofa vom Heizkörper wegrücken"
+ * hinter „smarte Thermostate für 120 €".
+ */
+function compareTips(a: Tip, b: Tip): number {
+  const quick = Number(isQuickWin(b)) - Number(isQuickWin(a))
+  if (quick !== 0) return quick
+  const saving = (b.savingEur ?? 0) - (a.savingEur ?? 0)
+  if (saving !== 0) return saving
+  if (a.costEur !== b.costEur) return a.costEur - b.costEur
+  return a.effortMinutes - b.effortMinutes
+}
+
+/**
+ * Baut die personalisierte Empfehlungsliste aus Profil und Messergebnissen.
+ *
+ * Jeder Tipp muss ohne Handwerker umsetzbar sein – die App misst, was ein Laie
+ * selbst messen kann, und soll dann nichts empfehlen, wofür er jemanden rufen
+ * müsste. Deshalb trägt jeder Tipp seinen Aufwand und seine Kosten mit; danach
+ * wird auch sortiert.
  */
 export function buildTips(data: OnboardingData, results: Results): Tip[] {
   const tips: Tip[] = []
@@ -126,6 +183,8 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Plug,
       category: 'electricity',
       savingEur: standby,
+      effortMinutes: 15,
+      costEur: 15,
       params: { deviceType: big?.type ?? 'other', watts: Math.round(big?.watts ?? 0) },
     })
   }
@@ -139,6 +198,8 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Lightbulb,
       category: 'electricity',
       savingEur: lighting,
+      effortMinutes: 20,
+      costEur: 25,
       params: { count: bulbs },
     })
   }
@@ -153,6 +214,8 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Snowflake,
       category: 'electricity',
       savingEur: saving > 0 ? saving : undefined,
+      effortMinutes: 2,
+      costEur: 0,
       params: { temp: Math.round(tempOf(fridgeCold[0])) },
     })
   }
@@ -162,6 +225,8 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       id: 'fridge_warm',
       icon: Snowflake,
       category: 'electricity',
+      effortMinutes: 2,
+      costEur: 0,
       params: { temp: Math.round(tempOf(fridgeWarm[0])) },
     })
   }
@@ -174,17 +239,27 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Snowflake,
       category: 'electricity',
       savingEur: freezer > 0 ? freezer : undefined,
+      // Kostet nichts, dauert aber einen halben Nachmittag – deshalb keine
+      // Sofortmaßnahme.
+      effortMinutes: 60,
+      costEur: 0,
     })
   }
 
+  // Die Grundlast selbst ist keine Maßnahme, sondern ein Befund: Sie sagt, dass
+  // etwas dauerhaft zieht, aber nicht was. Der Tipp führt deshalb in den
+  // Standby-Check der App, statt zum Kauf eines Messgeräts zu raten.
   const bl = worstRating(results, 'base_load')
-  if (bl && bl !== 'good') {
+  if (bl && bl !== 'good' && !results['standby']) {
     const r = resultsForId(results, 'base_load')[0]
     tips.push({
       id: 'base_load',
       icon: Gauge,
       category: 'electricity',
+      effortMinutes: 20,
+      costEur: 15,
       params: { watts: Math.round(r?.primaryValue ?? 0) },
+      linkTo: '/measurements/standby',
     })
   }
 
@@ -198,6 +273,8 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       icon: Droplets,
       category: 'water',
       savingEur: shower,
+      effortMinutes: 10,
+      costEur: 20,
       params: { flow: Math.round(flow * 10) / 10 },
     })
   }
@@ -206,68 +283,129 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
   const hotWater = savingForId(results, 'hot_water_wait')
   if (hotWater > 0) {
     const seconds = Math.round(Math.max(0, ...hotWaterRs.map((r) => r.primaryValue)))
+    const liters = Math.round(
+      Math.max(0, ...hotWaterRs.map((r) => r.details?.litersPerDraw ?? 0)) * 10,
+    ) / 10
     tips.push({
       id: 'hot_water_wait',
       icon: Hourglass,
       category: 'water',
       savingEur: hotWater,
-      params: { seconds },
+      effortMinutes: 1,
+      costEur: 0,
+      params: { seconds, liters },
     })
   }
 
   // --- Heizen / Raumklima ---------------------------------------------------
   const roomTemp = resultsForId(results, 'room_temperature')
+  let heatingFindings = 0
   if (roomTemp.length) {
-    // Zu warm → senken (mit €-Ersparnis, wo Heizkosten bekannt sind).
-    const warmSaving = Math.round(
-      roomTemp.reduce(
-        (s, r) => s + (tempOf(r) > bandOf(r).max ? r.details?.yearlySaving ?? 0 : 0),
-        0,
-      ),
-    )
-    const anyWarm = roomTemp.some((r) => tempOf(r) > bandOf(r).max)
-    if (warmSaving > 0) {
-      tips.push({ id: 'room_temperature', icon: Thermometer, category: 'heating', savingEur: warmSaving })
-    } else if (anyWarm) {
-      tips.push({ id: 'room_temperature', icon: Thermometer, category: 'heating' })
+    // Zu warm → senken. Der wärmste Raum steht stellvertretend im Text.
+    const warmRooms = roomTemp.filter((r) => tempOf(r) > bandOf(r).max)
+    if (warmRooms.length) {
+      heatingFindings += 1
+      const warmest = warmRooms.reduce((a, b) => (tempOf(b) > tempOf(a) ? b : a))
+      const warmSaving = Math.round(
+        warmRooms.reduce((s, r) => s + (r.details?.yearlySaving ?? 0), 0),
+      )
+      tips.push({
+        id: 'room_temperature',
+        icon: Thermometer,
+        category: 'heating',
+        savingEur: warmSaving > 0 ? warmSaving : undefined,
+        effortMinutes: 2,
+        costEur: 0,
+        params: { temp: Math.round(tempOf(warmest) * 10) / 10 },
+        room: roomOf(warmest, data),
+      })
     }
 
     // Zu kalt → nicht auskühlen lassen (Schimmel-/Effizienz-Hinweis).
-    if (roomTemp.some((r) => tempOf(r) < bandOf(r).min - ROOM_COLD_MARGIN_C)) {
-      tips.push({ id: 'room_cold', icon: ThermometerSnowflake, category: 'heating' })
+    const coldRooms = roomTemp.filter((r) => tempOf(r) < bandOf(r).min - ROOM_COLD_MARGIN_C)
+    if (coldRooms.length) {
+      heatingFindings += 1
+      const coldest = coldRooms.reduce((a, b) => (tempOf(b) < tempOf(a) ? b : a))
+      tips.push({
+        id: 'room_cold',
+        icon: ThermometerSnowflake,
+        category: 'heating',
+        effortMinutes: 5,
+        costEur: 0,
+        params: { temp: Math.round(tempOf(coldest) * 10) / 10 },
+        room: roomOf(coldest, data),
+      })
     }
 
     // Luftfeuchte (nur wo erfasst).
-    if (roomTemp.some((r) => r.details?.humidity !== undefined && r.details.humidity > HUMID_MAX)) {
-      tips.push({ id: 'humidity_high', icon: Droplets, category: 'heating' })
+    const humid = roomTemp.filter(
+      (r) => r.details?.humidity !== undefined && r.details.humidity > HUMID_MAX,
+    )
+    if (humid.length) {
+      heatingFindings += 1
+      const wettest = humid.reduce((a, b) => ((b.details?.humidity ?? 0) > (a.details?.humidity ?? 0) ? b : a))
+      tips.push({
+        id: 'humidity_high',
+        icon: Droplets,
+        category: 'heating',
+        effortMinutes: 5,
+        costEur: 0,
+        params: { humidity: Math.round(wettest.details?.humidity ?? 0) },
+        room: roomOf(wettest, data),
+      })
     }
-    if (roomTemp.some((r) => r.details?.humidity !== undefined && r.details.humidity < HUMID_MIN)) {
-      tips.push({ id: 'humidity_low', icon: Droplets, category: 'heating' })
+    const dry = roomTemp.filter(
+      (r) => r.details?.humidity !== undefined && r.details.humidity < HUMID_MIN,
+    )
+    if (dry.length) {
+      const driest = dry.reduce((a, b) => ((b.details?.humidity ?? 100) < (a.details?.humidity ?? 100) ? b : a))
+      tips.push({
+        id: 'humidity_low',
+        icon: Droplets,
+        category: 'heating',
+        effortMinutes: 5,
+        costEur: 0,
+        params: { humidity: Math.round(driest.details?.humidity ?? 0) },
+        room: roomOf(driest, data),
+      })
     }
 
     // Zugluft (Index >= 1 = spürbar/stark).
-    if (roomTemp.some((r) => (r.details?.draft ?? 0) >= 1)) {
-      tips.push({ id: 'draft', icon: Wind, category: 'heating' })
+    const drafty = roomTemp.filter((r) => (r.details?.draft ?? 0) >= 1)
+    if (drafty.length) {
+      heatingFindings += 1
+      tips.push({
+        id: 'draft',
+        icon: Wind,
+        category: 'heating',
+        effortMinutes: 20,
+        costEur: 8,
+        room: roomOf(drafty[0], data),
+      })
     }
   }
 
   const fs = worstRating(results, 'furniture_spacing')
   if (fs && fs !== 'good') {
-    tips.push({ id: 'furniture_spacing', icon: Sofa, category: 'heating' })
+    heatingFindings += 1
+    tips.push({ id: 'furniture_spacing', icon: Sofa, category: 'heating', effortMinutes: 10, costEur: 0 })
   }
 
-  // --- Smart-Home aus dem Profil --------------------------------------------
+  // --- Smart-Home -----------------------------------------------------------
+  // Nur empfehlen, wenn beim Heizen überhaupt etwas auffällig war. Sonst wäre es
+  // eine Produktempfehlung ohne Anlass – die einzige Bedingung war früher, dass
+  // der Nutzer noch keins besitzt.
   const hasRadiator = data.rooms.some((r) => r.heatTransfer === 'radiator')
   const ownsSmartThermostat = data.smartHomeDevices.includes('smart_thermostat')
-  if (hasRadiator && !ownsSmartThermostat) {
-    tips.push({ id: 'smart_thermostat', icon: ThermometerSun, category: 'heating' })
+  if (hasRadiator && !ownsSmartThermostat && heatingFindings > 0) {
+    tips.push({
+      id: 'smart_thermostat',
+      icon: ThermometerSun,
+      category: 'heating',
+      effortMinutes: 30,
+      costEur: 120,
+    })
   }
 
-  // --- Nur Eigentümer: fest installierte Steuerung --------------------------
-  if (data.occupancyStatus === 'owner') {
-    tips.push({ id: 'owner_control', icon: SlidersHorizontal, category: 'heating' })
-  }
-
-  // Nach € absteigend; qualitative (ohne €) stabil danach.
-  return tips.sort((a, b) => (b.savingEur ?? -1) - (a.savingEur ?? -1))
+  return tips.sort(compareTips)
 }

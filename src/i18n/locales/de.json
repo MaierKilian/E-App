@@ -2073,15 +2073,14 @@
   },
   "tips": {
     "title": "Empfehlungen",
-    "subtitle": "Konkrete Maßnahmen für dein Zuhause – nach Wirkung sortiert.",
+    "subtitle": "Konkrete Maßnahmen für dein Zuhause – ohne Handwerker, das Einfachste zuerst.",
     "empty": "Mach erst ein paar Messungen – dann erscheinen hier passende Tipps.",
     "savingPerYear": "{{value}} €/Jahr",
     "savingRange": "ca. {{low}}–{{high}} €/Jahr",
     "savingRangeShort": "ca. {{low}}–{{high}} €",
     "estimateNote": "grobe Schätzung · pro Jahr",
-    "worthIt": "Lohnt sich",
     "openSection": "Offene Maßnahmen",
-    "topTip": "Top-Tipp",
+    "topTip": "Fang hier an",
     "implementedLine": "{{done}} von {{total}} umgesetzt",
     "entryTitle": "Deine Empfehlungen",
     "entryCount_one": "{{count}} Maßnahme für dich",
@@ -2089,67 +2088,69 @@
     "items": {
       "standby": {
         "title": "Standby abschalten",
-        "reason": "Größter Standby-Posten: $t(measurements.standby.deviceTypes.{{deviceType}}) mit {{watts}} W. Eine schaltbare Steckdosenleiste kappt den Dauerverbrauch."
+        "reason": "Größter Standby-Posten: $t(measurements.standby.deviceTypes.{{deviceType}}) mit {{watts}} W. Häng die Geräte an eine Steckdosenleiste mit Schalter und mach sie abends mit einem Griff aus."
       },
       "showerhead": {
-        "title": "Wasser sparen beim Duschen",
-        "reason": "Dein Duschkopf liefert {{flow}} L/min. Ein Sparduschkopf (~8 L/min) senkt den Warmwasserbedarf spürbar – bei vollem Komfort."
+        "title": "Sparduschkopf aufschrauben",
+        "reason": "Dein Duschkopf liefert {{flow}} L/min. Ein Sparduschkopf (~8 L/min) wird von Hand auf den Schlauch geschraubt – kein Werkzeug nötig, gleiches Duschgefühl."
       },
       "lighting": {
         "title": "Auf LED umstellen",
-        "reason": "{{count}} Lampen laufen noch ohne LED. Der Umstieg amortisiert sich schnell, gerade bei langer Brenndauer."
+        "reason": "{{count}} Lampen laufen noch ohne LED. Tausch sie nach und nach aus – fang dort an, wo täglich am längsten Licht brennt."
       },
       "hot_water_wait": {
-        "title": "Warmwasser-Wartezeit senken",
-        "reason": "Rund {{seconds}} s bis warmes Wasser kommt – so lange läuft es ungenutzt weg. Gedämmte Leitungen oder kürzere Wege helfen."
+        "title": "Vorlaufwasser auffangen",
+        "reason": "Es dauert {{seconds}} s, bis warmes Wasser kommt – rund {{liters}} L laufen jedes Mal ungenutzt weg. Stell eine Gießkanne oder einen Eimer darunter: für Pflanzen, zum Putzen oder für die Toilette."
       },
       "fridge": {
         "title": "Kühlschrank wärmer stellen",
-        "reason": "{{temp}} °C ist kälter als nötig. 7 °C reichen – jedes Grad wärmer spart rund 6 % Strom, ohne Risiko."
+        "reason": "{{temp}} °C ist kälter als nötig. Dreh den Regler eine Stufe zurück – 7 °C reichen, und jedes Grad wärmer spart rund 6 % Strom."
       },
       "fridge_warm": {
         "title": "Kühlschrank kälter stellen",
-        "reason": "{{temp}} °C ist zu warm für sichere Lagerung. Stell ihn auf 5–7 °C – kühl genug, ohne unnötig zu vereisen."
+        "reason": "{{temp}} °C ist zu warm für sichere Lagerung. Dreh den Regler eine Stufe höher, bis du bei 5–7 °C liegst."
       },
       "freezer": {
         "title": "Gefrierfach abtauen",
-        "reason": "Eine Eisschicht treibt den Verbrauch nach oben. Abtauen kostet nichts und spart spürbar Strom."
+        "reason": "Eine Eisschicht treibt den Verbrauch nach oben. Gerät aus, Tür auf, Handtücher unterlegen – kostet nur einen Nachmittag."
       },
       "room_temperature": {
         "title": "Raumtemperatur senken",
-        "reason": "Schon 1 °C weniger spart rund 6 % Heizenergie – meist ohne echten Komfortverlust."
+        "reason": "{{room}} hat {{temp}} °C. Dreh das Thermostat eine halbe Stufe zurück: Ein Grad weniger spart rund 6 % Heizenergie und ist kaum zu spüren.",
+        "reasonNoRoom": "Hier sind es {{temp}} °C. Dreh das Thermostat eine halbe Stufe zurück: Ein Grad weniger spart rund 6 % Heizenergie und ist kaum zu spüren."
       },
       "room_cold": {
-        "title": "Räume nicht auskühlen lassen",
-        "reason": "Dauerhaft kühle, feuchte Räume fördern Schimmel. Gleichmäßig mäßig heizen ist gesünder und oft effizienter als ständiges Aufheizen."
+        "title": "Raum nicht auskühlen lassen",
+        "reason": "{{room}} liegt bei {{temp}} °C. Dauerhaft kühle Räume werden feucht und schimmelanfällig. Stell das Thermostat auf eine niedrige Dauerstufe, statt den Raum ganz abzuschalten und später hochzuheizen.",
+        "reasonNoRoom": "Hier sind es nur {{temp}} °C. Dauerhaft kühle Räume werden feucht und schimmelanfällig. Stell das Thermostat auf eine niedrige Dauerstufe, statt den Raum ganz abzuschalten und später hochzuheizen."
       },
       "humidity_high": {
-        "title": "Richtig lüften gegen Feuchte",
-        "reason": "Die Luftfeuchte ist zu hoch – mehrmals täglich stoßlüften beugt Schimmel vor. Ein Hygrometer behält sie im Blick."
+        "title": "Gegen Feuchte lüften",
+        "reason": "{{room}} liegt bei {{humidity}} % Luftfeuchte – zu hoch. Lüfte zwei- bis dreimal am Tag für 5 Minuten mit weit offenem Fenster, statt es dauerhaft zu kippen.",
+        "reasonNoRoom": "Die Luftfeuchte liegt bei {{humidity}} % – zu hoch. Lüfte zwei- bis dreimal am Tag für 5 Minuten mit weit offenem Fenster, statt es dauerhaft zu kippen."
       },
       "humidity_low": {
         "title": "Luft ist zu trocken",
-        "reason": "Sehr trockene Luft reizt die Atemwege. Nicht überheizen und kürzer lüften – ein Hygrometer zeigt, wann es passt."
+        "reason": "{{room}} liegt bei {{humidity}} % Luftfeuchte – sehr trocken, das reizt die Atemwege. Kürzer lüften und nicht überheizen hilft meist schon.",
+        "reasonNoRoom": "Die Luftfeuchte liegt bei {{humidity}} % – sehr trocken, das reizt die Atemwege. Kürzer lüften und nicht überheizen hilft meist schon."
       },
       "draft": {
         "title": "Zugluft abdichten",
-        "reason": "Spürbare Zugluft an Fenstern oder Türen kostet Wärme. Selbstklebende Dichtungsbänder schließen die Ritzen in Minuten."
+        "reason": "{{room}}: An Fenster oder Tür zieht es spürbar. Selbstklebendes Dichtungsband aus dem Baumarkt drückst du einfach in den Rahmen – abziehen, andrücken, fertig.",
+        "reasonNoRoom": "An Fenster oder Tür zieht es spürbar. Selbstklebendes Dichtungsband aus dem Baumarkt drückst du einfach in den Rahmen – abziehen, andrücken, fertig."
       },
       "furniture_spacing": {
         "title": "Heizkörper frei räumen",
-        "reason": "Frei stehende Heizflächen geben mehr Wärme ab. Reflektorfolie dahinter bringt zusätzlich Grad ins Zimmer statt in die Wand."
+        "reason": "Möbel oder Vorhänge stehen zu dicht davor und halten die Wärme fest. Rück sie ein Stück weg – ab etwa 30 cm Abstand kommt die Wärme im Raum an."
       },
       "base_load": {
         "title": "Dauerverbraucher aufspüren",
-        "reason": "Deine Grundlast liegt bei {{watts}} W – auch wenn nichts bewusst läuft. Mit einem Messgerät spürst du die heimlichen Dauerverbraucher auf."
+        "reason": "Deine Grundlast liegt bei {{watts}} W – auch wenn nichts bewusst läuft. Der Standby-Check zeigt dir Gerät für Gerät, wo das herkommt.",
+        "action": "Zum Standby-Check"
       },
       "smart_thermostat": {
-        "title": "Smarte Heizkörperthermostate",
-        "reason": "Automatische Absenkung und Zeitpläne sparen Heizenergie, ohne dass du dran denken musst."
-      },
-      "owner_control": {
-        "title": "Heizungssteuerung nachrüsten",
-        "reason": "Als Eigentümer lohnt sich eine zentrale, smarte Steuerung – Zeitpläne und Absenkung fürs ganze Zuhause."
+        "title": "Smarte Thermostate",
+        "reason": "Automatische Absenkung und Zeitpläne sparen Heizenergie, ohne dass du daran denken musst. Die Thermostatköpfe schraubst du selbst auf – wie einen Flaschendeckel, ohne Wasser abzulassen."
       }
     },
     "potentialLabel": "Mögliches Sparpotenzial",
@@ -2162,7 +2163,12 @@
     "doneSection": "Erledigt",
     "hiddenSection": "Ausgeblendet",
     "doneLine": "{{count}} erledigt",
-    "allHandled": "Alles abgearbeitet – stark! Sobald neue Messungen dazukommen, erscheinen hier wieder Empfehlungen."
+    "allHandled": "Alles abgearbeitet – stark! Sobald neue Messungen dazukommen, erscheinen hier wieder Empfehlungen.",
+    "effortFree": "{{minutes}} Min · kostenlos",
+    "effortCost": "{{minutes}} Min · ab {{cost}} €",
+    "effortHours": "{{hours}} Std · kostenlos",
+    "quickWinSection": "Sofort erledigt",
+    "plannedSection": "Braucht etwas Vorbereitung"
   },
   "scan": {
     "button": "Scannen",
