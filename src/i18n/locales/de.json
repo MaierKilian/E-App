@@ -351,10 +351,6 @@
           "good": "Weiter so",
           "saver": "Sparaufsatz prüfen",
           "time": "Kürzer duschen"
-        },
-        "tip": {
-          "medium": "Ein Sparduschkopf (~8 L/min) reduziert den Warmwasserbedarf spürbar.",
-          "high": "Ein Sparduschkopf (~8 L/min) senkt den Warmwasserbedarf deutlich – schnelle Amortisation."
         }
       }
     },

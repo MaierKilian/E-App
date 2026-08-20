@@ -33,6 +33,8 @@ export interface GenerateMeasurementsArgs {
    * halben Seite liest niemand als Betonung, sondern als Versehen.
    */
   summarized?: boolean
+  /** Empfehlungen der App, je Mess-Id (siehe generateReportPdf). */
+  tipsByMeasurement?: Record<string, string[]>
 }
 
 /**
@@ -41,7 +43,16 @@ export interface GenerateMeasurementsArgs {
  */
 export function fillMeasurements(
   kit: PdfKit,
-  { variant, options, t, language, data, objectName, summarized = false }: GenerateMeasurementsArgs,
+  {
+    variant,
+    options,
+    t,
+    language,
+    data,
+    objectName,
+    summarized = false,
+    tipsByMeasurement = {},
+  }: GenerateMeasurementsArgs,
   withHeader = true,
 ): void {
   const num = numberFmt(language, 1)
@@ -61,9 +72,9 @@ export function fillMeasurements(
   if (data.entries.length === 0) {
     kit.subtle(t('report.pdf.empty.measurements'))
   } else if (variant === 'short') {
-    writeFlatList(kit, t, num, cur, data.entries, options)
+    writeFlatList(kit, t, num, cur, data.entries, options, tipsByMeasurement)
   } else {
-    writeGrouped(kit, t, num, cur, data.groups, options)
+    writeGrouped(kit, t, num, cur, data.groups, options, tipsByMeasurement)
   }
 
   // Offene Messungen (nur Lang + aktiviert).
@@ -126,13 +137,14 @@ function writeFlatList(
   cur: Intl.NumberFormat,
   entries: MeasurementEntry[],
   options: ReportContentOptions,
+  tipsByMeasurement: Record<string, string[]>,
 ): void {
   const first = entries[0]
   const keepWith = first
-    ? kit.measureFindingCard(buildEntryCard(t, num, cur, first, options, false)) + 8
+    ? kit.measureFindingCard(buildEntryCard(t, num, cur, first, options, false, tipsByMeasurement)) + 8
     : 30
   kit.subHead(t('report.pdf.measurements.completed'), { keepWith })
-  for (const e of entries) writeEntryCard(kit, t, num, cur, e, options, false)
+  for (const e of entries) writeEntryCard(kit, t, num, cur, e, options, false, tipsByMeasurement)
 }
 
 /** Nach Gewerk gruppierte Liste mit Einordnung + Tipp (Langfassung). */
@@ -143,14 +155,15 @@ function writeGrouped(
   cur: Intl.NumberFormat,
   groups: MeasurementGroup[],
   options: ReportContentOptions,
+  tipsByMeasurement: Record<string, string[]>,
 ): void {
   for (const g of groups) {
     const first = g.entries[0]
     const keepWith = first
-      ? kit.measureFindingCard(buildEntryCard(t, num, cur, first, options, true)) + 8
+      ? kit.measureFindingCard(buildEntryCard(t, num, cur, first, options, true, tipsByMeasurement)) + 8
       : 30
     kit.subHead(t(`measurements.categories.${g.category}`), { keepWith })
-    for (const e of g.entries) writeEntryCard(kit, t, num, cur, e, options, true)
+    for (const e of g.entries) writeEntryCard(kit, t, num, cur, e, options, true, tipsByMeasurement)
   }
 }
 
@@ -167,8 +180,9 @@ function writeEntryCard(
   e: MeasurementEntry,
   options: ReportContentOptions,
   detailed: boolean,
+  tipsByMeasurement: Record<string, string[]>,
 ): void {
-  kit.findingCard(buildEntryCard(t, num, cur, e, options, detailed))
+  kit.findingCard(buildEntryCard(t, num, cur, e, options, detailed, tipsByMeasurement))
 }
 
 /** Baut die Kartendaten eines Messergebnisses – ohne sie zu zeichnen. */
@@ -179,6 +193,7 @@ function buildEntryCard(
   e: MeasurementEntry,
   options: ReportContentOptions,
   detailed: boolean,
+  tipsByMeasurement: Record<string, string[]>,
 ): FindingCard {
   const saving =
     options.savings && e.yearlySaving && e.yearlySaving > 0
@@ -187,10 +202,7 @@ function buildEntryCard(
   const summary = detailed
     ? t(`measurements.${e.id}.result.summary.${e.rating}`, { defaultValue: '' })
     : ''
-  const tip =
-    detailed && options.tips
-      ? t(`measurements.${e.id}.result.tip.${e.rating}`, { defaultValue: '' })
-      : ''
+  const tips = detailed && options.tips ? (tipsByMeasurement[e.id] ?? []) : []
 
   return {
     color: ratingColor(e.rating),
@@ -199,7 +211,7 @@ function buildEntryCard(
     ratingLabel: t(`measurements.ratings.${e.rating}`),
     noteLabel: saving,
     summary: summary || undefined,
-    tip: tip || undefined,
+    tips: tips.length > 0 ? tips : undefined,
     tipLabel: t('report.pdf.measurements.tips'),
   }
 }

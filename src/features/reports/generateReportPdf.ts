@@ -35,10 +35,18 @@ export interface GenerateReportArgs {
   profile: ProfileSummary
   measurements: MeasurementsReportData
   monitoring: MonitoringReportData
+  /**
+   * Die fertig formulierten Empfehlungen der App, je Messung gebündelt.
+   * Der Bericht hatte bis dahin ein eigenes, zweites Tipp-System, das nur für
+   * zwei der neun Messungen überhaupt Text hatte – bei den übrigen sieben blieb
+   * der Tipp-Block leer, während die App längst eine Empfehlung dazu kannte.
+   */
+  tipsByMeasurement?: Record<string, string[]>
 }
 
 export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
-  const { variant, sections, t, language, profile, measurements, monitoring } = args
+  const { variant, sections, t, language, profile, measurements, monitoring, tipsByMeasurement } =
+    args
   const kit = new PdfKit()
   const options = defaultContentOptions(variant)
   const objectName = profile.profileName?.trim() || undefined
@@ -67,7 +75,7 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
     if (multi) kit.sectionHeader(t('report.pdf.section.measurements'), { eyebrow: eyebrow(), keepWith: 70 })
     fillMeasurements(
       kit,
-      { variant, options, t, language, data: measurements, objectName, summarized },
+      { variant, options, t, language, data: measurements, objectName, summarized, tipsByMeasurement },
       false,
     )
   }

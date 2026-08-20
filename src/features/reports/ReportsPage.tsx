@@ -11,6 +11,8 @@ import { useReportSettingsStore } from '@/store/reportSettingsStore'
 import { activeEnergyTypes } from '@/features/monitoring/energyConfig'
 import { fmtPeriod } from './pdf/format'
 import { canSharePdf, deliverReport } from './pdf/deliver'
+import { buildTips } from '@/features/tips/buildTips'
+import { tipsByMeasurement } from '@/features/tips/tipsForReport'
 import { buildMeasurementsReportData } from './measurementsReportData'
 import { buildMonitoringReportData, suggestRangeDays, type RangeDays } from './monitoringReportData'
 import type { ReportSections, ReportVariant } from './reportTypes'
@@ -309,6 +311,9 @@ interface ShareBarProps {
 /** Fixe Leiste mit Teilen-/Download-Schaltfläche und Rückmeldung. */
 function ShareBar({ variant, sections, monitoring, measurements, profile }: ShareBarProps) {
   const { t, i18n } = useTranslation()
+  // Für die Empfehlungen im Bericht: dieselben Rohergebnisse, aus denen auch
+  // der Tipps-Bereich der App seine Vorschläge baut.
+  const results = useMeasurementsStore((s) => s.results)
   const [status, setStatus] = useState<ExportStatus>('idle')
 
   // Auf dem Telefon ist das System-Teilen der natürliche Weg (Sichern, Mail,
@@ -337,6 +342,9 @@ function ShareBar({ variant, sections, monitoring, measurements, profile }: Shar
         },
         measurements,
         monitoring,
+        // Dieselben Empfehlungen wie im Tipps-Bereich der App – der Bericht
+        // führte sonst ein zweites, fast leeres Tipp-System.
+        tipsByMeasurement: tipsByMeasurement(buildTips(profile, results), t, i18n.language),
       })
 
       const result = await deliverReport(report, t('report.pdf.title'))

@@ -172,8 +172,12 @@ export interface FindingCard {
   noteLabel?: string
   /** Einordnung in einem Satz. */
   summary?: string
-  /** Handlungsempfehlung; erscheint als abgesetzter Block. */
-  tip?: string
+  /**
+   * Handlungsempfehlungen; erscheinen als abgesetzter Block. Mehrere, weil eine
+   * Messung mehrere Befunde haben kann – das Raumklima etwa Temperatur,
+   * Luftfeuchte und Zugluft.
+   */
+  tips?: string[]
   /** Beschriftung des Tipp-Blocks („Tipp"). */
   tipLabel?: string
 }
@@ -702,7 +706,9 @@ export class PdfKit {
     const innerW = CONTENT_W - pad * 2
 
     const summaryLines = card.summary ? this.wrap(card.summary, leftW, { size: 8.5 }) : []
-    const tipLines = card.tip ? this.wrap(card.tip, innerW - 20, { size: 8.5 }) : []
+    const tipLines = (card.tips ?? []).flatMap((tip) =>
+      this.wrap(tip, innerW - 20, { size: 8.5 }),
+    )
 
     // Höhe beider Spalten getrennt bestimmen, die höhere gewinnt. Die Chips
     // stehen nebeneinander, nicht gestapelt – gestapelt zwingen sie der Karte
