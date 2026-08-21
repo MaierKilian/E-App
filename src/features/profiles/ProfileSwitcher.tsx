@@ -47,11 +47,16 @@ function shortenPlaceName(name: string): string {
  *
  * **Startverhalten:** Solange Firebase den Anmeldestatus prüft und die Profile
  * aus Firestore lädt, werden die Kacheln bereits aus dem persistierten
- * Anzeige-Cache gezeigt (siehe `profilesStore`) – gedimmt und nicht bedienbar.
- * Dadurch springt das Layout nicht mehr und die Wohnungen „ploppen" nicht
- * verspätet auf. Erst nach erfolgreichem Laden (`status === 'ready'`) sind sie
- * anklickbar, damit nie auf veralteten Daten gehandelt wird. Scheitert das
+ * Anzeige-Cache gezeigt (siehe `profilesStore`) – in voller Deckkraft, aber
+ * noch nicht bedienbar. Dadurch springt das Layout nicht mehr und die
+ * Wohnungen „ploppen" nicht verspätet auf. Erst nach erfolgreichem Laden
+ * (`status === 'ready'`) sind sie anklickbar, damit nie auf veralteten Daten
+ * gehandelt wird. Abgeblendet wird nur bei einer laufenden Aktion (`busy`) –
+ * beim Laden sähe es aus, als stimme etwas mit den Daten nicht. Scheitert das
  * Laden, erscheint statt eines stummen Nichts eine Zeile mit „Erneut versuchen".
+ *
+ * In der Regel ist davon nichts zu sehen: der Startbildschirm bleibt stehen,
+ * bis der Anmeldestatus geklärt ist (siehe `SplashScreen`).
  */
 export function ProfileSwitcher() {
   const { t } = useTranslation()
@@ -100,6 +105,10 @@ export function ProfileSwitcher() {
   // Während des Ladens sind die Kacheln nur Vorschau – kein Wechseln, kein
   // Anlegen und vor allem kein Löschen auf noch unbestätigtem Stand.
   const locked = busy || loading
+  // Gesperrt heisst nicht immer abgeblendet: bei einer laufenden Aktion (`busy`)
+  // ist das Abblenden die Rueckmeldung, beim anfaenglichen Laden waere es
+  // irrefuehrend – die Kacheln zeigen dort korrekte Daten.
+  const dimWhenLocked = loading ? '' : 'disabled:opacity-60'
   const active = profiles.find((p) => p.id === activeId)
   const atProfileLimit = !canCreateProfile()
   const single = profiles.length === 1
@@ -245,10 +254,10 @@ export function ProfileSwitcher() {
   ) : null
 
   return (
-    <div
-      aria-busy={loading}
-      className={loading ? 'pointer-events-none opacity-60 transition-opacity' : undefined}
-    >
+    // Waehrend des Ladens nur gesperrt, nicht abgeblendet: die Kacheln zeigen
+    // echte, zwischengespeicherte Daten – blass gezeichnet lasen sie sich wie
+    // ein Defekt, obwohl sie stimmen.
+    <div aria-busy={loading} className={loading ? 'pointer-events-none' : undefined}>
       {/* Kopfzeile mit „Verwalten" – immer sichtbar, sobald es eine aktive
           Wohnung gibt. So ist Teilen/Löschen auch bei nur einer Wohnung
           erreichbar (vorher erst ab zwei). */}
@@ -282,7 +291,7 @@ export function ProfileSwitcher() {
           type="button"
           onClick={handleCreate}
           disabled={locked}
-          className="focus-ring flex w-full items-center gap-3 rounded-2xl border border-dashed border-border p-3.5 text-left text-muted transition-colors hover:border-primary hover:text-foreground disabled:opacity-60"
+          className={`focus-ring flex w-full items-center gap-3 rounded-2xl border border-dashed border-border p-3.5 text-left text-muted transition-colors hover:border-primary hover:text-foreground ${dimWhenLocked}`}
         >
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
             <Plus className="h-5 w-5" />
@@ -304,7 +313,7 @@ export function ProfileSwitcher() {
                   disabled={locked}
                   aria-pressed={isActive}
                   aria-label={fullName}
-                  className={`focus-ring relative aspect-[4/3] overflow-hidden rounded-2xl transition-transform active:scale-[0.98] disabled:opacity-60 ${
+                  className={`focus-ring relative aspect-[4/3] overflow-hidden rounded-2xl transition-transform active:scale-[0.98] ${dimWhenLocked} ${
                     isActive ? 'ring-2 ring-primary' : 'ring-1 ring-border'
                   }`}
                 >
@@ -348,7 +357,9 @@ export function ProfileSwitcher() {
                 type="button"
                 onClick={handleCreate}
                 disabled={locked}
-                className="focus-ring flex aspect-[4/3] flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border text-muted transition-colors hover:border-primary hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:text-muted disabled:hover:border-border"
+                className={`focus-ring flex aspect-[4/3] flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border text-muted transition-colors hover:border-primary hover:text-foreground disabled:cursor-not-allowed disabled:hover:text-muted disabled:hover:border-border ${
+                  loading ? '' : 'disabled:opacity-50'
+                }`}
               >
                 <span className="grid h-10 w-10 place-items-center rounded-full bg-primary/10 text-primary">
                   <Plus className="h-5 w-5" />

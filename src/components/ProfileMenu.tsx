@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { User, Palette, Settings, ChevronRight, LogOut, MessageSquarePlus } from 'lucide-react'
-import { useAuthStore, useUser } from '@/store/authStore'
+import { useUser } from '@/store/authStore'
 import { useAccountAvatarSrc } from '@/store/accountAvatarStore'
 import { useFeedbackStore } from '@/store/feedbackStore'
 import { Avatar } from '@/components/ui/Avatar'
@@ -21,8 +21,6 @@ export function ProfileMenu() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const user = useUser()
-  // true, solange Firebase den gespeicherten Anmeldestatus noch wiederherstellt.
-  const initializing = useAuthStore((s) => s.initializing)
   const accountAvatar = useAccountAvatarSrc()
   const openFeedback = useFeedbackStore((s) => s.openFeedback)
   const [open, setOpen] = useState(false)
@@ -64,13 +62,11 @@ export function ProfileMenu() {
         aria-expanded={open}
         className="focus-ring grid h-9 w-9 place-items-center overflow-hidden rounded-full border border-border transition-transform hover:scale-105 active:scale-95"
       >
-        {initializing ? (
-          // Anmeldestatus noch unklar: neutraler Platzhalter statt eines
-          // Avatars, der gleich darauf gegen den echten getauscht würde.
-          <span className="h-[34px] w-[34px] animate-pulse rounded-full bg-surface-2" />
-        ) : (
-          <Avatar src={accountAvatar} name={avatarName} size={34} />
-        )}
+        {/* Ohne Bild und Namen zeigt Avatar das Personen-Icon – dasselbe, das
+            ein abgemeldeter Nutzer sieht. Waehrend der Anmeldestatus noch
+            unklar ist, ist das der ruhigere Platzhalter: ein leerer Pulskreis
+            sah aus, als fehle etwas. */}
+        <Avatar src={accountAvatar} name={avatarName} size={34} />
       </button>
 
       {open && (

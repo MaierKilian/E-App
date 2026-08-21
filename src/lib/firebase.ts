@@ -11,7 +11,11 @@
 
 import { initializeApp } from 'firebase/app'
 import { getAuth } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore'
 import { getFunctions } from 'firebase/functions'
 import { getAnalytics, isSupported, type Analytics } from 'firebase/analytics'
 
@@ -74,7 +78,22 @@ export const authDomainIsFirstParty =
 
 export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
-export const db = getFirestore(app)
+/**
+ * Firestore mit persistentem Offline-Cache (IndexedDB).
+ *
+ * Ohne ihn geht jeder Lesezugriff beim Start ans Netz – auf dem Handy bei
+ * schwachem Empfang der Grund, warum die Wohnungsliste hinterherhinkt. Mit
+ * Cache beantwortet Firestore aus der lokalen Kopie und gleicht im Hintergrund
+ * ab. `persistentMultipleTabManager` erlaubt mehrere offene Tabs; ohne ihn
+ * bekäme nur der erste Tab den Cache.
+ *
+ * Ist IndexedDB nicht verfügbar (privates Fenster, alter Browser), fällt
+ * Firestore selbsttätig auf den reinen Speicher-Cache zurück – das ist genau
+ * das bisherige Verhalten, es geht also nichts verloren.
+ */
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+})
 // Callable Functions – gleiche Region wie die deployte Funktion (siehe functions/).
 export const functions = getFunctions(app, 'europe-west1')
 
