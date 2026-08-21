@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { PageHeader } from '@/components/ui/PageHeader'
 import {
-  ChevronLeft,
   User,
   Palette,
   Globe,
@@ -64,16 +64,7 @@ export function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        {t('common.back')}
-      </button>
-
-      <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
+      <PageHeader title={t('settings.title')} back={{ label: t('common.back'), onClick: () => navigate(-1) }} />
 
       {/* Konto */}
       <SettingsSection title={t('settings.account')} icon={User}>

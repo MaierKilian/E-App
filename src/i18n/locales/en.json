@@ -97,6 +97,7 @@
   },
   "report": {
     "title": "Reports",
+    "subtitle": "Your data as a PDF to share.",
     "variant": {
       "short": "Short report",
       "long": "Detailed report"
@@ -1549,7 +1550,7 @@
     },
     "education": {
       "title": "Learn",
-      "subtitle": "Background, FAQ and learning content about home energy.",
+      "subtitle": "Background, FAQ and learning content.",
       "points": [
         "FAQ and further information about the measurements",
         "Clear explanations for everyone",

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next'
+import { PageHeader } from '@/components/ui/PageHeader'
 import {
-  ChevronLeft,
   User,
   Building2,
   DoorOpen,
@@ -126,39 +126,32 @@ export function ProfileHub({ data, onOpenSection, onDone }: ProfileHubProps) {
 
   return (
     <div className="space-y-4">
-      {/* Kopfzeile: gut sichtbares Zurück (-> Dashboard) + Fertig */}
-      <div className="flex items-center justify-between gap-3">
-        <button
-          type="button"
-          onClick={onDone}
-          className="focus-ring -ml-1 flex items-center gap-1 text-sm font-medium text-muted hover:text-foreground transition-colors"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          {t('common.back')}
-        </button>
-        <button
-          type="button"
-          onClick={onDone}
-          className="focus-ring rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
-        >
-          {t('onboarding.hub.done')}
-        </button>
-      </div>
+      {/* Zurück (-> Dashboard) + Titel + „Fertig" – wie auf allen Seiten. */}
+      <PageHeader
+        title={t('onboarding.hub.title')}
+        back={{ label: t('common.back'), onClick: onDone }}
+        actions={
+          <button
+            type="button"
+            onClick={onDone}
+            className="focus-ring rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
+          >
+            {t('onboarding.hub.done')}
+          </button>
+        }
+      />
 
-      {/* Titel + Gesamtfortschritt */}
-      <div>
-        <h2 className="text-lg font-bold text-foreground">{t('onboarding.hub.title')}</h2>
-        <div className="mt-2 flex items-center gap-3">
-          <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
-            <div
-              className="h-full rounded-full bg-primary transition-[width] duration-500"
-              style={{ width: `${completeness}%` }}
-            />
-          </div>
-          <span className="shrink-0 text-xs font-medium text-muted tabular-nums">
-            {completeness}%
-          </span>
+      {/* Gesamtfortschritt */}
+      <div className="flex items-center gap-3">
+        <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
+          <div
+            className="h-full rounded-full bg-primary transition-[width] duration-500"
+            style={{ width: `${completeness}%` }}
+          />
         </div>
+        <span className="shrink-0 text-xs font-medium text-muted tabular-nums">
+          {completeness}%
+        </span>
       </div>
 
       {/* Kachel-Grid der Abschnitte */}

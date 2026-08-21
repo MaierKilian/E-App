@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Check, ChevronRight, GraduationCap, Search, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Check, ChevronRight, Search, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useProgressStore } from '@/store/progressStore'
 import { AccordionItem } from './Accordion'
 import { PhotoPlaceholder } from './PhotoPlaceholder'
@@ -387,12 +388,10 @@ export function EducationPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2.5">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
-          <GraduationCap className="h-5 w-5" />
-        </span>
-        <h1 className="text-xl font-bold">{t('pages.education.title')}</h1>
-      </div>
+      <PageHeader
+        title={t('pages.education.title')}
+        subtitle={t('pages.education.subtitle')}
+      />
 
       <GroupSwitch group={group} onChange={selectGroup} />
       <SectionSwitch sections={GROUP_SECTIONS[group]} section={section} onChange={setSection} />

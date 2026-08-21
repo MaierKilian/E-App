@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Download, Share2, Check, CheckCircle2, AlertCircle } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useReadingsStore } from '@/store/readingsStore'
@@ -83,7 +84,7 @@ export function ReportsPage() {
     // Ziel ist ein Bildschirm ohne Scrollen: Titel einzeilig, Umfang in der
     // Kopfkarte, enge Abstände.
     <div className="space-y-2.5 pb-24">
-      <h1 className="text-xl font-bold">{t('report.title')}</h1>
+      <PageHeader title={t('report.title')} subtitle={t('report.subtitle')} />
 
       <ReportSummary
         variant={settings.variant}

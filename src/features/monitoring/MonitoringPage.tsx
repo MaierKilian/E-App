@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Bell } from 'lucide-react'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useWidgetOrderStore } from '@/store/widgetOrderStore'
@@ -52,12 +53,10 @@ export function MonitoringPage() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">{t('monitoring.overview.title')}</h1>
-          <p className="text-muted mt-1 text-sm">{t('monitoring.overview.subtitle')}</p>
-        </div>
-      </div>
+      <PageHeader
+        title={t('monitoring.overview.title')}
+        subtitle={t('monitoring.overview.subtitle')}
+      />
 
       {due.size > 0 && (
         <div className="glass flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-foreground">

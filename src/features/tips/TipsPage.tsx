@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { PageHeader } from '@/components/ui/PageHeader'
 import {
-  ChevronLeft,
   ChevronDown,
   Sparkles,
   PiggyBank,
@@ -276,16 +276,7 @@ export function TipsPage() {
 
   return (
     <div className="space-y-5">
-      <button
-        type="button"
-        onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
-      >
-        <ChevronLeft className="h-4 w-4" />
-        {t('common.back')}
-      </button>
-
-      <h1 className="text-2xl font-bold">{t('tips.title')}</h1>
+      <PageHeader title={t('tips.title')} back={{ label: t('common.back'), onClick: () => navigate(-1) }} />
 
       {allTips.length === 0 ? (
         <div className="glass flex flex-col items-center gap-2 rounded-3xl p-8 text-center">

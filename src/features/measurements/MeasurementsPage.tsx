@@ -5,6 +5,7 @@ import { useMeasurementsStore, type MeasurementsView } from '@/store/measurement
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { InfoButton } from '@/components/ui/InfoButton'
+import { PageHeader } from '@/components/ui/PageHeader'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { buildSteps } from './tasks'
 import { impactSummary } from './impact'
@@ -87,16 +88,13 @@ export function MeasurementsPage() {
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
   return (
-    <div>
-      {/* Sticky Titelzeile: klebt unterhalb des App-Headers beim Scrollen */}
-      <div className="sticky top-14 z-10 -mx-4 px-4 py-3 glass-bar border-b border-border/60 mb-4">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold">{t('measurements.page.title')}</h1>
-          <ViewMenu view={view} onChange={setView} />
-        </div>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        title={t('measurements.page.title')}
+        subtitle={t('measurements.page.subtitle')}
+        actions={<ViewMenu view={view} onChange={setView} />}
+      />
 
-      <div className="space-y-4">
       {/* Kompakter Kopf: Fortschrittsring + Einsparpotenzial */}
       <div className="glass flex items-center gap-4 rounded-3xl p-4">
         <ProgressRing done={done} total={total} />
@@ -129,7 +127,6 @@ export function MeasurementsPage() {
       {view === 'recommended' && <MeasurementFlow steps={steps} savingsEur={savingsEur} />}
       {view === 'trades' && <TradesView results={results} />}
       {view === 'byRoom' && <ByRoomView results={results} />}
-      </div>
     </div>
   )
 }

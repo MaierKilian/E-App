@@ -17,6 +17,7 @@ import { StepPrices } from './steps/StepPrices'
 import { Step8Review } from './steps/Step8Review'
 import { Card } from '@/components/ui/Card'
 import { HomeDashboard } from '@/features/home/HomeDashboard'
+import { PageHeader } from '@/components/ui/PageHeader'
 import type { OnboardingData } from '@/types'
 
 // Quick flow steps (indices 0..5, displayed as steps 1..6):
@@ -165,18 +166,13 @@ export function OnboardingPage() {
 
     return (
       <div className="pb-24">
-        <button
-          type="button"
-          onClick={() => { clearReturnTo(); setStep(-2) }}
-          className="focus-ring inline-flex items-center gap-1 text-sm font-medium text-muted hover:text-foreground transition-colors"
-        >
-          <ChevronLeft className="w-4 h-4" />
-          {t('onboarding.hub.backToOverview')}
-        </button>
-
-        <h2 className="mt-3 text-lg font-semibold text-foreground">
-          {getSectionTitle(currentStep, t)}
-        </h2>
+        <PageHeader
+          title={getSectionTitle(currentStep, t)}
+          back={{
+            label: t('onboarding.hub.backToOverview'),
+            onClick: () => { clearReturnTo(); setStep(-2) },
+          }}
+        />
 
         <div key={`edit-${currentStep}`} className="animate-step-in mt-5">
           <Card>

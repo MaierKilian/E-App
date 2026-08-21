@@ -97,6 +97,7 @@
   },
   "report": {
     "title": "Berichte",
+    "subtitle": "Deine Daten als PDF zum Weitergeben.",
     "variant": {
       "short": "Kurzbericht",
       "long": "Langbericht"
@@ -1549,7 +1550,7 @@
     },
     "education": {
       "title": "Wissen",
-      "subtitle": "Hintergründe, FAQ und Lerninhalte rund um Energie im Haushalt.",
+      "subtitle": "Hintergründe, FAQ und Lerninhalte.",
       "points": [
         "FAQ und weiterführende Informationen zu den Messungen",
         "Verständliche Erklärungen für alle",
