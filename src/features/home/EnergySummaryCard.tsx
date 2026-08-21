@@ -5,7 +5,7 @@ import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore, resolvePrice } from '@/store/tariffStore'
 import { activeEnergyTypes, ENERGY_META, isSeasonal } from '@/features/monitoring/energyConfig'
 import { PRICE_META } from '@/features/monitoring/priceConfig'
-import { sortByDate, stats, consumptionTrend } from '@/features/monitoring/readings'
+import { sortByDate, stats, yearOverYearTrend } from '@/features/monitoring/readings'
 import { TrendBadge } from '@/features/monitoring/MeterTrend'
 import type { OnboardingData } from '@/types'
 
@@ -50,7 +50,9 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
         basis: s.projectionBasis,
         // Ganze Monate, gerundet – „aus 4 Mon. geschätzt" ist greifbarer als 118 Tage.
         basisMonths: Math.max(1, Math.round((s.projectionDays ?? 0) / 30)),
-        trend: consumptionTrend(readings),
+        // Jahr gegen Vorjahr – passt zur Jahreszahl daneben. Ohne zwei volle
+        // Jahre gibt es keinen Badge, statt einen irreführenden zu zeigen.
+        trend: yearOverYearTrend(readings),
       }
     })
     .filter((c) => c.amount !== undefined)
@@ -105,8 +107,12 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
                 </span>
               </span>
               <span className="flex items-baseline gap-1.5">
+                {/* Ohne „≈": darunter steht bereits, worauf die Zahl beruht
+                    („letzte 12 Monate" bzw. „geschätzt aus N Mon."). Das ist
+                    präziser als ein Symbol – und bei einem gemessenen
+                    Jahreswert wäre das Ungefähr-Zeichen schlicht falsch. */}
                 <span className="text-xl font-bold leading-none tabular-nums text-foreground">
-                  ≈ {value}
+                  {value}
                 </span>
                 {c.trend && <TrendBadge trend={c.trend} compact />}
               </span>

@@ -5,7 +5,7 @@
 // Sommermessung ergab rund ein Viertel, eine Wintermessung das Doppelte.
 
 import { describe, expect, it } from 'vitest'
-import { stats, consumptionTrend } from '@/features/monitoring/readings'
+import { stats, consumptionTrend, yearOverYearTrend } from '@/features/monitoring/readings'
 import { seasonalShareBetween } from '@/features/monitoring/seasonality'
 import type { MeterReading } from '@/store/readingsStore'
 
@@ -126,6 +126,41 @@ describe('stats – Kosten', () => {
   it('rechnet den Jahreswert mit dem Preis je Einheit', () => {
     const s = stats(gasYearReadings(1000, 2024), 1.2, { seasonal: true })
     expect(s.projectedYearCostEur).toBeCloseTo(1200, 0)
+  })
+})
+
+describe('yearOverYearTrend', () => {
+  it('meldet bei zwei gleichen Jahren keine Veränderung', () => {
+    const s = yearOverYearTrend(gasYearReadings(2000, 2024))
+    expect(s?.baseline).toBe('lastYear')
+    expect(s?.direction).toBe('flat')
+    // Nicht exakt 0: die Fenster sind feste 365 Tage, 2024 hat aber 366. Der
+    // Schalttag und die nicht auf Monatsgrenzen fallenden Fensterränder
+    // erzeugen unter 1 % Rauschen – weit unter der 3-%-Schwelle für „flat".
+    expect(Math.abs(s!.changePct!)).toBeLessThan(0.01)
+  })
+
+  it('erkennt ein um ein Fünftel teureres Jahr', () => {
+    // Jahr 1: 2000 kWh, Jahr 2: 2400 kWh -> +20 %.
+    const y1 = gasYearReadings(2000, 2024, 1)
+    const start = y1[y1.length - 1].value
+    const y2 = gasYearReadings(2400, 2025, 1).map((r, i) => ({
+      ...r,
+      id: `b${i}`,
+      value: r.value - 1000 + start,
+    }))
+    const s = yearOverYearTrend([...y1, ...y2])
+    expect(s?.direction).toBe('up')
+    expect(s?.changePct).toBeCloseTo(0.2, 1)
+  })
+
+  it('schweigt, solange keine zwei vollen Jahre gemessen sind', () => {
+    // Nur ein Jahr Historie -> kein Vorjahr zum Vergleichen.
+    expect(yearOverYearTrend(gasYearReadings(2000, 2024, 1))).toBeUndefined()
+  })
+
+  it('schweigt ohne jede Ablesung', () => {
+    expect(yearOverYearTrend([])).toBeUndefined()
   })
 })
 

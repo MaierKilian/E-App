@@ -125,6 +125,44 @@ export function consumptionTrend(readings: MeterReading[]): ConsumptionTrend | u
   return { perDay, direction: directionOf(changePct), changePct, baseline: 'previousPeriod' }
 }
 
+/**
+ * Vergleicht die letzten 365 Tage mit den 365 Tagen davor.
+ *
+ * Gedacht für Stellen, die den **Jahreswert** anzeigen. `consumptionTrend`
+ * misst den letzten Ableseabstand – neben einer Jahreszahl gelesen ergibt das
+ * einen Widerspruch: „996 € · letzte 12 Monate" mit „−71 %" daneben liest sich
+ * als „meine Jahreskosten sind um 71 % gesunken", gemeint war aber die
+ * Momentaufnahme des letzten Ableseabstands. Hier beziehen sich Zahl und Badge
+ * auf denselben Zeitraum, die naheliegende Lesart stimmt also.
+ *
+ * Liefert undefined, solange keine zwei vollen Jahre gemessen sind – dann gibt
+ * es schlicht nichts Belastbares zu vergleichen.
+ */
+export function yearOverYearTrend(readings: MeterReading[]): ConsumptionTrend | undefined {
+  const segments = consumptionSegments(readings)
+  if (segments.length === 0) return undefined
+  const first = parseIso(segments[0].from)
+  const end = parseIso(segments[segments.length - 1].to)
+  if (!first || !end) return undefined
+
+  const yearStart = new Date(end.getTime() - DAYS_PER_YEAR * MS_PER_DAY)
+  const prevStart = new Date(end.getTime() - 2 * DAYS_PER_YEAR * MS_PER_DAY)
+  // Beide Jahre müssen tatsächlich von Ablesungen gedeckt sein.
+  if (first > prevStart) return undefined
+
+  const current = consumptionInWindow(segments, yearStart, end)
+  const previous = consumptionInWindow(segments, prevStart, yearStart)
+  if (previous <= 0) return undefined
+
+  const changePct = (current - previous) / previous
+  return {
+    perDay: current / DAYS_PER_YEAR,
+    direction: directionOf(changePct),
+    changePct,
+    baseline: 'lastYear',
+  }
+}
+
 /** Unter 3 % Abweichung gilt der Verbrauch als unverändert. */
 function directionOf(changePct: number): 'up' | 'down' | 'flat' {
   return Math.abs(changePct) < 0.03 ? 'flat' : changePct > 0 ? 'up' : 'down'

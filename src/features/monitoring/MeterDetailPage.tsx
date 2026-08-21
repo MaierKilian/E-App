@@ -209,7 +209,7 @@ export function MeterDetailPage() {
                 </p>
                 <p className="mt-0.5 font-semibold tabular-nums text-foreground">
                   {s.projectedYearCostEur !== undefined
-                    ? `≈ ${eurFmt.format(s.projectedYearCostEur)}`
+                    ? eurFmt.format(s.projectedYearCostEur)
                     : '–'}
                 </p>
                 {/* Statt nur „hochgerechnet": worauf die Zahl beruht. Ein

@@ -36,6 +36,10 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
   const completeness = profileCompleteness(data)
   const isComplete = completeness >= 100
   const missing = profileMissingCount(data)
+  // Bei nur noch einer offenen Angabe ist ein grüner Aufruf-Knopf
+  // unverhältnismäßig: die auffälligste Handlung des Startbildschirms wäre
+  // dann Verwaltungsarbeit statt Nutzen. Ab hier nur noch ein leiser Hinweis.
+  const almostComplete = !isComplete && missing <= 1
   // Auf dem Zuhause-Einstieg nur offene Empfehlungen zählen (erledigte/
   // ausgeblendete sind für den Nutzer bereits abgehakt).
   const tips = buildTips(data, results).filter(
@@ -76,6 +80,14 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             {t('home.profileComplete')}
           </p>
+        ) : almostComplete ? (
+          <button
+            type="button"
+            onClick={onEdit}
+            className="focus-ring mt-3 text-left text-sm text-muted transition-colors hover:text-foreground"
+          >
+            {t('home.profileMissing', { count: missing })}
+          </button>
         ) : (
           <div className="mt-3 flex items-center gap-3">
             <span className="min-w-0 flex-1 truncate text-sm text-muted">

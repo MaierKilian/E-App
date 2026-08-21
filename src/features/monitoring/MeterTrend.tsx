@@ -19,8 +19,19 @@ export function TrendBadge({ trend, compact }: { trend: ConsumptionTrend; compac
       ? `${pct > 0 ? '+' : ''}${Math.round(pct * 100)}%`
       : t('monitoring.overview.trendNew')
 
+  // Der Badge zeigt nur „−12 %". Womit verglichen wurde, steht am Ort der
+  // Verwendung (Bildunterschrift bzw. gleicher Zeitraum wie die Zahl daneben) –
+  // für Screenreader fehlt dieser Kontext, deshalb hier als Label.
+  const baselineLabel =
+    trend.baseline === 'lastYear'
+      ? t('monitoring.overview.trendVsLastYear')
+      : trend.baseline === 'previousPeriod'
+        ? t('monitoring.overview.trendVsPrevious')
+        : undefined
+
   return (
     <span
+      aria-label={baselineLabel ? `${label} ${baselineLabel}` : label}
       className={`inline-flex items-center gap-1 rounded-full font-semibold ${tone} ${
         compact ? 'px-1.5 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs'
       }`}

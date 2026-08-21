@@ -1427,7 +1427,9 @@
       "trackHint": "Log readings regularly to see your trend.",
       "exampleBadge": "Example",
       "ghostHint": "This is how your trend will look once you enter two meter readings.",
-      "reorderHint": "Press and hold a widget, then drag to rearrange."
+      "reorderHint": "Press and hold a widget, then drag to rearrange.",
+      "trendVsLastYear": "versus last year",
+      "trendVsPrevious": "versus previous period"
     },
     "detail": {
       "back": "Monitoring",
