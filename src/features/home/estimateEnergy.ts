@@ -1,4 +1,8 @@
 import type { OnboardingData, RenovationItem } from '@/types'
+// Eine Quelle für die Baujahrs-Staffel: dieselben Richtwerte zeigt der
+// spezifische Kennwert im Monitoring als Vergleichswert an. Zwei Kopien wären
+// zwei Wahrheiten, sobald jemand eine davon anpasst.
+import { heatDemandBenchmark } from '@/features/monitoring/specificValues'
 
 /**
  * Grobe Energie-Schätzungen für das Zuhause-Dashboard.
@@ -64,16 +68,6 @@ const ENVELOPE_BY_EFFECT = (Object.entries(ENVELOPE_FACTORS) as [RenovationItem,
   (a, b) => a[1] - b[1],
 )
 
-/** Spez. Heizwärmebedarf unsaniert (kWh/m²·a) je Baujahr; null, wenn unbekannt. */
-function baseHeatDemand(buildingYear: number): number | null {
-  if (!Number.isFinite(buildingYear) || buildingYear <= 0) return null
-  if (buildingYear < 1978) return 220
-  if (buildingYear <= 1994) return 150
-  if (buildingYear <= 2001) return 100
-  if (buildingYear <= 2015) return 70
-  return 50
-}
-
 export interface EnvelopeEstimate {
   /** Position auf der Effizienz-Skala 0..1 (0 = effizient, 1 = sanierungsbedürftig); null, wenn Baujahr fehlt. */
   position: number | null
@@ -106,9 +100,9 @@ export function estimateEnvelope(data: OnboardingData): EnvelopeEstimate {
   const nextLeverPct = remaining ? Math.round((1 - remaining[1]) * 100) : 0
 
   // Position auf der Skala nur, wenn das Baujahr eine Basis liefert.
-  const base = baseHeatDemand(data.buildingYear)
+  const base = heatDemandBenchmark(data.buildingYear)
   const position =
-    base === null ? null : Math.min(1, Math.max(0, (base * appliedFactor - 50) / (250 - 50)))
+    base === undefined ? null : Math.min(1, Math.max(0, (base * appliedFactor - 50) / (250 - 50)))
 
   return { position, savingsPct, nextLever, nextLeverPct }
 }

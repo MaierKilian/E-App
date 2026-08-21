@@ -5,6 +5,8 @@ import { PRICE_META } from '@/features/monitoring/priceConfig'
 import { resolvePrice } from '@/store/tariffStore'
 import { sortByDate } from '@/features/monitoring/readings'
 import { seasonalShareBetween } from '@/features/monitoring/seasonality'
+import { specificValue, type SpecificBasis } from '@/features/monitoring/specificValues'
+import { resolveEnergyContent } from '@/store/tariffStore'
 
 /** Tarif-Store-State (nur zum Auflösen der Preise, ohne UI-Abhängigkeit). */
 export type TariffLike = Parameters<typeof resolvePrice>[0]
@@ -69,6 +71,15 @@ export interface MonitoringEntry {
   projectedYear?: number
   /** Jahreskosten in € (nur wenn ein Preis hinterlegt bzw. voreingestellt ist). */
   costYear?: number
+  /**
+   * Spezifischer Kennwert – Jahresverbrauch je m² Wohnfläche (Wärme) bzw. je
+   * Person (Strom/Wasser). Erst damit ist der Verbrauch vergleichbar.
+   */
+  specific?: number
+  /** Bezugsgröße von `specific` (bestimmt die Anzeige-Einheit). */
+  specificBasis?: SpecificBasis
+  /** Üblicher Wert für diesen Haushalt, gleiche Einheit wie `specific`. */
+  specificBenchmark?: number
   /** Arbeitspreis, aus dem `costYear` hergeleitet wurde (Anzeige-Einheit). */
   priceWork?: number
   /** Anzeige-Einheit des Arbeitspreises, z. B. 'ct/kWh'. */
@@ -162,6 +173,7 @@ function buildEntry(
   readingsByType: Partial<Record<EnergyType, MeterReading[]>>,
   rangeDays: RangeDays,
   tariff?: TariffLike,
+  profile?: OnboardingData,
 ): MonitoringEntry {
   const meta = ENERGY_META[type]
   const priceMeta = PRICE_META[type]
@@ -249,6 +261,21 @@ function buildEntry(
         entry.priceWork = work
         entry.priceUnit = priceMeta.priceUnit
       }
+
+      // Spezifischer Kennwert – nur mit Profil (Fläche/Personen/Baujahr).
+      if (profile) {
+        const spec = specificValue(
+          type,
+          entry.projectedYear,
+          profile,
+          tariff ? resolveEnergyContent(tariff, type) : undefined,
+        )
+        if (spec) {
+          entry.specific = spec.value
+          entry.specificBasis = spec.basis
+          entry.specificBenchmark = spec.benchmark
+        }
+      }
     }
   }
 
@@ -300,7 +327,9 @@ export function buildMonitoringReportData({
   const active = activeEnergyTypes(profile)
   const filter = types && types.length > 0 ? new Set(types) : undefined
   const selected = filter ? active.filter((t) => filter.has(t)) : active
-  const entries = selected.map((type) => buildEntry(type, readingsByType, rangeDays, tariff))
+  const entries = selected.map((type) =>
+    buildEntry(type, readingsByType, rangeDays, tariff, profile),
+  )
 
   // Gesamt-Zeitraum über alle Träger (für die Kopfzeile des Berichts).
   const froms = entries.map((e) => e.windowFrom).filter((d): d is string => Boolean(d))

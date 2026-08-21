@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { EnergyType } from '@/store/readingsStore'
 import { PRICE_META } from '@/features/monitoring/priceConfig'
+import { DEFAULT_KWH_PER_UNIT } from '@/features/monitoring/specificValues'
 
 export const DEFAULT_WORK_PRICE = 35 // ct/kWh (Strom Durchschnitt)
 export const DEFAULT_BASE_PRICE = 12 // €/Monat Grundpreis
@@ -25,6 +26,16 @@ interface TariffState {
   promptSeen: boolean // Erstbesuch-Popup wurde bereits gezeigt/bearbeitet
   /** Preise weiterer Träger (Strom liegt in den Feldern oben). */
   prices: Partial<Record<EnergyType, PriceEntry>>
+  /**
+   * Energieinhalt je Zähler-Einheit in kWh, sofern vom Nutzer hinterlegt
+   * (Gas: Brennwert × Zustandszahl von der Jahresrechnung). Fehlt ein Eintrag,
+   * gilt der Standardwert aus `DEFAULT_KWH_PER_UNIT`.
+   */
+  energyContent: Partial<Record<EnergyType, number>>
+  /** Setzt den Energieinhalt je Zähler-Einheit (kWh). */
+  setEnergyContent: (type: EnergyType, kwhPerUnit: number) => void
+  /** Zurück auf den Standardwert. */
+  clearEnergyContent: (type: EnergyType) => void
   setTariff: (workPrice: number, basePrice: number) => void
   setTypePrice: (type: EnergyType, work: number, base: number) => void
   /** Setzt einen Träger auf den Standardwert zurück (leeres Feld im Onboarding). */
@@ -46,6 +57,15 @@ export const useTariffStore = create<TariffState>()(
       isCustom: false,
       promptSeen: false,
       prices: {},
+      energyContent: {},
+      setEnergyContent: (type, kwhPerUnit) =>
+        set((s) => ({ energyContent: { ...s.energyContent, [type]: kwhPerUnit } })),
+      clearEnergyContent: (type) =>
+        set((s) => {
+          const next = { ...s.energyContent }
+          delete next[type]
+          return { energyContent: next }
+        }),
       setTariff: (workPrice, basePrice) =>
         set({
           electricityWorkPrice: workPrice,
@@ -90,6 +110,7 @@ export const useTariffStore = create<TariffState>()(
           electricityBasePrice: DEFAULT_BASE_PRICE,
           isCustom: false,
           prices: {},
+          energyContent: {},
         }),
     }),
     {
@@ -99,6 +120,7 @@ export const useTariffStore = create<TariffState>()(
         ...current,
         ...(persisted as Partial<TariffState>),
         prices: (persisted as Partial<TariffState>)?.prices ?? {},
+        energyContent: (persisted as Partial<TariffState>)?.energyContent ?? {},
       }),
     },
   ),
@@ -108,6 +130,17 @@ export const useTariffStore = create<TariffState>()(
  * Löst den effektiven Preis eines Trägers auf (Nutzerwert oder Standard).
  * Strom kommt aus den dedizierten Feldern, alle anderen aus `prices`.
  */
+/**
+ * Energieinhalt je Zähler-Einheit (kWh) – Nutzerwert oder Standard.
+ * Damit werden m³ Gas, Liter Öl und kg Pellets für den spezifischen Kennwert
+ * in kWh umgerechnet.
+ */
+export function resolveEnergyContent(s: TariffState, type: EnergyType): number {
+  const custom = s.energyContent?.[type]
+  if (typeof custom === 'number' && Number.isFinite(custom) && custom > 0) return custom
+  return DEFAULT_KWH_PER_UNIT[type] ?? 1
+}
+
 export function resolvePrice(s: TariffState, type: EnergyType): PriceEntry {
   const meta = PRICE_META[type]
   if (!meta) return { work: 0, base: 0, custom: false }

@@ -289,8 +289,31 @@ function meterCards(
       sub: priceSub(t, language, e),
     })
   }
+
+  // Spezifischer Kennwert: die Zahl, mit der man sich vergleichen kann.
+  // Absolutwerte sagen ohne Wohnungsgröße bzw. Haushaltsgröße wenig aus.
+  if (e.specific !== undefined && e.specificBasis) {
+    const unit = t(SPECIFIC_UNIT_KEY[e.specificBasis])
+    cards.push({
+      value: `${num.format(Math.round(e.specific))} ${unit}`,
+      label: t('report.kpi.specific'),
+      sub:
+        e.specificBenchmark !== undefined
+          ? t('monitoring.detail.benchmarkTypical', {
+              value: num.format(Math.round(e.specificBenchmark)),
+            })
+          : t('monitoring.detail.benchmarkNone'),
+    })
+  }
   return cards
 }
+
+/** Anzeige-Einheit je Bezugsgröße (dieselben Texte wie in der App). */
+const SPECIFIC_UNIT_KEY = {
+  perAreaKwh: 'monitoring.detail.specificPerArea',
+  perPersonKwh: 'monitoring.detail.specificPerPerson',
+  perPersonLiterDay: 'monitoring.detail.specificPerPersonDay',
+} as const
 
 /** Historie mit ehrlichem Hinweis, wenn gekürzt wurde. */
 function writeHistory(

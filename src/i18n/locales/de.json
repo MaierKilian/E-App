@@ -131,7 +131,8 @@
         "basis": "Basis: {{value}}",
         "basisDays_one": "Basis: Ø über {{count}} Tag",
         "basisDays_other": "Basis: Ø über {{count}} Tage"
-      }
+      },
+      "specific": "Spezifisch"
     },
     "trend": {
       "up": "steigend",
@@ -1088,6 +1089,16 @@
       "costProjected": "hochgerechnet",
       "costBasisFullYear": "letzte 12 Monate",
       "costBasisEstimate": "geschätzt aus {{months}} Mon.",
+      "specific": "Spezifisch",
+      "specificPerArea": "kWh/m²·a",
+      "specificPerPerson": "kWh/Person·a",
+      "specificPerPersonDay": "l/Person·Tag",
+      "benchmarkTypical": "typisch {{value}}",
+      "benchmarkNone": "kein Vergleichswert",
+      "specificMissingArea": "Wohnfläche im Profil ergänzen",
+      "specificMissingPersons": "Personenzahl im Profil ergänzen",
+      "energyContent": "Energieinhalt",
+      "energyContentHint": "Brennwert × Zustandszahl von deiner Jahresrechnung. Ohne Angabe rechnet die App mit einem üblichen Mittelwert.",
       "trendCaption": "Ø/Tag ggü. Vorzeitraum",
       "price": "Strompreis",
       "reminder": "Erinnerung",

@@ -95,6 +95,44 @@ describe('buildMonitoringReportData', () => {
     expect(gas?.priceUnit).toBe('€/m³')
   })
 
+  it('liefert den spezifischen Kennwert samt Vergleichswert', () => {
+    // 100 m², Baujahr 1985, Warmwasser über die Heizung.
+    const profile = {
+      heatGenerators: ['gas_boiler'],
+      hasPV: 'no',
+      livingArea: 100,
+      personsCount: 2,
+      buildingYear: 1985,
+      hotWaterType: 'same_as_heating',
+    } as unknown as OnboardingData
+
+    const data = buildMonitoringReportData({
+      profile,
+      readingsByType: { gas: [reading(20, 500), reading(10, 510)] },
+      rangeDays: 30,
+      tariff: TARIFF,
+      types: ['gas'],
+    })
+
+    const gas = data.entries.find((e) => e.type === 'gas')
+    expect(gas?.specificBasis).toBe('perAreaKwh')
+    // Jahresmenge × 10 kWh/m³ / 100 m²  ==  projectedYear / 10
+    expect(gas?.specific).toBeCloseTo((gas!.projectedYear! * 10) / 100, 6)
+    // Baujahr 1985 (150) + Warmwasser-Aufschlag (20)
+    expect(gas?.specificBenchmark).toBe(170)
+  })
+
+  it('lässt den spezifischen Kennwert ohne Wohnfläche weg', () => {
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: { gas: [reading(20, 500), reading(10, 510)] },
+      rangeDays: 30,
+      tariff: TARIFF,
+      types: ['gas'],
+    })
+    expect(data.entries.find((e) => e.type === 'gas')?.specific).toBeUndefined()
+  })
+
   it('greift für Träger ohne eigenen Preis auf den Standardwert zurück', () => {
     const data = buildMonitoringReportData({
       profile: PROFILE,

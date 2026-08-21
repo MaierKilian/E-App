@@ -131,7 +131,8 @@
         "basis": "Based on: {{value}}",
         "basisDays_one": "Based on: avg. over {{count}} day",
         "basisDays_other": "Based on: avg. over {{count}} days"
-      }
+      },
+      "specific": "Specific"
     },
     "trend": {
       "up": "rising",
@@ -1440,6 +1441,16 @@
       "costProjected": "projected",
       "costBasisFullYear": "last 12 months",
       "costBasisEstimate": "estimated from {{months}} mo.",
+      "specific": "Specific",
+      "specificPerArea": "kWh/m²·yr",
+      "specificPerPerson": "kWh/person·yr",
+      "specificPerPersonDay": "l/person·day",
+      "benchmarkTypical": "typical {{value}}",
+      "benchmarkNone": "no reference value",
+      "specificMissingArea": "Add living area to your profile",
+      "specificMissingPersons": "Add number of people to your profile",
+      "energyContent": "Energy content",
+      "energyContentHint": "Calorific value × state number from your annual bill. Without it the app uses a common average.",
       "trendCaption": "avg/day vs. previous",
       "price": "Electricity price",
       "reminder": "Reminder",

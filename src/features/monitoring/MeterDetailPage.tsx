@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronLeft, Plus, Trash2, ChevronDown, Pencil } from 'lucide-react'
 import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/readingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
-import { useTariffStore, resolvePrice } from '@/store/tariffStore'
+import { useTariffStore, resolvePrice, resolveEnergyContent } from '@/store/tariffStore'
 import { SelectChip } from '@/components/ui/SelectChip'
 import { ENERGY_META, activeEnergyTypes, isSeasonal } from './energyConfig'
 import { PRICE_META } from './priceConfig'
@@ -14,6 +14,7 @@ import { ReadingReminder } from './ReadingReminder'
 import { TariffModal } from './TariffModal'
 import { sortByDate, stats, consumptionTrend, daysSinceLastReading } from './readings'
 import { TrendBadge } from './MeterTrend'
+import { specificValue } from './specificValues'
 
 /** Auswählbare Zeiträume für das Verlaufs-Diagramm. */
 type RangeKey = 'd7' | 'd30' | 'all'
@@ -25,6 +26,13 @@ const RANGE_DAYS: Record<RangeKey, number | null> = { d7: 7, d30: 30, all: null 
  * „+ Ablesung"-Button (öffnet vollflächigen Eingabe-Screen), Diagramm,
  * eingeklappte Historie und – bei Strom – Kosten + Strompreis-Chip.
  */
+/** Anzeige-Einheit je Bezugsgröße des spezifischen Kennwerts. */
+const SPECIFIC_UNIT_KEY = {
+  perAreaKwh: 'monitoring.detail.specificPerArea',
+  perPersonKwh: 'monitoring.detail.specificPerPerson',
+  perPersonLiterDay: 'monitoring.detail.specificPerPersonDay',
+} as const
+
 export function MeterDetailPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
@@ -43,6 +51,7 @@ export function MeterDetailPage() {
   const active = activeEnergyTypes(data)
   const type = rawType as EnergyType
   const priceWork = useTariffStore((st) => resolvePrice(st, type).work)
+  const kwhPerUnit = useTariffStore((st) => resolveEnergyContent(st, type))
   // Ungültiger / nicht aktiver Träger → zurück zur Übersicht.
   if (!type || !active.includes(type)) {
     return <Navigate to="/monitoring" replace />
@@ -58,6 +67,9 @@ export function MeterDetailPage() {
   const defaultValue = latest ? Math.trunc(latest.value) : 0
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
+  // Spezifische Kennwerte sind Orientierungsgrössen – Nachkommastellen
+  // taeuschten eine Genauigkeit vor, die die Eingangsdaten nicht hergeben.
+  const specificFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
   const eurFmt = new Intl.NumberFormat(i18n.language, {
     style: 'currency',
     currency: 'EUR',
@@ -85,6 +97,14 @@ export function MeterDetailPage() {
   const priceMeta = PRICE_META[type]
   const eurPerUnit = priceMeta ? priceWork * priceMeta.priceToEur : undefined
   const s = stats(readings, eurPerUnit, { seasonal: isSeasonal(type) })
+  // Spezifischer Kennwert: der Jahresverbrauch bezogen auf Fläche bzw. Personen –
+  // erst damit lässt sich der eigene Verbrauch überhaupt einordnen.
+  const specific = specificValue(
+    type,
+    s.projectedYearKwh,
+    data,
+    kwhPerUnit,
+  )
   const trend = consumptionTrend(readings)
   const sinceDays = daysSinceLastReading(readings, now)
   const lastText =
@@ -167,6 +187,7 @@ export function MeterDetailPage() {
           {/* Kennzahlen: Verbrauch & Jahreskosten als aufgeräumte Mini-Kacheln */}
           {priceMeta && (s.lastConsumptionKwh !== undefined || s.projectedYearCostEur !== undefined) && (
             <div className="mt-4 grid grid-cols-2 gap-2">
+              {/* Kacheln: Verbrauch, Jahreskosten, spezifischer Kennwert. */}
               <div className="rounded-2xl bg-surface-2/60 px-3 py-2.5">
                 <p className="text-[11px] uppercase tracking-wide text-muted">
                   {t('monitoring.detail.consumption')}
@@ -204,6 +225,26 @@ export function MeterDetailPage() {
                         })}
                 </p>
               </div>
+              {specific && (
+                <div className="col-span-2 rounded-2xl bg-surface-2/60 px-3 py-2.5">
+                  <p className="text-[11px] uppercase tracking-wide text-muted">
+                    {t('monitoring.detail.specific')}
+                  </p>
+                  <p className="mt-0.5 font-semibold tabular-nums text-foreground">
+                    {specificFmt.format(specific.value)}{' '}
+                    <span className="text-xs font-medium text-muted">
+                      {t(SPECIFIC_UNIT_KEY[specific.basis])}
+                    </span>
+                  </p>
+                  <p className="mt-0.5 text-[11px] leading-tight text-muted tabular-nums">
+                    {specific.benchmark !== undefined
+                      ? t('monitoring.detail.benchmarkTypical', {
+                          value: specificFmt.format(specific.benchmark),
+                        })
+                      : t('monitoring.detail.benchmarkNone')}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

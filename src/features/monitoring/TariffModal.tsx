@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '@/components/ui/Modal'
 import { InfoButton } from '@/components/ui/InfoButton'
-import { useTariffStore, resolvePrice } from '@/store/tariffStore'
+import { useTariffStore, resolvePrice, resolveEnergyContent } from '@/store/tariffStore'
 import type { EnergyType } from '@/store/readingsStore'
 import { PRICE_META } from './priceConfig'
+import { hasEnergyContent } from './specificValues'
 
 interface TariffModalProps {
   open: boolean
@@ -28,12 +29,17 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
   // useSyncExternalStore „getSnapshot should be cached" → Endlos-Loop.
   const currentWork = useTariffStore((s) => resolvePrice(s, type).work)
   const currentBase = useTariffStore((s) => resolvePrice(s, type).base)
+  const setEnergyContent = useTariffStore((s) => s.setEnergyContent)
+  const currentContent = useTariffStore((s) => resolveEnergyContent(s, type))
+  // Nur Träger, deren Zähler Volumen/Masse misst, brauchen die Umrechnung.
+  const showContent = hasEnergyContent(type)
 
   const meta = PRICE_META[type]
   const name = t(`monitoring.energyTypes.${type}`)
 
   const [work, setWork] = useState(String(currentWork))
   const [base, setBase] = useState(String(currentBase))
+  const [content, setContent] = useState(String(currentContent))
   const [showHelp, setShowHelp] = useState(false)
 
   // Felder beim Öffnen mit den aktuellen Store-Werten vorbelegen.
@@ -42,6 +48,7 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
     setWasOpen(true)
     setWork(String(currentWork))
     setBase(String(currentBase))
+    setContent(String(currentContent))
     setShowHelp(false)
   } else if (!open && wasOpen) {
     setWasOpen(false)
@@ -51,6 +58,10 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
 
   function handleSave() {
     setTypePrice(type, parseNumber(work, meta!.defaultWork), parseNumber(base, meta!.defaultBase))
+    if (showContent) {
+      const parsed = parseNumber(content, currentContent)
+      if (parsed > 0) setEnergyContent(type, parsed)
+    }
     onClose()
   }
 
@@ -109,6 +120,34 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
             </span>
           </div>
         </div>
+
+        {/* Energieinhalt: macht aus m³/l/kg die kWh, in denen alle
+            Vergleichswerte stehen. Ohne Angabe gilt ein üblicher Mittelwert. */}
+        {showContent && (
+          <div className="space-y-1.5">
+            <label
+              htmlFor="tariff-content"
+              className="flex items-center gap-1.5 text-sm font-medium text-foreground"
+            >
+              {t('monitoring.detail.energyContent')}
+              <InfoButton text={t('monitoring.detail.energyContentHint')} />
+            </label>
+            <div className="flex items-center gap-2">
+              <input
+                id="tariff-content"
+                type="number"
+                min={0}
+                step="any"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
+              />
+              <span className="text-sm text-muted shrink-0 w-16">
+                kWh/{meta.priceUnit.replace('€/', '')}
+              </span>
+            </div>
+          </div>
+        )}
 
         <div>
           <button
