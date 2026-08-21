@@ -1919,6 +1919,28 @@
       "collapse": "Hide details",
       "editButton": "Edit profile",
       "resetButton": "Reset profile"
+    },
+    "stage": {
+      "bandTypical": "{{value}} typical",
+      "bandYours": "{{value}} yours",
+      "bandAria": "Efficiency scale from A+ to H",
+      "bandFootnote": "Guidance from your meter readings — not an energy certificate. Includes hot water, not weather-adjusted.",
+      "typicalKicker": "A home like yours",
+      "typicalNote": "Reference for your construction year and renovation status. The app knows your real value from the second reading.",
+      "noProfileYet": "Not enough to compare yet",
+      "noProfileNote": "Add living area and construction year to your profile — then the app can show where your home stands.",
+      "costKicker": "Energy per year",
+      "basisFullYear": "last 12 months",
+      "basisEstimate": "estimated from {{months}} months · improves with every reading",
+      "allMeters": "All meters",
+      "dueDays_one": "{{name}} not read for {{count}} day",
+      "dueDays_other": "{{name}} not read for {{count}} days",
+      "dueUnknown": "Read {{name}}",
+      "dueMore_one": "and {{count}} more meter",
+      "dueMore_other": "and {{count}} more meters",
+      "dueCta": "Add",
+      "curveAria": "{{name}} over the last twelve months",
+      "firstReading": "Add your first meter reading"
     }
   },
   "settings": {

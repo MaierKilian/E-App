@@ -1,14 +1,21 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight, Lightbulb, CheckCircle2, Home } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useTipsStore } from '@/store/tipsStore'
+import { useReadingsStore } from '@/store/readingsStore'
+import { useTariffStore, resolvePrice, resolveEnergyContent } from '@/store/tariffStore'
+import { PRICE_META } from '@/features/monitoring/priceConfig'
+import { dueTypes } from '@/features/monitoring/due'
 import { buildTips } from '@/features/tips/buildTips'
 import type { OnboardingData } from '@/types'
 import { ProgressRing } from './ProgressRing'
-import { EnergySummaryCard } from './EnergySummaryCard'
 import { profileCompleteness, profileMissingCount } from './estimateEnergy'
+import { buildHomeStage } from './homeStage'
+import { HomeStage } from './HomeStage'
+import { DueReadingBanner } from './DueReadingBanner'
 import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
 
 interface HomeDashboardProps {
@@ -32,6 +39,26 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
   const results = useMeasurementsStore((s) => s.results)
   const doneIds = useTipsStore((s) => s.doneIds)
   const dismissedIds = useTipsStore((s) => s.dismissedIds)
+  const readingsByType = useReadingsStore((s) => s.readings)
+  const reminderFrequency = useReadingsStore((s) => s.reminderFrequency)
+  const tariff = useTariffStore()
+
+  // Die Bühne: Skala, Jahreszahl, Aufschlüsselung – wächst mit den Daten.
+  const stage = buildHomeStage({
+    profile: data,
+    readingsByType,
+    priceFor: (type) => {
+      const meta = PRICE_META[type]
+      return meta ? resolvePrice(tariff, type).work * meta.priceToEur : undefined
+    },
+    energyContentFor: (type) => resolveEnergyContent(tariff, type),
+  })
+
+  // Fällige Ablesung: die Logik gab es längst, der Startbildschirm nutzte sie nur nicht.
+  // `now` einmal beim Mounten festhalten – wie in den Monitoring-Ansichten auch,
+  // sonst wäre der Render nicht mehr idempotent.
+  const [now] = useState(() => Date.now())
+  const due = dueTypes(data, readingsByType, reminderFrequency, now)
 
   const completeness = profileCompleteness(data)
   const isComplete = completeness >= 100
@@ -104,10 +131,13 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
         )}
       </div>
 
-      {/* 2. Energie-Status (nur mit echten Zählerständen) */}
-      <EnergySummaryCard data={data} />
+      {/* 2. Die Bühne: Effizienz-Skala + Jahreszahl + Aufschlüsselung */}
+      <HomeStage stage={stage} />
 
-      {/* 3. Personalisierte Empfehlungen (nur wenn vorhanden) */}
+      {/* 3. Fällige Ablesung – der Grund, die App zu öffnen */}
+      {due.length > 0 && <DueReadingBanner types={due} />}
+
+      {/* 4. Personalisierte Empfehlungen (nur wenn vorhanden) */}
       {tips.length > 0 && (
         <button
           type="button"
@@ -125,7 +155,7 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
         </button>
       )}
 
-      {/* 4. Wohnprofile: zwischen mehreren Wohnungen wechseln / neue anlegen */}
+      {/* 5. Wohnprofile: zwischen mehreren Wohnungen wechseln / neue anlegen */}
       <ProfileSwitcher />
     </div>
   )

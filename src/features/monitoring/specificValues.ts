@@ -112,6 +112,10 @@ const WATER_BENCHMARK_LITER_PER_PERSON_DAY = 125
  * @param yearlyUnits Jahresverbrauch in Zähler-Einheiten (m³, l, kg, kWh).
  * @param profile     Wohnprofil – liefert Fläche, Personen und Baujahr.
  * @param kwhPerUnit  Energieinhalt je Zähler-Einheit; ohne Angabe der Standard.
+ * @param benchmarkFactor Abschlag auf den Heizteil des Vergleichswerts
+ *        (1 = unsaniert). Sanierte Hüllen brauchen weniger als der reine
+ *        Baujahrs-Richtwert – ohne diesen Faktor stünde ausgerechnet vor den
+ *        Nutzern, die gedämmt haben, ein zu schlechter Vergleichswert.
  * @returns undefined, wenn die Bezugsgröße fehlt oder null ist.
  */
 export function specificValue(
@@ -119,6 +123,7 @@ export function specificValue(
   yearlyUnits: number | undefined,
   profile: Pick<OnboardingData, 'livingArea' | 'personsCount' | 'buildingYear' | 'hotWaterType'>,
   kwhPerUnit?: number,
+  benchmarkFactor = 1,
 ): SpecificValue | undefined {
   const basis = SPECIFIC_BASIS[type]
   if (!basis || yearlyUnits === undefined || !Number.isFinite(yearlyUnits) || yearlyUnits <= 0) {
@@ -152,15 +157,29 @@ export function specificValue(
 
   const area = positive(profile.livingArea)
   if (!area) return undefined
-  const base = heatDemandBenchmark(profile.buildingYear)
   return {
     basis,
     value: yearlyKwh / area,
-    benchmark:
-      base === undefined
-        ? undefined
-        : base + HOT_WATER_SURCHARGE_KWH_PER_SQM * hotWaterShare(profile.hotWaterType),
+    benchmark: heatBenchmark(profile, benchmarkFactor),
   }
+}
+
+/**
+ * Vergleichswert für den Heizkennwert eines Gebäudes (kWh/m²·a).
+ *
+ * Baujahrs-Richtwert, um den Sanierungsstand verringert, plus Warmwasser –
+ * denn der Zähler misst beides, die Richtwerte meinen nur die Heizung. Der
+ * Aufschlag bleibt vom Sanierungsfaktor unberührt: eine gedämmte Fassade senkt
+ * den Heizbedarf, nicht den Warmwasserbedarf.
+ */
+export function heatBenchmark(
+  profile: Pick<OnboardingData, 'buildingYear' | 'hotWaterType'>,
+  benchmarkFactor = 1,
+): number | undefined {
+  const base = heatDemandBenchmark(profile.buildingYear)
+  if (base === undefined) return undefined
+  const factor = Number.isFinite(benchmarkFactor) ? Math.min(1, Math.max(0.2, benchmarkFactor)) : 1
+  return base * factor + HOT_WATER_SURCHARGE_KWH_PER_SQM * hotWaterShare(profile.hotWaterType)
 }
 
 /**
