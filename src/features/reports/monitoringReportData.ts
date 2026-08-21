@@ -1,9 +1,10 @@
 import type { OnboardingData } from '@/types'
 import type { EnergyType, MeterReading } from '@/store/readingsStore'
-import { ENERGY_META, activeEnergyTypes } from '@/features/monitoring/energyConfig'
+import { ENERGY_META, activeEnergyTypes, isSeasonal } from '@/features/monitoring/energyConfig'
 import { PRICE_META } from '@/features/monitoring/priceConfig'
 import { resolvePrice } from '@/store/tariffStore'
 import { sortByDate } from '@/features/monitoring/readings'
+import { seasonalShareBetween } from '@/features/monitoring/seasonality'
 
 /** Tarif-Store-State (nur zum Auflösen der Preise, ohne UI-Abhängigkeit). */
 export type TariffLike = Parameters<typeof resolvePrice>[0]
@@ -164,6 +165,7 @@ function buildEntry(
 ): MonitoringEntry {
   const meta = ENERGY_META[type]
   const priceMeta = PRICE_META[type]
+  const seasonal = isSeasonal(type)
   const all = sortByDate(readingsByType[type] ?? [])
   const latest = all.length > 0 ? all[all.length - 1] : undefined
 
@@ -228,7 +230,19 @@ function buildEntry(
     const perDay = spanDays > 0 ? consumption / spanDays : undefined
     if (perDay !== undefined && Number.isFinite(perDay)) {
       entry.perDay = perDay
-      entry.projectedYear = perDay * 365
+      // Bei Heizenergie NICHT linear strecken: ein Sommerfenster deckt nur
+      // wenige Prozent des Jahres ab und ergäbe sonst ein Viertel des wahren
+      // Werts (dieselbe Falle wie in `readings.ts`). Das Monatsprofil rechnet
+      // den abgedeckten Jahresanteil heraus; über ein volles Jahr ist der
+      // Anteil 1, dann bleibt die Summe unverändert.
+      const share =
+        seasonal && entry.windowFrom && entry.windowTo
+          ? seasonalShareBetween(
+              new Date(`${entry.windowFrom}T00:00:00`),
+              new Date(`${entry.windowTo}T00:00:00`),
+            )
+          : undefined
+      entry.projectedYear = share && share > 0 ? consumption / share : perDay * 365
       const work = priceMeta && tariff ? resolvePrice(tariff, type).work : undefined
       if (priceMeta && typeof work === 'number' && Number.isFinite(work)) {
         entry.costYear = entry.projectedYear * work * priceMeta.priceToEur

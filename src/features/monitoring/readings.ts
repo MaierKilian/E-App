@@ -1,4 +1,5 @@
 import type { MeterReading } from '@/store/readingsStore'
+import { seasonalShareBetween } from './seasonality'
 
 /**
  * Reine Berechnungen rund um Zählerstände.
@@ -20,6 +21,19 @@ export interface ConsumptionSegment {
   kwh: number
 }
 
+/**
+ * Worauf die Jahres-Hochrechnung beruht – bestimmt, wie belastbar sie ist.
+ * Die Oberfläche schreibt das an die Zahl, damit niemand eine Schätzung für
+ * eine Messung hält.
+ */
+export type ProjectionBasis =
+  /** Volle zwölf Monate gemessen – keine Hochrechnung nötig, echter Jahreswert. */
+  | 'fullYear'
+  /** Weniger als ein Jahr, über das Heizprofil auf zwölf Monate gewichtet. */
+  | 'seasonal'
+  /** Weniger als ein Jahr, linear gestreckt (nur für flache Träger wie Strom). */
+  | 'linear'
+
 export interface ReadingStats {
   /** Verbrauch im letzten Abschnitt (kWh) oder undefined bei < 2 Ablesungen. */
   lastConsumptionKwh?: number
@@ -27,40 +41,93 @@ export interface ReadingStats {
   lastConsumptionDays?: number
   /** Durchschnittlicher Verbrauch pro Tag (kWh) über den letzten Abschnitt. */
   perDayKwh?: number
-  /** Hochrechnung auf ein Jahr (365 Tage) in kWh. */
+  /** Verbrauch auf ein Jahr bezogen (kWh) – siehe `projectionBasis`. */
   projectedYearKwh?: number
   /** Kosten des letzten Abschnitts in Euro (falls Preis bekannt). */
   lastCostEur?: number
-  /** Hochgerechnete Jahreskosten in Euro (falls Preis bekannt). */
+  /** Jahreskosten in Euro (falls Preis bekannt). */
   projectedYearCostEur?: number
-}
-
-/** Trend des Tagesverbrauchs: letzter Abschnitt gegenüber dem vorletzten. */
-export interface ConsumptionTrend {
-  /** Tagesverbrauch im letzten Abschnitt. */
-  perDay: number
-  /** Richtung gegenüber dem vorherigen Abschnitt. */
-  direction: 'up' | 'down' | 'flat'
-  /** Relative Änderung (z. B. 0.12 = +12 %), falls ein Vergleich möglich ist. */
-  changePct?: number
+  /** Wie `projectedYearKwh` zustande kam. */
+  projectionBasis?: ProjectionBasis
+  /** Zahl der tatsächlich gemessenen Tage, auf denen die Zahl beruht. */
+  projectionDays?: number
 }
 
 /**
- * Vergleicht den Tagesverbrauch der letzten beiden Abschnitte.
- * Liefert undefined, wenn dafür zu wenige (verwertbare) Ablesungen vorliegen.
+ * Kürzester Messzeitraum, aus dem überhaupt hochgerechnet wird. Darunter ist
+ * das Ergebnis reines Rauschen – dann lieber keine Zahl als eine falsche.
+ */
+const MIN_PROJECTION_DAYS = 21
+const DAYS_PER_YEAR = 365
+
+/** Womit der aktuelle Tagesverbrauch verglichen wurde. */
+export type TrendBaseline =
+  /** Derselbe Zeitraum ein Jahr zuvor – jahreszeitlich sauber. */
+  | 'lastYear'
+  /** Der vorherige Ableseabstand – bei Heizenergie jahreszeitlich verzerrt. */
+  | 'previousPeriod'
+
+/** Trend des Tagesverbrauchs im letzten Abschnitt. */
+export interface ConsumptionTrend {
+  /** Tagesverbrauch im letzten Abschnitt. */
+  perDay: number
+  /** Richtung gegenüber der Vergleichsbasis. */
+  direction: 'up' | 'down' | 'flat'
+  /** Relative Änderung (z. B. 0.12 = +12 %), falls ein Vergleich möglich ist. */
+  changePct?: number
+  /** Vergleichsbasis, falls verglichen wurde. */
+  baseline?: TrendBaseline
+}
+
+/**
+ * Vergleicht den Tagesverbrauch des letzten Abschnitts mit einer Basis.
+ *
+ * Bevorzugt **denselben Zeitraum ein Jahr zuvor**: der Vergleich mit dem
+ * vorherigen Ableseabstand maß bei Heizenergie vor allem die Jahreszeit – im
+ * August gegen den Frühsommer ergab das zuverlässig ein dickes Minus, ohne
+ * dass sich am Verhalten etwas geändert hätte. Reicht die Historie dafür
+ * nicht, wird wie bisher mit dem vorherigen Abschnitt verglichen; `baseline`
+ * sagt, was von beidem gilt.
+ *
+ * Liefert undefined, wenn zu wenige (verwertbare) Ablesungen vorliegen.
  */
 export function consumptionTrend(readings: MeterReading[]): ConsumptionTrend | undefined {
   const segments = consumptionSegments(readings)
   if (segments.length === 0) return undefined
   const last = segments[segments.length - 1]
   const perDay = last.days > 0 ? last.kwh / last.days : 0
+
+  const lastFrom = parseIso(last.from)
+  const lastTo = parseIso(last.to)
+  const firstFrom = parseIso(segments[0].from)
+
+  // 1. Wahl: gleicher Zeitraum im Vorjahr – nur wenn die Historie ihn deckt.
+  if (lastFrom && lastTo && firstFrom) {
+    const yearAgoFrom = new Date(lastFrom.getTime() - DAYS_PER_YEAR * MS_PER_DAY)
+    const yearAgoTo = new Date(lastTo.getTime() - DAYS_PER_YEAR * MS_PER_DAY)
+    if (yearAgoFrom >= firstFrom) {
+      const days = (yearAgoTo.getTime() - yearAgoFrom.getTime()) / MS_PER_DAY
+      const kwh = consumptionInWindow(segments, yearAgoFrom, yearAgoTo)
+      const basePerDay = days > 0 ? kwh / days : 0
+      if (basePerDay > 0) {
+        const changePct = (perDay - basePerDay) / basePerDay
+        return { perDay, direction: directionOf(changePct), changePct, baseline: 'lastYear' }
+      }
+    }
+  }
+
+  // 2. Wahl: vorheriger Abschnitt.
   if (segments.length < 2) return { perDay, direction: 'flat' }
   const prev = segments[segments.length - 2]
   const prevPerDay = prev.days > 0 ? prev.kwh / prev.days : 0
   if (prevPerDay <= 0) return { perDay, direction: 'flat' }
   const changePct = (perDay - prevPerDay) / prevPerDay
-  const direction = Math.abs(changePct) < 0.03 ? 'flat' : changePct > 0 ? 'up' : 'down'
-  return { perDay, direction, changePct }
+  return { perDay, direction: directionOf(changePct), changePct, baseline: 'previousPeriod' }
+}
+
+/** Unter 3 % Abweichung gilt der Verbrauch als unverändert. */
+function directionOf(changePct: number): 'up' | 'down' | 'flat' {
+  return Math.abs(changePct) < 0.03 ? 'flat' : changePct > 0 ? 'up' : 'down'
 }
 
 /** Tagesverbrauch je Abschnitt (für Sparklines), älteste zuerst. */
@@ -83,6 +150,12 @@ export function sortByDate(readings: MeterReading[]): MeterReading[] {
     (a, b) =>
       a.date.localeCompare(b.date) || (a.createdAt ?? '').localeCompare(b.createdAt ?? ''),
   )
+}
+
+/** ISO-Datum (yyyy-mm-dd) als lokales Date, oder undefined bei Unsinn. */
+function parseIso(iso: string): Date | undefined {
+  const d = new Date(`${iso}T00:00:00`)
+  return Number.isFinite(d.getTime()) ? d : undefined
 }
 
 /** Tagesdifferenz zwischen zwei ISO-Daten (kann negativ/0 sein). */
@@ -113,12 +186,59 @@ export function consumptionSegments(readings: MeterReading[]): ConsumptionSegmen
 }
 
 /**
+ * Verbrauch in einem Zeitfenster, anteilig aus den Abschnitten aufsummiert.
+ * Ragt ein Abschnitt nur teilweise ins Fenster, zählt er anteilig nach Tagen.
+ */
+function consumptionInWindow(
+  segments: ConsumptionSegment[],
+  windowStart: Date,
+  windowEnd: Date,
+): number {
+  let total = 0
+  for (const seg of segments) {
+    const from = parseIso(seg.from)
+    const to = parseIso(seg.to)
+    if (!from || !to || seg.days <= 0) continue
+    const overlapStart = from > windowStart ? from : windowStart
+    const overlapEnd = to < windowEnd ? to : windowEnd
+    const overlapDays = (overlapEnd.getTime() - overlapStart.getTime()) / MS_PER_DAY
+    if (overlapDays <= 0) continue
+    total += (seg.kwh / seg.days) * overlapDays
+  }
+  return total
+}
+
+/**
  * Berechnet Kennzahlen aus den Ablesungen.
+ *
+ * **Jahreswert:** Bis Juli 2026 nahm diese Funktion allein den letzten
+ * Ableseabstand und multiplizierte dessen Tagesrate mit 365. Bei Strom geht
+ * das auf, bei Heizenergie nicht: eine Sommermessung ergab so rund ein
+ * Viertel, eine Dezembermessung das Doppelte des wahren Jahresverbrauchs –
+ * die Anzeige schwankte übers Jahr um den Faktor acht, ohne dass sich am
+ * Verbrauch etwas änderte.
+ *
+ * Jetzt gestuft:
+ * 1. Liegen ≥ 365 Tage Messung vor, wird das letzte Jahr aufsummiert. Das ist
+ *    ein echter Jahreswert und deckt jeden Heizzyklus vollständig ab.
+ * 2. Sonst wird bei `seasonal` über das Monatsprofil gewichtet (siehe
+ *    `seasonality.ts`): gemessener Verbrauch geteilt durch den Jahresanteil,
+ *    den der Messzeitraum abdeckt.
+ * 3. Sonst linear auf 365 Tage gestreckt – richtig für flache Träger.
+ *
+ * Unter {@link MIN_PROJECTION_DAYS} Messtagen wird gar nicht hochgerechnet.
+ *
  * @param readings Liste der Ablesungen.
  * @param eurPerUnit Preis in € pro Zähler-Einheit (z. B. €/kWh, €/m³);
  *                   0/undefined → keine Kosten.
+ * @param options `seasonal`: Heizenergie (Gas/Öl/Pellets bzw. Wärmepumpe) –
+ *                Monatsprofil anwenden statt linear zu strecken.
  */
-export function stats(readings: MeterReading[], eurPerUnit?: number): ReadingStats {
+export function stats(
+  readings: MeterReading[],
+  eurPerUnit?: number,
+  options: { seasonal?: boolean } = {},
+): ReadingStats {
   const segments = consumptionSegments(readings)
   if (segments.length === 0) return {}
 
@@ -126,7 +246,35 @@ export function stats(readings: MeterReading[], eurPerUnit?: number): ReadingSta
   const lastConsumptionKwh = last.kwh
   const lastConsumptionDays = last.days
   const perDayKwh = last.days > 0 ? last.kwh / last.days : undefined
-  const projectedYearKwh = perDayKwh !== undefined ? perDayKwh * 365 : undefined
+
+  const first = segments[0]
+  const measuredStart = parseIso(first.from)
+  const measuredEnd = parseIso(last.to)
+  const measuredDays =
+    measuredStart && measuredEnd
+      ? Math.round((measuredEnd.getTime() - measuredStart.getTime()) / MS_PER_DAY)
+      : 0
+
+  let projectedYearKwh: number | undefined
+  let projectionBasis: ProjectionBasis | undefined
+
+  if (measuredStart && measuredEnd && measuredDays >= MIN_PROJECTION_DAYS) {
+    if (measuredDays >= DAYS_PER_YEAR) {
+      // Echter Jahreswert: die letzten 365 Tage aufsummiert.
+      const windowStart = new Date(measuredEnd.getTime() - DAYS_PER_YEAR * MS_PER_DAY)
+      projectedYearKwh = consumptionInWindow(segments, windowStart, measuredEnd)
+      projectionBasis = 'fullYear'
+    } else {
+      const measuredKwh = consumptionInWindow(segments, measuredStart, measuredEnd)
+      const share = options.seasonal
+        ? seasonalShareBetween(measuredStart, measuredEnd)
+        : measuredDays / DAYS_PER_YEAR
+      if (share > 0) {
+        projectedYearKwh = measuredKwh / share
+        projectionBasis = options.seasonal ? 'seasonal' : 'linear'
+      }
+    }
+  }
 
   const priceEur =
     typeof eurPerUnit === 'number' && Number.isFinite(eurPerUnit) ? eurPerUnit : undefined
@@ -144,5 +292,7 @@ export function stats(readings: MeterReading[], eurPerUnit?: number): ReadingSta
     projectedYearKwh,
     lastCostEur,
     projectedYearCostEur,
+    projectionBasis,
+    projectionDays: projectedYearKwh !== undefined ? measuredDays : undefined,
   }
 }

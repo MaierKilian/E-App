@@ -1086,6 +1086,8 @@
       "consumptionDays_other": "in {{count}} Tagen",
       "cost": "Kosten / Jahr",
       "costProjected": "hochgerechnet",
+      "costBasisFullYear": "letzte 12 Monate",
+      "costBasisEstimate": "geschätzt aus {{months}} Mon.",
       "trendCaption": "Ø/Tag ggü. Vorzeitraum",
       "price": "Strompreis",
       "reminder": "Erinnerung",
@@ -1850,7 +1852,9 @@
     "profileMissing_other": "Noch {{count}} Angaben offen",
     "completeCta": "Vervollständigen",
     "energy": {
-      "overline": "Hochgerechnet / Jahr"
+      "overline": "Verbrauch / Jahr",
+      "basisFullYear": "letzte 12 Monate",
+      "basisEstimate": "geschätzt aus {{months}} Mon."
     },
     "hero": {
       "title": "Geschätzte Energiekosten",

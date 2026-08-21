@@ -75,14 +75,22 @@ describe('buildMonitoringReportData', () => {
     const strom = data.entries.find((e) => e.type === 'electricity')
     const gas = data.entries.find((e) => e.type === 'gas')
 
-    // Strom: 3650 kWh/a × 40 ct/kWh = 1460 €
+    // Strom ist nicht saisonal und bleibt bei der linearen Rechnung:
+    // 3650 kWh/a × 40 ct/kWh = 1460 €
     expect(strom?.costYear).toBeCloseTo(1460, 6)
     expect(strom?.priceWork).toBe(40)
     expect(strom?.priceUnit).toBe('ct/kWh')
 
-    // Gas: 20 m³ / 10 d → 730 m³/a × 1,50 €/m³ = 1095 €
+    // Gas ist Heizenergie und wird über das Monatsprofil gewichtet, nicht
+    // linear gestreckt: Das Fenster 30.07.–09.08. (2 Juli- + 8 Augusttage)
+    // deckt nur 0,645 % des Jahresverbrauchs ab. 20 m³ / 0,006452 = 3100 m³/a,
+    // × 1,50 €/m³ = 4650 €.
+    //
+    // Linear wären es 730 m³/a (1095 €) – ein Viertel davon. Genau diese
+    // Untertreibung im Sommer war der Fehler; die Zahl schwankte übers Jahr um
+    // den Faktor acht, ohne dass sich der Verbrauch änderte.
     expect(gas?.hasCost).toBe(true)
-    expect(gas?.costYear).toBeCloseTo(1095, 6)
+    expect(gas?.costYear).toBeCloseTo(4650, 6)
     expect(gas?.priceWork).toBe(1.5)
     expect(gas?.priceUnit).toBe('€/m³')
   })

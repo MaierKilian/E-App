@@ -28,6 +28,28 @@ export const ENERGY_META: Record<EnergyType, EnergyMeta> = {
   solar_thermal: { icon: SunMedium, unit: 'kWh', hasCost: false, accent: '#f59e0b' },
 }
 
+/**
+ * Träger, deren Verbrauch stark am Heizbedarf hängt und daher übers Jahr um ein
+ * Vielfaches schwankt. Für sie wird die Jahres-Hochrechnung über das
+ * Monatsprofil gewichtet statt linear gestreckt (siehe `seasonality.ts`).
+ *
+ * Die Wärmepumpe zählt bewusst dazu: sie heizt ebenfalls, auch wenn ihr Zähler
+ * in kWh Strom läuft. Haushaltsstrom und Wasser sind flach genug für die
+ * lineare Rechnung.
+ */
+const SEASONAL_TYPES: ReadonlySet<EnergyType> = new Set<EnergyType>([
+  'gas',
+  'oil',
+  'pellets',
+  'heat_pump',
+  'solar_thermal',
+])
+
+/** true → Jahresverbrauch dieses Trägers folgt dem Heizprofil. */
+export function isSeasonal(type: EnergyType): boolean {
+  return SEASONAL_TYPES.has(type)
+}
+
 /** Stabile Anzeige-Reihenfolge der Energieträger (Strom zuerst). */
 const ORDER: EnergyType[] = [
   'electricity',

@@ -6,7 +6,7 @@ import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/re
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore, resolvePrice } from '@/store/tariffStore'
 import { SelectChip } from '@/components/ui/SelectChip'
-import { ENERGY_META, activeEnergyTypes } from './energyConfig'
+import { ENERGY_META, activeEnergyTypes, isSeasonal } from './energyConfig'
 import { PRICE_META } from './priceConfig'
 import { AbsoluteLineChart, type LinePoint } from './AbsoluteLineChart'
 import { AddReadingScreen } from './AddReadingScreen'
@@ -84,7 +84,7 @@ export function MeterDetailPage() {
 
   const priceMeta = PRICE_META[type]
   const eurPerUnit = priceMeta ? priceWork * priceMeta.priceToEur : undefined
-  const s = stats(readings, eurPerUnit)
+  const s = stats(readings, eurPerUnit, { seasonal: isSeasonal(type) })
   const trend = consumptionTrend(readings)
   const sinceDays = daysSinceLastReading(readings, now)
   const lastText =
@@ -191,10 +191,17 @@ export function MeterDetailPage() {
                     ? `≈ ${eurFmt.format(s.projectedYearCostEur)}`
                     : '–'}
                 </p>
+                {/* Statt nur „hochgerechnet": worauf die Zahl beruht. Ein
+                    echter Jahreswert und eine Schaetzung aus vier Monaten sind
+                    sehr unterschiedlich belastbar. */}
                 <p className="mt-0.5 text-[11px] leading-tight text-muted">
-                  {s.projectedYearCostEur !== undefined
-                    ? t('monitoring.detail.costProjected')
-                    : ' '}
+                  {s.projectedYearCostEur === undefined
+                    ? ' '
+                    : s.projectionBasis === 'fullYear'
+                      ? t('monitoring.detail.costBasisFullYear')
+                      : t('monitoring.detail.costBasisEstimate', {
+                          months: Math.max(1, Math.round((s.projectionDays ?? 0) / 30)),
+                        })}
                 </p>
               </div>
             </div>

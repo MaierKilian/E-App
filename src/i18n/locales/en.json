@@ -1438,6 +1438,8 @@
       "consumptionDays_other": "in {{count}} days",
       "cost": "Cost / year",
       "costProjected": "projected",
+      "costBasisFullYear": "last 12 months",
+      "costBasisEstimate": "estimated from {{months}} mo.",
       "trendCaption": "avg/day vs. previous",
       "price": "Electricity price",
       "reminder": "Reminder",
@@ -1850,7 +1852,9 @@
     "profileMissing_other": "{{count}} details left",
     "completeCta": "Complete",
     "energy": {
-      "overline": "Projected / year"
+      "overline": "Consumption / year",
+      "basisFullYear": "last 12 months",
+      "basisEstimate": "estimated from {{months}} mo."
     },
     "hero": {
       "title": "Estimated energy costs",

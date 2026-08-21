@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight } from 'lucide-react'
 import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore, resolvePrice } from '@/store/tariffStore'
-import { activeEnergyTypes, ENERGY_META } from '@/features/monitoring/energyConfig'
+import { activeEnergyTypes, ENERGY_META, isSeasonal } from '@/features/monitoring/energyConfig'
 import { PRICE_META } from '@/features/monitoring/priceConfig'
 import { sortByDate, stats, consumptionTrend } from '@/features/monitoring/readings'
 import { TrendBadge } from '@/features/monitoring/MeterTrend'
@@ -41,12 +41,15 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
       const readings = sortByDate(readingsByType[type] ?? [])
       const priceMeta = PRICE_META[type]
       const eurPerUnit = priceMeta ? resolvePrice(tariff, type).work * priceMeta.priceToEur : undefined
-      const s = stats(readings, eurPerUnit)
+      const s = stats(readings, eurPerUnit, { seasonal: isSeasonal(type) })
       return {
         type,
         meta: ENERGY_META[type],
         costEur: s.projectedYearCostEur,
         amount: s.projectedYearKwh,
+        basis: s.projectionBasis,
+        // Ganze Monate, gerundet – „aus 4 Mon. geschätzt" ist greifbarer als 118 Tage.
+        basisMonths: Math.max(1, Math.round((s.projectionDays ?? 0) / 30)),
         trend: consumptionTrend(readings),
       }
     })
@@ -106,6 +109,13 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
                   ≈ {value}
                 </span>
                 {c.trend && <TrendBadge trend={c.trend} compact />}
+              </span>
+              {/* Woher die Zahl kommt: echter Jahreswert oder Schaetzung aus
+                  kuerzerer Historie. Ohne das liest sich beides gleich. */}
+              <span className="truncate text-[10px] text-muted">
+                {c.basis === 'fullYear'
+                  ? t('home.energy.basisFullYear')
+                  : t('home.energy.basisEstimate', { months: c.basisMonths })}
               </span>
             </button>
           )
