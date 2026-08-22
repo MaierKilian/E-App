@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Gauge, PowerOff, Timer, Info } from 'lucide-react'
+import { Gauge, PowerOff, Camera, Clock, Info } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { IntroHeroImage } from '../IntroHeroImage'
 
-const STEP_ICONS: LucideIcon[] = [Gauge, PowerOff, Timer]
+const STEP_ICONS: LucideIcon[] = [PowerOff, Camera, Clock]
 
 /** Intro des Grundlast-Checks: Hero-Motiv + kompakte 1-2-3-Anleitung. */
 export function BaseLoadIntro() {

@@ -12,7 +12,18 @@ import type { ProjectionBasis, ReadingStats } from '@/features/monitoring/readin
  * Kühl-/Gefrierschrank), um Doppelzählung zu vermeiden.
  */
 
-export type MeterMode = 'instant' | 'timed' | 'ferraris'
+/**
+ * Wie die Grundlast erfasst wird.
+ *
+ * `instant` – der Zähler zeigt die Leistung direkt in Watt an. Schnell, aber
+ * eine Momentaufnahme: Der Kühlschrank taktet, je nach Zeitpunkt misst man
+ * seinen Kompressor mit oder nicht.
+ *
+ * `readings` – zwei Zählerstände mit zeitlichem Abstand. Der ehrliche Weg: Er
+ * funktioniert mit jedem Zähler (auch der Ferraris-Drehscheibe, die ebenfalls
+ * ein kWh-Zählwerk hat) und mittelt über mehrere Kühlschrank-Zyklen.
+ */
+export type MeterMode = 'instant' | 'readings'
 
 const HOURS_PER_YEAR = 24 * 365
 const MS_PER_HOUR = 3_600_000
@@ -40,18 +51,82 @@ export function wattsFromTimed(startKwh: number, endKwh: number, elapsedMs: numb
 }
 
 /**
- * Leistung (W) aus der Ferraris-Drehscheibe: Umdrehungen in einer gemessenen
- * Zeitspanne, Zählerkonstante in U/kWh (steht auf dem Zähler, z. B. „75 U/kWh").
+ * Auflösung des Zähler-Displays in kWh – die letzte Stelle, die er anzeigt.
+ * Sie entscheidet allein darüber, wie lange gemessen werden muss: Ein Zähler
+ * mit 0,1 kWh springt bei 100 W Grundlast nur einmal pro Stunde weiter.
  */
-export function wattsFromFerraris(
-  revolutions: number,
-  constantPerKwh: number,
+export const METER_RESOLUTIONS = [0.1, 0.01, 0.001] as const
+export type MeterResolution = (typeof METER_RESOLUTIONS)[number]
+
+/**
+ * Mindestdauer, damit die Messung mehrere Kühlschrank-Zyklen abdeckt.
+ *
+ * Der Kompressor läuft getaktet (grob ein Drittel der Zeit, ~80 W). Eine kurze
+ * Messung erwischt entweder „an" oder „aus" – der Fehler daraus ist größer als
+ * jede Zähler-Ungenauigkeit und lässt sich nur durch Zeit herausmitteln.
+ */
+const CYCLE_SAFE_MS = 3 * MS_PER_HOUR
+
+/** Ab dieser Unsicherheit ist die Zahl nur noch Rauschen und wird verworfen. */
+const MAX_USABLE_UNCERTAINTY = 0.5
+/** Bis hierher gilt die Messung als genau. */
+const GOOD_UNCERTAINTY = 0.1
+/** Typische Grundlast, mit der die empfohlene Wartezeit vorab geschätzt wird. */
+const ASSUMED_WATTS = 100
+
+/** Wie belastbar eine Zwei-Ablesungen-Messung ist. */
+export interface ReadingsQuality {
+  /** Relative Unsicherheit aus der Zähler-Auflösung (0,06 = ±6 %). */
+  uncertainty: number
+  /** true, wenn der Zeitraum mehrere Kühlschrank-Zyklen abdeckt. */
+  longEnough: boolean
+  /** false → der Zähler hat sich zu wenig bewegt, die Zahl sagt nichts aus. */
+  usable: boolean
+  level: 'good' | 'fair' | 'poor'
+}
+
+/**
+ * Bewertet, wie belastbar zwei Zählerstände sind – aus der Auflösung des
+ * Displays und der verstrichenen Zeit.
+ *
+ * Genau hier scheiterte die frühere Stoppuhr-Messung: Bei 0,1 kWh Auflösung und
+ * fünf Minuten Wartezeit steht der Zähler noch auf demselben Wert. Statt eines
+ * toten Buttons soll die App sagen können, dass es schlicht zu früh ist.
+ */
+export function readingsQuality(
+  startKwh: number,
+  endKwh: number,
   elapsedMs: number,
-): number {
-  const hours = elapsedMs / MS_PER_HOUR
-  if (revolutions <= 0 || constantPerKwh <= 0 || hours <= 0) return 0
-  const kwh = revolutions / constantPerKwh
-  return (kwh * 1000) / hours
+  resolutionKwh: number,
+): ReadingsQuality {
+  const delta = endKwh - startKwh
+  if (!(delta > 0) || !(elapsedMs > 0) || !(resolutionKwh > 0)) {
+    return { uncertainty: 1, longEnough: false, usable: false, level: 'poor' }
+  }
+  const uncertainty = Math.min(1, resolutionKwh / delta)
+  const longEnough = elapsedMs >= CYCLE_SAFE_MS
+  const usable = uncertainty <= MAX_USABLE_UNCERTAINTY
+  const level: ReadingsQuality['level'] = !usable
+    ? 'poor'
+    : uncertainty <= GOOD_UNCERTAINTY && longEnough
+      ? 'good'
+      : 'fair'
+  return { uncertainty, longEnough, usable, level }
+}
+
+/**
+ * Empfohlene Wartezeit zwischen den beiden Ablesungen (ms).
+ *
+ * Ziel sind zehn Anzeige-Schritte (±10 %) bei einer angenommenen Grundlast von
+ * {@link ASSUMED_WATTS} – mindestens aber {@link CYCLE_SAFE_MS}, weil ein
+ * feiner Zähler zwar schneller genau, die Momentaufnahme dadurch aber nicht
+ * repräsentativer wird.
+ */
+export function recommendedWaitMs(resolutionKwh: number): number {
+  if (!(resolutionKwh > 0)) return CYCLE_SAFE_MS
+  const targetKwh = 10 * resolutionKwh
+  const hours = targetKwh / (ASSUMED_WATTS / 1000)
+  return Math.max(CYCLE_SAFE_MS, hours * MS_PER_HOUR)
 }
 
 export interface BaseLoadResult {

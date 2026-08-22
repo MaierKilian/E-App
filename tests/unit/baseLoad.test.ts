@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { baseLoadShare, calcBaseLoad } from '@/features/measurements/base_load/baseLoad'
+import {
+  baseLoadShare,
+  calcBaseLoad,
+  readingsQuality,
+  recommendedWaitMs,
+  wattsFromTimed,
+} from '@/features/measurements/base_load/baseLoad'
 import { stats } from '@/features/monitoring/readings'
 import type { MeterReading } from '@/store/readingsStore'
 
@@ -51,5 +57,66 @@ describe('baseLoadShare', () => {
     const partial = baseLoadShare(876, stats(readings(['2024-01-01', 0], ['2024-04-01', 750])))
     expect(partial!.basis).toBe('linear')
     expect(partial!.measuredDays).toBe(91)
+  })
+})
+
+const HOUR = 3_600_000
+
+describe('wattsFromTimed', () => {
+  it('rechnet zwei Zählerstände in Dauerleistung um', () => {
+    // 0,8 kWh in 8 Stunden = 100 W.
+    expect(wattsFromTimed(1000, 1000.8, 8 * HOUR)).toBeCloseTo(100, 6)
+  })
+})
+
+describe('readingsQuality', () => {
+  it('bewertet eine Nachtmessung auf grobem Zähler als belastbar', () => {
+    // 0,1-kWh-Zähler, 0,9 kWh über 9 Stunden → ±11 % … knapp daneben,
+    // mit 1,2 kWh über 12 h sind es ±8 %.
+    const q = readingsQuality(1000, 1001.2, 12 * HOUR, 0.1)
+    expect(q.usable).toBe(true)
+    expect(q.longEnough).toBe(true)
+    expect(q.uncertainty).toBeCloseTo(0.1 / 1.2, 6)
+    expect(q.level).toBe('good')
+  })
+
+  it('verwirft die frühere Stoppuhr-Messung als zu früh', () => {
+    // Genau der alte Fall: 0,1-kWh-Zähler, fünf Minuten, ein Ziffernsprung.
+    const q = readingsQuality(1000, 1000.1, 5 * 60_000, 0.1)
+    expect(q.usable).toBe(false)
+    expect(q.level).toBe('poor')
+  })
+
+  it('stuft kurze Messungen trotz feiner Anzeige nur als brauchbar ein', () => {
+    // Feiner Zähler, aber 20 Minuten decken keinen Kühlschrank-Zyklus ab.
+    const q = readingsQuality(1000, 1000.05, 20 * 60_000, 0.001)
+    expect(q.usable).toBe(true)
+    expect(q.longEnough).toBe(false)
+    expect(q.level).toBe('fair')
+  })
+
+  it('ist robust gegen unbrauchbare Eingaben', () => {
+    for (const q of [
+      readingsQuality(1000, 1000, HOUR, 0.1), // kein Verbrauch
+      readingsQuality(1000, 999, HOUR, 0.1), // rückwärts
+      readingsQuality(1000, 1001, 0, 0.1), // keine Zeit
+      readingsQuality(1000, 1001, HOUR, 0), // keine Auflösung
+    ]) {
+      expect(q.usable).toBe(false)
+      expect(q.level).toBe('poor')
+    }
+  })
+})
+
+describe('recommendedWaitMs', () => {
+  it('verlangt beim groben Zähler eine Nachtmessung', () => {
+    // 0,1 kWh → zehn Schritte bei 100 W = 1 kWh = 10 Stunden.
+    expect(recommendedWaitMs(0.1)).toBe(10 * HOUR)
+  })
+
+  it('unterschreitet auch bei feiner Anzeige nie die Kühlschrank-Taktung', () => {
+    expect(recommendedWaitMs(0.01)).toBe(3 * HOUR)
+    expect(recommendedWaitMs(0.001)).toBe(3 * HOUR)
+    expect(recommendedWaitMs(0)).toBe(3 * HOUR)
   })
 })

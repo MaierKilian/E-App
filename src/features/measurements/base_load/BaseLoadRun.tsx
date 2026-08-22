@@ -1,104 +1,158 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Play, Square, RotateCcw } from 'lucide-react'
+import { Camera, RotateCcw, Clock, Check } from 'lucide-react'
 import { useTariffStore } from '@/store/tariffStore'
+import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftStore'
 import { SelectChip } from '@/components/ui/SelectChip'
+import { instanceKey } from '../rooms'
+import { ReadingCapture } from './ReadingCapture'
 import {
   calcBaseLoad,
-  wattsFromFerraris,
+  readingsQuality,
+  recommendedWaitMs,
   wattsFromTimed,
+  METER_RESOLUTIONS,
   type MeterMode,
 } from './baseLoad'
 import type { RunProps } from '../runnerTypes'
 
-const MODES: MeterMode[] = ['instant', 'timed', 'ferraris']
+const MODES: MeterMode[] = ['instant', 'readings']
+const DEFAULT_RESOLUTION = 0.1
+
+/** Welcher Zählerstand gerade erfasst wird. */
+type Capturing = 'start' | 'end'
 
 function parseNum(raw: string): number {
   const v = Number(raw.replace(',', '.'))
   return Number.isFinite(v) && v >= 0 ? v : 0
 }
 
-function fmtElapsed(ms: number): string {
-  const total = Math.floor(ms / 1000)
-  const m = Math.floor(total / 60)
-  const s = total % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
 /**
- * Durchführung des Grundlast-Checks. Der Nutzer wählt seinen Zählertyp; je nach
- * Modus wird die Leistung direkt eingegeben (digital mit W-Anzeige), über eine
- * Zeitmessung des kWh-Stands ermittelt oder aus den Umdrehungen einer Ferraris-
- * Drehscheibe berechnet. Eine eingebaute Stoppuhr misst die Zeit selbst.
+ * Durchführung des Grundlast-Checks.
+ *
+ * Zwei Wege: Zeigt der Zähler die Leistung direkt in Watt an, wird sie
+ * eingetippt. Sonst werden **zwei Zählerstände mit zeitlichem Abstand**
+ * erfasst – das funktioniert mit jedem Zähler und ist der ehrlichere Weg, weil
+ * es über die Taktung des Kühlschranks mittelt.
+ *
+ * Die frühere Stoppuhr ist ersatzlos entfallen: Sie verlangte, Minuten lang vor
+ * dem Zähler zu warten, in denen sich dessen Anzeige gar nicht bewegen konnte.
+ * Stattdessen merkt sich die Messung ihren Startpunkt im Draft-Store – der
+ * Nutzer legt das Handy weg und kommt am nächsten Morgen wieder, so wie es
+ * Kühlschrank- und Gefriertruhen-Check schon halten.
  */
 export function BaseLoadRun({ onEvaluate }: RunProps) {
   const { t, i18n } = useTranslation()
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
+  const setDraft = useMeasurementDraftStore((s) => s.setDraft)
+  const key = instanceKey('base_load')
+  const d = readDraft(key)
 
   const [mode, setMode] = useState<MeterMode>('instant')
-
-  // Direkte Eingabe (digital mit W-Anzeige).
   const [instantW, setInstantW] = useState(0)
-  // Zeitmessung (kWh-Zählerstand).
-  const [startKwh, setStartKwh] = useState('')
-  const [endKwh, setEndKwh] = useState('')
-  // Ferraris-Drehscheibe.
-  const [revolutions, setRevolutions] = useState('')
-  const [constant, setConstant] = useState('')
 
-  // Gemeinsame Stoppuhr (für Zeitmessung & Ferraris).
-  const [running, setRunning] = useState(false)
-  const [elapsedMs, setElapsedMs] = useState(0)
-  const startRef = useRef(0)
+  // Zwei Ablesungen – über Stunden hinweg, daher persistiert.
+  const [resolution, setResolution] = useState(d.resolution ?? DEFAULT_RESOLUTION)
+  // Der Zeitstempel entscheidet, ob eine Ablesung vorliegt: Der Draft-Store
+  // speichert nur Zahlen und kennt kein „gelöscht", ein Zählerstand darf aber
+  // 0 sein. Ein Zeitstempel von 0 kann dagegen nie echt sein.
+  const [startKwh, setStartKwh] = useState<number | undefined>(
+    d.startAt ? d.startKwh : undefined,
+  )
+  const [startAt, setStartAt] = useState<number | undefined>(d.startAt || undefined)
+  const [endKwh, setEndKwh] = useState<number | undefined>(d.endAt ? d.endKwh : undefined)
+  const [endAt, setEndAt] = useState<number | undefined>(d.endAt || undefined)
+  const [capturing, setCapturing] = useState<Capturing | undefined>()
+
+  // Uhrzeit-Anzeige aktuell halten, solange die Messung läuft.
+  const [now, setNow] = useState(() => Date.now())
+  const waiting = startAt !== undefined && endAt === undefined
+  useEffect(() => {
+    if (!waiting) return
+    const iv = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(iv)
+  }, [waiting])
 
   useEffect(() => {
-    if (!running) return
-    const tick = () => setElapsedMs(performance.now() - startRef.current)
-    const iv = setInterval(tick, 200)
-    return () => clearInterval(iv)
-  }, [running])
+    // Alle Felder immer schreiben: setDraft ergänzt nur, es entfernt nichts –
+    // ausgelassene Schlüssel behielten sonst nach „Neu beginnen" ihren alten Wert.
+    setDraft(key, {
+      resolution,
+      startKwh: startKwh ?? 0,
+      startAt: startAt ?? 0,
+      endKwh: endKwh ?? 0,
+      endAt: endAt ?? 0,
+    })
+  }, [key, setDraft, resolution, startKwh, startAt, endKwh, endAt])
 
-  // Moduswechsel setzt die Stoppuhr zurück (Messung gilt nur fürs gewählte Verfahren).
-  function changeMode(next: MeterMode) {
-    setMode(next)
-    setRunning(false)
-    setElapsedMs(0)
+  function restart() {
+    setStartKwh(undefined)
+    setStartAt(undefined)
+    setEndKwh(undefined)
+    setEndAt(undefined)
   }
 
-  function startWatch() {
-    startRef.current = performance.now()
-    setElapsedMs(0)
-    setRunning(true)
+  function handleCaptured(value: number) {
+    if (capturing === 'start') {
+      setStartKwh(value)
+      setStartAt(Date.now())
+      setEndKwh(undefined)
+      setEndAt(undefined)
+    } else {
+      setEndKwh(value)
+      setEndAt(Date.now())
+    }
+    setCapturing(undefined)
   }
-  function stopWatch() {
-    setElapsedMs(performance.now() - startRef.current)
-    setRunning(false)
-  }
-  function resetWatch() {
-    setRunning(false)
-    setElapsedMs(0)
-  }
+
+  const elapsedMs =
+    startAt === undefined ? 0 : (endAt ?? now) - startAt
+  const complete = startKwh !== undefined && endKwh !== undefined && startAt !== undefined
+  const quality = complete
+    ? readingsQuality(startKwh, endKwh, elapsedMs, resolution)
+    : undefined
+  const recommendedMs = recommendedWaitMs(resolution)
 
   const watts =
     mode === 'instant'
       ? instantW
-      : mode === 'timed'
-        ? wattsFromTimed(parseNum(startKwh), parseNum(endKwh), elapsedMs)
-        : wattsFromFerraris(parseNum(revolutions), parseNum(constant), elapsedMs)
+      : complete
+        ? wattsFromTimed(startKwh, endKwh, elapsedMs)
+        : 0
 
-  const watchReady = !running && elapsedMs > 0
   const canEvaluate =
-    mode === 'instant'
-      ? instantW > 0
-      : mode === 'timed'
-        ? watchReady && parseNum(endKwh) > parseNum(startKwh)
-        : watchReady && parseNum(revolutions) > 0 && parseNum(constant) > 0
+    mode === 'instant' ? instantW > 0 : Boolean(quality?.usable) && watts > 0
 
   const wattsFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
+  const kwhFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 3 })
+  const pctFmt = new Intl.NumberFormat(i18n.language, {
+    style: 'percent',
+    maximumFractionDigits: 0,
+  })
+
+  /** Dauer als „7 Std. 20 Min." bzw. „45 Min." – Sekunden sind hier bedeutungslos. */
+  function fmtDuration(ms: number): string {
+    const totalMin = Math.max(0, Math.round(ms / 60000))
+    const h = Math.floor(totalMin / 60)
+    const m = totalMin % 60
+    if (h === 0) return t('measurements.base_load.run.duration.minutes', { m })
+    if (m === 0) return t('measurements.base_load.run.duration.hours', { h })
+    return t('measurements.base_load.run.duration.hoursMinutes', { h, m })
+  }
 
   function handleEvaluate() {
     if (!canEvaluate) return
     const calc = calcBaseLoad(watts, workPriceCt)
+    const details: Record<string, number> = {
+      watts: calc.watts,
+      annualKwh: calc.annualKwh,
+      annualEur: calc.annualEur,
+    }
+    // Momentaufnahme oder gemittelt – das Ergebnis soll sagen können, worauf es beruht.
+    if (mode === 'readings' && quality) {
+      details.measuredMs = elapsedMs
+      details.uncertainty = Math.round(quality.uncertainty * 100) / 100
+    }
     onEvaluate({
       result: {
         id: 'base_load',
@@ -108,7 +162,7 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
         completedAt: new Date().toISOString(),
         // Bewusst KEIN avoidableCost/yearlySaving: Grundlast ist Diagnose,
         // die € beziffern die Folge-Checks (kein Doppelzählen).
-        details: { watts: calc.watts, annualKwh: calc.annualKwh, annualEur: calc.annualEur },
+        details,
       },
     })
   }
@@ -125,7 +179,7 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
               key={m}
               label={t(`measurements.base_load.run.modes.${m}`)}
               selected={mode === m}
-              onClick={() => changeMode(m)}
+              onClick={() => setMode(m)}
             />
           ))}
         </div>
@@ -153,85 +207,130 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
               <span className="text-sm text-muted">W</span>
             </span>
           </label>
+          <p className="mt-3 text-xs text-muted">
+            {t('measurements.base_load.run.instantNote')}
+          </p>
         </div>
       )}
 
-      {(mode === 'timed' || mode === 'ferraris') && (
-        <div className="glass rounded-3xl p-5 space-y-4">
-          {mode === 'timed' ? (
-            <NumberField
-              label={t('measurements.base_load.run.startKwh')}
-              unit="kWh"
-              value={startKwh}
-              onChange={setStartKwh}
-            />
-          ) : (
-            <NumberField
-              label={t('measurements.base_load.run.constant')}
-              unit="U/kWh"
-              value={constant}
-              onChange={setConstant}
-            />
-          )}
-
-          <div className="rounded-2xl border border-border bg-surface/50 p-4 text-center">
-            <p className="text-3xl font-bold tabular-nums text-foreground">
-              {fmtElapsed(elapsedMs)}
+      {mode === 'readings' && startAt === undefined && (
+        <>
+          <div className="glass rounded-3xl p-5">
+            <p className="mb-3 text-sm font-semibold text-foreground">
+              {t('measurements.base_load.run.resolutionTitle')}
             </p>
-            <p className="mt-1 text-xs text-muted">
-              {t(`measurements.base_load.run.watchHint.${mode}`)}
-            </p>
-            <div className="mt-3 flex justify-center gap-2">
-              {!running ? (
-                <button
-                  type="button"
-                  onClick={startWatch}
-                  className="inline-flex items-center gap-1.5 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
-                >
-                  <Play className="h-4 w-4" />
-                  {elapsedMs > 0
-                    ? t('measurements.base_load.run.restart')
-                    : t('measurements.base_load.run.start')}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={stopWatch}
-                  className="inline-flex items-center gap-1.5 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
-                >
-                  <Square className="h-4 w-4" />
-                  {t('measurements.base_load.run.stop')}
-                </button>
-              )}
-              {!running && elapsedMs > 0 && (
-                <button
-                  type="button"
-                  onClick={resetWatch}
-                  aria-label={t('measurements.base_load.run.reset')}
-                  className="focus-ring glass inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-sm font-medium text-muted transition-transform active:scale-95"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                </button>
-              )}
+            <div className="flex flex-wrap gap-2">
+              {METER_RESOLUTIONS.map((r) => (
+                <SelectChip
+                  key={r}
+                  label={`${kwhFmt.format(r)} kWh`}
+                  selected={resolution === r}
+                  onClick={() => setResolution(r)}
+                />
+              ))}
             </div>
+            <p className="mt-3 text-xs text-muted">
+              {t('measurements.base_load.run.resolutionHint', {
+                duration: fmtDuration(recommendedMs),
+              })}
+            </p>
           </div>
 
-          {watchReady &&
-            (mode === 'timed' ? (
-              <NumberField
-                label={t('measurements.base_load.run.endKwh')}
-                unit="kWh"
-                value={endKwh}
-                onChange={setEndKwh}
-              />
-            ) : (
-              <NumberField
-                label={t('measurements.base_load.run.revolutions')}
-                unit=""
-                value={revolutions}
-                onChange={setRevolutions}
-              />
-            ))}
+          <div className="glass rounded-3xl p-5">
+            <p className="text-sm font-semibold text-foreground">
+              {t('measurements.base_load.run.firstTitle')}
+            </p>
+            <p className="mt-1 text-sm text-muted">
+              {t('measurements.base_load.run.firstHint')}
+            </p>
+            <button
+              type="button"
+              onClick={() => setCapturing('start')}
+              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.97]"
+            >
+              <Camera className="h-4 w-4" />
+              {t('measurements.base_load.run.captureFirst')}
+            </button>
+          </div>
+        </>
+      )}
+
+      {mode === 'readings' && startAt !== undefined && (
+        <div className="glass space-y-4 rounded-3xl p-5">
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm font-medium text-muted">
+              {t('measurements.base_load.run.startValue')}
+            </span>
+            <span className="text-sm font-semibold tabular-nums text-foreground">
+              {kwhFmt.format(startKwh ?? 0)} kWh
+            </span>
+          </div>
+
+          {endAt === undefined ? (
+            <div className="rounded-2xl border border-border bg-surface/50 p-4 text-center">
+              <p className="flex items-center justify-center gap-1.5 text-2xl font-bold tabular-nums text-foreground">
+                <Clock className="h-5 w-5 text-muted" aria-hidden="true" />
+                {fmtDuration(elapsedMs)}
+              </p>
+              <p className="mt-1 text-xs text-muted">
+                {elapsedMs >= recommendedMs
+                  ? t('measurements.base_load.run.ready')
+                  : t('measurements.base_load.run.waitHint', {
+                      duration: fmtDuration(recommendedMs - elapsedMs),
+                    })}
+              </p>
+              <button
+                type="button"
+                onClick={() => setCapturing('end')}
+                className="mt-3 inline-flex items-center gap-1.5 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
+              >
+                <Camera className="h-4 w-4" />
+                {t('measurements.base_load.run.captureSecond')}
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-medium text-muted">
+                  {t('measurements.base_load.run.endValue')}
+                </span>
+                <span className="text-sm font-semibold tabular-nums text-foreground">
+                  {kwhFmt.format(endKwh ?? 0)} kWh
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-medium text-muted">
+                  {t('measurements.base_load.run.measuredOver')}
+                </span>
+                <span className="text-sm font-semibold tabular-nums text-foreground">
+                  {fmtDuration(elapsedMs)}
+                </span>
+              </div>
+              {quality && (
+                <p className="flex gap-2 text-xs text-muted">
+                  <Check className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    {quality.usable
+                      ? t(`measurements.base_load.run.quality.${quality.level}`, {
+                          pct: pctFmt.format(quality.uncertainty),
+                        })
+                      : t('measurements.base_load.run.quality.tooEarly', {
+                          resolution: kwhFmt.format(resolution),
+                        })}
+                  </span>
+                </p>
+              )}
+            </>
+          )}
+
+          <button
+            type="button"
+            onClick={restart}
+            className="focus-ring inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-sm font-medium text-muted transition-transform active:scale-95"
+          >
+            <RotateCcw className="h-4 w-4" />
+            {t('measurements.base_load.run.restart')}
+          </button>
         </div>
       )}
 
@@ -252,37 +351,24 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
       >
         {t('measurements.common.evaluate')}
       </button>
-    </div>
-  )
-}
 
-/** Beschriftetes Zahlenfeld mit Einheit. */
-function NumberField({
-  label,
-  unit,
-  value,
-  onChange,
-}: {
-  label: string
-  unit: string
-  value: string
-  onChange: (v: string) => void
-}) {
-  return (
-    <label className="flex items-center justify-between gap-3">
-      <span className="text-sm font-medium text-foreground">{label}</span>
-      <span className="flex items-center gap-2">
-        <input
-          type="number"
-          inputMode="decimal"
-          min={0}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="0"
-          className="focus-ring w-28 rounded-xl border border-border bg-surface/70 px-3 py-2 text-right font-semibold tabular-nums text-foreground"
+      {capturing && (
+        <ReadingCapture
+          title={t(
+            capturing === 'start'
+              ? 'measurements.base_load.run.firstTitle'
+              : 'measurements.base_load.run.secondTitle',
+          )}
+          hint={t(
+            capturing === 'start'
+              ? 'measurements.base_load.run.capture.hintFirst'
+              : 'measurements.base_load.run.capture.hintSecond',
+          )}
+          lastReading={capturing === 'end' ? startKwh : undefined}
+          onConfirm={handleCaptured}
+          onClose={() => setCapturing(undefined)}
         />
-        {unit && <span className="text-sm text-muted">{unit}</span>}
-      </span>
-    </label>
+      )}
+    </div>
   )
 }

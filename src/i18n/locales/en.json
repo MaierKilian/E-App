@@ -894,48 +894,67 @@
         "stepsTitle": "How it works",
         "imageAlt": "Illustration: person reading the base load on the electricity meter",
         "steps": [
-          "Find your electricity meter",
-          "Switch off active devices – leave always-on ones (fridge, router) running",
-          "Read the power or measure briefly"
+          "Switch off devices in active use – leave always-on ones (fridge, router) running",
+          "Record the meter reading – photograph it or type it in",
+          "Read it again later – ideally the next morning"
         ],
-        "hint": "Tip: it is most accurate at night or when nobody is actively using power.",
+        "hint": "Tip: measuring overnight is the most accurate – nothing you actively use is running then.",
         "detailsButton": "Details",
         "detailsTitle": "What is base load?",
         "details": [
-          "Even with nothing actively running, your home draws power continuously – standby, fridges, router & co.",
-          "For the measurement, switch off all actively used devices but leave always-on ones like the fridge and router running.",
-          "Then read the power at the meter (digital meters show watts directly).",
-          "It is most accurate at night or when nobody is actively using power.",
-          "Even 20–30 watts of constant load add up to noticeable costs over the year."
+          "Even when nothing is actively running, your home draws power continuously – standby, refrigeration, router and so on.",
+          "Switch off everything in active use for the measurement, but leave always-on devices like the fridge and router running.",
+          "If your meter shows power directly in watts, you can simply read it off. Otherwise you record the meter reading twice – the app works out the power from the gap.",
+          "You do not have to wait between readings: record the value in the evening and read it again the next morning. Overnight also averages out the fridge's cycling.",
+          "Even 20–30 watts of constant draw add up to noticeable costs over a year."
         ],
         "start": "Start check"
       },
       "run": {
-        "meterTitle": "Which meter?",
+        "meterTitle": "How are you measuring?",
         "modes": {
-          "instant": "Digital (W display)",
-          "timed": "Digital (kWh only)",
-          "ferraris": "Spinning disc"
+          "instant": "Meter shows watts",
+          "readings": "Two readings"
         },
         "modeHint": {
-          "instant": "Modern meters show the current power directly in watts – just read it off.",
-          "timed": "Read the meter, start the stopwatch, wait a few minutes, read again.",
-          "ferraris": "Older meters with a spinning disc: count the revolutions during the measured time."
+          "instant": "Modern meters show current power directly in watts – just read it off.",
+          "readings": "Works with any meter: record the reading, read it again later. No waiting at the meter."
         },
         "instantLabel": "Current power",
-        "startKwh": "Meter reading start",
-        "endKwh": "Meter reading end",
-        "constant": "Meter constant",
-        "revolutions": "Revolutions",
-        "watchHint": {
-          "timed": "Start, wait a few minutes, then stop.",
-          "ferraris": "Start, count revolutions, then stop."
+        "instantNote": "A snapshot: if the fridge compressor happens to be running, the value comes out much higher. Two readings average that out.",
+        "resolutionTitle": "What is the last digit your meter shows?",
+        "resolutionHint": "The coarser the display, the longer the gap between readings has to be. Recommended: {{duration}}.",
+        "firstTitle": "First reading",
+        "secondTitle": "Second reading",
+        "firstHint": "Switch off devices in active use, leave always-on ones like the fridge and router running. Best done in the evening before bed.",
+        "captureFirst": "Record meter reading",
+        "captureSecond": "Record second reading",
+        "startValue": "First reading",
+        "endValue": "Second reading",
+        "measuredOver": "Measured over",
+        "ready": "Ready – you can take the second reading now.",
+        "waitHint": "About {{duration}} left. You can close the app.",
+        "duration": {
+          "minutes": "{{m}} min",
+          "hours": "{{h}} h",
+          "hoursMinutes": "{{h}} h {{m}} min"
         },
-        "start": "Start",
-        "stop": "Stop",
-        "restart": "Restart",
-        "reset": "Reset",
-        "resultLabel": "Measured base load"
+        "quality": {
+          "good": "Solid measurement, accurate to ±{{pct}}.",
+          "fair": "Usable, accurate to ±{{pct}}. A longer gap would make the number more reliable.",
+          "tooEarly": "Too early: your meter only resolves {{resolution}} kWh and has barely moved. Read it again later."
+        },
+        "capture": {
+          "valueLabel": "Meter reading in kWh",
+          "decimalHint": "Include the decimal – it is what this measurement depends on.",
+          "tooLow": "Must be higher than the first reading – meters only count up.",
+          "hintFirst": "Enter the reading your electricity meter shows right now.",
+          "hintSecond": "Enter the reading your electricity meter shows right now.",
+          "confirm": "Use value",
+          "cancel": "Cancel"
+        },
+        "restart": "Start over",
+        "resultLabel": "Base load measured"
       },
       "result": {
         "ratings": {

@@ -894,47 +894,66 @@
         "stepsTitle": "So funktioniert’s",
         "imageAlt": "Illustration: Person liest die Grundlast am Stromzähler ab",
         "steps": [
-          "Stromzähler aufsuchen",
           "Aktive Geräte ausschalten – Dauerläufer (Kühlschrank, Router) an lassen",
-          "Leistung ablesen oder kurz messen"
+          "Zählerstand erfassen – abfotografieren oder eintippen",
+          "Später erneut ablesen – am besten am nächsten Morgen"
         ],
-        "hint": "Tipp: Am genauesten ist die Messung nachts oder wenn niemand aktiv Strom verbraucht.",
+        "hint": "Tipp: Am genauesten ist die Messung über Nacht – dann läuft nichts, was du aktiv nutzt.",
         "detailsButton": "Details",
         "detailsTitle": "Was ist die Grundlast?",
         "details": [
           "Auch wenn nichts aktiv läuft, zieht dein Haushalt dauerhaft Strom – Standby, Kühlgeräte, Router & Co.",
           "Schalte für die Messung alle aktiv genutzten Geräte aus, lass aber Dauerläufer wie Kühlschrank und Router an.",
-          "Lies dann die Leistung am Zähler ab (digitale Zähler zeigen Watt direkt an).",
-          "Am genauesten ist die Messung nachts oder wenn niemand aktiv Strom verbraucht.",
+          "Zeigt dein Zähler die Leistung direkt in Watt an, kannst du sie einfach ablesen. Sonst erfasst du zweimal den Zählerstand – die App rechnet die Leistung aus dem Abstand aus.",
+          "Zwischen den Ablesungen musst du nicht warten: Erfasse den Stand abends, lies am nächsten Morgen erneut ab. Über Nacht wird auch die Taktung des Kühlschranks herausgemittelt.",
           "Schon 20–30 Watt Dauerlast summieren sich über das Jahr zu spürbaren Kosten."
         ],
         "start": "Check starten"
       },
       "run": {
-        "meterTitle": "Welcher Zähler?",
+        "meterTitle": "Wie misst du?",
         "modes": {
-          "instant": "Digital (W-Anzeige)",
-          "timed": "Digital (nur kWh)",
-          "ferraris": "Drehscheibe"
+          "instant": "Zähler zeigt Watt",
+          "readings": "Zwei Ablesungen"
         },
         "modeHint": {
           "instant": "Moderne Zähler zeigen die aktuelle Leistung direkt in Watt an – einfach ablesen.",
-          "timed": "Zählerstand ablesen, Stoppuhr starten, ein paar Minuten warten, erneut ablesen.",
-          "ferraris": "Ältere Zähler mit drehender Scheibe: zähle die Umdrehungen in der gemessenen Zeit."
+          "readings": "Funktioniert mit jedem Zähler: Zählerstand erfassen, später erneut ablesen. Kein Warten vor dem Zähler."
         },
         "instantLabel": "Aktuelle Leistung",
-        "startKwh": "Zählerstand Start",
-        "endKwh": "Zählerstand Ende",
-        "constant": "Zählerkonstante",
-        "revolutions": "Umdrehungen",
-        "watchHint": {
-          "timed": "Starten, einige Minuten warten, dann stoppen.",
-          "ferraris": "Starten, Umdrehungen zählen, dann stoppen."
+        "instantNote": "Momentaufnahme: Läuft gerade der Kühlschrank-Kompressor, fällt der Wert deutlich höher aus. Über zwei Ablesungen wird das herausgemittelt.",
+        "resolutionTitle": "Was zeigt dein Zähler als letzte Stelle?",
+        "resolutionHint": "Je gröber die Anzeige, desto länger muss zwischen den Ablesungen liegen. Empfohlen: {{duration}}.",
+        "firstTitle": "Erste Ablesung",
+        "secondTitle": "Zweite Ablesung",
+        "firstHint": "Schalte aktiv genutzte Geräte aus, lass Dauerläufer wie Kühlschrank und Router an. Am besten abends vor dem Schlafengehen.",
+        "captureFirst": "Zählerstand erfassen",
+        "captureSecond": "Zweite Ablesung erfassen",
+        "startValue": "Erste Ablesung",
+        "endValue": "Zweite Ablesung",
+        "measuredOver": "Gemessen über",
+        "ready": "Bereit – du kannst jetzt zum zweiten Mal ablesen.",
+        "waitHint": "Noch etwa {{duration}} warten. Du kannst die App schließen.",
+        "duration": {
+          "minutes": "{{m}} Min.",
+          "hours": "{{h}} Std.",
+          "hoursMinutes": "{{h}} Std. {{m}} Min."
         },
-        "start": "Start",
-        "stop": "Stopp",
-        "restart": "Neu starten",
-        "reset": "Zurücksetzen",
+        "quality": {
+          "good": "Belastbare Messung, ±{{pct}} genau.",
+          "fair": "Brauchbar, ±{{pct}} genau. Ein längerer Abstand macht die Zahl sicherer.",
+          "tooEarly": "Zu früh: Dein Zähler zeigt nur {{resolution}} kWh genau und hat sich kaum bewegt. Lies später noch einmal ab."
+        },
+        "capture": {
+          "valueLabel": "Zählerstand in kWh",
+          "decimalHint": "Nachkommastelle mit eintragen – auf sie kommt es bei dieser Messung an.",
+          "tooLow": "Muss über der ersten Ablesung liegen – Zähler laufen vorwärts.",
+          "hintFirst": "Trage den Zählerstand ein, den dein Stromzähler jetzt anzeigt.",
+          "hintSecond": "Trage den Zählerstand ein, den dein Stromzähler jetzt anzeigt.",
+          "confirm": "Übernehmen",
+          "cancel": "Abbrechen"
+        },
+        "restart": "Neu beginnen",
         "resultLabel": "Ermittelte Grundlast"
       },
       "result": {
