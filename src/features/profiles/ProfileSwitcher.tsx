@@ -43,7 +43,9 @@ function shortenPlaceName(name: string): string {
  * Ab zwei Wohnungen erscheint das Kachel-Raster (Spaltenzahl passt sich dynamisch
  * an) samt „Verwalten"-Umschalter, hinter dem Teilen/Verlassen/Löschen der aktiven
  * Wohnung liegen – so ist die Startseite aufgeräumt und das Löschen nicht mehr
- * dauerhaft präsent. Wird nur für angemeldete Nutzer mit geladenen Profilen gezeigt.
+ * dauerhaft präsent. Die Kacheln erklären sich über den Haken der aktiven Wohnung
+ * selbst; ein dauerhafter „Tippe eine Wohnung an"-Hinweis entfällt deshalb.
+ * Wird nur für angemeldete Nutzer mit geladenen Profilen gezeigt.
  *
  * **Startverhalten:** Solange Firebase den Anmeldestatus prüft und die Profile
  * aus Firestore lädt, werden die Kacheln bereits aus dem persistierten
@@ -377,14 +379,6 @@ export function ProfileSwitcher() {
 
       {/* Aktionen der aktiven Wohnung – hinter „Verwalten", in beiden Fällen. */}
       {manageOpen && !loading && manageActions}
-
-      {/* Hinweis zum Wechseln nur bei mehreren Wohnungen. */}
-      {!single && (
-        <p className="mt-2 flex items-center gap-1.5 px-1 text-xs text-muted">
-          <Home className="h-3.5 w-3.5 shrink-0" />
-          {t('profiles.hint')}
-        </p>
-      )}
 
       {active && active.role === 'owner' && (
         <ShareProfileDialog

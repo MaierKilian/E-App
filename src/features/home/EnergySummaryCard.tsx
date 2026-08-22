@@ -59,6 +59,11 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
 
   if (carriers.length === 0) return null
 
+  // In den Kacheln stehen Euro-Betraege, sobald fuer jeden Traeger ein Preis
+  // hinterlegt ist. Dann waere "Verbrauch / Jahr" schlicht die falsche
+  // Ueberschrift; ohne Preis (Anzeige in kWh/m3) bleibt sie richtig.
+  const allCosts = carriers.every((c) => c.costEur !== undefined)
+
   return (
     <div className="glass relative overflow-hidden rounded-3xl p-4">
       {/* Dezenter Akzent-Schimmer in der Farbe des ersten Trägers (i. d. R. Strom) */}
@@ -75,7 +80,7 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
         className="focus-ring relative flex w-full items-center justify-between gap-2"
       >
         <span className="text-xs font-medium uppercase tracking-wide text-muted">
-          {t('home.energy.overline')}
+          {t(allCosts ? 'home.energy.overlineCost' : 'home.energy.overline')}
         </span>
         <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
       </button>
@@ -117,11 +122,16 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
                 {c.trend && <TrendBadge trend={c.trend} compact />}
               </span>
               {/* Woher die Zahl kommt: echter Jahreswert oder Schaetzung aus
-                  kuerzerer Historie. Ohne das liest sich beides gleich. */}
-              <span className="truncate text-[10px] text-muted">
+                  kuerzerer Historie. Ohne das liest sich beides gleich.
+                  Steht ein Trend-Badge daneben, gehoert sein Bezug hierher:
+                  sonst liest man die "+36 %" als Veraenderung gegenueber dem
+                  Vormonat statt gegenueber dem Vorjahr. Bewusst umbrechend
+                  statt abgeschnitten – abgeschnitten waere der Zusatz nutzlos. */}
+              <span className="text-[10px] leading-snug text-muted">
                 {c.basis === 'fullYear'
                   ? t('home.energy.basisFullYear')
                   : t('home.energy.basisEstimate', { months: c.basisMonths })}
+                {c.trend && ` · ${t('home.energy.basisTrend')}`}
               </span>
             </button>
           )

@@ -71,36 +71,34 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
             <h1 className="text-xl font-bold text-foreground truncate">
               {(data.profileName ?? '').trim() || t('home.profileNameFallback')}
             </h1>
+            {/* Status direkt unter der Adresse: als eigene Zeile darunter war er
+                ein zweiter Knopf mit demselben Ziel (`onEdit`) – hier
+                beschriftet er nebenbei den Fortschrittsring daneben. */}
+            {isComplete ? (
+              <p className="mt-0.5 flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                {t('home.profileComplete')}
+              </p>
+            ) : (
+              <p className="mt-0.5 truncate text-xs text-muted">
+                {t('home.profileMissing', { count: missing })}
+              </p>
+            )}
           </div>
           <ChevronRight className="w-5 h-5 text-muted shrink-0" />
         </button>
 
-        {isComplete ? (
-          <p className="mt-3 flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            {t('home.profileComplete')}
-          </p>
-        ) : almostComplete ? (
+        {/* Der grosse Aufruf bleibt echten Luecken vorbehalten. Bei nur noch
+            einer offenen Angabe genuegt die Statuszeile oben – sonst waere die
+            auffaelligste Handlung des Startbildschirms Verwaltungsarbeit. */}
+        {!isComplete && !almostComplete && (
           <button
             type="button"
             onClick={onEdit}
-            className="focus-ring mt-3 text-left text-sm text-muted transition-colors hover:text-foreground"
+            className="focus-ring mt-3 w-full rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
           >
-            {t('home.profileMissing', { count: missing })}
+            {t('home.completeCta')}
           </button>
-        ) : (
-          <div className="mt-3 flex items-center gap-3">
-            <span className="min-w-0 flex-1 truncate text-sm text-muted">
-              {t('home.profileMissing', { count: missing })}
-            </span>
-            <button
-              type="button"
-              onClick={onEdit}
-              className="focus-ring shrink-0 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-transform active:scale-[0.97]"
-            >
-              {t('home.completeCta')}
-            </button>
-          </div>
         )}
       </div>
 

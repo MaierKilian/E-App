@@ -1796,7 +1796,6 @@
     "addNew": "Neue Wohnung",
     "addAnother": "Weitere Wohnung hinzufügen",
     "manage": "Verwalten",
-    "hint": "Tippe eine Wohnung an, um zu wechseln.",
     "sharedBadge": "{{count}} Bewohner",
     "shareActive": "Wohnung teilen",
     "leaveActive": "Wohnung verlassen",
@@ -1866,8 +1865,10 @@
     "completeCta": "Vervollständigen",
     "energy": {
       "overline": "Verbrauch / Jahr",
+      "overlineCost": "Energiekosten / Jahr",
       "basisFullYear": "letzte 12 Monate",
-      "basisEstimate": "geschätzt aus {{months}} Mon."
+      "basisEstimate": "geschätzt aus {{months}} Mon.",
+      "basisTrend": "ggü. Vorjahr"
     },
     "hero": {
       "title": "Geschätzte Energiekosten",

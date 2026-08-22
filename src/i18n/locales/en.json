@@ -1796,7 +1796,6 @@
     "addNew": "New home",
     "addAnother": "Add another home",
     "manage": "Manage",
-    "hint": "Tap a home to switch between them.",
     "sharedBadge": "{{count}} residents",
     "shareActive": "Share home",
     "leaveActive": "Leave home",
@@ -1866,8 +1865,10 @@
     "completeCta": "Complete",
     "energy": {
       "overline": "Consumption / year",
+      "overlineCost": "Energy costs / year",
       "basisFullYear": "last 12 months",
-      "basisEstimate": "estimated from {{months}} mo."
+      "basisEstimate": "estimated from {{months}} mo.",
+      "basisTrend": "vs. last year"
     },
     "hero": {
       "title": "Estimated energy costs",
