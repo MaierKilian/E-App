@@ -1921,6 +1921,12 @@
       "collapse": "Angaben ausblenden",
       "editButton": "Profil bearbeiten",
       "resetButton": "Profil zurücksetzen"
+    },
+    "measurements": {
+      "overline": "Messungen",
+      "doneLine": "{{done}} von {{total}} erledigt",
+      "emptyTitle": "Noch keine Messung",
+      "emptyHint": "Fang mit einer einfachen an – zehn Minuten genügen."
     }
   },
   "settings": {

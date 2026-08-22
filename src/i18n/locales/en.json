@@ -1921,6 +1921,12 @@
       "collapse": "Hide details",
       "editButton": "Edit profile",
       "resetButton": "Reset profile"
+    },
+    "measurements": {
+      "overline": "Measurements",
+      "doneLine": "{{done}} of {{total}} done",
+      "emptyTitle": "No measurement yet",
+      "emptyHint": "Start with an easy one – ten minutes will do."
     }
   },
   "settings": {

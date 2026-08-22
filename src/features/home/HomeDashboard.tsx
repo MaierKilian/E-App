@@ -8,6 +8,7 @@ import { buildTips } from '@/features/tips/buildTips'
 import type { OnboardingData } from '@/types'
 import { ProgressRing } from './ProgressRing'
 import { EnergySummaryCard } from './EnergySummaryCard'
+import { MeasurementSummaryCard } from './MeasurementSummaryCard'
 import { profileCompleteness, profileMissingCount } from './estimateEnergy'
 import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
 import { useTipContext } from '@/features/tips/useTipContext'
@@ -23,8 +24,9 @@ interface HomeDashboardProps {
  * 1. Eine Karte vereint Begrüßung, Fortschritt und (nur solange nötig) den Aufruf
  *    zum Vervollständigen – der frühere große schwarze Button entfällt.
  * 2. Energie-Status: hochgerechnete Jahreskosten, aber nur mit echten Zählerständen.
- * 3. Personalisierte Empfehlungen.
- * 4. Wohnungs-Auswahl (schlank bei einer, als Raster ab zwei Wohnungen).
+ * 3. Messungen: Fortschritt und die zuletzt erzielten Ergebnisse.
+ * 4. Personalisierte Empfehlungen.
+ * 5. Wohnungs-Auswahl (schlank bei einer, als Raster ab zwei Wohnungen).
  * Bewusst ohne großen Profil-Block, damit alles ohne Scrollen auf einen Screen passt.
  */
 export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
@@ -107,7 +109,13 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
       {/* 2. Energie-Status (nur mit echten Zählerständen) */}
       <EnergySummaryCard data={data} />
 
-      {/* 3. Personalisierte Empfehlungen (nur wenn vorhanden) */}
+      {/* 3. Messungen: Fortschritt und die zuletzt erzielten Ergebnisse.
+             Steht vor den Empfehlungen, weil die Empfehlungen daraus folgen –
+             und weil eine Messung ohne Befund gar keine Empfehlung erzeugt und
+             sonst nirgends auf dem Startbildschirm auftauchte. */}
+      <MeasurementSummaryCard />
+
+      {/* 4. Personalisierte Empfehlungen (nur wenn vorhanden) */}
       {tips.length > 0 && (
         <button
           type="button"
@@ -125,7 +133,7 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
         </button>
       )}
 
-      {/* 4. Wohnprofile: zwischen mehreren Wohnungen wechseln / neue anlegen */}
+      {/* 5. Wohnprofile: zwischen mehreren Wohnungen wechseln / neue anlegen */}
       <ProfileSwitcher />
     </div>
   )
