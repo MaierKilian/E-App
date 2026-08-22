@@ -982,8 +982,8 @@
         "start": "Check starten"
       },
       "run": {
-        "bulbsTitle": "Lampen, die noch keine LED sind",
-        "bulbsHint": "Zähle pro Typ die Lampen in diesem Raum, die noch nicht auf LED umgestellt sind.",
+        "bulbsTitle": "Welche Lampen sind hier noch keine LED?",
+        "bulbsHint": "Ein typischer Vorschlag für diesen Raum – korrigiere ihn einfach.",
         "bulbTypes": {
           "incandescent": "Glühbirne",
           "halogen": "Halogen",
@@ -994,12 +994,34 @@
           "halogen": "Halogenstab/-birne, ~30–50 W",
           "spot": "Einbau-/Deckenspot, ~35 W"
         },
-        "hoursTitle": "Brenndauer pro Tag",
-        "hoursHint": "Wie lange brennt das Licht hier im Schnitt?",
-        "hoursUnit": "h/Tag",
-        "hoursValue": "{{hours}} h/Tag",
-        "preview": "Geschätzte Einsparung",
-        "previewValue": "{{value}} €/Jahr"
+        "allLed": "Hier ist alles LED",
+        "usageTitle": "Wie viel brennt das Licht hier?",
+        "usageHint": "Ohne diese Angabe lässt sich kein belastbarer Eurobetrag nennen.",
+        "usageLevels": {
+          "low": "Wenig",
+          "normal": "Normal",
+          "high": "Viel"
+        },
+        "usageChosen": "Gerechnet mit ca. {{hours}} Stunden am Tag.",
+        "usageOpen": "Noch nichts gewählt.",
+        "savingLabel": "Spart im Jahr",
+        "savingRange": "ca. {{low}}–{{high}} €",
+        "savingKwh": "ca. {{kwh}} kWh",
+        "savingSmall": "Zu wenig für einen belastbaren Eurobetrag – deshalb die Strommenge.",
+        "payback": "Einmalig ca. {{invest}} € · ab Monat {{months}} im Plus",
+        "paybackSlow": "Einmalig ca. {{invest}} € · rechnet sich erst langfristig",
+        "stateDone": "Keine alten Lampen – dieser Raum ist fertig.",
+        "stateNeedsUsage_one": "{{count}} Lampe erfasst. Wähle oben, wie viel das Licht hier brennt.",
+        "stateNeedsUsage_other": "{{count}} Lampen erfasst. Wähle oben, wie viel das Licht hier brennt.",
+        "assumptions": "bei {{price}} ct/kWh und ca. {{hours}} h am Tag",
+        "assumptionsTitle": "Womit gerechnet wird",
+        "assumptionsItems": [
+          "Strompreis {{price}} ct/kWh – aus deinem Tarif. Änderbar in den Einstellungen.",
+          "Brenndauer ca. {{hours}} Stunden am Tag – aus deiner Auswahl und einem typischen Wert für diesen Raum.",
+          "Ersparnis je Lampe: Glühbirne ~52 W, Halogen ~35 W, Spot ~30 W weniger als eine LED gleicher Helligkeit.",
+          "Ersatz-LEDs mit 3–4 € je Stück angesetzt (Retrofit, ohne Leuchte).",
+          "Deshalb steht dort ein Bereich und kein exakter Betrag: Die Brenndauer ist immer eine Schätzung."
+        ]
       },
       "result": {
         "ratings": {
@@ -1014,8 +1036,18 @@
           "elevated": "Ein LED-Umstieg spart hier spürbar Strom.",
           "high": "Hier steckt viel drin – die Beleuchtung verbraucht unnötig viel."
         },
-        "bulbsLabel": "Lampen",
-        "kwhLabel": "Ersparnis/Jahr",
+        "perYear": "€/Jahr",
+        "rangeValue": "{{low}}–{{high}}",
+        "payback": "Einmalig ca. {{invest}} € – ab Monat {{months}} im Plus",
+        "paybackSlow": "Einmalig ca. {{invest}} € – rechnet sich erst langfristig",
+        "paybackHint_one": "Eine Ersatz-LED, danach spart der Raum jedes Jahr weiter.",
+        "paybackHint_other": "{{count}} Ersatz-LEDs, danach spart der Raum jedes Jahr weiter.",
+        "noticeSmall": "Der Betrag liegt unter der Schwelle, ab der wir Euro nennen. Die Strommenge ist die belastbarere Angabe.",
+        "noticeEstimated": "Ohne Angabe zur Brenndauer beruht die Rechnung auf einer Annahme. Zurück zum Erfassen, um sie zu bestätigen.",
+        "doneBadge": "Alles auf LED",
+        "doneSummary": "Hier ist nichts mehr zu holen – dieser Raum ist fertig.",
+        "doneTip": "Beim Nachkaufen weiter auf LED mit warmweißem Licht achten.",
+        "assumptions": "Gerechnet mit {{price}} ct/kWh und ca. {{hours}} h am Tag.",
         "tip": {
           "good": "Achte beim Nachkaufen weiter auf LED mit warmweißem Licht.",
           "medium": "Tausche die Lampen nach und nach gegen LED – am besten zuerst die, die am längsten brennen.",

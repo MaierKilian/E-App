@@ -982,8 +982,8 @@
         "start": "Start check"
       },
       "run": {
-        "bulbsTitle": "Bulbs that are not LED yet",
-        "bulbsHint": "For each type, count the bulbs in this room that have not been switched to LED yet.",
+        "bulbsTitle": "Which bulbs here are not LED yet?",
+        "bulbsHint": "A typical suggestion for this room – just correct it.",
         "bulbTypes": {
           "incandescent": "Incandescent",
           "halogen": "Halogen",
@@ -994,12 +994,34 @@
           "halogen": "halogen rod/bulb, ~30–50 W",
           "spot": "recessed/ceiling spot, ~35 W"
         },
-        "hoursTitle": "Hours per day",
-        "hoursHint": "How long is the light on here on average?",
-        "hoursUnit": "h/day",
-        "hoursValue": "{{hours}} h/day",
-        "preview": "Estimated savings",
-        "previewValue": "{{value}} €/year"
+        "allLed": "Everything here is LED",
+        "usageTitle": "How much is the light on here?",
+        "usageHint": "Without this we cannot name a euro amount we could defend.",
+        "usageLevels": {
+          "low": "Little",
+          "normal": "Normal",
+          "high": "A lot"
+        },
+        "usageChosen": "Calculated with about {{hours}} hours a day.",
+        "usageOpen": "Nothing chosen yet.",
+        "savingLabel": "Saves per year",
+        "savingRange": "approx. {{low}}–{{high}} €",
+        "savingKwh": "approx. {{kwh}} kWh",
+        "savingSmall": "Too little for a defensible euro amount – hence the energy figure.",
+        "payback": "About {{invest}} € once · in the black from month {{months}}",
+        "paybackSlow": "About {{invest}} € once · only pays off long term",
+        "stateDone": "No old bulbs – this room is done.",
+        "stateNeedsUsage_one": "{{count}} bulb recorded. Choose above how much the light is on here.",
+        "stateNeedsUsage_other": "{{count}} bulbs recorded. Choose above how much the light is on here.",
+        "assumptions": "at {{price}} ct/kWh and approx. {{hours}} h a day",
+        "assumptionsTitle": "What this is based on",
+        "assumptionsItems": [
+          "Electricity price {{price}} ct/kWh – from your tariff. Change it in settings.",
+          "Burn time approx. {{hours}} hours a day – from your choice and a typical value for this room.",
+          "Saving per bulb: incandescent ~52 W, halogen ~35 W, spot ~30 W less than an LED of the same brightness.",
+          "Replacement LEDs assumed at 3–4 € each (retrofit, fixture not included).",
+          "That is why you see a range and not an exact amount: burn time is always an estimate."
+        ]
       },
       "result": {
         "ratings": {
@@ -1014,8 +1036,18 @@
           "elevated": "Switching to LED saves noticeable power here.",
           "high": "Lots to gain here – the lighting uses unnecessarily much."
         },
-        "bulbsLabel": "Bulbs",
-        "kwhLabel": "Savings/year",
+        "perYear": "€/year",
+        "rangeValue": "{{low}}–{{high}}",
+        "payback": "About {{invest}} € once – in the black from month {{months}}",
+        "paybackSlow": "About {{invest}} € once – only pays off long term",
+        "paybackHint_one": "One replacement LED, then the room keeps saving every year.",
+        "paybackHint_other": "{{count}} replacement LEDs, then the room keeps saving every year.",
+        "noticeSmall": "The amount is below the threshold where we name euros. The energy figure is the sounder one.",
+        "noticeEstimated": "Without a burn-time choice the calculation rests on an assumption. Go back to confirm it.",
+        "doneBadge": "All LED",
+        "doneSummary": "Nothing left to gain here – this room is done.",
+        "doneTip": "Keep choosing warm-white LEDs when you buy replacements.",
+        "assumptions": "Calculated with {{price}} ct/kWh and approx. {{hours}} h a day.",
         "tip": {
           "good": "Keep choosing warm-white LEDs when you replace bulbs.",
           "medium": "Swap bulbs for LED step by step – start with the ones that are on the longest.",
