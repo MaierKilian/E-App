@@ -84,7 +84,8 @@ export function BaseLoadResult({ result }: ResultProps) {
               ? t('measurements.base_load.result.share.basisFullYear')
               : t('measurements.base_load.result.share.basisProjected', {
                   days: numFmt.format(share.measuredDays),
-                })}
+                })}{' '}
+            {t('measurements.base_load.result.share.ratedByShare')}
           </p>
         </div>
       )}

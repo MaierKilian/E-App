@@ -977,7 +977,8 @@
           "text": "So viel deines Jahresverbrauchs von {{total}} kWh geht an Geräte, die dauerhaft laufen – auch wenn du nichts aktiv nutzt.",
           "basisFullYear": "Grundlage: deine Ablesungen aus zwölf Monaten.",
           "basisProjected": "Grundlage: {{days}} Tage Ablesungen, auf ein Jahr hochgerechnet.",
-          "missing": "Trage im Monitoring deine Zählerstände ein – dann siehst du hier, welchen Anteil die Grundlast an deiner Stromrechnung hat."
+          "missing": "Trage im Monitoring deine Zählerstände ein – dann siehst du hier, welchen Anteil die Grundlast an deiner Stromrechnung hat.",
+          "ratedByShare": "Die Bewertung oben bezieht sich auf diesen Anteil."
         },
         "implausible": {
           "title": "Messung prüfen",

@@ -28,14 +28,39 @@ export type MeterMode = 'instant' | 'readings'
 const HOURS_PER_YEAR = 24 * 365
 const MS_PER_HOUR = 3_600_000
 
-// Orientierungs-Schwellen für die Grundlast eines Haushalts (Watt). Bewusst grob
-// – die tatsächliche „gute" Grundlast hängt von Haushaltsgröße und Geräten ab.
+// Rückfall-Schwellen für die Grundlast eines Haushalts (Watt). Bewusst grob –
+// und zwangsläufig unfair: Eine Familie im Haus mit Gefriertruhe liegt immer
+// über 70 W, egal wie sparsam sie lebt. Sie greifen nur, solange kein
+// Jahresverbrauch aus dem Monitoring vorliegt.
 const GOOD_MAX = 70
 const MEDIUM_MAX = 150
 const ELEVATED_MAX = 250
 
-/** Bewertet die Grundlast (vierstufig). */
-export function rateBaseLoad(watts: number): MeasurementRating {
+// Schwellen für den Anteil der Grundlast am Jahres-Stromverbrauch. Sie messen,
+// was der Haushalt verbraucht, ohne etwas zu nutzen – und sind dadurch von
+// seiner Größe unabhängig, anders als jede absolute Watt-Zahl.
+const GOOD_MAX_SHARE = 0.25
+const MEDIUM_MAX_SHARE = 0.35
+const ELEVATED_MAX_SHARE = 0.5
+
+/**
+ * Bewertet die Grundlast (vierstufig).
+ *
+ * Bevorzugt am **Anteil am Jahresverbrauch**: Ob 150 W viel sind, hängt davon
+ * ab, wie viel Strom der Haushalt insgesamt braucht – für eine Familie im Haus
+ * ist das wenig, für eine Einzelperson in der Wohnung die halbe Rechnung.
+ * Ohne Ablesungen im Monitoring bleibt es bei den absoluten Watt-Schwellen.
+ *
+ * @param watts Gemessene Grundlast.
+ * @param share Anteil am Jahres-Stromverbrauch (0…1), falls bekannt.
+ */
+export function rateBaseLoad(watts: number, share?: number): MeasurementRating {
+  if (share !== undefined && Number.isFinite(share) && share > 0) {
+    if (share <= GOOD_MAX_SHARE) return 'good'
+    if (share <= MEDIUM_MAX_SHARE) return 'medium'
+    if (share <= ELEVATED_MAX_SHARE) return 'elevated'
+    return 'high'
+  }
   if (watts <= GOOD_MAX) return 'good'
   if (watts <= MEDIUM_MAX) return 'medium'
   if (watts <= ELEVATED_MAX) return 'elevated'
@@ -139,14 +164,29 @@ export interface BaseLoadResult {
   annualEur: number
 }
 
-/** Fasst eine ermittelte Grundlast (W) zu Verbrauch, Kosten und Bewertung zusammen. */
-export function calcBaseLoad(rawWatts: number, workPriceCt: number): BaseLoadResult {
+/**
+ * Fasst eine ermittelte Grundlast (W) zu Verbrauch, Kosten und Bewertung zusammen.
+ *
+ * @param rawWatts Gemessene Grundlast.
+ * @param workPriceCt Arbeitspreis in ct/kWh.
+ * @param totalYearKwh Jahres-Stromverbrauch aus dem Monitoring, falls bekannt –
+ *                     dann wird am Anteil bewertet statt an absoluten Watt.
+ */
+export function calcBaseLoad(
+  rawWatts: number,
+  workPriceCt: number,
+  totalYearKwh?: number,
+): BaseLoadResult {
   const watts = Number.isFinite(rawWatts) && rawWatts > 0 ? Math.round(rawWatts * 10) / 10 : 0
   const annualKwh = (watts * HOURS_PER_YEAR) / 1000
   const annualEur = (annualKwh * workPriceCt) / 100
+  const share =
+    totalYearKwh !== undefined && Number.isFinite(totalYearKwh) && totalYearKwh > 0
+      ? annualKwh / totalYearKwh
+      : undefined
   return {
     watts,
-    rating: rateBaseLoad(watts),
+    rating: rateBaseLoad(watts, share),
     annualKwh: Math.round(annualKwh),
     annualEur: Math.round(annualEur),
   }

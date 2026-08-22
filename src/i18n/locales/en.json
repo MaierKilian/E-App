@@ -977,7 +977,8 @@
           "text": "That much of your yearly {{total}} kWh goes to devices running around the clock – even when you are not using anything.",
           "basisFullYear": "Based on twelve months of your readings.",
           "basisProjected": "Based on {{days}} days of readings, projected to a year.",
-          "missing": "Add your meter readings in Monitoring – then you will see how much of your electricity bill the base load accounts for."
+          "missing": "Add your meter readings in Monitoring – then you will see how much of your electricity bill the base load accounts for.",
+          "ratedByShare": "The rating above refers to this share."
         },
         "implausible": {
           "title": "Check the measurement",

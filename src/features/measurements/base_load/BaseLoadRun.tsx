@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Camera, RotateCcw, Clock, Check } from 'lucide-react'
+import { Camera, RotateCcw, Clock, Check, AlertTriangle } from 'lucide-react'
 import { useTariffStore } from '@/store/tariffStore'
 import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftStore'
+import { useReadingsStore } from '@/store/readingsStore'
+import { stats } from '@/features/monitoring/readings'
 import { SelectChip } from '@/components/ui/SelectChip'
 import { instanceKey } from '../rooms'
+import { RATING_COLOR } from '../rating'
 import { ReadingCapture } from './ReadingCapture'
 import {
   calcBaseLoad,
@@ -45,6 +48,7 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
   const { t, i18n } = useTranslation()
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
   const setDraft = useMeasurementDraftStore((s) => s.setDraft)
+  const electricityReadings = useReadingsStore((s) => s.readings.electricity)
   const key = instanceKey('base_load')
   const d = readDraft(key)
 
@@ -142,7 +146,10 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
 
   function handleEvaluate() {
     if (!canEvaluate) return
-    const calc = calcBaseLoad(watts, workPriceCt)
+    // Mit Ablesungen im Monitoring wird am Anteil am Jahresverbrauch bewertet
+    // statt an absoluten Watt – siehe rateBaseLoad.
+    const totalYearKwh = stats(electricityReadings ?? []).projectedYearKwh
+    const calc = calcBaseLoad(watts, workPriceCt, totalYearKwh)
     const details: Record<string, number> = {
       watts: calc.watts,
       annualKwh: calc.annualKwh,
@@ -308,7 +315,15 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
               </div>
               {quality && (
                 <p className="flex gap-2 text-xs text-muted">
-                  <Check className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  {quality.usable ? (
+                    <Check className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <AlertTriangle
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                      style={{ color: RATING_COLOR.elevated }}
+                      aria-hidden="true"
+                    />
+                  )}
                   <span>
                     {quality.usable
                       ? t(`measurements.base_load.run.quality.${quality.level}`, {

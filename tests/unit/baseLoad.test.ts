@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   baseLoadShare,
   calcBaseLoad,
+  rateBaseLoad,
   readingsQuality,
   recommendedWaitMs,
   wattsFromTimed,
@@ -118,5 +119,36 @@ describe('recommendedWaitMs', () => {
     expect(recommendedWaitMs(0.01)).toBe(3 * HOUR)
     expect(recommendedWaitMs(0.001)).toBe(3 * HOUR)
     expect(recommendedWaitMs(0)).toBe(3 * HOUR)
+  })
+})
+
+describe('rateBaseLoad', () => {
+  it('faellt ohne Anteil auf die absoluten Watt-Schwellen zurueck', () => {
+    expect(rateBaseLoad(60)).toBe('good')
+    expect(rateBaseLoad(120)).toBe('medium')
+    expect(rateBaseLoad(200)).toBe('elevated')
+    expect(rateBaseLoad(400)).toBe('high')
+  })
+
+  it('bewertet am Anteil, sobald der Jahresverbrauch bekannt ist', () => {
+    expect(rateBaseLoad(400, 0.2)).toBe('good')
+    expect(rateBaseLoad(400, 0.3)).toBe('medium')
+    expect(rateBaseLoad(400, 0.45)).toBe('elevated')
+    expect(rateBaseLoad(400, 0.7)).toBe('high')
+  })
+
+  it('macht die Bewertung von der Haushaltsgroesse unabhaengig', () => {
+    // Dieselben 150 W: fuer die Familie im Haus wenig, fuer die Einzelperson viel.
+    const annualKwh = calcBaseLoad(150, 30).annualKwh
+    expect(calcBaseLoad(150, 30, 6000).rating).toBe('good')
+    expect(calcBaseLoad(150, 30, 1800).rating).toBe('high')
+    // Ohne Monitoring-Daten bleibt es bei der alten, absoluten Einstufung.
+    expect(calcBaseLoad(150, 30).rating).toBe('medium')
+    expect(annualKwh).toBe(1314)
+  })
+
+  it('ignoriert einen unbrauchbaren Jahresverbrauch', () => {
+    expect(calcBaseLoad(60, 30, 0).rating).toBe('good')
+    expect(calcBaseLoad(400, 30, Number.NaN).rating).toBe('high')
   })
 })
