@@ -6,8 +6,10 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  CALIBRATION_PERSONS,
   FIXTURES,
   FIXTURE_ORDER,
+  calcHotWaterWait,
   type FixtureType,
 } from '@/features/measurements/hot_water_wait/hotWaterWait'
 import de from '@/i18n/locales/de.json'
@@ -47,4 +49,35 @@ describe('Warmwasser – Entnahmestellen', () => {
       }
     })
   }
+})
+
+describe('Warmwasser – Hochrechnung', () => {
+  const base = { fixture: 'shower' as const, seconds: 20, waterPriceEurPerM3: 4.5 }
+
+  it('skaliert die Jahresmenge mit der Haushaltsgröße', () => {
+    // Vorher war die Zapfhäufigkeit eine Konstante: Ein Single und eine
+    // vierköpfige Familie bekamen dieselbe Zahl.
+    const single = calcHotWaterWait({ ...base, persons: 1 })
+    const family = calcHotWaterWait({ ...base, persons: 4 })
+    // Toleranz nur fuer das Runden der Jahresmenge auf ganze Liter.
+    expect(Math.abs(family.litersPerYear - single.litersPerYear * 4)).toBeLessThanOrEqual(4)
+  })
+
+  it('reproduziert bei der Kalibrierungsgröße die bisherigen Haushaltswerte', () => {
+    // Kalibrierung: 2 Personen → Dusche 1,5 Zapfungen/Tag (wie zuvor pauschal).
+    const { litersPerYear } = calcHotWaterWait({ ...base, persons: CALIBRATION_PERSONS })
+    const litersPerDraw = (base.seconds / 60) * FIXTURES.shower.flowLpm
+    expect(litersPerYear).toBe(Math.round(litersPerDraw * 1.5 * 365))
+  })
+
+  it('rechnet ein Profil ohne Personenangabe wie einen Ein-Personen-Haushalt', () => {
+    const fallback = calcHotWaterWait({ ...base, persons: 0 })
+    expect(fallback.litersPerYear).toBe(calcHotWaterWait({ ...base, persons: 1 }).litersPerYear)
+  })
+
+  it('bleibt ohne Wasserpreis bei einer Menge ohne Euro-Behauptung', () => {
+    const free = calcHotWaterWait({ ...base, waterPriceEurPerM3: 0, persons: 2 })
+    expect(free.litersPerYear).toBeGreaterThan(0)
+    expect(free.yearlySaving).toBe(0)
+  })
 })

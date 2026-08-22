@@ -16,6 +16,7 @@ import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useTipsStore } from '@/store/tipsStore'
 import { roomLabel } from '@/features/measurements/rooms'
+import { displaySavingEur, savingRange } from '@/features/measurements/savingsDisplay'
 import { buildTips, type Tip, type TipCategory } from './buildTips'
 
 /** Farbcodierung der Icon-Kachel je Gewerk (Structured-Stil, ruhige Akzente). */
@@ -23,19 +24,6 @@ const ACCENT: Record<TipCategory, string> = {
   heating: 'bg-amber-500/15 text-amber-500',
   electricity: 'bg-sky-500/15 text-sky-500',
   water: 'bg-cyan-500/15 text-cyan-500',
-}
-
-/**
- * Grobe Unsicherheits-Spanne einer €-Schätzung, auf 5-€-Schritte gerundet.
- * Bewusst als Bereich statt centgenauer Einzelzahl – die zugrunde liegenden
- * Werte sind selbst nur Schätzungen, eine exakte Zahl würde Genauigkeit
- * vortäuschen, die es nicht gibt.
- */
-function savingRange(eur: number): { low: number; high: number } {
-  const round5 = (n: number) => Math.round(n / 5) * 5
-  const low = Math.max(5, round5(eur * 0.8))
-  const high = Math.max(low + 5, round5(eur * 1.2))
-  return { low, high }
 }
 
 /**
@@ -71,7 +59,11 @@ function useEffortLabel(tip: Tip): string {
 interface TipCardProps {
   tip: Tip
   done?: boolean
-  /** Größter €-Hebel unter den offenen Tipps – für den relativen Wirkungsbalken. */
+  /**
+   * Größter *angezeigter* €-Hebel unter den offenen Tipps – Bezugsgröße des
+   * relativen Wirkungsbalkens. Tipps unterhalb der Anzeigeschwelle zählen nicht
+   * mit, sie bekommen ohnehin keinen Balken.
+   */
   maxSaving?: number
   /** Hebt den wirksamsten offenen Tipp visuell als „Top-Tipp" hervor. */
   top?: boolean
@@ -101,9 +93,13 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
   const reason = t(reasonKey, { ...params, room, defaultValue: '' }) ||
     t(`tips.items.${tip.id}.reason`, { ...params, room })
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
+  // Unterhalb der Anzeigeschwelle steht kein Euro-Betrag – und dann auch kein
+  // Wirkungsbalken, der einen Vergleich nahelegt, den die Zahl nicht traegt.
+  // Die Begruendung des Tipps nennt in dem Fall die gemessene Groesse.
+  const shownSaving = displaySavingEur(tip.savingEur)
   const barPct =
-    tip.savingEur && maxSaving > 0 ? Math.max(10, Math.round((tip.savingEur / maxSaving) * 100)) : 0
-  const range = tip.savingEur ? savingRange(tip.savingEur) : null
+    shownSaving && maxSaving > 0 ? Math.max(10, Math.round((shownSaving / maxSaving) * 100)) : 0
+  const range = shownSaving ? savingRange(shownSaving) : null
   const rangeText = range
     ? t('tips.savingRange', { low: eurFmt.format(range.low), high: eurFmt.format(range.high) })
     : ''
@@ -170,7 +166,7 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
 
           {/* Wirkungsbalken + grobe €-Spanne – ruhig statt plakativ, klar als
               Schätzung erkennbar (kein centgenauer €-Klotz mehr). */}
-          {!done && tip.savingEur && (
+          {!done && shownSaving && (
             <div className="mt-3 flex items-center gap-3">
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2/70">
                 <div
@@ -253,13 +249,19 @@ export function TipsPage() {
   const done = allTips.filter((tip) => doneIds.includes(tip.id))
   const dismissed = allTips.filter((tip) => dismissedIds.includes(tip.id))
 
-  const openEur = active.reduce((sum, tip) => sum + (tip.savingEur ?? 0), 0)
-  const maxSaving = active.reduce((max, tip) => Math.max(max, tip.savingEur ?? 0), 0)
+  // Nur Betraege ueber der Anzeigeschwelle zaehlen – in der Summe wie in den
+  // Karten. Frueher floss jeder Kleinbetrag mit einem Mindestwert von 5 € ein;
+  // vier belanglose Tipps ergaben so ein "Sparpotenzial" von 20–40 €, das die
+  // Rechnung nie hergab.
+  const shownSavings = active
+    .map((tip) => displaySavingEur(tip.savingEur))
+    .filter((eur): eur is number => eur !== undefined)
+  const openEur = shownSavings.reduce((sum, eur) => sum + eur, 0)
+  const maxSaving = shownSavings.reduce((max, eur) => Math.max(max, eur), 0)
   // Gesamt-Spanne = Summe der Einzel-Spannen (die Teile ergeben das Ganze).
-  const heroRange = active.reduce(
-    (acc, tip) => {
-      if (!tip.savingEur) return acc
-      const r = savingRange(tip.savingEur)
+  const heroRange = shownSavings.reduce(
+    (acc, eur) => {
+      const r = savingRange(eur)
       return { low: acc.low + r.low, high: acc.high + r.high }
     },
     { low: 0, high: 0 },

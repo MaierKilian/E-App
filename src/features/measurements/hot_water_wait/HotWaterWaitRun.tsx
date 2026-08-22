@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Info, Pencil } from 'lucide-react'
+import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore, resolvePrice } from '@/store/tariffStore'
 import { Stopwatch } from '@/components/ui/Stopwatch'
 import { TariffModal } from '@/features/monitoring/TariffModal'
@@ -15,6 +16,9 @@ import type { RunProps } from '../runnerTypes'
 export function HotWaterWaitRun({ onEvaluate }: RunProps) {
   const { t, i18n } = useTranslation()
   const waterPrice = useTariffStore((s) => resolvePrice(s, 'water').work)
+  // Die Zapfungen pro Tag skalieren mit der Haushaltsgroesse – wie beim
+  // Duschkopf-Check, der schon immer mit `personsCount` rechnet.
+  const persons = useOnboardingStore((s) => s.data.personsCount)
 
   const [fixture, setFixture] = useState<FixtureType | null>(null)
   const [seconds, setSeconds] = useState(0)
@@ -25,7 +29,7 @@ export function HotWaterWaitRun({ onEvaluate }: RunProps) {
 
   function handleEvaluate() {
     if (!fixture || seconds <= 0) return
-    const calc = calcHotWaterWait({ fixture, seconds, waterPriceEurPerM3: waterPrice })
+    const calc = calcHotWaterWait({ fixture, seconds, waterPriceEurPerM3: waterPrice, persons })
     onEvaluate({
       result: {
         id: 'hot_water_wait',

@@ -2117,7 +2117,7 @@
       },
       "hot_water_wait": {
         "title": "Vorlaufwasser auffangen",
-        "reason": "Es dauert {{seconds}} s, bis warmes Wasser kommt – rund {{liters}} L laufen jedes Mal ungenutzt weg. Stell eine Gießkanne oder einen Eimer darunter: für Pflanzen, zum Putzen oder für die Toilette."
+        "reason": "Es dauert {{seconds}} s, bis warmes Wasser kommt – rund {{liters}} L laufen jedes Mal ungenutzt weg, über das Jahr etwa {{litersPerYear}} L. Stell eine Gießkanne oder einen Eimer darunter: für Pflanzen, zum Putzen oder für die Toilette."
       },
       "fridge": {
         "title": "Kühlschrank wärmer stellen",

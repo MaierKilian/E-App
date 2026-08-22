@@ -127,6 +127,46 @@ describe('buildTips – Reihenfolge', () => {
     expect(ids).toEqual(['fridge', 'hot_water_wait'])
   })
 
+  it('nimmt Wartezeit und Menge des Warmwasser-Tipps aus derselben Entnahmestelle', () => {
+    // Zwei getrennte Maxima ueber alle Entnahmestellen ergaben frueher einen
+    // Satz, dessen Sekunden vom einen und dessen Liter vom anderen Hahn kamen.
+    const tips = buildTips(PROFILE, {
+      'hot_water_wait@kitchen': result({
+        id: 'hot_water_wait',
+        roomKey: 'kitchen',
+        primaryValue: 45,
+        details: { yearlySaving: 4, litersPerDraw: 4.5, litersPerYear: 900 },
+      }),
+      'hot_water_wait@shower': result({
+        id: 'hot_water_wait',
+        roomKey: 'shower',
+        primaryValue: 12,
+        details: { yearlySaving: 30, litersPerDraw: 1.8, litersPerYear: 6000 },
+      }),
+    })
+    const hw = tips.find((t) => t.id === 'hot_water_wait')
+    // Die Dusche traegt am meisten bei – ihre Sekunden UND ihre Liter.
+    expect(hw?.params).toMatchObject({ seconds: 12, liters: 1.8 })
+    // Die Jahresmenge deckt dagegen alle gemessenen Stellen ab.
+    expect(hw?.params?.litersPerYear).toBe(6900)
+  })
+
+  it('behaelt den Warmwasser-Tipp ohne belastbaren Euro-Betrag', () => {
+    // Ohne Wasserpreis gibt es keine Ersparnis in Euro – die gemessene Menge
+    // bleibt trotzdem ein gueltiger Grund, den Vorlauf aufzufangen.
+    const tips = buildTips(PROFILE, {
+      hot_water_wait: result({
+        id: 'hot_water_wait',
+        primaryValue: 40,
+        details: { yearlySaving: 0, litersPerDraw: 6, litersPerYear: 3200 },
+      }),
+    })
+    const hw = tips.find((t) => t.id === 'hot_water_wait')
+    expect(hw).toBeDefined()
+    expect(hw?.savingEur).toBeUndefined()
+    expect(hw?.params?.litersPerYear).toBe(3200)
+  })
+
   it('gibt jedem Tipp Aufwand und Kosten mit', () => {
     for (const tip of buildTips(PROFILE, RESULTS)) {
       expect(Number.isFinite(tip.effortMinutes)).toBe(true)

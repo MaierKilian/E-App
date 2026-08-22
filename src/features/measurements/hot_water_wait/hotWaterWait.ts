@@ -9,7 +9,11 @@ import type { MeasurementRating } from '../types'
  * je Entnahmestelle ergibt sich eine Schätzung der ungenutzten Wassermenge und
  * – über den Wasserpreis – ein jährliches Einsparpotenzial.
  *
- * Alle Mengen-/Kostenwerte sind bewusste Näherungen zur Veranschaulichung.
+ * Alle Mengen-/Kostenwerte sind bewusste Näherungen zur Veranschaulichung:
+ * gemessen ist allein die Wartezeit, die Häufigkeit der Zapfungen ist ein
+ * typischer Wert je Person. Belastbar ist deshalb vor allem die Wassermenge –
+ * der Euro-Betrag zeigt die Größenordnung und wird unterhalb der Schwelle in
+ * `../savingsDisplay` gar nicht erst ausgewiesen.
  */
 
 export type FixtureType = 'shower' | 'bath' | 'kitchen' | 'washbasin'
@@ -17,8 +21,16 @@ export type FixtureType = 'shower' | 'bath' | 'kitchen' | 'washbasin'
 export interface FixtureMeta {
   /** Typischer Durchfluss in L/min. */
   flowLpm: number
-  /** Grobe Anzahl Warmwasser-Zapfungen pro Tag (Haushalt). */
-  drawsPerDay: number
+  /**
+   * Grobe Anzahl Warmwasser-Zapfungen pro Tag **und Person**.
+   *
+   * Frueher stand hier ein Haushaltswert – ein Single und eine vierkoepfige
+   * Familie bekamen damit dieselbe Jahreshochrechnung. Die Werte sind so
+   * kalibriert, dass ein Zwei-Personen-Haushalt weiterhin auf die bisherigen
+   * Haushaltszahlen kommt (Dusche 1,5/Tag, Wanne 0,3/Tag, Kueche 4/Tag,
+   * Waschbecken 5/Tag); der Duschkopf-Check rechnet mit derselben Logik.
+   */
+  drawsPerPersonPerDay: number
   /**
    * Bevorzugter Messort (großer Wasserdurchsatz).
    *
@@ -31,11 +43,14 @@ export interface FixtureMeta {
 
 /** Reihenfolge = Anzeigereihenfolge der Auswahl. */
 export const FIXTURES: Record<FixtureType, FixtureMeta> = {
-  shower: { flowLpm: 9, drawsPerDay: 1.5, recommended: true },
-  bath: { flowLpm: 12, drawsPerDay: 0.3, recommended: true },
-  kitchen: { flowLpm: 6, drawsPerDay: 4, recommended: false },
-  washbasin: { flowLpm: 5, drawsPerDay: 5, recommended: false },
+  shower: { flowLpm: 9, drawsPerPersonPerDay: 0.75, recommended: true },
+  bath: { flowLpm: 12, drawsPerPersonPerDay: 0.15, recommended: true },
+  kitchen: { flowLpm: 6, drawsPerPersonPerDay: 2, recommended: false },
+  washbasin: { flowLpm: 5, drawsPerPersonPerDay: 2.5, recommended: false },
 }
+
+/** Kalibrierungsbasis der Werte in {@link FIXTURES} – siehe `drawsPerPersonPerDay`. */
+export const CALIBRATION_PERSONS = 2
 
 /** Anzeigereihenfolge: empfohlene Entnahmestellen zuerst. */
 export const FIXTURE_ORDER: FixtureType[] = ['shower', 'bath', 'kitchen', 'washbasin']
@@ -46,6 +61,8 @@ export interface HotWaterWaitInput {
   seconds: number
   /** Wasserpreis in €/m³ (aus dem Preis-Store). */
   waterPriceEurPerM3: number
+  /** Personen im Haushalt (aus dem Profil) – skaliert die Zapfungen pro Tag. */
+  persons: number
 }
 
 export interface HotWaterWaitResult {
@@ -69,9 +86,12 @@ export function rateWait(seconds: number): MeasurementRating {
 export function calcHotWaterWait(input: HotWaterWaitInput): HotWaterWaitResult {
   const fixture = FIXTURES[input.fixture]
   const seconds = Math.max(0, input.seconds)
+  // Mindestens eine Person: ein Profil ohne Angabe darf die Hochrechnung nicht
+  // auf null ziehen, sondern rechnet wie ein Ein-Personen-Haushalt.
+  const persons = Number.isFinite(input.persons) ? Math.max(1, Math.floor(input.persons)) : 1
 
   const litersPerDraw = (seconds / 60) * fixture.flowLpm
-  const litersPerYear = litersPerDraw * fixture.drawsPerDay * 365
+  const litersPerYear = litersPerDraw * fixture.drawsPerPersonPerDay * persons * 365
   const price = Number.isFinite(input.waterPriceEurPerM3) ? Math.max(0, input.waterPriceEurPerM3) : 0
   const yearlySaving = (litersPerYear / 1000) * price
 

@@ -179,27 +179,12 @@ export const PERCENT_PER_DEGREE = 0.06
 export const SAVING_REFERENCE_TEMP = DEFAULT_COMFORT_BAND.max
 
 /**
- * Unterhalb dieses Betrags wird **kein** €-Wert gezeigt.
- *
- * Die Rechnung ist eine Schätzung aus mehreren Schätzungen (Heizkosten-
- * Hochrechnung, pauschaler Warmwasseranteil, verteilte Raumfläche, Faustregel
- * %/°C). Kleinbeträge suggerieren eine Genauigkeit, die das Modell nicht
- * hergibt – und rechtfertigen ohnehin keine Verhaltensänderung.
+ * Die €-Anzeigeregeln (Mindestbetrag, Rundung) sind nicht raumklima-spezifisch,
+ * sondern gelten fuer jede geschaetzte Ersparnis der App. Sie liegen deshalb in
+ * `../savingsDisplay` und werden hier nur weitergereicht, damit bestehende
+ * Importe aus dem Raumklima-Modul weiter funktionieren.
  */
-export const MIN_DISPLAY_EUR = 20
-
-/** Schrittweite der Anzeige in €. Ein Punktwert auf den Euro genau wäre Schein-Genauigkeit. */
-export const EUR_ROUNDING_STEP = 5
-
-/**
- * Rundet eine geschätzte Jahres-Ersparnis auf einen darstellbaren Wert.
- * Liefert `undefined`, wenn der Betrag unter {@link MIN_DISPLAY_EUR} liegt –
- * dann zeigt die UI nur die %-Aussage.
- */
-export function displaySavingEur(value: number | undefined): number | undefined {
-  if (value === undefined || !Number.isFinite(value) || value < MIN_DISPLAY_EUR) return undefined
-  return Math.round(value / EUR_ROUNDING_STEP) * EUR_ROUNDING_STEP
-}
+export { MIN_DISPLAY_EUR, EUR_ROUNDING_STEP, displaySavingEur } from '../savingsDisplay'
 
 export interface RoomTempSavingInput {
   /** Gemessene Raumtemperatur in °C. */

@@ -6,6 +6,7 @@ import type {
 import type { MeasurementCategory } from '@/features/measurements/catalog'
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import { anyResultFor } from '@/features/measurements/rooms'
+import { displaySavingEur } from '@/features/measurements/savingsDisplay'
 
 /** Einheit je Messung (Fallback, falls ein Ergebnis ohne `unit` gespeichert wurde). */
 const UNIT_FALLBACK: Partial<Record<MeasurementId, string>> = {
@@ -120,11 +121,15 @@ export function buildMeasurementsReportData({
     const r = anyResultFor(results, meta.id)
     if (r && Number.isFinite(r.primaryValue)) {
       // Sparpotenzial über alle Räume summieren (relevant bei Pro-Raum mit Sparwert).
-      const saving = sumSavingsForMeasurement(results, meta.id)
-      if (saving > 0) savingsTotal += saving
+      // Es gilt dieselbe Anzeigeschwelle wie in der App: Beträge unterhalb von
+      // `MIN_DISPLAY_EUR` liegen in der Modellunsicherheit und erscheinen weder
+      // als Einzelwert noch in der Summe – sonst stünden im Bericht Zahlen, die
+      // die App selbst nicht mehr zeigt.
+      const saving = displaySavingEur(sumSavingsForMeasurement(results, meta.id))
+      if (saving) savingsTotal += saving
       // Bei Pro-Raum-Messungen mit Sparwert die Räume-Summe als Hauptwert zeigen,
       // sonst das repräsentative Raum-/Direktergebnis.
-      const showSavingAsValue = Boolean(meta.perRoom) && saving > 0
+      const showSavingAsValue = Boolean(meta.perRoom) && saving !== undefined
       entries.push({
         id: r.id,
         category: meta.category,
@@ -132,7 +137,7 @@ export function buildMeasurementsReportData({
         // Einheit aus dem Ergebnis; Fallback je Messung (robust gegen Altdaten).
         unit: showSavingAsValue ? '€/Jahr' : r.unit || UNIT_FALLBACK[r.id] || '',
         rating: r.rating,
-        yearlySaving: saving > 0 ? saving : undefined,
+        yearlySaving: saving,
       })
     } else {
       open.push({ id: meta.id, category: meta.category, available: meta.available })

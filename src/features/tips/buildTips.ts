@@ -281,19 +281,31 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
 
   const hotWaterRs = resultsForId(results, 'hot_water_wait')
   const hotWater = savingForId(results, 'hot_water_wait')
-  if (hotWater > 0) {
-    const seconds = Math.round(Math.max(0, ...hotWaterRs.map((r) => r.primaryValue)))
-    const liters = Math.round(
-      Math.max(0, ...hotWaterRs.map((r) => r.details?.litersPerDraw ?? 0)) * 10,
-    ) / 10
+  // Der Tipp haengt am Befund der Messung, nicht mehr am Euro-Betrag: Bei einem
+  // Wasserpreis von 0 oder einer Ersparnis unter der Anzeigeschwelle bleibt die
+  // gemessene Wassermenge ein gueltiger Grund, den Vorlauf aufzufangen. Eine
+  // Wartezeit bis 15 s bewertet die Messung selbst als unauffaellig.
+  if (hotWaterRs.length > 0 && worstRating(results, 'hot_water_wait') !== 'good') {
+    // Wartezeit und Menge je Zapfung muessen aus DEMSELBEN Ergebnis stammen.
+    // Zwei getrennte `Math.max` ueber alle Entnahmestellen ergaben sonst einen
+    // Satz, dessen Sekunden vom einen und dessen Liter vom anderen Hahn kamen
+    // ("19 s ... 3,5 L") – Zahlen, die zusammen nie gemessen wurden.
+    const worst = hotWaterRs.reduce((a, b) => (resultSavingsEur(b) > resultSavingsEur(a) ? b : a))
+    const seconds = Math.round(Math.max(0, worst.primaryValue))
+    const liters = Math.round(Math.max(0, worst.details?.litersPerDraw ?? 0) * 10) / 10
+    // Jahresmenge ueber alle gemessenen Stellen – die gemessene Groesse, die
+    // auch dann traegt, wenn der Euro-Betrag unter der Anzeigeschwelle liegt.
+    const litersPerYear = Math.round(
+      hotWaterRs.reduce((sum, r) => sum + (r.details?.litersPerYear ?? 0), 0),
+    )
     tips.push({
       id: 'hot_water_wait',
       icon: Hourglass,
       category: 'water',
-      savingEur: hotWater,
+      savingEur: hotWater > 0 ? hotWater : undefined,
       effortMinutes: 1,
       costEur: 0,
-      params: { seconds, liters },
+      params: { seconds, liters, litersPerYear },
     })
   }
 

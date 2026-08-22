@@ -2117,7 +2117,7 @@
       },
       "hot_water_wait": {
         "title": "Catch the run-off water",
-        "reason": "It takes {{seconds}} s for hot water to arrive – about {{liters}} L runs off unused every time. Put a watering can or bucket underneath: for plants, cleaning or the toilet."
+        "reason": "It takes {{seconds}} s for hot water to arrive – about {{liters}} L runs off unused every time, roughly {{litersPerYear}} L over a year. Put a watering can or bucket underneath: for plants, cleaning or the toilet."
       },
       "fridge": {
         "title": "Turn the fridge up",
