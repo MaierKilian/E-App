@@ -1919,28 +1919,6 @@
       "collapse": "Angaben ausblenden",
       "editButton": "Profil bearbeiten",
       "resetButton": "Profil zurücksetzen"
-    },
-    "stage": {
-      "bandTypical": "{{value}} typisch",
-      "bandYours": "{{value}} dein Wert",
-      "bandAria": "Effizienz-Skala von A+ bis H",
-      "bandFootnote": "Orientierung aus deinen Zählerständen – kein Energieausweis. Enthält Warmwasser, nicht witterungsbereinigt.",
-      "typicalKicker": "Ein Haus wie deins",
-      "typicalNote": "Richtwert für dein Baujahr und deinen Sanierungsstand. Deinen echten Wert kennt die App ab der zweiten Ablesung.",
-      "noProfileYet": "Noch keine Einordnung möglich",
-      "noProfileNote": "Ergänze Wohnfläche und Baujahr im Profil – dann zeigt die App, wo dein Zuhause steht.",
-      "costKicker": "Energie im Jahr",
-      "basisFullYear": "letzte 12 Monate",
-      "basisEstimate": "geschätzt aus {{months}} Monaten · wird mit jeder Ablesung genauer",
-      "allMeters": "Alle Zähler",
-      "dueDays_one": "{{name}} seit {{count}} Tag nicht abgelesen",
-      "dueDays_other": "{{name}} seit {{count}} Tagen nicht abgelesen",
-      "dueUnknown": "{{name}} ablesen",
-      "dueMore_one": "und {{count}} weiterer Zähler",
-      "dueMore_other": "und {{count}} weitere Zähler",
-      "dueCta": "Eintragen",
-      "curveAria": "Verlauf von {{name}} über die letzten zwölf Monate",
-      "firstReading": "Ersten Zählerstand eintragen"
     }
   },
   "settings": {

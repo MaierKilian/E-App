@@ -168,35 +168,6 @@ function directionOf(changePct: number): 'up' | 'down' | 'flat' {
   return Math.abs(changePct) < 0.03 ? 'flat' : changePct > 0 ? 'up' : 'down'
 }
 
-/**
- * Verbrauch je Kalendermonat der letzten zwölf Monate, ältester zuerst.
- *
- * Für die Jahreskurve auf dem Startbildschirm: Aus den Ableseabständen lässt
- * sich der Monatsverbrauch anteilig rekonstruieren, auch wenn niemand exakt zum
- * Monatsersten abliest. Das ergibt die charakteristische Form des Heizjahres –
- * Winterhoch, Sommertal.
- *
- * Liefert undefined, solange keine zwölf Monate gemessen sind: eine Kurve aus
- * Teildaten sähe nach Verbrauchseinbruch aus, wo schlicht Messung fehlt.
- */
-export function monthlyConsumption(readings: MeterReading[]): number[] | undefined {
-  const segments = consumptionSegments(readings)
-  if (segments.length === 0) return undefined
-  const first = parseIso(segments[0].from)
-  const end = parseIso(segments[segments.length - 1].to)
-  if (!first || !end) return undefined
-  if ((end.getTime() - first.getTime()) / MS_PER_DAY < DAYS_PER_YEAR) return undefined
-
-  const months: number[] = []
-  // Zwölf Monatsfenster rückwärts vom letzten Ablesemonat.
-  for (let i = 11; i >= 0; i--) {
-    const to = new Date(end.getFullYear(), end.getMonth() - i, 1)
-    const from = new Date(end.getFullYear(), end.getMonth() - i - 1, 1)
-    months.push(consumptionInWindow(segments, from, to))
-  }
-  return months
-}
-
 /** Tagesverbrauch je Abschnitt (für Sparklines), älteste zuerst. */
 export function perDaySeries(readings: MeterReading[]): number[] {
   return consumptionSegments(readings).map((s) => (s.days > 0 ? s.kwh / s.days : 0))
