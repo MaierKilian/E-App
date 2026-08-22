@@ -8,7 +8,7 @@ import { useMeasurementDraftStore } from '@/store/measurementDraftStore'
 import { getMeasurementMeta } from './catalog'
 import { getMeasurementModule } from './registry'
 import { roomInstances, roomLabel, instanceKey } from './rooms'
-import { resultSavingsEur } from './impact'
+import { displayableSavingEur } from './impact'
 import { FeedbackPrompt } from '@/features/feedback/FeedbackPrompt'
 import type { RunnerPhase, RunOutcome } from './runnerTypes'
 import type { MeasurementResult } from './types'
@@ -126,7 +126,9 @@ export function MeasurementRunner() {
         nextRoomName = roomLabel(t, open)
       }
     }
-    setJustSaved({ savings: resultSavingsEur(full), nextHref, nextRoomName })
+    // Nur ein belastbarer Betrag ueber der Anzeigeschwelle wird genannt – der
+    // Schirm direkt nach dem Messen ist die sichtbarste Euro-Aussage der App.
+    setJustSaved({ savings: displayableSavingEur(full) ?? 0, nextHref, nextRoomName })
   }
 
   return (

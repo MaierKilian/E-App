@@ -117,8 +117,15 @@ export function MeasurementsPage() {
             </>
           ) : (
             <>
+              {/* Ohne bezifferbares Potenzial nicht zum Messen auffordern, wenn
+                  laengst gemessen wurde – dann zaehlt der Fortschritt. Die
+                  Ergebnisse selbst stehen ohnehin in der Liste darunter. */}
               <p className="font-semibold text-foreground">{t('measurements.profile.title')}</p>
-              <p className="mt-0.5 text-sm text-muted">{t('measurements.impact.empty')}</p>
+              <p className="mt-0.5 text-sm text-muted">
+                {done > 0
+                  ? t('measurements.impact.progress', { done, total })
+                  : t('measurements.impact.empty')}
+              </p>
             </>
           )}
         </div>

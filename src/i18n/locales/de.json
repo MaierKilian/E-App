@@ -633,7 +633,8 @@
       "from_one": "aus {{count}} Messung",
       "from_other": "aus {{count}} Messungen",
       "info": "Grobe Schätzung: Das Euro-Einsparpotenzial wird über deinen Strompreis in Kilowattstunden umgerechnet und mit rund 0,38 kg CO₂ je kWh hochgerechnet.",
-      "empty": "Mach deine erste Messung, um dein Potenzial zu sehen."
+      "empty": "Mach deine erste Messung, um dein Potenzial zu sehen.",
+      "progress": "{{done}} von {{total}} Messungen erledigt – die Ergebnisse stehen unten."
     },
     "roomPicker": {
       "subtitle": "Für welchen Raum möchtest du die Messung durchführen?"

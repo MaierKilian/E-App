@@ -633,7 +633,8 @@
       "from_one": "from {{count}} measurement",
       "from_other": "from {{count}} measurements",
       "info": "Rough estimate: the euro savings are converted to kilowatt-hours via your electricity price and projected at about 0.38 kg CO₂ per kWh.",
-      "empty": "Take your first measurement to see your potential."
+      "empty": "Take your first measurement to see your potential.",
+      "progress": "{{done}} of {{total}} measurements done – the results are listed below."
     },
     "roomPicker": {
       "subtitle": "Which room do you want to measure?"
