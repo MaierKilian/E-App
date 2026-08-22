@@ -7,6 +7,7 @@ import type { MeasurementCategory } from '@/features/measurements/catalog'
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import { anyResultFor } from '@/features/measurements/rooms'
 import { displaySavingEur } from '@/features/measurements/savingsDisplay'
+import { hasWordUnit } from '@/features/measurements/resultValue'
 
 /** Einheit je Messung (Fallback, falls ein Ergebnis ohne `unit` gespeichert wurde). */
 const UNIT_FALLBACK: Partial<Record<MeasurementId, string>> = {
@@ -135,7 +136,12 @@ export function buildMeasurementsReportData({
         category: meta.category,
         primaryValue: showSavingAsValue ? saving : r.primaryValue,
         // Einheit aus dem Ergebnis; Fallback je Messung (robust gegen Altdaten).
-        unit: showSavingAsValue ? '€/Jahr' : r.unit || UNIT_FALLBACK[r.id] || '',
+        // Wort-Einheiten stehen nicht im Ergebnis (siehe resultValue.ts) und
+        // koennen dort bei aelteren Daten unaufgeloest sein – hier zaehlt der
+        // Katalogwert. Der Bericht erscheint in der Profilsprache.
+        unit: showSavingAsValue
+          ? '€/Jahr'
+          : (hasWordUnit(r.id) ? undefined : r.unit) || UNIT_FALLBACK[r.id] || '',
         rating: r.rating,
         yearlySaving: saving,
       })

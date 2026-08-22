@@ -7,6 +7,7 @@ import type { MeasurementMeta } from '../catalog'
 import type { MeasurementResult } from '../types'
 import { RatingBadge } from '../RatingBadge'
 import { instanceKey } from '../rooms'
+import { resultValueText } from '../resultValue'
 
 /** Eine Messung innerhalb einer Gruppe, optional an einen konkreten Raum gebunden. */
 export interface TileItem {
@@ -62,10 +63,7 @@ function MiniCard({
 
   const value =
     result &&
-    `${new Intl.NumberFormat(i18n.language, {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
-    }).format(result.primaryValue)} ${result.unit ?? ''}`.trim()
+    resultValueText(t, i18n.language, result)
 
   const inner = (
     <>

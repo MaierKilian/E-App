@@ -32,7 +32,9 @@ export function LightingRun({ onEvaluate }: RunProps) {
         id: 'lighting',
         rating: rateLighting(instances, openRoomKeys(details)),
         primaryValue: details.openRooms,
-        unit: t('measurements.lighting.unit'),
+        // Wort-Einheit: entsteht erst bei der Anzeige (siehe resultValue.ts),
+        // damit sie der Sprache folgt und ihre Pluralform bekommt.
+        unit: '',
         completedAt: new Date().toISOString(),
         details,
       },

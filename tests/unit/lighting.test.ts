@@ -19,6 +19,11 @@ import {
   type RoomLampState,
 } from '@/features/measurements/lighting/lighting'
 import { roomInstances } from '@/features/measurements/rooms'
+import {
+  formatResultValue,
+  hasWordUnit,
+  resultUnitLabel,
+} from '@/features/measurements/resultValue'
 import { localizeParams } from '@/features/tips/tipsForReport'
 import type { RoomEntry, RoomType } from '@/types'
 import de from '@/i18n/locales/de.json'
@@ -200,4 +205,41 @@ describe('Texte', () => {
       expect(tip.reason_other).toContain('{{count}}')
     })
   }
+})
+
+describe('Anzeige des Hauptwerts', () => {
+  const result = {
+    id: 'lighting' as const,
+    rating: 'high' as const,
+    primaryValue: 5,
+    unit: '',
+    completedAt: '2026-01-01T00:00:00.000Z',
+  }
+
+  it('haengt an ganze Zahlen kein „,0"', () => {
+    // „5,0 Räume" behauptet eine Genauigkeit, die eine Anzahl nicht hat.
+    expect(formatResultValue(5, 'de')).toBe('5')
+    expect(formatResultValue(132, 'de')).toBe('132')
+  })
+
+  it('laesst gebrochene Werte ihre Stelle behalten', () => {
+    expect(formatResultValue(11.4, 'de')).toBe('11,4')
+  })
+
+  it('loest die Wort-Einheit mit Anzahl auf, statt den Schluessel zu zeigen', () => {
+    // Ohne count kann i18next keine Pluralform waehlen und gibt den rohen
+    // Schluessel aus – genau das stand vorher in der Kachel.
+    expect(hasWordUnit('lighting')).toBe(true)
+    expect(hasWordUnit('base_load')).toBe(false)
+    const t = ((key: string, opts?: { count?: number }) =>
+      opts?.count === 1 ? 'Raum' : 'Räume') as unknown as Parameters<typeof resultUnitLabel>[0]
+    expect(resultUnitLabel(t, result)).toBe('Räume')
+    expect(resultUnitLabel(t, { ...result, primaryValue: 1 })).toBe('Raum')
+  })
+
+  it('ignoriert eine gespeicherte Wort-Einheit aus aelteren Daten', () => {
+    const t = (() => 'Räume') as unknown as Parameters<typeof resultUnitLabel>[0]
+    const legacy = { ...result, unit: 'measurements.lighting.unit' }
+    expect(resultUnitLabel(t, legacy)).toBe('Räume')
+  })
 })

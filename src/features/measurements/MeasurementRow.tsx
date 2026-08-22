@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react'
 import type { MeasurementMeta } from './catalog'
 import type { MeasurementResult } from './types'
 import { RatingBadge } from './RatingBadge'
+import { resultValueText } from './resultValue'
 
 /** Kleiner Schwierigkeits-Indikator als 1–3 Punkte. */
 function Difficulty({ level }: { level: 1 | 2 | 3 }) {
@@ -37,10 +38,7 @@ export function MeasurementRow({ meta, result }: RowProps) {
 
   const valueText =
     result &&
-    `${new Intl.NumberFormat(i18n.language, {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1,
-    }).format(result.primaryValue)} ${result.unit ?? ''}`.trim()
+    resultValueText(t, i18n.language, result)
 
   const metaLine = `${t(`measurements.categories.${meta.category}`)} · ${meta.estimatedMinutes} ${t('measurements.minutesUnit')}`
 

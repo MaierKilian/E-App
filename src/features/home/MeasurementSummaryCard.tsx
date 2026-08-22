@@ -8,6 +8,7 @@ import { RatingBadge } from '@/features/measurements/RatingBadge'
 import { parseRoomKey, roomLabel } from '@/features/measurements/rooms'
 import type { MeasurementResult } from '@/features/measurements/types'
 import { measurementProgress, recentResults } from './measurementSummary'
+import { resultValueText } from '@/features/measurements/resultValue'
 
 /** So viele der zuletzt gemessenen Ergebnisse passen ohne Scrollen auf den Screen. */
 const RECENT_COUNT = 3
@@ -36,10 +37,6 @@ export function MeasurementSummaryCard() {
   const { done, total } = measurementProgress(results)
   const recent = recentResults(results, RECENT_COUNT)
 
-  const numFmt = new Intl.NumberFormat(i18n.language, {
-    minimumFractionDigits: 1,
-    maximumFractionDigits: 1,
-  })
 
   /** Raumname eines Ergebnisses, wo der Schlüssel einen Raum bezeichnet. */
   function subLabel(r: MeasurementResult): string | undefined {
@@ -95,7 +92,7 @@ export function MeasurementSummaryCard() {
                     {room && <span className="block truncate text-[11px] text-muted">{room}</span>}
                   </span>
                   <span className="shrink-0 text-sm font-semibold tabular-nums text-foreground">
-                    {`${numFmt.format(r.primaryValue)} ${r.unit ?? ''}`.trim()}
+                    {resultValueText(t, i18n.language, r)}
                   </span>
                   <RatingBadge rating={r.rating} />
                 </button>

@@ -89,7 +89,7 @@ const RESULTS: MeasurementResult[] = [
   result('room_temperature', 'medium', 22.5, '°C', 11, { roomKey: 'children_room#0', details: { celsius: 22.5 } }),
   result('furniture_spacing', 'medium', 4, 'cm', 10, { roomKey: 'living_room#0', details: { centimeters: 4 } }),
   // LED-Check: ein Ergebnis fuer die Wohnung, je Raum eine Ja/Nein-Antwort.
-  result('lighting', 'high', 3, 'Räume', 8, {
+  result('lighting', 'high', 3, '', 8, {
     details: {
       'room:living_room#0': 1,
       'room:kitchen#0': 1,
