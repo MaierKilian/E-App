@@ -959,101 +959,45 @@
       }
     },
     "lighting": {
-      "title": "Beleuchtungs-Check",
-      "short": "Finde heraus, wie viel der Umstieg auf LED spart.",
-      "intro": {
-        "lead": "Alte Glüh- und Halogenlampen verbrauchen ein Vielfaches von LEDs. Prüfe Raum für Raum, was sich lohnt.",
-        "stepsTitle": "So funktioniert’s",
-        "imageAlt": "Illustration: Person zeigt smarte Beleuchtung per App",
-        "steps": [
-          "Raum wählen",
-          "Nicht-LED-Lampen zählen",
-          "Einsparung sehen"
-        ],
-        "detailsButton": "Details",
-        "detailsTitle": "Worauf es ankommt",
-        "details": [
-          "Alte Glüh- und Halogenlampen verbrauchen ein Vielfaches von LEDs – bei gleicher Helligkeit.",
-          "Zähle pro Raum die Lampen, die noch keine LED sind (Glüh-, Halogen- oder alte Energiesparlampen).",
-          "LEDs gibt es in allen Fassungen (E27, E14, GU10 …) und Lichtfarben – von warmweiß bis tageslichtweiß.",
-          "Am meisten lohnt sich der Tausch dort, wo das Licht lange brennt (Wohnzimmer, Küche, Flur).",
-          "LEDs halten deutlich länger – das spart neben Strom auch häufiges Wechseln."
-        ],
-        "start": "Check starten"
-      },
+      "title": "LED-Check",
+      "short": "Finde in einem Rundgang, wo sich der Wechsel auf LED lohnt.",
+      "unit_one": "Raum",
+      "unit_other": "Räume",
       "run": {
-        "bulbsTitle": "Welche Lampen sind hier noch keine LED?",
-        "bulbsHint": "Ein typischer Vorschlag für diesen Raum – korrigiere ihn einfach.",
-        "bulbTypes": {
-          "incandescent": "Glühbirne",
-          "halogen": "Halogen",
-          "spot": "Halogen-Spot"
+        "leadTitle": "Warum sich der Tausch lohnt",
+        "lead": "Eine alte Glüh- oder Halogenlampe verbraucht rund sechsmal so viel Strom wie eine LED bei gleicher Helligkeit. Eine Ersatz-LED kostet etwa 3 € und hat sich meist im ersten Jahr bezahlt gemacht – auch dann, wenn die alte Lampe noch funktioniert.",
+        "helpButton": "Woran erkenne ich eine LED?",
+        "helpTitle": "LED oder nicht?",
+        "helpItems": [
+          "Wird die Lampe nach einer Minute heiß, ist es keine LED.",
+          "Leuchtet sie sofort voll hell, ist es eine LED.",
+          "Braucht sie ein paar Sekunden, bis sie hell wird, ist es eine alte Energiesparlampe – die lohnt sich auch zu tauschen.",
+          "Ein sichtbarer Glühdraht heißt: Glühbirne oder Halogen.",
+          "Im Zweifel: „noch alte“ antworten. Beim Tausch siehst du es ohnehin."
+        ],
+        "roomsTitle": "Geh einmal durch die Wohnung",
+        "roomsHint": "Hängt in diesem Raum noch mindestens eine Lampe, die keine LED ist?",
+        "answers": {
+          "old": "Noch alte",
+          "led": "Alles LED"
         },
-        "bulbExamples": {
-          "incandescent": "klassische Birne, ~40–60 W",
-          "halogen": "Halogenstab/-birne, ~30–50 W",
-          "spot": "Einbau-/Deckenspot, ~35 W"
-        },
-        "allLed": "Hier ist alles LED",
-        "usageTitle": "Wie viel brennt das Licht hier?",
-        "usageHint": "Ohne diese Angabe lässt sich kein belastbarer Eurobetrag nennen.",
-        "usageLevels": {
-          "low": "Wenig",
-          "normal": "Normal",
-          "high": "Viel"
-        },
-        "usageChosen": "Gerechnet mit ca. {{hours}} Stunden am Tag.",
-        "usageOpen": "Noch nichts gewählt.",
-        "savingLabel": "Spart im Jahr",
-        "savingRange": "ca. {{low}}–{{high}} €",
-        "savingKwh": "ca. {{kwh}} kWh",
-        "savingSmall": "Zu wenig für einen belastbaren Eurobetrag – deshalb die Strommenge.",
-        "payback": "Einmalig ca. {{invest}} € · ab Monat {{months}} im Plus",
-        "paybackSlow": "Einmalig ca. {{invest}} € · rechnet sich erst langfristig",
-        "stateDone": "Keine alten Lampen – dieser Raum ist fertig.",
-        "stateNeedsUsage_one": "{{count}} Lampe erfasst. Wähle oben, wie viel das Licht hier brennt.",
-        "stateNeedsUsage_other": "{{count}} Lampen erfasst. Wähle oben, wie viel das Licht hier brennt.",
-        "assumptions": "bei {{price}} ct/kWh und ca. {{hours}} h am Tag",
-        "assumptionsTitle": "Womit gerechnet wird",
-        "assumptionsItems": [
-          "Strompreis {{price}} ct/kWh – aus deinem Tarif. Änderbar in den Einstellungen.",
-          "Brenndauer ca. {{hours}} Stunden am Tag – aus deiner Auswahl und einem typischen Wert für diesen Raum.",
-          "Ersparnis je Lampe: Glühbirne ~52 W, Halogen ~35 W, Spot ~30 W weniger als eine LED gleicher Helligkeit.",
-          "Ersatz-LEDs mit 3–4 € je Stück angesetzt (Retrofit, ohne Leuchte).",
-          "Deshalb steht dort ein Bereich und kein exakter Betrag: Die Brenndauer ist immer eine Schätzung."
-        ]
+        "progress": "{{answered}} von {{total}} Räumen beantwortet"
       },
       "result": {
-        "ratings": {
-          "good": "Schon LED",
-          "medium": "Kleines Plus",
-          "elevated": "Lohnt sich",
-          "high": "Großes Plus"
+        "badge": "Zu tauschen",
+        "summary": "Fang im {{room}} an – dort brennt das Licht am längsten.",
+        "orderTitle": "In dieser Reihenfolge",
+        "priority": {
+          "3": "viel Licht",
+          "2": "mittel",
+          "1": "selten Licht"
         },
-        "summary": {
-          "good": "Hier ist schon alles auf LED – top, mehr geht kaum.",
-          "medium": "Ein paar Lampen lassen sich noch günstig auf LED umrüsten.",
-          "elevated": "Ein LED-Umstieg spart hier spürbar Strom.",
-          "high": "Hier steckt viel drin – die Beleuchtung verbraucht unnötig viel."
-        },
-        "perYear": "€/Jahr",
-        "rangeValue": "{{low}}–{{high}}",
-        "payback": "Einmalig ca. {{invest}} € – ab Monat {{months}} im Plus",
-        "paybackSlow": "Einmalig ca. {{invest}} € – rechnet sich erst langfristig",
-        "paybackHint_one": "Eine Ersatz-LED, danach spart der Raum jedes Jahr weiter.",
-        "paybackHint_other": "{{count}} Ersatz-LEDs, danach spart der Raum jedes Jahr weiter.",
-        "noticeSmall": "Der Betrag liegt unter der Schwelle, ab der wir Euro nennen. Die Strommenge ist die belastbarere Angabe.",
-        "noticeEstimated": "Ohne Angabe zur Brenndauer beruht die Rechnung auf einer Annahme. Zurück zum Erfassen, um sie zu bestätigen.",
+        "worthTitle": "Beim Kauf",
+        "worth": "Achte auf die passende Fassung (E27, E14, GU10) und auf warmweißes Licht (2700 K). Statt Watt zählt jetzt Lumen: 60 W entsprechen rund 800 lm, 40 W rund 470 lm.",
         "doneBadge": "Alles auf LED",
-        "doneSummary": "Hier ist nichts mehr zu holen – dieser Raum ist fertig.",
-        "doneTip": "Beim Nachkaufen weiter auf LED mit warmweißem Licht achten.",
-        "assumptions": "Gerechnet mit {{price}} ct/kWh und ca. {{hours}} h am Tag.",
-        "tip": {
-          "good": "Achte beim Nachkaufen weiter auf LED mit warmweißem Licht.",
-          "medium": "Tausche die Lampen nach und nach gegen LED – am besten zuerst die, die am längsten brennen.",
-          "elevated": "LED-Umstieg lohnt sich klar. Achte auf die passende Fassung (z. B. GU10, E27) und Lichtfarbe.",
-          "high": "Hier zuerst umrüsten: Der Umstieg auf LED amortisiert sich meist in wenigen Monaten."
-        }
+        "doneSummary_one": "Der geprüfte Raum ist bereits umgestellt.",
+        "doneSummary_other": "Alle {{count}} geprüften Räume sind bereits umgestellt.",
+        "doneTip": "Achte beim Nachkaufen weiter auf LED mit warmweißem Licht."
       }
     }
   },
@@ -2152,7 +2096,8 @@
       },
       "lighting": {
         "title": "Auf LED umstellen",
-        "reason": "{{count}} Lampen laufen noch ohne LED. Tausch sie nach und nach aus – fang dort an, wo täglich am längsten Licht brennt."
+        "reason_one": "In einem Raum hängen noch alte Lampen. Eine Ersatz-LED kostet rund 3 € und spart das im ersten Jahr wieder ein.",
+        "reason_other": "In {{count}} Räumen hängen noch alte Lampen. Fang dort an, wo täglich am längsten Licht brennt – eine Ersatz-LED kostet rund 3 € und spart das im ersten Jahr wieder ein."
       },
       "hot_water_wait": {
         "title": "Vorlaufwasser auffangen",

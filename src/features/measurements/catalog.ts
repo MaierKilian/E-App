@@ -73,8 +73,10 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     difficulty: 1,
     available: true,
     category: 'electricity',
-    estimatedMinutes: 3,
-    perRoom: true,
+    estimatedMinutes: 2,
+    // Ein Ergebnis fuer die ganze Wohnung: Der Check fragt alle Raeume auf einem
+    // Schirm ab, statt den Nutzer einzeln durch sie hindurchzufuehren.
+    wholeHome: true,
   },
   {
     id: 'base_load',

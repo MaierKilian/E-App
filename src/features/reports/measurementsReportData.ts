@@ -15,7 +15,7 @@ const UNIT_FALLBACK: Partial<Record<MeasurementId, string>> = {
   room_temperature: '°C',
   standby: '€/Jahr',
   base_load: 'W',
-  lighting: '€/Jahr',
+  lighting: 'Räume',
   fridge: '°C',
   freezer: '€/Jahr',
 }

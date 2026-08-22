@@ -1,46 +1,36 @@
 import { useTranslation } from 'react-i18next'
 import { Lightbulb, CheckCircle2 } from 'lucide-react'
+import { useOnboardingStore } from '@/store/onboardingStore'
 import { ResultHero } from '../ResultHero'
-import { displaySavingEur, savingRange } from '../savingsDisplay'
-import { MAX_PAYBACK_MONTHS } from './lighting'
+import { roomInstances, roomLabel } from '../rooms'
+import { openRoomKeys, rankOpenRooms, roomPriority } from './lighting'
 import type { ResultProps } from '../runnerTypes'
 
 /**
- * Ergebnis des Beleuchtungs-Checks.
+ * Ergebnis des LED-Checks: eine Aufgabenliste, keine Rechnung.
  *
- * Die Hauptzahl folgt derselben Regel wie überall in der App (siehe
- * `savingsDisplay.ts`): Ein Euro-Betrag erscheint nur, wenn die Nutzung bewusst
- * angegeben wurde **und** der Betrag über der Anzeigeschwelle liegt – dann als
- * Bereich, nie als Punktwert. Sonst steht dort die gezählte Größe.
- *
- * Dazu die Zahl, die die eigentliche Frage beantwortet: was der Tausch kostet
- * und ab wann er sich getragen hat. Die Bruttoersparnis allein („6 €/Jahr")
- * wirkt kleiner als die Entscheidung, die dahintersteht.
+ * Die Reihenfolge ist die eigentliche Leistung – sie entsteht aus dem Raumtyp
+ * und kostet den Nutzer keine einzige Eingabe. Der Euro-Betrag fehlt bewusst:
+ * Er hing an einer geratenen Brenndauer und hätte hier nichts entschieden, was
+ * nicht ohnehin feststeht.
  */
 export function LightingResult({ result }: ResultProps) {
-  const { t, i18n } = useTranslation()
-  const details = result.details ?? {}
-  const annualKwh = details.annualKwh ?? 0
-  const totalBulbs = details.totalBulbs ?? 0
-  const investEur = details.investEur ?? 0
-  const paybackMonths = details.paybackMonths
-  const estimated = (details.savingEstimated ?? 0) === 1
+  const { t } = useTranslation()
+  const rooms = useOnboardingStore((s) => s.data.rooms)
+  const instances = roomInstances(rooms)
 
-  const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
-  const hoursFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
+  const openKeys = openRoomKeys(result.details)
+  const ranked = rankOpenRooms(instances, openKeys)
+  const checkedRooms = result.details?.checkedRooms ?? 0
 
-  const shownEur = estimated ? undefined : displaySavingEur(result.primaryValue)
-  const range = shownEur !== undefined ? savingRange(result.primaryValue) : undefined
-
-  // Nichts zu tauschen: ein abgeschlossener Zustand, keine Null-Meldung.
-  if (totalBulbs === 0) {
+  if (ranked.length === 0) {
     return (
       <div className="space-y-4">
         <ResultHero
           rating="good"
           icon={CheckCircle2}
           badgeLabel={t('measurements.lighting.result.doneBadge')}
-          summary={t('measurements.lighting.result.doneSummary')}
+          summary={t('measurements.lighting.result.doneSummary', { count: checkedRooms })}
         />
         <div className="glass rounded-3xl p-4 text-sm text-foreground">
           {t('measurements.lighting.result.doneTip')}
@@ -49,56 +39,49 @@ export function LightingResult({ result }: ResultProps) {
     )
   }
 
+  const first = ranked[0]
+
   return (
     <div className="space-y-4">
       <ResultHero
         rating={result.rating}
-        icon={range ? undefined : Lightbulb}
-        value={
-          range
-            ? t('measurements.lighting.result.rangeValue', {
-                low: numFmt.format(range.low),
-                high: numFmt.format(range.high),
-              })
-            : numFmt.format(annualKwh)
-        }
-        unit={range ? t('measurements.lighting.result.perYear') : 'kWh/Jahr'}
-        badgeLabel={t(`measurements.lighting.result.ratings.${result.rating}`)}
-        summary={t(`measurements.lighting.result.summary.${result.rating}`, { count: totalBulbs })}
+        value={String(ranked.length)}
+        unit={t('measurements.lighting.unit', { count: ranked.length })}
+        badgeLabel={t('measurements.lighting.result.badge')}
+        summary={t('measurements.lighting.result.summary', {
+          room: roomLabel(t, first),
+        })}
       />
 
-      <div className="glass rounded-3xl p-4">
-        <p className="text-sm font-semibold text-foreground">
-          {paybackMonths !== undefined && paybackMonths <= MAX_PAYBACK_MONTHS
-            ? t('measurements.lighting.result.payback', {
-                invest: numFmt.format(investEur),
-                months: paybackMonths,
-              })
-            : t('measurements.lighting.result.paybackSlow', {
-                invest: numFmt.format(investEur),
-              })}
+      <div className="glass rounded-3xl p-5">
+        <p className="mb-3 text-sm font-semibold text-foreground">
+          {t('measurements.lighting.result.orderTitle')}
         </p>
-        <p className="mt-1 text-xs text-muted">
-          {t('measurements.lighting.result.paybackHint', { count: totalBulbs })}
-        </p>
+        <ol className="space-y-2.5">
+          {ranked.map((inst, i) => (
+            <li key={inst.key} className="flex items-center gap-3">
+              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-xl bg-primary/10 text-xs font-bold text-primary">
+                {i + 1}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                {roomLabel(t, inst)}
+              </span>
+              <span className="shrink-0 text-[11px] text-muted">
+                {t(`measurements.lighting.result.priority.${roomPriority(inst.type)}`)}
+              </span>
+            </li>
+          ))}
+        </ol>
       </div>
 
-      {!range && (
-        <div className="glass rounded-3xl p-4 text-xs text-muted">
-          {estimated
-            ? t('measurements.lighting.result.noticeEstimated')
-            : t('measurements.lighting.result.noticeSmall')}
+      <div className="glass rounded-3xl p-4">
+        <div className="mb-2 flex items-center gap-2">
+          <Lightbulb className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
+          <p className="text-sm font-semibold text-foreground">
+            {t('measurements.lighting.result.worthTitle')}
+          </p>
         </div>
-      )}
-
-      <div className="glass rounded-3xl p-4 text-sm text-foreground">
-        {t(`measurements.lighting.result.tip.${result.rating}`)}
-        <p className="mt-2 text-[11px] text-muted">
-          {t('measurements.lighting.result.assumptions', {
-            price: numFmt.format(details.workPriceCt ?? 0),
-            hours: hoursFmt.format(details.hoursPerDay ?? 0),
-          })}
-        </p>
+        <p className="text-sm text-muted">{t('measurements.lighting.result.worth')}</p>
       </div>
     </div>
   )

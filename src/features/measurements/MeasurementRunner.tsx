@@ -22,6 +22,9 @@ interface SavedState {
 
 const PHASES: RunnerPhase[] = ['intro', 'run', 'result']
 
+/** Ablauf einer Messung ohne eigene Erklärseite (siehe `MeasurementModule.Intro`). */
+const PHASES_WITHOUT_INTRO: RunnerPhase[] = ['run', 'result']
+
 const PHASE_LABEL: Record<RunnerPhase, string> = {
   intro: 'measurements.common.phaseIntro',
   run: 'measurements.common.phaseRun',
@@ -50,10 +53,14 @@ export function MeasurementRunner() {
   const meta = getMeasurementMeta(id)
   const mod = getMeasurementModule(id)
 
-  const [phase, setPhase] = useState<RunnerPhase>(skipIntro ? 'run' : 'intro')
+  // Messungen ohne eigene Erklärseite starten direkt beim Erfassen.
+  const phases = mod?.Intro ? PHASES : PHASES_WITHOUT_INTRO
+  const initialPhase: RunnerPhase = mod?.Intro && !skipIntro ? 'intro' : 'run'
+
+  const [phase, setPhase] = useState<RunnerPhase>(initialPhase)
   // Höchste bereits erreichte Phase – steuert, welche Segmente rückwärts
   // anklickbar sind (man darf nur zu schon erreichten Phasen zurückspringen).
-  const [maxReached, setMaxReached] = useState(skipIntro ? 1 : 0)
+  const [maxReached, setMaxReached] = useState(phases.indexOf(initialPhase))
   const [outcome, setOutcome] = useState<RunOutcome | null>(null)
   const [justSaved, setJustSaved] = useState<SavedState | null>(null)
 
@@ -64,8 +71,8 @@ export function MeasurementRunner() {
   const [activeRunKey, setActiveRunKey] = useState(runKey)
   if (activeRunKey !== runKey) {
     setActiveRunKey(runKey)
-    setPhase(skipIntro ? 'run' : 'intro')
-    setMaxReached(skipIntro ? 1 : 0)
+    setPhase(initialPhase)
+    setMaxReached(phases.indexOf(initialPhase))
     setOutcome(null)
     setJustSaved(null)
   }
@@ -93,12 +100,12 @@ export function MeasurementRunner() {
   }
 
   const { Intro, Run, Result } = mod
-  const phaseIndex = PHASES.indexOf(phase)
+  const phaseIndex = phases.indexOf(phase)
   const roomInst = roomKey ? roomInstances(rooms).find((r) => r.key === roomKey) : undefined
   const roomSuffix = roomInst ? ` · ${roomLabel(t, roomInst)}` : ''
 
   function goToPhase(next: RunnerPhase) {
-    const nextIndex = PHASES.indexOf(next)
+    const nextIndex = phases.indexOf(next)
     setMaxReached((prev) => Math.max(prev, nextIndex))
     setPhase(next)
   }
@@ -151,7 +158,7 @@ export function MeasurementRunner() {
         {/* Phasen-Segmente: Info · Messen · Ergebnis. Bereits erreichte
             vorherige Segmente dienen als Rück-Navigation (nur zurück). */}
         <div className="glass mt-3 flex gap-1 rounded-2xl p-1">
-          {PHASES.map((p, i) => {
+          {phases.map((p, i) => {
             const active = i === phaseIndex
             const passed = i < phaseIndex
             const canGoBack = i < phaseIndex && i <= maxReached
@@ -183,7 +190,7 @@ export function MeasurementRunner() {
         </div>
       </div>
 
-      {phase === 'intro' && (
+      {phase === 'intro' && Intro && (
         <>
           <Intro />
           <button

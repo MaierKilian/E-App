@@ -18,7 +18,12 @@ import type { EnergyType, MeterReading } from '@/store/readingsStore'
 import { resultSavingsEur } from '@/features/measurements/impact'
 import { isMeasuredSaving } from '@/features/measurements/savingsDisplay'
 import { DEFAULT_COMFORT_BAND } from '@/features/measurements/room_temperature/roomClimate'
-import { parseRoomKey } from '@/features/measurements/rooms'
+import { parseRoomKey, roomInstances } from '@/features/measurements/rooms'
+import {
+  isCurrentLightingResult,
+  openRoomKeys,
+  rankOpenRooms,
+} from '@/features/measurements/lighting/lighting'
 import { ENERGY_META } from '@/features/monitoring/energyConfig'
 import { sortByDate, yearOverYearTrend } from '@/features/monitoring/readings'
 
@@ -274,20 +279,27 @@ export function buildTips(
     })
   }
 
-  const lightingRs = resultsForId(results, 'lighting')
-  const lighting = savingForId(results, 'lighting')
-  if (lighting > 0) {
-    const bulbs = Math.round(lightingRs.reduce((s, r) => s + (r.details?.totalBulbs ?? 0), 0))
-    tips.push({
-      id: 'lighting',
-      source: sourceFor(results, 'lighting'),
-      icon: Lightbulb,
-      category: 'electricity',
-      savingEur: lighting,
-      effortMinutes: 20,
-      costEur: 25,
-      params: { count: bulbs },
-    })
+  // LED: Der Check liefert keinen Euro-Betrag, sondern die Raeume, in denen noch
+  // alte Lampen haengen – in der Reihenfolge, in der sich der Tausch lohnt. Der
+  // erste Raum traegt die Empfehlung, die Anzahl steht im Text.
+  const lightingResult = resultsForId(results, 'lighting').find((r) =>
+    isCurrentLightingResult(r.details),
+  )
+  if (lightingResult) {
+    const openRooms = rankOpenRooms(roomInstances(data.rooms), openRoomKeys(lightingResult.details))
+    if (openRooms.length > 0) {
+      const first = openRooms[0]
+      tips.push({
+        id: 'lighting',
+        source: sourceFor(results, 'lighting'),
+        icon: Lightbulb,
+        category: 'electricity',
+        effortMinutes: 20,
+        costEur: 25,
+        params: { count: openRooms.length },
+        room: { type: first.type, index: first.index, total: first.total },
+      })
+    }
   }
 
   // Kühlschrank: zu kalt → wärmer (Sparen), zu warm → kälter (Lebensmittel).

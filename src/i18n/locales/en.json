@@ -959,101 +959,45 @@
       }
     },
     "lighting": {
-      "title": "Lighting check",
-      "short": "Find out how much switching to LED saves.",
-      "intro": {
-        "lead": "Old incandescent and halogen bulbs use many times more than LEDs. Check room by room what is worth it.",
-        "stepsTitle": "How it works",
-        "imageAlt": "Illustration: person showing smart lighting via app",
-        "steps": [
-          "Choose a room",
-          "Count non-LED bulbs",
-          "See the savings"
-        ],
-        "detailsButton": "Details",
-        "detailsTitle": "What matters",
-        "details": [
-          "Old incandescent and halogen bulbs use many times more energy than LEDs – at the same brightness.",
-          "Per room, count the bulbs that are not yet LED (incandescent, halogen or old energy-saving lamps).",
-          "LEDs come in every socket (E27, E14, GU10 …) and light colour – from warm white to daylight.",
-          "The switch pays off most where lights burn longest (living room, kitchen, hallway).",
-          "LEDs last far longer – saving electricity and frequent bulb changes."
-        ],
-        "start": "Start check"
-      },
+      "title": "LED check",
+      "short": "One walk through your home to find where switching to LED pays off.",
+      "unit_one": "room",
+      "unit_other": "rooms",
       "run": {
-        "bulbsTitle": "Which bulbs here are not LED yet?",
-        "bulbsHint": "A typical suggestion for this room – just correct it.",
-        "bulbTypes": {
-          "incandescent": "Incandescent",
-          "halogen": "Halogen",
-          "spot": "Halogen spot"
+        "leadTitle": "Why the swap pays off",
+        "lead": "An old incandescent or halogen bulb uses about six times the power of an LED at the same brightness. A replacement LED costs around 3 € and has usually paid for itself within the first year – even if the old bulb still works.",
+        "helpButton": "How do I spot an LED?",
+        "helpTitle": "LED or not?",
+        "helpItems": [
+          "If the bulb gets hot after a minute, it is not an LED.",
+          "If it is at full brightness instantly, it is an LED.",
+          "If it takes a few seconds to brighten, it is an old energy-saving lamp – worth replacing too.",
+          "A visible filament means incandescent or halogen.",
+          "When in doubt, answer “still old”. You will see it when you swap it."
+        ],
+        "roomsTitle": "Walk through your home",
+        "roomsHint": "Is there at least one bulb in this room that is not an LED?",
+        "answers": {
+          "old": "Still old",
+          "led": "All LED"
         },
-        "bulbExamples": {
-          "incandescent": "classic bulb, ~40–60 W",
-          "halogen": "halogen rod/bulb, ~30–50 W",
-          "spot": "recessed/ceiling spot, ~35 W"
-        },
-        "allLed": "Everything here is LED",
-        "usageTitle": "How much is the light on here?",
-        "usageHint": "Without this we cannot name a euro amount we could defend.",
-        "usageLevels": {
-          "low": "Little",
-          "normal": "Normal",
-          "high": "A lot"
-        },
-        "usageChosen": "Calculated with about {{hours}} hours a day.",
-        "usageOpen": "Nothing chosen yet.",
-        "savingLabel": "Saves per year",
-        "savingRange": "approx. {{low}}–{{high}} €",
-        "savingKwh": "approx. {{kwh}} kWh",
-        "savingSmall": "Too little for a defensible euro amount – hence the energy figure.",
-        "payback": "About {{invest}} € once · in the black from month {{months}}",
-        "paybackSlow": "About {{invest}} € once · only pays off long term",
-        "stateDone": "No old bulbs – this room is done.",
-        "stateNeedsUsage_one": "{{count}} bulb recorded. Choose above how much the light is on here.",
-        "stateNeedsUsage_other": "{{count}} bulbs recorded. Choose above how much the light is on here.",
-        "assumptions": "at {{price}} ct/kWh and approx. {{hours}} h a day",
-        "assumptionsTitle": "What this is based on",
-        "assumptionsItems": [
-          "Electricity price {{price}} ct/kWh – from your tariff. Change it in settings.",
-          "Burn time approx. {{hours}} hours a day – from your choice and a typical value for this room.",
-          "Saving per bulb: incandescent ~52 W, halogen ~35 W, spot ~30 W less than an LED of the same brightness.",
-          "Replacement LEDs assumed at 3–4 € each (retrofit, fixture not included).",
-          "That is why you see a range and not an exact amount: burn time is always an estimate."
-        ]
+        "progress": "{{answered}} of {{total}} rooms answered"
       },
       "result": {
-        "ratings": {
-          "good": "Already LED",
-          "medium": "Small win",
-          "elevated": "Worth it",
-          "high": "Big win"
+        "badge": "To replace",
+        "summary": "Start in the {{room}} – that is where the light is on longest.",
+        "orderTitle": "In this order",
+        "priority": {
+          "3": "lots of light",
+          "2": "medium",
+          "1": "rarely lit"
         },
-        "summary": {
-          "good": "Everything is already LED here – great, hardly anything more to gain.",
-          "medium": "A few bulbs could still be switched to LED cheaply.",
-          "elevated": "Switching to LED saves noticeable power here.",
-          "high": "Lots to gain here – the lighting uses unnecessarily much."
-        },
-        "perYear": "€/year",
-        "rangeValue": "{{low}}–{{high}}",
-        "payback": "About {{invest}} € once – in the black from month {{months}}",
-        "paybackSlow": "About {{invest}} € once – only pays off long term",
-        "paybackHint_one": "One replacement LED, then the room keeps saving every year.",
-        "paybackHint_other": "{{count}} replacement LEDs, then the room keeps saving every year.",
-        "noticeSmall": "The amount is below the threshold where we name euros. The energy figure is the sounder one.",
-        "noticeEstimated": "Without a burn-time choice the calculation rests on an assumption. Go back to confirm it.",
+        "worthTitle": "When buying",
+        "worth": "Mind the right socket (E27, E14, GU10) and warm-white light (2700 K). Lumens replace watts: 60 W is about 800 lm, 40 W about 470 lm.",
         "doneBadge": "All LED",
-        "doneSummary": "Nothing left to gain here – this room is done.",
-        "doneTip": "Keep choosing warm-white LEDs when you buy replacements.",
-        "assumptions": "Calculated with {{price}} ct/kWh and approx. {{hours}} h a day.",
-        "tip": {
-          "good": "Keep choosing warm-white LEDs when you replace bulbs.",
-          "medium": "Swap bulbs for LED step by step – start with the ones that are on the longest.",
-          "elevated": "Switching to LED clearly pays off. Mind the right socket (e.g. GU10, E27) and light colour.",
-          "high": "Convert these first: switching to LED usually pays for itself within a few months."
-        }
+        "doneSummary_one": "The room you checked is already switched over.",
+        "doneSummary_other": "All {{count}} rooms you checked are already switched over.",
+        "doneTip": "Keep choosing warm-white LEDs when you buy replacements."
       }
     }
   },
@@ -2152,7 +2096,8 @@
       },
       "lighting": {
         "title": "Switch to LED",
-        "reason": "{{count}} lamps still aren't LED. Replace them one by one – start where the light burns longest each day."
+        "reason_one": "One room still has old bulbs. A replacement LED costs about 3 € and earns that back in the first year.",
+        "reason_other": "{{count}} rooms still have old bulbs. Start where the light is on longest – a replacement LED costs about 3 € and earns that back in the first year."
       },
       "hot_water_wait": {
         "title": "Catch the run-off water",

@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { MeasurementId, MeasurementResult } from '@/features/measurements/types'
 import { instanceKey } from '@/features/measurements/rooms'
+import { isCurrentLightingResult } from '@/features/measurements/lighting/lighting'
 
 export type MeasurementsView = 'recommended' | 'trades' | 'byRoom'
 
@@ -23,6 +24,28 @@ interface MeasurementsState {
 }
 
 const defaultResults: Partial<Record<string, MeasurementResult>> = {}
+
+/**
+ * Entfernt Ergebnisse, deren Messung ihre Form geändert hat.
+ *
+ * Der LED-Check zählte früher Lampen je Raum und speicherte je Raum ein
+ * Ergebnis (`lighting@wohnzimmer#0`, `details.totalBulbs`). Heute fragt er alle
+ * Räume auf einem Schirm ab und legt ein Ergebnis für die Wohnung ab. Blieben
+ * die alten Einträge liegen, läse der Ergebnis-Schirm dort „keine offenen
+ * Räume" und meldete fälschlich, alles sei bereits auf LED umgestellt.
+ */
+function dropLegacyResults(
+  results: Partial<Record<string, MeasurementResult>> | undefined,
+): Partial<Record<string, MeasurementResult>> {
+  if (!results) return {}
+  const next: Partial<Record<string, MeasurementResult>> = {}
+  for (const [key, result] of Object.entries(results)) {
+    if (!result) continue
+    if (result.id === 'lighting' && !isCurrentLightingResult(result.details)) continue
+    next[key] = result
+  }
+  return next
+}
 
 /**
  * Dauerhaft gespeicherte Mess-Ergebnisse.
@@ -62,7 +85,7 @@ export const useMeasurementsStore = create<MeasurementsState>()(
         return {
           ...current,
           ...p,
-          results: { ...current.results, ...(p.results ?? {}) },
+          results: { ...current.results, ...dropLegacyResults(p.results) },
           skippedRooms: p.skippedRooms ?? current.skippedRooms,
           measurementsView: p.measurementsView ?? current.measurementsView,
         }

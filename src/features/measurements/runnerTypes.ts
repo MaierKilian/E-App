@@ -30,7 +30,12 @@ export interface ResultProps {
  * registriert ein solches Modul in der Runner-Registry (siehe registry.ts).
  */
 export interface MeasurementModule {
-  Intro: React.ComponentType
+  /**
+   * Vorgeschaltete Erklärseite. Optional: Wo die Erklärung in zwei Sätzen über
+   * der Eingabe steht (LED-Check), wäre ein eigener Schirm davor nur ein Klick
+   * mehr. Fehlt sie, beginnt der Ablauf direkt beim Erfassen.
+   */
+  Intro?: React.ComponentType
   Run: React.ComponentType<RunProps>
   Result: React.ComponentType<ResultProps>
 }

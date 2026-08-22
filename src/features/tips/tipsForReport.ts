@@ -14,14 +14,21 @@ import type { Tip } from './buildTips'
  */
 
 /** Zahlen für die Zielsprache formatieren (sonst steht dort „23.4 °C"). */
-function localizeParams(
+export function localizeParams(
   params: Record<string, string | number> | undefined,
   language: string,
 ): Record<string, string | number> {
   if (!params) return {}
   const fmt = new Intl.NumberFormat(language, { maximumFractionDigits: 1 })
   return Object.fromEntries(
-    Object.entries(params).map(([k, v]) => [k, typeof v === 'number' ? fmt.format(v) : v]),
+    Object.entries(params).map(([k, v]) => [
+      k,
+      // `count` waehlt bei i18next die Pluralform und muss dafuer eine Zahl
+      // bleiben – als lokalisierter String faellt die Wahl aus und i18next gibt
+      // den rohen Schluessel aus. Alle anderen Zahlen werden lokalisiert, weil
+      // i18next sie sonst roh durchreicht („23.4 °C" statt „23,4 °C").
+      k === 'count' || typeof v !== 'number' ? v : fmt.format(v),
+    ]),
   )
 }
 

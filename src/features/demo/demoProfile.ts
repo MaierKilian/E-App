@@ -88,20 +88,18 @@ const RESULTS: MeasurementResult[] = [
   result('room_temperature', 'good', 18.5, '°C', 12, { roomKey: 'bedroom#0', details: { celsius: 18.5 } }),
   result('room_temperature', 'medium', 22.5, '°C', 11, { roomKey: 'children_room#0', details: { celsius: 22.5 } }),
   result('furniture_spacing', 'medium', 4, 'cm', 10, { roomKey: 'living_room#0', details: { centimeters: 4 } }),
-  // Beleuchtung: gezählte Lampen je Raum, Nutzung bestätigt (savingEstimated: 0).
-  // Das Kinderzimmer liegt bewusst unter der Euro-Anzeigeschwelle – so zeigt die
-  // Demo auch den ehrlichen Fall „Strommenge statt Betrag".
-  result('lighting', 'high', 61, '€/Jahr', 8, {
-    roomKey: 'living_room#0',
-    details: { yearlySaving: 61, annualKwh: 178, totalBulbs: 3, investEur: 9, paybackMonths: 2, hoursPerDay: 4, workPriceCt: 34, savingEstimated: 0, incandescent: 1, halogen: 2, spot: 0 },
-  }),
-  result('lighting', 'elevated', 22, '€/Jahr', 8, {
-    roomKey: 'kitchen#0',
-    details: { yearlySaving: 22, annualKwh: 66, totalBulbs: 2, investEur: 8, paybackMonths: 5, hoursPerDay: 3, workPriceCt: 34, savingEstimated: 0, incandescent: 0, halogen: 0, spot: 2 },
-  }),
-  result('lighting', 'elevated', 13, '€/Jahr', 7, {
-    roomKey: 'children_room#0',
-    details: { yearlySaving: 13, annualKwh: 38, totalBulbs: 1, investEur: 3, paybackMonths: 3, hoursPerDay: 2, workPriceCt: 34, savingEstimated: 0, incandescent: 1, halogen: 0, spot: 0 },
+  // LED-Check: ein Ergebnis fuer die Wohnung, je Raum eine Ja/Nein-Antwort.
+  result('lighting', 'high', 3, 'Räume', 8, {
+    details: {
+      'room:living_room#0': 1,
+      'room:kitchen#0': 1,
+      'room:bedroom#0': 0,
+      'room:children_room#0': 0,
+      'room:bathroom#0': 0,
+      'room:hallway#0': 1,
+      openRooms: 3,
+      checkedRooms: 6,
+    },
   }),
 ]
 

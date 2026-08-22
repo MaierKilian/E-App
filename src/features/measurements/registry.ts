@@ -18,7 +18,6 @@ import { FurnitureSpacingResult } from './furniture_spacing/FurnitureSpacingResu
 import { BaseLoadIntro } from './base_load/BaseLoadIntro'
 import { BaseLoadRun } from './base_load/BaseLoadRun'
 import { BaseLoadResult } from './base_load/BaseLoadResult'
-import { LightingIntro } from './lighting/LightingIntro'
 import { LightingRun } from './lighting/LightingRun'
 import { LightingResult } from './lighting/LightingResult'
 import { FridgeIntro } from './fridge/FridgeIntro'
@@ -65,7 +64,7 @@ export const MEASUREMENT_MODULES: Partial<Record<MeasurementId, MeasurementModul
     Result: BaseLoadResult,
   },
   lighting: {
-    Intro: LightingIntro,
+    // Ohne Intro: die Erklärung steht über der Raumliste im Run-Schirm.
     Run: LightingRun,
     Result: LightingResult,
   },

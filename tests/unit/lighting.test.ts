@@ -1,224 +1,194 @@
-// Prüfungen am Beleuchtungs-Check.
+// Prüfungen am LED-Check.
 //
-// Der Check hatte zwei Schwächen, die diese Tests festhalten sollen:
-// Er zeigte einen Euro-Punktwert an der App-eigenen Anzeigeregel vorbei
-// (savingsDisplay.ts) und er nannte nur den Ertrag, nie den Einsatz – womit er
-// seine eigene Leitfrage („lohnt sich das?") gar nicht beantwortete.
+// Der Check hatte zuvor Lampen je Typ gezählt, die Brenndauer abgefragt und
+// daraus einen Euro-Betrag gerechnet – aus lauter Konstanten und zwei
+// geschätzten Eingaben. Heute erhebt er nur, was der Nutzer wirklich weiß: in
+// welchen Räumen noch alte Lampen hängen. Diese Tests sichern, dass die
+// Reihenfolge des Tauschs aus dem Raumtyp folgt, dass Altdaten der früheren
+// Fassung erkannt werden – und dass zu jedem Zustand die Texte existieren.
 
 import { describe, expect, it } from 'vitest'
 import {
-  BULB_COST_EUR,
-  BULB_SAVE_W,
-  BULB_TYPES,
-  USAGE_FACTOR,
-  USAGE_LEVELS,
-  calcLighting,
+  ROOM_PRIORITY,
+  isCurrentLightingResult,
+  lightingDetails,
+  openRoomKeys,
+  rankOpenRooms,
   rateLighting,
-  usageHours,
-  type BulbType,
+  roomPriority,
+  type RoomLampState,
 } from '@/features/measurements/lighting/lighting'
-import {
-  baseHoursFor,
-  lampHintFor,
-  HOURS_BASE,
-  ROOM_LAMP_HINT,
-} from '@/features/measurements/lighting/roomLampDefaults'
-import { displaySavingEur, isMeasuredSaving } from '@/features/measurements/savingsDisplay'
-import type { RoomType } from '@/types'
+import { roomInstances } from '@/features/measurements/rooms'
+import { localizeParams } from '@/features/tips/tipsForReport'
+import type { RoomEntry, RoomType } from '@/types'
 import de from '@/i18n/locales/de.json'
 import en from '@/i18n/locales/en.json'
 
-const NONE: Record<BulbType, number> = { incandescent: 0, halogen: 0, spot: 0 }
+const ROOMS: RoomEntry[] = [
+  { type: 'living_room', count: 1, heatTransfer: 'radiator' },
+  { type: 'kitchen', count: 1, heatTransfer: 'radiator' },
+  { type: 'bedroom', count: 2, heatTransfer: 'radiator' },
+  { type: 'basement', count: 1, heatTransfer: 'radiator' },
+]
+const INSTANCES = roomInstances(ROOMS)
 
-describe('calcLighting', () => {
-  it('liefert bei nichts zu tauschen einen sauberen Null-Zustand', () => {
-    const r = calcLighting({ counts: NONE, hoursPerDay: 3, workPriceCt: 34 })
-    expect(r.totalBulbs).toBe(0)
-    expect(r.yearlySaving).toBe(0)
-    expect(r.investEur).toBe(0)
-    // Ohne Ersparnis gibt es keine Amortisation – und keine erfundene Zahl.
-    expect(r.paybackMonths).toBeUndefined()
-    expect(r.rating).toBe('good')
+describe('lightingDetails / openRoomKeys', () => {
+  it('haelt die Antworten je Raum fest und zaehlt sie zusammen', () => {
+    const answers: Partial<Record<string, RoomLampState>> = {
+      'living_room#0': 'old',
+      'kitchen#0': 'old',
+      'bedroom#0': 'led',
+    }
+    const details = lightingDetails(answers)
+    expect(details.checkedRooms).toBe(3)
+    expect(details.openRooms).toBe(2)
+    expect(openRoomKeys(details).sort()).toEqual(['kitchen#0', 'living_room#0'])
   })
 
-  it('rechnet Ersparnis und Investition aus denselben Zählern', () => {
-    const counts = { incandescent: 2, halogen: 0, spot: 4 }
-    const r = calcLighting({ counts, hoursPerDay: 3, workPriceCt: 34 })
-    expect(r.totalBulbs).toBe(6)
-    expect(r.investEur).toBe(2 * BULB_COST_EUR.incandescent + 4 * BULB_COST_EUR.spot)
-    const savedW = 2 * BULB_SAVE_W.incandescent + 4 * BULB_SAVE_W.spot
-    expect(r.annualKwh).toBe(Math.round((savedW * 3 * 365) / 1000))
+  it('ignoriert unbeantwortete Raeume, statt sie als erledigt zu zaehlen', () => {
+    const details = lightingDetails({ 'living_room#0': 'old', 'basement#0': undefined })
+    expect(details.checkedRooms).toBe(1)
+    expect(details.openRooms).toBe(1)
   })
 
-  it('nennt die Amortisation in Monaten und rundet auf', () => {
-    // 4 Spots, viel Licht: Investition 16 €, Ersparnis deutlich darüber.
-    const r = calcLighting({
-      counts: { incandescent: 0, halogen: 0, spot: 4 },
-      hoursPerDay: 4,
-      workPriceCt: 34,
-    })
-    expect(r.investEur).toBe(16)
-    expect(r.paybackMonths).toBeDefined()
-    expect(r.paybackMonths).toBe(Math.ceil(r.investEur / (r.yearlySaving / 12)))
-    // Der Kernbefund des Checks: der Tausch trägt sich in unter einem Jahr.
-    expect(r.paybackMonths!).toBeLessThan(12)
-  })
-
-  it('ignoriert unsinnige Eingaben statt sie durchzurechnen', () => {
-    const r = calcLighting({
-      counts: { incandescent: -3, halogen: 1.7, spot: 500 },
-      hoursPerDay: -1,
-      workPriceCt: 34,
-    })
-    expect(r.totalBulbs).toBe(0 + 1 + 99)
-    expect(r.annualKwh).toBe(0)
-    expect(r.yearlySaving).toBe(0)
+  it('kommt mit leeren Antworten klar', () => {
+    const details = lightingDetails({})
+    expect(details.checkedRooms).toBe(0)
+    expect(details.openRooms).toBe(0)
+    expect(openRoomKeys(details)).toEqual([])
+    expect(openRoomKeys(undefined)).toEqual([])
   })
 })
 
-describe('Nutzungsstufen', () => {
-  it('skalieren den typischen Raumwert', () => {
-    expect(usageHours(2, 'low')).toBe(1)
-    expect(usageHours(2, 'normal')).toBe(2)
-    expect(usageHours(2, 'high')).toBe(4)
+describe('Reihenfolge des Tauschs', () => {
+  it('folgt dem Raumtyp – ganz ohne Eingabe des Nutzers', () => {
+    const ranked = rankOpenRooms(INSTANCES, ['basement#0', 'bedroom#1', 'kitchen#0'])
+    expect(ranked.map((r) => r.key)).toEqual(['kitchen#0', 'bedroom#1', 'basement#0'])
   })
 
-  it('bleiben in einem plausiblen Rahmen', () => {
-    expect(usageHours(0.5, 'low')).toBeGreaterThan(0)
-    expect(usageHours(12, 'high')).toBeLessThanOrEqual(16)
+  it('nennt nur Raeume, die auch als offen gemeldet wurden', () => {
+    const ranked = rankOpenRooms(INSTANCES, ['kitchen#0'])
+    expect(ranked).toHaveLength(1)
+    expect(ranked[0].type).toBe('kitchen')
   })
 
-  it('sind streng geordnet – wenig < normal < viel', () => {
-    const [low, normal, high] = USAGE_LEVELS.map((l) => USAGE_FACTOR[l])
-    expect(low).toBeLessThan(normal)
-    expect(normal).toBeLessThan(high)
-  })
-})
-
-describe('Anzeige-Regel der App', () => {
-  it('markiert eine nicht bestätigte Nutzung als Schätzung', () => {
-    // So schreibt LightingRun die Details, wenn keine Stufe gewählt wurde.
-    expect(isMeasuredSaving({ savingEstimated: 1 })).toBe(false)
-    expect(isMeasuredSaving({ savingEstimated: 0 })).toBe(true)
+  it('ignoriert Schluessel, die es im Profil nicht gibt', () => {
+    expect(rankOpenRooms(INSTANCES, ['attic#3'])).toEqual([])
   })
 
-  it('nennt kleine Beträge nicht in Euro', () => {
-    // Ein Schlafzimmer mit einer Birne: real, aber unter der Schwelle.
-    const r = calcLighting({
-      counts: { incandescent: 1, halogen: 0, spot: 0 },
-      hoursPerDay: 1.5,
-      workPriceCt: 34,
-    })
-    expect(r.yearlySaving).toBeGreaterThan(0)
-    expect(displaySavingEur(r.yearlySaving)).toBeUndefined()
-    // Statt Euro bleibt die gezählte Größe – die muss es also geben.
-    expect(r.annualKwh).toBeGreaterThan(0)
+  it('kennt jeden Raumtyp mit einer Prioritaet', () => {
+    for (const type of Object.keys(ROOM_PRIORITY) as RoomType[]) {
+      expect(roomPriority(type)).toBeGreaterThanOrEqual(1)
+      expect(roomPriority(type)).toBeLessThanOrEqual(3)
+    }
   })
 
-  it('zeigt Euro erst, wo der Betrag trägt', () => {
-    const r = calcLighting({
-      counts: { incandescent: 3, halogen: 2, spot: 4 },
-      hoursPerDay: 4,
-      workPriceCt: 34,
-    })
-    expect(displaySavingEur(r.yearlySaving)).toBeDefined()
+  it('gewichtet Wohnraeume hoeher als Nebenraeume', () => {
+    expect(roomPriority('living_room')).toBeGreaterThan(roomPriority('basement'))
+    expect(roomPriority('kitchen')).toBeGreaterThan(roomPriority('staircase'))
   })
 })
 
 describe('rateLighting', () => {
-  it('steigt monoton mit der Ersparnis', () => {
-    expect(rateLighting(0)).toBe('good')
-    expect(rateLighting(5)).toBe('medium')
-    expect(rateLighting(15)).toBe('elevated')
-    expect(rateLighting(60)).toBe('high')
+  it('meldet einen fertigen Zustand, wenn nichts offen ist', () => {
+    expect(rateLighting(INSTANCES, [])).toBe('good')
+  })
+
+  it('waegt nach Gewicht, nicht nach blosser Anzahl', () => {
+    expect(rateLighting(INSTANCES, ['basement#0'])).toBe('medium')
+    expect(rateLighting(INSTANCES, ['living_room#0', 'kitchen#0'])).toBe('high')
+  })
+
+  it('steigt monoton, wenn Raeume hinzukommen', () => {
+    const order = ['good', 'medium', 'elevated', 'high']
+    const steps = [
+      rateLighting(INSTANCES, []),
+      rateLighting(INSTANCES, ['basement#0']),
+      rateLighting(INSTANCES, ['basement#0', 'bedroom#0']),
+      rateLighting(INSTANCES, ['basement#0', 'bedroom#0', 'kitchen#0', 'living_room#0']),
+    ]
+    for (let i = 1; i < steps.length; i++) {
+      expect(order.indexOf(steps[i])).toBeGreaterThanOrEqual(order.indexOf(steps[i - 1]))
+    }
   })
 })
 
-describe('Raum-Vorbelegung', () => {
-  const ROOM_TYPES = Object.keys(HOURS_BASE) as RoomType[]
-
-  it('kennt jeden Raumtyp mit Brenndauer und Lampen-Vorschlag', () => {
-    for (const type of ROOM_TYPES) {
-      expect(baseHoursFor(type)).toBeGreaterThan(0)
-      expect(ROOM_LAMP_HINT[type]).toBeDefined()
-    }
+describe('Altdaten der frueheren Zaehl-Fassung', () => {
+  it('werden als nicht mehr gueltig erkannt', () => {
+    // So sahen die Details damals aus – kein checkedRooms.
+    expect(isCurrentLightingResult({ totalBulbs: 3, yearlySaving: 61 })).toBe(false)
+    expect(isCurrentLightingResult(undefined)).toBe(false)
   })
 
-  it('schlägt nie eine leere Maske vor', () => {
-    for (const type of ROOM_TYPES) {
-      const hint = lampHintFor(type)
-      const total = BULB_TYPES.reduce((sum, b) => sum + hint[b], 0)
-      expect(total).toBeGreaterThan(0)
-    }
+  it('lassen ein aktuelles Ergebnis unangetastet', () => {
+    expect(isCurrentLightingResult(lightingDetails({ 'kitchen#0': 'led' }))).toBe(true)
   })
+})
 
-  it('bleibt konservativ – der Vorschlag darf keine Ersparnis erfinden', () => {
-    for (const type of ROOM_TYPES) {
-      const hint = lampHintFor(type)
-      const total = BULB_TYPES.reduce((sum, b) => sum + hint[b], 0)
-      expect(total).toBeLessThanOrEqual(3)
-    }
-  })
-
-  it('fällt bei unbekanntem Raum auf sichere Werte zurück', () => {
-    expect(baseHoursFor(undefined)).toBeGreaterThan(0)
-    expect(lampHintFor(undefined)).toEqual(NONE)
+describe('Plural-Interpolation der Empfehlung', () => {
+  it('laesst count eine Zahl – sonst waehlt i18next keine Pluralform', () => {
+    // localizeParams lokalisiert Zahlen fuer die Anzeige. Als String faellt die
+    // Pluralwahl aus und i18next gibt statt des Satzes den rohen Schluessel aus.
+    const params = localizeParams({ count: 3, watts: 1234.5 }, 'de')
+    expect(params.count).toBe(3)
+    expect(typeof params.count).toBe('number')
+    // Andere Zahlen werden weiterhin lokalisiert.
+    expect(params.watts).toBe('1.234,5')
   })
 })
 
 describe('Texte', () => {
   const RUN_KEYS = [
-    'bulbsTitle',
-    'bulbsHint',
-    'allLed',
-    'usageTitle',
-    'usageHint',
-    'usageChosen',
-    'usageOpen',
-    'savingLabel',
-    'savingRange',
-    'savingKwh',
-    'savingSmall',
-    'payback',
-    'paybackSlow',
-    'stateDone',
-    'stateNeedsUsage_one',
-    'stateNeedsUsage_other',
-    'assumptions',
-    'assumptionsTitle',
+    'leadTitle',
+    'lead',
+    'helpButton',
+    'helpTitle',
+    'roomsTitle',
+    'roomsHint',
+    'progress',
   ]
   const RESULT_KEYS = [
-    'perYear',
-    'rangeValue',
-    'payback',
-    'paybackSlow',
-    'paybackHint_one',
-    'paybackHint_other',
-    'noticeSmall',
-    'noticeEstimated',
+    'badge',
+    'summary',
+    'orderTitle',
+    'worthTitle',
+    'worth',
     'doneBadge',
-    'doneSummary',
+    'doneSummary_one',
+    'doneSummary_other',
     'doneTip',
-    'assumptions',
   ]
 
   for (const [name, dict] of [
     ['de', de],
     ['en', en],
   ] as const) {
-    it(`hat alle Schlüssel in ${name}`, () => {
-      const run = dict.measurements.lighting.run as Record<string, unknown>
-      const result = dict.measurements.lighting.result as Record<string, unknown>
+    it(`hat alle Schluessel in ${name}`, () => {
+      const lighting = dict.measurements.lighting as Record<string, unknown>
+      expect(lighting.unit_one).toBeTruthy()
+      expect(lighting.unit_other).toBeTruthy()
+
+      const run = lighting.run as Record<string, unknown>
+      const result = lighting.result as Record<string, unknown>
       for (const key of RUN_KEYS) expect(run[key], `run.${key}`).toBeTruthy()
       for (const key of RESULT_KEYS) expect(result[key], `result.${key}`).toBeTruthy()
-      for (const level of USAGE_LEVELS) {
-        expect((run.usageLevels as Record<string, string>)[level]).toBeTruthy()
+
+      const answers = run.answers as Record<string, string>
+      for (const state of ['old', 'led']) expect(answers[state]).toBeTruthy()
+
+      // Zu jeder Prioritaetsstufe gehoert eine Beschriftung im Ergebnis.
+      const priority = result.priority as Record<string, string>
+      for (const level of new Set(Object.values(ROOM_PRIORITY))) {
+        expect(priority[String(level)], `priority.${level}`).toBeTruthy()
       }
-      for (const type of BULB_TYPES) {
-        expect((run.bulbTypes as Record<string, string>)[type]).toBeTruthy()
-        expect((run.bulbExamples as Record<string, string>)[type]).toBeTruthy()
-      }
-      expect(Array.isArray(run.assumptionsItems)).toBe(true)
+
+      expect(Array.isArray(run.helpItems)).toBe(true)
+
+      // Die Empfehlung nennt Raeume statt eines Euro-Betrags.
+      const tip = dict.tips.items.lighting as Record<string, string>
+      expect(tip.title).toBeTruthy()
+      expect(tip.reason_one).toBeTruthy()
+      expect(tip.reason_other).toContain('{{count}}')
     })
   }
 })
