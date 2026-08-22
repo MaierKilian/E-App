@@ -2095,7 +2095,7 @@
     "savingPerYear": "{{value}} €/year",
     "savingRange": "~{{low}}–{{high}} €/year",
     "savingRangeShort": "~{{low}}–{{high}} €",
-    "estimateNote": "rough estimate · per year",
+    "estimateNote": "quantified · per year",
     "openSection": "Open measures",
     "topTip": "Start here",
     "implementedLine": "{{done}} of {{total}} done",
@@ -2165,12 +2165,13 @@
         "reason": "Your base load is {{watts}} W – even with nothing running on purpose. The standby check shows you device by device where it comes from.",
         "action": "Go to the standby check"
       },
-      "smart_thermostat": {
-        "title": "Smart thermostats",
-        "reason": "Automatic setback and schedules save heating energy without you thinking about it. You screw the thermostat heads on yourself – like a bottle cap, no need to drain anything."
+      "consumption_up": {
+        "title": "More $t(monitoring.energyTypes.{{carrier}}) than last year",
+        "reason": "Your meter readings show {{percent}} % more consumption than the same period last year – about {{amount}} {{unit}} extra. That is measured, not estimated. Find the cause before it adds up over another year.",
+        "action": "View history"
       }
     },
-    "potentialLabel": "Potential savings",
+    "potentialLabel": "Your recommendations",
     "countLine_one": "{{count}} measure for your home",
     "countLine_other": "{{count}} measures for your home",
     "markDone": "Done",
@@ -2185,7 +2186,16 @@
     "effortCost": "{{minutes}} min · from €{{cost}}",
     "effortHours": "{{hours}} h · free",
     "quickWinSection": "Done right away",
-    "plannedSection": "Needs a little preparation"
+    "plannedSection": "Needs a little preparation",
+    "quantity": {
+      "waterSaved": "about {{liters}} L water/year",
+      "waterWasted": "about {{liters}} L/year",
+      "heatingPercent": "about {{percent}} % heating energy",
+      "more": "+{{amount}} {{unit}} vs. last year",
+      "moreWithCost": "+{{amount}} {{unit}} · about {{cost}} € more"
+    },
+    "progressHeadline": "{{done}} of {{total}}",
+    "progressCaption": "measures completed"
   },
   "scan": {
     "button": "Scan",

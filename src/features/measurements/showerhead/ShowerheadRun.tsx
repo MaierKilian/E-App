@@ -64,6 +64,7 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
           seconds,
           yearlyCost: calc.yearlyCost,
           yearlySaving: calc.yearlySaving,
+          litersSavedPerYear: calc.litersSavedPerYear,
           hwSource: HOT_WATER_SOURCES.indexOf(source),
           savingEstimated: 1,
         },

@@ -9,14 +9,18 @@ import {
   ThermometerSnowflake,
   Sofa,
   Gauge,
-  ThermometerSun,
+  TrendingUp,
   Wind,
 } from 'lucide-react'
 import type { OnboardingData, RoomType } from '@/types'
 import type { MeasurementResult, MeasurementRating } from '@/features/measurements/types'
+import type { EnergyType, MeterReading } from '@/store/readingsStore'
 import { resultSavingsEur } from '@/features/measurements/impact'
+import { isMeasuredSaving } from '@/features/measurements/savingsDisplay'
 import { DEFAULT_COMFORT_BAND } from '@/features/measurements/room_temperature/roomClimate'
 import { parseRoomKey } from '@/features/measurements/rooms'
+import { ENERGY_META } from '@/features/monitoring/energyConfig'
+import { sortByDate, yearOverYearTrend } from '@/features/monitoring/readings'
 
 export type TipCategory = 'heating' | 'electricity' | 'water'
 
@@ -29,13 +33,31 @@ export type TipCategory = 'heating' | 'electricity' | 'water'
  * jeweils eine eigene, passende Empfehlung.
  */
 export interface Tip {
-  /** Stabile id = i18n-Schlüssel unter tips.items.<id>. */
+  /** Stabile id – merkt sich „erledigt"/„ausgeblendet" und trägt den i18n-Schlüssel. */
   id: string
+  /**
+   * Abweichender i18n-Schlüssel unter `tips.items.<textId>`. Nötig, wo mehrere
+   * Tipps denselben Text mit anderen Werten teilen – etwa ein steigender
+   * Verbrauch, den es je Energieträger einmal geben kann.
+   */
+  textId?: string
   icon: LucideIcon
   /** Gewerk – steuert die Farbcodierung der Icon-Kachel. */
   category: TipCategory
-  /** Geschätzte Jahresersparnis in € (leer = qualitativ). */
+  /**
+   * Jahresersparnis in €.
+   *
+   * Nur gesetzt, wo die Rechnung ohne geschätzte Nutzungshäufigkeit auskommt
+   * (siehe `isMeasuredSaving`). Wo sie das nicht tut, steht statt einer
+   * Euro-Behauptung die tatsächlich gemessene Menge in {@link Tip.quantity}.
+   */
   savingEur?: number
+  /**
+   * Gemessene Jahreswirkung als Ersatz (oder Ergänzung) zum Euro-Betrag:
+   * Liter Wasser, Prozent Heizenergie, kWh Mehrverbrauch. `key` ist ein
+   * vollständiger i18n-Schlüssel unter `tips.quantity.*`.
+   */
+  quantity?: { key: string; params: Record<string, string | number> }
   /** Grober Zeitaufwand in Minuten. */
   effortMinutes: number
   /** Nötige Anschaffung in € (0 = kostet nichts). */
@@ -54,6 +76,34 @@ export interface Tip {
 }
 
 type Results = Partial<Record<string, MeasurementResult>>
+
+/**
+ * Was die Empfehlungen ausser Profil und Messungen noch auswerten.
+ *
+ * Die Zaehlerstaende sind die einzige Datenquelle der App, in der echter
+ * Verbrauch ueber die Zeit steht. Ohne sie blieb der auffaelligste Wert der
+ * App – ein Verbrauch, der gegenueber dem Vorjahr deutlich steigt – ohne jede
+ * Empfehlung.
+ */
+export interface TipContext {
+  /** Zählerstände je Energieträger. */
+  readings?: Partial<Record<EnergyType, MeterReading[]>>
+  /** €-Preis je Zähler-Einheit; ohne Preis entfällt der Kostenanteil im Text. */
+  eurPerUnit?: Partial<Record<EnergyType, number>>
+}
+
+/** Ab dieser Steigerung gegenüber dem Vorjahr lohnt der Hinweis (darunter: Rauschen). */
+const CONSUMPTION_RISE_MIN = 0.1
+
+/** Gewerk je Energieträger – steuert Farbe und Einsortierung des Trend-Tipps. */
+const CARRIER_CATEGORY: Partial<Record<EnergyType, TipCategory>> = {
+  electricity: 'electricity',
+  heat_pump: 'electricity',
+  gas: 'heating',
+  oil: 'heating',
+  pellets: 'heating',
+  water: 'water',
+}
 
 const RATING_ORDER: Record<MeasurementRating, number> = {
   good: 0,
@@ -164,14 +214,26 @@ function compareTips(a: Tip, b: Tip): number {
 }
 
 /**
- * Baut die personalisierte Empfehlungsliste aus Profil und Messergebnissen.
+ * Baut die personalisierte Empfehlungsliste aus Profil, Messergebnissen und
+ * Zählerständen.
  *
  * Jeder Tipp muss ohne Handwerker umsetzbar sein – die App misst, was ein Laie
  * selbst messen kann, und soll dann nichts empfehlen, wofür er jemanden rufen
  * müsste. Deshalb trägt jeder Tipp seinen Aufwand und seine Kosten mit; danach
  * wird auch sortiert.
+ *
+ * **Euro-Beträge nur, wo die Rechnung sie hergibt.** Ein `savingEur` entsteht
+ * ausschließlich aus gemessenen Größen mal Preis. Beruht die Ersparnis auf
+ * einer angenommenen Nutzungshäufigkeit oder einem geschätzten Verbrauch, trägt
+ * der Tipp stattdessen die gemessene Menge (`quantity`) – Liter, Prozent, kWh.
+ * Eine Zahl, deren größte Unsicherheit in einer erfundenen Häufigkeit steckt,
+ * ist in einer Vorführung nicht zu verteidigen; eine gemessene Wassermenge ist es.
  */
-export function buildTips(data: OnboardingData, results: Results): Tip[] {
+export function buildTips(
+  data: OnboardingData,
+  results: Results,
+  context: TipContext = {},
+): Tip[] {
   const tips: Tip[] = []
 
   // --- Strom ----------------------------------------------------------------
@@ -208,12 +270,16 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
   const fridgeRs = resultsForId(results, 'fridge')
   const fridgeCold = fridgeRs.filter((r) => tempOf(r) < FRIDGE_COLD_C)
   if (fridgeCold.length) {
+    // Euro nur, wenn die Messung ihre eigene Ersparnis nicht als Schaetzung
+    // markiert hat – sonst steckt darin der pauschale Jahresverbrauch von
+    // 150 kWh statt eines gemessenen Werts.
+    const measured = fridgeCold.every((r) => isMeasuredSaving(r.details))
     const saving = Math.round(fridgeCold.reduce((s, r) => s + (r.details?.yearlySaving ?? 0), 0))
     tips.push({
       id: 'fridge',
       icon: Snowflake,
       category: 'electricity',
-      savingEur: saving > 0 ? saving : undefined,
+      savingEur: measured && saving > 0 ? saving : undefined,
       effortMinutes: 2,
       costEur: 0,
       params: { temp: Math.round(tempOf(fridgeCold[0])) },
@@ -231,14 +297,16 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
     })
   }
 
+  const freezerRs = resultsForId(results, 'freezer')
   const freezer = savingForId(results, 'freezer')
-  const freezerIced = resultsForId(results, 'freezer').some((r) => (r.details?.iced ?? 0) === 1)
+  const freezerIced = freezerRs.some((r) => (r.details?.iced ?? 0) === 1)
+  const freezerMeasured = freezerRs.every((r) => isMeasuredSaving(r.details))
   if (freezerIced) {
     tips.push({
       id: 'freezer',
       icon: Snowflake,
       category: 'electricity',
-      savingEur: freezer > 0 ? freezer : undefined,
+      savingEur: freezerMeasured && freezer > 0 ? freezer : undefined,
       // Kostet nichts, dauert aber einen halben Nachmittag – deshalb keine
       // Sofortmaßnahme.
       effortMinutes: 60,
@@ -268,11 +336,20 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
   const shower = savingForId(results, 'showerhead')
   if (shower > 0) {
     const flow = Math.max(0, ...showerRs.map((r) => r.primaryValue))
+    // Kein Euro-Betrag: Er laeuft ueber angenommene Duschdauer, Warmwasseranteil
+    // und Temperaturhub. Die eingesparte Wassermenge folgt dagegen direkt aus dem
+    // gemessenen Durchfluss – das ist die Zahl, die die Empfehlung traegt.
+    const litersSaved = Math.round(
+      showerRs.reduce((sum, r) => sum + (r.details?.litersSavedPerYear ?? 0), 0),
+    )
     tips.push({
       id: 'showerhead',
       icon: Droplets,
       category: 'water',
-      savingEur: shower,
+      quantity:
+        litersSaved > 0
+          ? { key: 'tips.quantity.waterSaved', params: { liters: litersSaved } }
+          : undefined,
       effortMinutes: 10,
       costEur: 20,
       params: { flow: Math.round(flow * 10) / 10 },
@@ -280,7 +357,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
   }
 
   const hotWaterRs = resultsForId(results, 'hot_water_wait')
-  const hotWater = savingForId(results, 'hot_water_wait')
   // Der Tipp haengt am Befund der Messung, nicht mehr am Euro-Betrag: Bei einem
   // Wasserpreis von 0 oder einer Ersparnis unter der Anzeigeschwelle bleibt die
   // gemessene Wassermenge ein gueltiger Grund, den Vorlauf aufzufangen. Eine
@@ -302,7 +378,13 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       id: 'hot_water_wait',
       icon: Hourglass,
       category: 'water',
-      savingEur: hotWater > 0 ? hotWater : undefined,
+      // Kein Euro-Betrag: Die Zapfhaeufigkeit ist ein typischer Wert je Person,
+      // keine Messung. Die Jahresmenge dagegen folgt aus der gestoppten
+      // Wartezeit und dem Durchfluss der Entnahmestelle.
+      quantity:
+        litersPerYear > 0
+          ? { key: 'tips.quantity.waterWasted', params: { liters: litersPerYear } }
+          : undefined,
       effortMinutes: 1,
       costEur: 0,
       params: { seconds, liters, litersPerYear },
@@ -311,21 +393,26 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
 
   // --- Heizen / Raumklima ---------------------------------------------------
   const roomTemp = resultsForId(results, 'room_temperature')
-  let heatingFindings = 0
   if (roomTemp.length) {
     // Zu warm → senken. Der wärmste Raum steht stellvertretend im Text.
     const warmRooms = roomTemp.filter((r) => tempOf(r) > bandOf(r).max)
     if (warmRooms.length) {
-      heatingFindings += 1
       const warmest = warmRooms.reduce((a, b) => (tempOf(b) > tempOf(a) ? b : a))
-      const warmSaving = Math.round(
-        warmRooms.reduce((s, r) => s + (r.details?.yearlySaving ?? 0), 0),
+      // Kein Euro-Betrag: Die 6 %/°C sind eine Faustregel fuer die gesamte
+      // beheizte Flaeche, und der Raumanteil wird nach Grundflaeche verteilt,
+      // waehrend die Heizlast an der Huellflaeche haengt. Was das Modell
+      // wirklich behauptet, ist die relative Einsparung – die steht hier.
+      const warmPercent = Math.round(
+        Math.max(0, ...warmRooms.map((r) => r.details?.savingPercent ?? 0)),
       )
       tips.push({
         id: 'room_temperature',
         icon: Thermometer,
         category: 'heating',
-        savingEur: warmSaving > 0 ? warmSaving : undefined,
+        quantity:
+          warmPercent > 0
+            ? { key: 'tips.quantity.heatingPercent', params: { percent: warmPercent } }
+            : undefined,
         effortMinutes: 2,
         costEur: 0,
         params: { temp: Math.round(tempOf(warmest) * 10) / 10 },
@@ -336,7 +423,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
     // Zu kalt → nicht auskühlen lassen (Schimmel-/Effizienz-Hinweis).
     const coldRooms = roomTemp.filter((r) => tempOf(r) < bandOf(r).min - ROOM_COLD_MARGIN_C)
     if (coldRooms.length) {
-      heatingFindings += 1
       const coldest = coldRooms.reduce((a, b) => (tempOf(b) < tempOf(a) ? b : a))
       tips.push({
         id: 'room_cold',
@@ -354,7 +440,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
       (r) => r.details?.humidity !== undefined && r.details.humidity > HUMID_MAX,
     )
     if (humid.length) {
-      heatingFindings += 1
       const wettest = humid.reduce((a, b) => ((b.details?.humidity ?? 0) > (a.details?.humidity ?? 0) ? b : a))
       tips.push({
         id: 'humidity_high',
@@ -385,7 +470,6 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
     // Zugluft (Index >= 1 = spürbar/stark).
     const drafty = roomTemp.filter((r) => (r.details?.draft ?? 0) >= 1)
     if (drafty.length) {
-      heatingFindings += 1
       tips.push({
         id: 'draft',
         icon: Wind,
@@ -399,23 +483,55 @@ export function buildTips(data: OnboardingData, results: Results): Tip[] {
 
   const fs = worstRating(results, 'furniture_spacing')
   if (fs && fs !== 'good') {
-    heatingFindings += 1
     tips.push({ id: 'furniture_spacing', icon: Sofa, category: 'heating', effortMinutes: 10, costEur: 0 })
   }
 
-  // --- Smart-Home -----------------------------------------------------------
-  // Nur empfehlen, wenn beim Heizen überhaupt etwas auffällig war. Sonst wäre es
-  // eine Produktempfehlung ohne Anlass – die einzige Bedingung war früher, dass
-  // der Nutzer noch keins besitzt.
-  const hasRadiator = data.rooms.some((r) => r.heatTransfer === 'radiator')
-  const ownsSmartThermostat = data.smartHomeDevices.includes('smart_thermostat')
-  if (hasRadiator && !ownsSmartThermostat && heatingFindings > 0) {
+  // --- Zählerstände ---------------------------------------------------------
+  // Der einzige Befund, der aus echtem Verbrauch über die Zeit entsteht statt
+  // aus einer Momentaufnahme. Die Mehrmenge und ihre Kosten folgen unmittelbar
+  // aus abgelesenen Zählerständen mal Preis – damit ist es zugleich die am
+  // besten belegte Zahl der ganzen Liste.
+  for (const [key, list] of Object.entries(context.readings ?? {})) {
+    const type = key as EnergyType
+    const category = CARRIER_CATEGORY[type]
+    if (!category || !list?.length) continue
+    const trend = yearOverYearTrend(sortByDate(list))
+    if (!trend || trend.direction !== 'up') continue
+    const pct = trend.changePct
+    if (pct === undefined || pct < CONSUMPTION_RISE_MIN) continue
+
+    // Aus Tagesmittel und Änderung die Mehrmenge des letzten Jahres ableiten.
+    const currentYear = trend.perDay * 365
+    const extra = currentYear - currentYear / (1 + pct)
+    const price = context.eurPerUnit?.[type]
+    const extraCost = price !== undefined && price > 0 ? Math.round(extra * price) : undefined
+
     tips.push({
-      id: 'smart_thermostat',
-      icon: ThermometerSun,
-      category: 'heating',
-      effortMinutes: 30,
-      costEur: 120,
+      id: `consumption_up_${type}`,
+      textId: 'consumption_up',
+      icon: TrendingUp,
+      category,
+      quantity: {
+        key: extraCost !== undefined ? 'tips.quantity.moreWithCost' : 'tips.quantity.more',
+        params: {
+          amount: Math.round(extra),
+          unit: ENERGY_META[type].unit,
+          cost: extraCost ?? 0,
+        },
+      },
+      // Kostenlos und in einer Viertelstunde angegangen – der Befund gehört nach
+      // vorn, nicht hinter das Wegrücken eines Sofas.
+      effortMinutes: 10,
+      costEur: 0,
+      params: {
+        // `carrier` wird im Text über $t(monitoring.energyTypes.{{carrier}})
+        // aufgelöst – so steht dort „Strom" statt „electricity".
+        carrier: type,
+        percent: Math.round(pct * 100),
+        amount: Math.round(extra),
+        unit: ENERGY_META[type].unit,
+      },
+      linkTo: `/monitoring/${type}`,
     })
   }
 

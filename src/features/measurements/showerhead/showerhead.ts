@@ -34,6 +34,8 @@ export interface ShowerheadResult {
    * 0, wenn der aktuelle Durchfluss bereits sparsam ist (<= 9 L/min).
    */
   yearlySaving: number
+  /** Jaehrlich eingesparte Wassermenge in Litern beim Wechsel auf ~8 L/min. */
+  litersSavedPerYear: number
 }
 
 // Schwellenwerte für die Bewertung (L/min).
@@ -81,9 +83,17 @@ export function calcShowerhead(input: ShowerheadInput): ShowerheadResult {
   const yearlyCost = yearlyCostForFlow(flowLpm, persons, input.eurPerKwh)
 
   let yearlySaving = 0
+  let litersSavedPerYear = 0
   if (flowLpm > GOOD_MAX) {
     const efficientCost = yearlyCostForFlow(EFFICIENT_FLOW_LPM, persons, input.eurPerKwh)
     yearlySaving = Math.max(0, yearlyCost - efficientCost)
+    // Die Wassermenge ist die belastbarere Groesse: Sie folgt direkt aus dem
+    // gemessenen Durchfluss, waehrend der Euro-Betrag zusaetzlich ueber
+    // Warmwasseranteil, Temperaturhub und Strompreis laeuft. Sie steht deshalb
+    // in der Empfehlung, wo der Euro-Betrag entfaellt.
+    const showerMinutesPerYear =
+      persons * SHOWERS_PER_PERSON_PER_DAY * MINUTES_PER_SHOWER * DAYS_PER_YEAR
+    litersSavedPerYear = (flowLpm - EFFICIENT_FLOW_LPM) * showerMinutesPerYear
   }
 
   return {
@@ -91,5 +101,6 @@ export function calcShowerhead(input: ShowerheadInput): ShowerheadResult {
     rating,
     yearlyCost: Math.round(yearlyCost),
     yearlySaving: Math.round(yearlySaving),
+    litersSavedPerYear: Math.round(litersSavedPerYear),
   }
 }

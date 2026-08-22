@@ -2095,7 +2095,7 @@
     "savingPerYear": "{{value}} €/Jahr",
     "savingRange": "ca. {{low}}–{{high}} €/Jahr",
     "savingRangeShort": "ca. {{low}}–{{high}} €",
-    "estimateNote": "grobe Schätzung · pro Jahr",
+    "estimateNote": "beziffert · pro Jahr",
     "openSection": "Offene Maßnahmen",
     "topTip": "Fang hier an",
     "implementedLine": "{{done}} von {{total}} umgesetzt",
@@ -2165,12 +2165,13 @@
         "reason": "Deine Grundlast liegt bei {{watts}} W – auch wenn nichts bewusst läuft. Der Standby-Check zeigt dir Gerät für Gerät, wo das herkommt.",
         "action": "Zum Standby-Check"
       },
-      "smart_thermostat": {
-        "title": "Smarte Thermostate",
-        "reason": "Automatische Absenkung und Zeitpläne sparen Heizenergie, ohne dass du daran denken musst. Die Thermostatköpfe schraubst du selbst auf – wie einen Flaschendeckel, ohne Wasser abzulassen."
+      "consumption_up": {
+        "title": "Mehr $t(monitoring.energyTypes.{{carrier}}) als im Vorjahr",
+        "reason": "Deine Zählerstände zeigen {{percent}} % mehr Verbrauch als im Vorjahreszeitraum – rund {{amount}} {{unit}} zusätzlich. Das ist gemessen, nicht geschätzt. Geh der Ursache nach, bevor sie sich über ein weiteres Jahr summiert.",
+        "action": "Verlauf ansehen"
       }
     },
-    "potentialLabel": "Mögliches Sparpotenzial",
+    "potentialLabel": "Deine Empfehlungen",
     "countLine_one": "{{count}} Maßnahme für dein Zuhause",
     "countLine_other": "{{count}} Maßnahmen für dein Zuhause",
     "markDone": "Erledigt",
@@ -2185,7 +2186,16 @@
     "effortCost": "{{minutes}} Min · ab {{cost}} €",
     "effortHours": "{{hours}} Std · kostenlos",
     "quickWinSection": "Sofort erledigt",
-    "plannedSection": "Braucht etwas Vorbereitung"
+    "plannedSection": "Braucht etwas Vorbereitung",
+    "quantity": {
+      "waterSaved": "rund {{liters}} L Wasser/Jahr",
+      "waterWasted": "rund {{liters}} L/Jahr",
+      "heatingPercent": "rund {{percent}} % Heizenergie",
+      "more": "+{{amount}} {{unit}} ggü. Vorjahr",
+      "moreWithCost": "+{{amount}} {{unit}} · rund {{cost}} € mehr"
+    },
+    "progressHeadline": "{{done}} von {{total}}",
+    "progressCaption": "Maßnahmen umgesetzt"
   },
   "scan": {
     "button": "Scannen",

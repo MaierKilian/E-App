@@ -49,3 +49,24 @@ export function savingRange(eur: number): { low: number; high: number } {
   const high = Math.max(low + EUR_ROUNDING_STEP, round5(eur * 1.2))
   return { low, high }
 }
+
+/**
+ * Wann ueberhaupt ein Euro-Betrag erscheinen darf.
+ *
+ * Kriterium: **Jede Groesse der Rechnung muss gemessen, vom Nutzer angegeben
+ * oder ein Preis sein.** Sobald eine Nutzungshaeufigkeit oder ein Verbrauch
+ * geschaetzt wird, entfaellt der Betrag – dann zeigt die App stattdessen die
+ * Menge, die tatsaechlich gemessen wurde (Liter, kWh, Prozent).
+ *
+ * Der Grund ist nicht Vorsicht, sondern Verteidigbarkeit: Eine Zahl, deren
+ * groesste Unsicherheit in einer erfundenen Haeufigkeit steckt ("1,5 Duschen
+ * pro Tag"), laesst sich in keiner Vorfuehrung begruenden. Eine gemessene
+ * Wassermenge dagegen schon.
+ *
+ * Danach gilt zusaetzlich {@link displaySavingEur}: auch ein belastbarer Wert
+ * wird unterhalb von {@link MIN_DISPLAY_EUR} nicht gezeigt.
+ */
+export function isMeasuredSaving(details: Record<string, number> | undefined): boolean {
+  // Mehrere Messungen markieren ihre eigene Schaetzung bereits selbst.
+  return (details?.savingEstimated ?? 0) !== 1
+}

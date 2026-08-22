@@ -15,6 +15,7 @@ import {
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useTipsStore } from '@/store/tipsStore'
+import { useTipContext } from './useTipContext'
 import { roomLabel } from '@/features/measurements/rooms'
 import { displaySavingEur, savingRange } from '@/features/measurements/savingsDisplay'
 import { buildTips, type Tip, type TipCategory } from './buildTips'
@@ -89,9 +90,12 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
   // Zahlen vor der Interpolation lokalisieren – i18next reicht sie sonst roh
   // durch, und „23.4 °C" ist im Deutschen falsch geschrieben.
   const params = localizeParams(tip.params, i18n.language)
-  const reasonKey = `tips.items.${tip.id}.${room ? 'reason' : 'reasonNoRoom'}`
+  // Mehrere Tipps koennen sich einen Text teilen (ein steigender Verbrauch je
+  // Energietraeger); `textId` benennt dann den gemeinsamen Schluessel.
+  const textId = tip.textId ?? tip.id
+  const reasonKey = `tips.items.${textId}.${room ? 'reason' : 'reasonNoRoom'}`
   const reason = t(reasonKey, { ...params, room, defaultValue: '' }) ||
-    t(`tips.items.${tip.id}.reason`, { ...params, room })
+    t(`tips.items.${textId}.reason`, { ...params, room })
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
   // Unterhalb der Anzeigeschwelle steht kein Euro-Betrag – und dann auch kein
   // Wirkungsbalken, der einen Vergleich nahelegt, den die Zahl nicht traegt.
@@ -100,9 +104,14 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
   const barPct =
     shownSaving && maxSaving > 0 ? Math.max(10, Math.round((shownSaving / maxSaving) * 100)) : 0
   const range = shownSaving ? savingRange(shownSaving) : null
-  const rangeText = range
+  // Wo kein belastbarer Euro-Betrag steht, tritt die gemessene Menge an seine
+  // Stelle: Liter, Prozent, kWh. Beides teilt sich dieselbe Zeile – es ist
+  // dieselbe Aussage, nur in der Einheit, die die Messung wirklich hergibt.
+  const impactText = range
     ? t('tips.savingRange', { low: eurFmt.format(range.low), high: eurFmt.format(range.high) })
-    : ''
+    : tip.quantity
+      ? t(tip.quantity.key, localizeParams(tip.quantity.params, i18n.language))
+      : ''
 
   return (
     <div
@@ -141,7 +150,7 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
               done ? 'line-through' : ''
             }`}
           >
-            {t(`tips.items.${tip.id}.title`, params)}
+            {t(`tips.items.${textId}.title`, params)}
           </p>
           {/* Aufwand + Kosten auf jedem Tipp – die Frage, die vor dem Anfangen
               zählt. Die €-Schätzung steht unten am Wirkungsbalken. */}
@@ -158,7 +167,7 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
                 onClick={() => navigate(tip.linkTo as string)}
                 className="focus-ring inline-flex items-center gap-1 rounded-full text-sm font-medium text-foreground underline-offset-2 hover:underline"
               >
-                {t(`tips.items.${tip.id}.action`)}
+                {t(`tips.items.${textId}.action`)}
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -166,7 +175,7 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
 
           {/* Wirkungsbalken + grobe €-Spanne – ruhig statt plakativ, klar als
               Schätzung erkennbar (kein centgenauer €-Klotz mehr). */}
-          {!done && shownSaving && (
+          {!done && impactText && (
             <div className="mt-3 flex items-center gap-3">
               <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2/70">
                 <div
@@ -174,7 +183,9 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
                   style={{ width: `${barPct}%` }}
                 />
               </div>
-              <span className="shrink-0 text-xs font-semibold tabular-nums text-success">{rangeText}</span>
+              <span className="shrink-0 text-xs font-semibold tabular-nums text-success">
+                {impactText}
+              </span>
             </div>
           )}
 
@@ -244,7 +255,7 @@ export function TipsPage() {
   const dismiss = useTipsStore((s) => s.dismiss)
   const restore = useTipsStore((s) => s.restore)
 
-  const allTips = buildTips(data, results)
+  const allTips = buildTips(data, results, useTipContext())
   const active = allTips.filter((tip) => !doneIds.includes(tip.id) && !dismissedIds.includes(tip.id))
   const done = allTips.filter((tip) => doneIds.includes(tip.id))
   const dismissed = allTips.filter((tip) => dismissedIds.includes(tip.id))
@@ -313,10 +324,15 @@ export function TipsPage() {
                   </>
                 ) : (
                   <>
-                    <p className="text-3xl font-bold leading-none text-foreground">{active.length}</p>
-                    <p className="mt-1 text-xs text-muted">
-                      {t('tips.countLine', { count: active.length })}
+                    {/* Ohne belastbaren Euro-Betrag zeigt die Kachel den
+                        Fortschritt statt der Anzahl offener Maßnahmen: Die
+                        Anzahl steht zwei Zeilen tiefer schon als
+                        Abschnittstitel, und unter „Sparpotenzial" gelesen wäre
+                        sie ohnehin eine Zahl, die etwas anderes behauptet. */}
+                    <p className="text-3xl font-bold leading-none tabular-nums text-foreground">
+                      {t('tips.progressHeadline', { done: done.length, total: totalTracked })}
                     </p>
+                    <p className="mt-1 text-xs text-muted">{t('tips.progressCaption')}</p>
                   </>
                 )}
               </div>
@@ -331,9 +347,11 @@ export function TipsPage() {
                     style={{ width: `${progressPct}%` }}
                   />
                 </div>
-                <p className="mt-1.5 text-[11px] font-medium text-muted">
-                  {t('tips.implementedLine', { done: done.length, total: totalTracked })}
-                </p>
+                {openEur > 0 && (
+                  <p className="mt-1.5 text-[11px] font-medium text-muted">
+                    {t('tips.implementedLine', { done: done.length, total: totalTracked })}
+                  </p>
+                )}
               </div>
             )}
           </div>

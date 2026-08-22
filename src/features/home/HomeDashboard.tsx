@@ -10,6 +10,7 @@ import { ProgressRing } from './ProgressRing'
 import { EnergySummaryCard } from './EnergySummaryCard'
 import { profileCompleteness, profileMissingCount } from './estimateEnergy'
 import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
+import { useTipContext } from '@/features/tips/useTipContext'
 
 interface HomeDashboardProps {
   data: OnboardingData
@@ -32,6 +33,7 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
   const results = useMeasurementsStore((s) => s.results)
   const doneIds = useTipsStore((s) => s.doneIds)
   const dismissedIds = useTipsStore((s) => s.dismissedIds)
+  const tipContext = useTipContext()
 
   const completeness = profileCompleteness(data)
   const isComplete = completeness >= 100
@@ -42,7 +44,7 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
   const almostComplete = !isComplete && missing <= 1
   // Auf dem Zuhause-Einstieg nur offene Empfehlungen zählen (erledigte/
   // ausgeblendete sind für den Nutzer bereits abgehakt).
-  const tips = buildTips(data, results).filter(
+  const tips = buildTips(data, results, tipContext).filter(
     (tip) => !doneIds.includes(tip.id) && !dismissedIds.includes(tip.id),
   )
 

@@ -344,7 +344,9 @@ function ShareBar({ variant, sections, monitoring, measurements, profile }: Shar
         measurements,
         monitoring,
         // Dieselben Empfehlungen wie im Tipps-Bereich der App – der Bericht
-        // führte sonst ein zweites, fast leeres Tipp-System.
+        // führte sonst ein zweites, fast leeres Tipp-System. Ohne Zählerstand-
+        // Kontext: Der Bericht ordnet Empfehlungen ihrer Messung zu, und der
+        // Verbrauchstrend gehört zu keiner.
         tipsByMeasurement: tipsByMeasurement(buildTips(profile, results), t, i18n.language),
       })
 
