@@ -985,13 +985,14 @@
       },
       "result": {
         "badge": "Zu tauschen",
-        "summary": "Fang im {{room}} an – dort brennt das Licht am längsten.",
-        "orderTitle": "In dieser Reihenfolge",
+        "summary_one": "In einem Raum hängen noch alte Lampen – fang {{room}} an.",
+        "summary_other": "In {{count}} Räumen hängen noch alte Lampen – fang {{room}} an.",
         "priority": {
           "3": "viel Licht",
           "2": "mittel",
           "1": "selten Licht"
         },
+        "worthButton": "Beim Kauf beachten",
         "worthTitle": "Beim Kauf",
         "worth": "Achte auf die passende Fassung (E27, E14, GU10) und auf warmweißes Licht (2700 K). Statt Watt zählt jetzt Lumen: 60 W entsprechen rund 800 lm, 40 W rund 470 lm.",
         "doneBadge": "Alles auf LED",
@@ -1264,6 +1265,21 @@
         "basement": "Keller",
         "staircase": "Treppenhaus",
         "attic": "Dachboden"
+      },
+      "roomTypesIn": {
+        "living_room": "im Wohnzimmer",
+        "dining_room": "im Esszimmer",
+        "bedroom": "im Schlafzimmer",
+        "children_room": "im Kinderzimmer",
+        "office": "im Arbeitszimmer",
+        "kitchen": "in der Küche",
+        "bathroom": "im Bad",
+        "toilet": "im WC",
+        "hallway": "im Flur",
+        "utility_room": "im Hauswirtschaftsraum",
+        "basement": "im Keller",
+        "staircase": "im Treppenhaus",
+        "attic": "auf dem Dachboden"
       }
     },
     "step4": {

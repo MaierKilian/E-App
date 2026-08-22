@@ -149,8 +149,9 @@ describe('Texte', () => {
   ]
   const RESULT_KEYS = [
     'badge',
-    'summary',
-    'orderTitle',
+    'summary_one',
+    'summary_other',
+    'worthButton',
     'worthTitle',
     'worth',
     'doneBadge',
@@ -185,6 +186,14 @@ describe('Texte', () => {
       expect(Array.isArray(run.helpItems)).toBe(true)
 
       // Die Empfehlung nennt Raeume statt eines Euro-Betrags.
+      // Der Satz nennt den Raum als Ortsangabe („in der Küche"), nicht als
+      // blossen Namen – sonst entsteht „Fang im Küche an".
+      expect(result.summary_other).toContain('{{room}}')
+      const locative = dict.onboarding.step3.roomTypesIn as Record<string, string>
+      for (const type of Object.keys(ROOM_PRIORITY)) {
+        expect(locative[type], `roomTypesIn.${type}`).toBeTruthy()
+      }
+
       const tip = dict.tips.items.lighting as Record<string, string>
       expect(tip.title).toBeTruthy()
       expect(tip.reason_one).toBeTruthy()

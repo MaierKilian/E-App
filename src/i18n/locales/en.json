@@ -985,13 +985,14 @@
       },
       "result": {
         "badge": "To replace",
-        "summary": "Start in the {{room}} – that is where the light is on longest.",
-        "orderTitle": "In this order",
+        "summary_one": "One room still has old bulbs – start {{room}}.",
+        "summary_other": "{{count}} rooms still have old bulbs – start {{room}}.",
         "priority": {
           "3": "lots of light",
           "2": "medium",
           "1": "rarely lit"
         },
+        "worthButton": "What to look for when buying",
         "worthTitle": "When buying",
         "worth": "Mind the right socket (E27, E14, GU10) and warm-white light (2700 K). Lumens replace watts: 60 W is about 800 lm, 40 W about 470 lm.",
         "doneBadge": "All LED",
@@ -1119,6 +1120,21 @@
         "basement": "Basement",
         "staircase": "Staircase",
         "attic": "Attic"
+      },
+      "roomTypesIn": {
+        "living_room": "in the living room",
+        "dining_room": "in the dining room",
+        "bedroom": "in the bedroom",
+        "children_room": "in the kids' room",
+        "office": "in the study",
+        "kitchen": "in the kitchen",
+        "bathroom": "in the bathroom",
+        "toilet": "in the toilet",
+        "hallway": "in the hallway",
+        "utility_room": "in the utility room",
+        "basement": "in the basement",
+        "staircase": "in the stairwell",
+        "attic": "in the attic"
       }
     },
     "step4": {

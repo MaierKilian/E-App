@@ -33,6 +33,23 @@ export function roomLabel(
   return inst.total > 1 ? `${base} ${inst.index + 1}` : base
 }
 
+/**
+ * Ortsangabe einer Raum-Instanz für den Fließtext: „in der Küche", „im Bad",
+ * „auf dem Dachboden".
+ *
+ * Nötig, weil {@link roomLabel} den blanken Namen liefert. In einem Satz ergibt
+ * das „Fang im Küche an" – die Räume haben unterschiedliche Geschlechter, und
+ * eine fest verdrahtete Präposition trifft sie nicht alle. Die vollständige
+ * Wendung steht deshalb je Raumtyp in den Texten.
+ */
+export function roomLabelIn(
+  t: TFunction,
+  inst: { type: RoomType; index: number; total: number },
+): string {
+  const base = t(`onboarding.step3.roomTypesIn.${inst.type}`)
+  return inst.total > 1 ? `${base} ${inst.index + 1}` : base
+}
+
 /** Zerlegt einen Raum-Schlüssel "bedroom#0" wieder in Typ und Index. */
 export function parseRoomKey(roomKey: string): { type: RoomType; index: number } | null {
   const m = /^(.+)#(\d+)$/.exec(roomKey)
