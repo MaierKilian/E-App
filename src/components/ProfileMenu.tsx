@@ -7,7 +7,7 @@ import { useAccountAvatarSrc } from '@/store/accountAvatarStore'
 import { useFeedbackStore } from '@/store/feedbackStore'
 import { Avatar } from '@/components/ui/Avatar'
 import { ThemePicker } from '@/components/ThemePicker'
-import { logout } from '@/features/auth/auth'
+import { useLogout } from '@/features/auth/useLogout'
 import { APP_VERSION } from '@/app/version'
 
 /**
@@ -22,6 +22,7 @@ export function ProfileMenu() {
   const navigate = useNavigate()
   const user = useUser()
   const accountAvatar = useAccountAvatarSrc()
+  const logoutAndLeave = useLogout()
   const openFeedback = useFeedbackStore((s) => s.openFeedback)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -91,7 +92,7 @@ export function ProfileMenu() {
                 role="menuitem"
                 onClick={() => {
                   setOpen(false)
-                  void logout()
+                  void logoutAndLeave()
                 }}
                 className="mt-2.5 flex w-full items-center justify-center gap-2 rounded-lg border border-border py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2"
               >

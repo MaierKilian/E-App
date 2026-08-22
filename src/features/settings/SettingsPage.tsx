@@ -25,7 +25,7 @@ import { saveAccountPhoto, deleteAccountPhoto } from '@/features/sync/accountAva
 import { AvatarPicker } from '@/components/AvatarPicker'
 import { Toggle } from '@/components/ui/Toggle'
 import { ThemePicker } from '@/components/ThemePicker'
-import { logout } from '@/features/auth/auth'
+import { useLogout } from '@/features/auth/useLogout'
 import { syncAnalyticsConsent } from '@/features/analytics/analytics'
 import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
 import { SUPPORTED_LANGUAGES } from '@/i18n'
@@ -42,6 +42,7 @@ import { SettingsRow } from './SettingsRow'
 export function SettingsPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
+  const logoutAndLeave = useLogout()
   const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
   const demoMode = useSettingsStore((s) => s.demoMode)
   const analyticsEnabled = useSettingsStore((s) => s.analyticsEnabled)
@@ -89,7 +90,7 @@ export function SettingsPage() {
                 <p className="truncate text-[11px] text-muted">{user.email}</p>
               </div>
             </div>
-            <SettingsRow icon={LogOut} title={t('settings.logout')} onClick={() => void logout()} right={null} />
+            <SettingsRow icon={LogOut} title={t('settings.logout')} onClick={() => void logoutAndLeave()} right={null} />
           </>
         ) : (
           <SettingsRow
