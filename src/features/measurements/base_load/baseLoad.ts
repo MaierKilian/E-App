@@ -1,4 +1,5 @@
 import type { MeasurementRating } from '../types'
+import type { ProjectionBasis, ReadingStats } from '@/features/monitoring/readings'
 
 /**
  * Reine Berechnungslogik für den Grundlast-Check (Diagnose am Stromzähler).
@@ -73,5 +74,58 @@ export function calcBaseLoad(rawWatts: number, workPriceCt: number): BaseLoadRes
     rating: rateBaseLoad(watts),
     annualKwh: Math.round(annualKwh),
     annualEur: Math.round(annualEur),
+  }
+}
+
+/**
+ * Ab diesem Anteil am Jahresverbrauch kann die Messung nicht stimmen: Die
+ * Grundlast ist per Definition eine Teilmenge des Gesamtverbrauchs. Kommt mehr
+ * heraus, liefen bei der Messung noch aktiv genutzte Geräte mit (oder der
+ * Zählerstand wurde vertippt). Dann lieber keine Zahl zeigen als eine falsche.
+ */
+const IMPLAUSIBLE_SHARE = 0.95
+
+export interface BaseLoadShare {
+  /** Anteil der Grundlast am Jahres-Stromverbrauch (0…1). */
+  share: number
+  /** Jahresverbrauch laut Monitoring (kWh, gerundet). */
+  totalYearKwh: number
+  /** Worauf dieser Jahreswert beruht – bestimmt, wie belastbar der Anteil ist. */
+  basis: ProjectionBasis
+  /** Zahl der tatsächlich gemessenen Tage hinter dem Jahreswert. */
+  measuredDays: number
+  /** true, wenn der Anteil unmöglich hoch ist (siehe {@link IMPLAUSIBLE_SHARE}). */
+  implausible: boolean
+}
+
+/**
+ * Setzt die gemessene Grundlast ins Verhältnis zum tatsächlichen
+ * Jahres-Stromverbrauch aus den Monitoring-Ablesungen.
+ *
+ * „180 W" sagt niemandem etwas, „ein Drittel deiner Stromrechnung" schon – und
+ * der Anteil macht die Zahl zusätzlich unabhängig von der Haushaltsgröße, für
+ * die absolute Watt-Schwellen zwangsläufig unfair sind.
+ *
+ * Reine Funktion. Liefert `undefined`, solange kein belastbarer Jahreswert
+ * vorliegt (zu kurze Ableshistorie – siehe `stats()`) – dann
+ * gibt es schlicht nichts zu vergleichen.
+ *
+ * @param annualBaseKwh Jahres-Dauerverbrauch der Grundlast (aus {@link calcBaseLoad}).
+ * @param stats Kennzahlen der Strom-Ablesungen (`stats()` aus dem Monitoring).
+ */
+export function baseLoadShare(
+  annualBaseKwh: number,
+  stats: Pick<ReadingStats, 'projectedYearKwh' | 'projectionBasis' | 'projectionDays'>,
+): BaseLoadShare | undefined {
+  const total = stats.projectedYearKwh
+  if (!Number.isFinite(annualBaseKwh) || annualBaseKwh <= 0) return undefined
+  if (total === undefined || stats.projectionBasis === undefined || !(total > 0)) return undefined
+  const share = annualBaseKwh / total
+  return {
+    share,
+    totalYearKwh: Math.round(total),
+    basis: stats.projectionBasis,
+    measuredDays: stats.projectionDays ?? 0,
+    implausible: share > IMPLAUSIBLE_SHARE,
   }
 }

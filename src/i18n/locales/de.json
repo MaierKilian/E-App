@@ -953,6 +953,17 @@
         "perYearKwh": "Verbrauch/Jahr",
         "perYearEur": "Kosten/Jahr",
         "note": "Orientierungswerte – die Grundlast hängt von Haushaltsgröße und Geräten ab. Dieser Check zählt nicht selbst zum Sparpotenzial; die konkreten Einsparungen liefern die Folge-Checks.",
+        "share": {
+          "title": "Anteil an deinem Stromverbrauch",
+          "text": "So viel deines Jahresverbrauchs von {{total}} kWh geht an Geräte, die dauerhaft laufen – auch wenn du nichts aktiv nutzt.",
+          "basisFullYear": "Grundlage: deine Ablesungen aus zwölf Monaten.",
+          "basisProjected": "Grundlage: {{days}} Tage Ablesungen, auf ein Jahr hochgerechnet.",
+          "missing": "Trage im Monitoring deine Zählerstände ein – dann siehst du hier, welchen Anteil die Grundlast an deiner Stromrechnung hat."
+        },
+        "implausible": {
+          "title": "Messung prüfen",
+          "text": "Die Grundlast liegt über deinem gesamten Jahresverbrauch – das kann nicht sein. Vermutlich liefen bei der Messung noch aktiv genutzte Geräte mit. Miss am besten nachts noch einmal."
+        },
         "funnelTitle": "Verursacher finden",
         "funnelText": "Spüre mit dem Standby-Check die größten Dauerverbraucher auf und sieh, was sich abschalten lässt.",
         "funnelCta": "Zum Standby-Check"

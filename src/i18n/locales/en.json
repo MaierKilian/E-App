@@ -953,6 +953,17 @@
         "perYearKwh": "Use/year",
         "perYearEur": "Cost/year",
         "note": "Orientation values – base load depends on household size and appliances. This check does not count towards savings itself; the follow-up checks quantify the actual savings.",
+        "share": {
+          "title": "Share of your electricity use",
+          "text": "That much of your yearly {{total}} kWh goes to devices running around the clock – even when you are not using anything.",
+          "basisFullYear": "Based on twelve months of your readings.",
+          "basisProjected": "Based on {{days}} days of readings, projected to a year.",
+          "missing": "Add your meter readings in Monitoring – then you will see how much of your electricity bill the base load accounts for."
+        },
+        "implausible": {
+          "title": "Check the measurement",
+          "text": "The base load exceeds your entire yearly consumption – that cannot be right. Devices in active use were probably still running during the measurement. Best to measure again at night."
+        },
         "funnelTitle": "Find the causes",
         "funnelText": "Use the standby check to track down the biggest continuous consumers and see what can be switched off.",
         "funnelCta": "Go to standby check"
