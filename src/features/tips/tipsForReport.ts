@@ -13,29 +13,6 @@ import type { Tip } from './buildTips'
  * Quelle zu speisen ist der einzige Weg, sie dauerhaft gleich zu halten.
  */
 
-/**
- * Welcher Messung ein Tipp zugeordnet ist. Mehrere Tipps können auf dieselbe
- * Messung zeigen: Das Raumklima liefert Temperatur, Luftfeuchte und Zugluft.
- * Tipps ohne Messbezug (z. B. smarte Thermostate) fehlen hier bewusst – im
- * Bericht steht nur, was aus einer Messung folgt.
- */
-const TIP_TO_MEASUREMENT: Record<string, string> = {
-  standby: 'standby',
-  lighting: 'lighting',
-  fridge: 'fridge',
-  fridge_warm: 'fridge',
-  freezer: 'freezer',
-  base_load: 'base_load',
-  showerhead: 'showerhead',
-  hot_water_wait: 'hot_water_wait',
-  room_temperature: 'room_temperature',
-  room_cold: 'room_temperature',
-  humidity_high: 'room_temperature',
-  humidity_low: 'room_temperature',
-  draft: 'room_temperature',
-  furniture_spacing: 'furniture_spacing',
-}
-
 /** Zahlen für die Zielsprache formatieren (sonst steht dort „23.4 °C"). */
 function localizeParams(
   params: Record<string, string | number> | undefined,
@@ -56,7 +33,12 @@ export function tipsByMeasurement(
 ): Record<string, string[]> {
   const out: Record<string, string[]> = {}
   for (const tip of tips) {
-    const measurementId = TIP_TO_MEASUREMENT[tip.id]
+    // Die Zuordnung trägt der Tipp selbst (`source`) – vorher stand sie hier
+    // als zweite, von Hand gepflegte Liste, die bei jeder neuen Regel
+    // mitgezogen werden musste. Tipps ohne Messbezug (Verbrauchstrend aus
+    // Zählerständen) haben keine Quelle und bleiben damit außen vor: Im
+    // Bericht steht nur, was aus einer Messung folgt.
+    const measurementId = tip.source?.measurementId
     if (!measurementId) continue
     const room = tip.room ? roomLabel(t, tip.room) : undefined
     const params = { ...localizeParams(tip.params, language), room }

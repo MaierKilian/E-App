@@ -269,3 +269,71 @@ describe('buildTips – Zählerstände', () => {
     expect(buildTips(PROFILE, {})).toEqual([])
   })
 })
+
+describe('buildTips – Herkunft der Empfehlung', () => {
+  it('nennt Messung und Zeitpunkt, damit der Weg zurück begehbar ist', () => {
+    const tips = buildTips(PROFILE, {
+      standby: result({ id: 'standby', completedAt: '2026-08-20T10:00:00.000Z', details: { avoidableCost: 42 } }),
+    })
+    expect(tips[0].source).toEqual({
+      measurementId: 'standby',
+      measuredAt: '2026-08-20T10:00:00.000Z',
+    })
+  })
+
+  it('nimmt bei Pro-Raum-Messungen die jüngste Ablesung', () => {
+    // Das älteste Raum-Ergebnis liesse den Befund veralteter aussehen als er ist.
+    const tips = buildTips(PROFILE, {
+      'room_temperature@living_room#0': result({
+        id: 'room_temperature',
+        roomKey: 'living_room#0',
+        completedAt: '2026-08-10T10:00:00.000Z',
+        details: { temperature: 24, bandMin: 20, bandMax: 22 },
+      }),
+      'room_temperature@bedroom#0': result({
+        id: 'room_temperature',
+        roomKey: 'bedroom#0',
+        completedAt: '2026-08-21T10:00:00.000Z',
+        details: { temperature: 24, bandMin: 16, bandMax: 18 },
+      }),
+    })
+    const warm = tips.find((t) => t.id === 'room_temperature')
+    expect(warm?.source?.measuredAt).toBe('2026-08-21T10:00:00.000Z')
+  })
+
+  it('zeigt alle Raumklima-Befunde auf dieselbe Messung', () => {
+    const tips = buildTips(PROFILE, {
+      'room_temperature@living_room#0': result({
+        id: 'room_temperature',
+        roomKey: 'living_room#0',
+        details: { temperature: 24, bandMin: 20, bandMax: 22, humidity: 70, draft: 1 },
+      }),
+    })
+    const climate = tips.filter((t) => ['room_temperature', 'humidity_high', 'draft'].includes(t.id))
+    expect(climate.length).toBe(3)
+    for (const tip of climate) {
+      expect(tip.source?.measurementId).toBe('room_temperature')
+    }
+  })
+
+  it('lässt den Verbrauchstrend ohne Messbezug', () => {
+    // Er stammt aus Zählerständen, nicht aus einer Messung – und taucht
+    // deshalb auch im Bericht nicht unter einer Messung auf.
+    const tips = buildTips(
+      PROFILE,
+      {},
+      {
+        readings: {
+          electricity: [
+            { id: 'a', date: '2024-08-01', value: 1000 },
+            { id: 'b', date: '2025-08-01', value: 3000 },
+            { id: 'c', date: '2026-08-01', value: 5600 },
+          ],
+        },
+      },
+    )
+    const trend = tips.find((t) => t.id === 'consumption_up_electricity')
+    expect(trend).toBeDefined()
+    expect(trend?.source).toBeUndefined()
+  })
+})

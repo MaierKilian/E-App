@@ -58,6 +58,14 @@ export interface Tip {
    * vollständiger i18n-Schlüssel unter `tips.quantity.*`.
    */
   quantity?: { key: string; params: Record<string, string | number> }
+  /**
+   * Messung, aus der die Empfehlung folgt, samt Zeitpunkt der jüngsten
+   * Ablesung. Macht die Herkunft sichtbar und den Weg zurück begehbar: Der
+   * Messwert steht zwar im Begründungstext, aber ohne diesen Bezug ist nicht
+   * erkennbar, woher er stammt und wie alt er ist. Tipps ohne Messbezug
+   * (Verbrauchstrend aus Zählerständen) lassen das Feld leer.
+   */
+  source?: { measurementId: string; measuredAt: string }
   /** Grober Zeitaufwand in Minuten. */
   effortMinutes: number
   /** Nötige Anschaffung in € (0 = kostet nichts). */
@@ -134,6 +142,20 @@ function resultsForId(results: Results, id: string): MeasurementResult[] {
 /** Summe der Jahresersparnis über alle Raum-Ergebnisse einer Messung. */
 function savingForId(results: Results, id: string): number {
   return Math.round(resultsForId(results, id).reduce((sum, r) => sum + resultSavingsEur(r), 0))
+}
+
+/**
+ * Herkunft einer Empfehlung: die Messung und ihre jüngste Ablesung.
+ *
+ * Bei Pro-Raum-Messungen zählt das neueste Raum-Ergebnis – es beantwortet die
+ * Frage „wie aktuell ist das?" richtig, während das älteste den Befund
+ * veralteter aussehen ließe, als er ist.
+ */
+function sourceFor(results: Results, id: string): Tip['source'] {
+  const rs = resultsForId(results, id)
+  if (rs.length === 0) return undefined
+  const latest = rs.reduce((a, b) => (b.completedAt > a.completedAt ? b : a))
+  return { measurementId: id, measuredAt: latest.completedAt }
 }
 
 /** Schlechteste (höchste) Bewertung einer Messung – oder null, wenn ungemessen. */
@@ -242,6 +264,7 @@ export function buildTips(
     const big = biggestStandbyDevice(results['standby'])
     tips.push({
       id: 'standby',
+      source: sourceFor(results, 'standby'),
       icon: Plug,
       category: 'electricity',
       savingEur: standby,
@@ -257,6 +280,7 @@ export function buildTips(
     const bulbs = Math.round(lightingRs.reduce((s, r) => s + (r.details?.totalBulbs ?? 0), 0))
     tips.push({
       id: 'lighting',
+      source: sourceFor(results, 'lighting'),
       icon: Lightbulb,
       category: 'electricity',
       savingEur: lighting,
@@ -277,6 +301,7 @@ export function buildTips(
     const saving = Math.round(fridgeCold.reduce((s, r) => s + (r.details?.yearlySaving ?? 0), 0))
     tips.push({
       id: 'fridge',
+      source: sourceFor(results, 'fridge'),
       icon: Snowflake,
       category: 'electricity',
       savingEur: measured && saving > 0 ? saving : undefined,
@@ -289,6 +314,7 @@ export function buildTips(
   if (fridgeWarm.length) {
     tips.push({
       id: 'fridge_warm',
+      source: sourceFor(results, 'fridge'),
       icon: Snowflake,
       category: 'electricity',
       effortMinutes: 2,
@@ -304,6 +330,7 @@ export function buildTips(
   if (freezerIced) {
     tips.push({
       id: 'freezer',
+      source: sourceFor(results, 'freezer'),
       icon: Snowflake,
       category: 'electricity',
       savingEur: freezerMeasured && freezer > 0 ? freezer : undefined,
@@ -322,6 +349,7 @@ export function buildTips(
     const r = resultsForId(results, 'base_load')[0]
     tips.push({
       id: 'base_load',
+      source: sourceFor(results, 'base_load'),
       icon: Gauge,
       category: 'electricity',
       effortMinutes: 20,
@@ -344,6 +372,7 @@ export function buildTips(
     )
     tips.push({
       id: 'showerhead',
+      source: sourceFor(results, 'showerhead'),
       icon: Droplets,
       category: 'water',
       quantity:
@@ -376,6 +405,7 @@ export function buildTips(
     )
     tips.push({
       id: 'hot_water_wait',
+      source: sourceFor(results, 'hot_water_wait'),
       icon: Hourglass,
       category: 'water',
       // Kein Euro-Betrag: Die Zapfhaeufigkeit ist ein typischer Wert je Person,
@@ -407,6 +437,7 @@ export function buildTips(
       )
       tips.push({
         id: 'room_temperature',
+        source: sourceFor(results, 'room_temperature'),
         icon: Thermometer,
         category: 'heating',
         quantity:
@@ -426,6 +457,7 @@ export function buildTips(
       const coldest = coldRooms.reduce((a, b) => (tempOf(b) < tempOf(a) ? b : a))
       tips.push({
         id: 'room_cold',
+        source: sourceFor(results, 'room_temperature'),
         icon: ThermometerSnowflake,
         category: 'heating',
         effortMinutes: 5,
@@ -443,6 +475,7 @@ export function buildTips(
       const wettest = humid.reduce((a, b) => ((b.details?.humidity ?? 0) > (a.details?.humidity ?? 0) ? b : a))
       tips.push({
         id: 'humidity_high',
+        source: sourceFor(results, 'room_temperature'),
         icon: Droplets,
         category: 'heating',
         effortMinutes: 5,
@@ -458,6 +491,7 @@ export function buildTips(
       const driest = dry.reduce((a, b) => ((b.details?.humidity ?? 100) < (a.details?.humidity ?? 100) ? b : a))
       tips.push({
         id: 'humidity_low',
+        source: sourceFor(results, 'room_temperature'),
         icon: Droplets,
         category: 'heating',
         effortMinutes: 5,
@@ -472,6 +506,7 @@ export function buildTips(
     if (drafty.length) {
       tips.push({
         id: 'draft',
+        source: sourceFor(results, 'room_temperature'),
         icon: Wind,
         category: 'heating',
         effortMinutes: 20,
@@ -483,7 +518,14 @@ export function buildTips(
 
   const fs = worstRating(results, 'furniture_spacing')
   if (fs && fs !== 'good') {
-    tips.push({ id: 'furniture_spacing', icon: Sofa, category: 'heating', effortMinutes: 10, costEur: 0 })
+    tips.push({
+      id: 'furniture_spacing',
+      source: sourceFor(results, 'furniture_spacing'),
+      icon: Sofa,
+      category: 'heating',
+      effortMinutes: 10,
+      costEur: 0,
+    })
   }
 
   // --- Zählerstände ---------------------------------------------------------

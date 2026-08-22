@@ -2202,7 +2202,11 @@
       "moreWithCost": "+{{amount}} {{unit}} · about {{cost}} € more"
     },
     "progressHeadline": "{{done}} of {{total}}",
-    "progressCaption": "measures completed"
+    "progressCaption": "measures completed",
+    "source": "From $t(measurements.{{measurement}}.title) · {{when}}",
+    "sourceDaysAgo_one": "measured {{count}} day ago",
+    "sourceDaysAgo_other": "measured {{count}} days ago",
+    "sourceToday": "measured today"
   },
   "scan": {
     "button": "Scan",

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { PageHeader } from '@/components/ui/PageHeader'
 import {
   ChevronDown,
@@ -11,6 +12,7 @@ import {
   RotateCcw,
   CheckCircle2,
   ArrowRight,
+  Ruler,
 } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
@@ -25,6 +27,22 @@ const ACCENT: Record<TipCategory, string> = {
   heating: 'bg-amber-500/15 text-amber-500',
   electricity: 'bg-sky-500/15 text-sky-500',
   water: 'bg-cyan-500/15 text-cyan-500',
+}
+
+/**
+ * „heute" bzw. „vor N Tagen" – der Null-Fall bewusst als eigener Schlüssel.
+ * Deutsch und Englisch kennen keine Plural-Kategorie „zero", ein
+ * `_zero`-Suffix wäre also von einem Sonderverhalten von i18next abhängig.
+ */
+function sourceWhen(t: TFunction, days: number): string {
+  return days === 0 ? t('tips.sourceToday') : t('tips.sourceDaysAgo', { count: days })
+}
+
+/** Volle Tage seit einem ISO-Zeitpunkt, nie negativ. */
+function daysSince(iso: string, now = Date.now()): number {
+  const then = new Date(iso).getTime()
+  if (!Number.isFinite(then)) return 0
+  return Math.max(0, Math.floor((now - then) / 86_400_000))
 }
 
 /**
@@ -187,6 +205,24 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
                 {impactText}
               </span>
             </div>
+          )}
+
+          {/* Woher die Empfehlung kommt – und der Weg zurück zur Messung.
+              Der Messwert steht zwar im Text, aber ohne diesen Bezug ist nicht
+              erkennbar, aus welcher Messung er stammt und wie alt er ist. */}
+          {tip.source && (
+            <button
+              type="button"
+              onClick={() => navigate(`/measurements/${tip.source?.measurementId}`)}
+              className="focus-ring mt-2.5 -ml-1 inline-flex items-center gap-1.5 rounded-lg px-1 py-0.5 text-[11px] text-muted transition-colors hover:text-foreground"
+            >
+              <Ruler className="h-3 w-3 shrink-0" />
+              {t('tips.source', {
+                measurement: tip.source.measurementId,
+                when: sourceWhen(t, daysSince(tip.source.measuredAt)),
+              })}
+              <ArrowRight className="h-3 w-3 shrink-0" />
+            </button>
           )}
 
           {/* Einzelner, ruhiger Erledigt-Toggle (kein zweiter lauter Button mehr). */}
