@@ -6,6 +6,8 @@ import { stepHref, type MeasurementStep } from '../tasks'
 interface Props {
   steps: MeasurementStep[]
   savingsEur: number
+  /** Instanz-Schlüssel mit anstehender Folgemessung (siehe `followUps.ts`). */
+  followUpKeys?: Set<string>
 }
 
 /**
@@ -13,7 +15,7 @@ interface Props {
  * den nächsten offenen Schritt, darunter die restlichen Schritte als benannte
  * Liste mit Status. Ein Tipp führt zur jeweiligen Messung (mit ihrer Info-Seite).
  */
-export function MeasurementFlow({ steps, savingsEur }: Props) {
+export function MeasurementFlow({ steps, savingsEur, followUpKeys }: Props) {
   const { t, i18n } = useTranslation()
 
   const currentIndex = steps.findIndex((s) => !s.done)
@@ -81,7 +83,12 @@ export function MeasurementFlow({ steps, savingsEur }: Props) {
             {t('measurements.flow.completedSectionTitle')}
           </p>
           {doneSteps.map((step) => (
-            <StepRow key={step.meta.id} step={step} inCompletedSection />
+            <StepRow
+              key={step.meta.id}
+              step={step}
+              inCompletedSection
+              hasFollowUp={followUpKeys?.has(step.meta.id)}
+            />
           ))}
         </div>
       )}
@@ -158,7 +165,15 @@ function NextHero({ step }: { step: MeasurementStep }) {
 }
 
 /** Eine Zeile der Messplan-Liste: Icon, Name, Meta, Status. */
-function StepRow({ step, inCompletedSection = false }: { step: MeasurementStep; inCompletedSection?: boolean }) {
+function StepRow({
+  step,
+  inCompletedSection = false,
+  hasFollowUp = false,
+}: {
+  step: MeasurementStep
+  inCompletedSection?: boolean
+  hasFollowUp?: boolean
+}) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { meta } = step
@@ -166,8 +181,17 @@ function StepRow({ step, inCompletedSection = false }: { step: MeasurementStep; 
   const metaLine = useMetaLine(step)
 
   const leading = step.done ? (
-    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
+    <span className="relative grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
       <Check className="h-5 w-5" />
+      {/* Anstehende Folgemessung (z. B. Kühlschrank nach zu warmem/kaltem
+          Ergebnis, Grundlast nach einer Maßnahme) – derselbe Hinweispunkt wie
+          am Messungen-Tab der unteren Navigation. */}
+      {hasFollowUp && (
+        <span
+          className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-surface"
+          aria-hidden="true"
+        />
+      )}
     </span>
   ) : (
     <span

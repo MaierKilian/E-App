@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next'
 import { NAV_ITEMS } from '@/app/navigation'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useReadingsStore } from '@/store/readingsStore'
+import { useMeasurementsStore } from '@/store/measurementsStore'
 import { dueTypes } from '@/features/monitoring/due'
+import { pendingFollowUps } from '@/features/measurements/followUps'
 
 /** Untere Navigationsleiste – nur auf Mobilgeräten sichtbar. */
 export function BottomNav() {
@@ -16,10 +18,15 @@ export function BottomNav() {
   const setStep = useOnboardingStore((s) => s.setStep)
   const readings = useReadingsStore((s) => s.readings)
   const frequency = useReadingsStore((s) => s.reminderFrequency)
+  const measurementResults = useMeasurementsStore((s) => s.results)
   const [now] = useState(() => Date.now())
 
   // Fällige Ablesungen → kleiner Hinweispunkt am Monitoring-Tab (In-App-Reminder).
   const monitoringDue = dueTypes(data, readings, frequency, now).length > 0
+  // Anstehende Folgemessungen (Grundlast nach einer Maßnahme, Kühlschrank
+  // nach einer noch nicht guten Messung) → derselbe Hinweispunkt am
+  // Messungen-Tab.
+  const measurementsDue = pendingFollowUps(measurementResults, now).length > 0
   // Im Edit-Modus mit geöffnetem Abschnitt: "Zuhause" kehrt zum Profil-Hub zurück.
   const isEditingSection = flowMode === 'edit' && currentStep >= 0
 
@@ -28,7 +35,9 @@ export function BottomNav() {
       <div className="grid grid-cols-5">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
-          const showDot = item.id === 'monitoring' && monitoringDue
+          const showDot =
+            (item.id === 'monitoring' && monitoringDue) ||
+            (item.id === 'measurements' && measurementsDue)
           const isActive =
             location.pathname === item.path ||
             location.pathname.startsWith(item.path + '/')

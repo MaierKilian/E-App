@@ -1,18 +1,24 @@
 import type { MeasurementRating } from '../types'
-import { annualKwhFromPeriod } from '../energyMeter'
 
 /**
  * Reine Berechnungslogik für den Kühlschrank-Check.
  *
- * Ablauf: Der Nutzer misst die aktuelle Innentemperatur, senkt anschließend die
- * Kühlstufe (wärmer) und misst erneut. Aus der erreichten Temperaturdifferenz –
- * oder, noch belastbarer, aus einer echten Strommessung vorher/nachher – ergibt
- * sich die jährliche Stromersparnis. Ohne Anpassung wird das Potenzial bis zur
- * empfohlenen Temperatur (~7 °C) geschätzt.
+ * Ablauf: Der Nutzer misst die aktuelle Innentemperatur. Ist sie zu kalt, zeigt
+ * das Ergebnis das Sparpotenzial bis zur empfohlenen Temperatur (~7 °C) als
+ * Prozentwert – nicht als Euro-Betrag, denn dafür bräuchte es entweder eine
+ * echte Strommessung oder eine angenommene Jahres-Nutzung, beides bewusst
+ * entfallen (siehe unten). War die Temperatur nicht gut, kann später eine
+ * Folgemessung zeigen, was die angepasste Stufe tatsächlich gebracht hat
+ * (siehe `FridgeRun`, `pendingFollowUps`).
  *
  * Faustregel: ~6 % Mehrverbrauch je °C kälter (mehrere Quellen, teils 6–10 %).
- * Fallback-Jahresverbrauch ~150 kWh (modernes Gerät); reale Werte reichen von
- * ~100 kWh (A) bis ~400 kWh (Altgerät) – daher optionale Label-Eingabe.
+ *
+ * Früher gab es zusätzlich eine optionale echte Strommessung (Energiekosten-
+ * messgerät vorher/nachher) und einen Jahresverbrauch laut Energielabel, aus
+ * denen sich ein Euro-Betrag ergab. Beides wieder entfernt: Ein Wert, der auf
+ * einem angenommenen Jahresverbrauch beruht, ist ohnehin nur eine Schätzung –
+ * der Prozentwert sagt dasselbe, ohne einen Euro-Betrag vorzutäuschen, den
+ * niemand nachrechnen kann.
  */
 
 // Schwellenwerte für die Bewertung (°C).
@@ -21,8 +27,6 @@ const GOOD_MAX = 7
 const TOO_COLD_MAX = 2 // <3 °C = zu kalt
 const TOO_WARM_MIN = 8 // >8 °C = zu warm
 
-// Annahmen für die Ersparnis.
-const YEARLY_KWH = 150 // Fallback-Jahresverbrauch (modernes Gerät)
 const PERCENT_PER_DEGREE = 0.06 // ~6 % Mehrverbrauch je °C kälter
 const REFERENCE_TEMP = 7 // empfohlene Innentemperatur
 
@@ -40,93 +44,46 @@ export function fridgeStatus(temp: number): FridgeStatus {
   return 'optimal'
 }
 
-/**
- * Wie die Ersparnis ermittelt wurde:
- * - `measured`: aus echter Strommessung vorher/nachher (am belastbarsten),
- * - `delta`:    aus der tatsächlich erreichten Temperaturdifferenz,
- * - `estimate`: Potenzial bis zur empfohlenen Temperatur (ohne Anpassung).
- */
-export type FridgeMethod = 'measured' | 'delta' | 'estimate'
-
-/** Vorher/Nachher-Energie aus dem Energiekostenmessgerät (kWh über Stunden). */
-export interface FridgeEnergy {
-  beforeKwh: number
-  beforeHours: number
-  afterKwh: number
-  afterHours: number
-}
-
-export interface FridgeSavingInput {
-  /** Aktuelle Innentemperatur in °C. */
-  tempBefore: number
-  /** Innentemperatur nach dem Senken der Stufe (optional). */
-  tempAfter?: number
-  /** Jahresverbrauch laut Energielabel in kWh (optional, sonst Fallback). */
-  labelKwh?: number
-  /** Optionale echte Strommessung. */
-  energy?: Partial<FridgeEnergy>
-  /** Arbeitspreis Strom in ct/kWh. */
-  workPriceCt: number
-}
-
 export interface FridgeSaving {
   rating: MeasurementRating
   status: FridgeStatus
-  method: FridgeMethod
-  /** Jährliche Ersparnis in € (gerundet). */
-  yearlySaving: number
-  /** true, wenn (Mit-)Annahmen statt Messung einflossen. */
-  estimated: boolean
-  /** Angesetzter Jahresverbrauch (Label oder Fallback) in kWh. */
-  annualBaseKwh: number
+  /**
+   * Geschätztes Stromsparpotenzial als Anteil (0,06 = 6 %), wenn die Stufe bis
+   * zur empfohlenen Temperatur angepasst wird. 0 bei „zu warm" (dort ist
+   * Kälterstellen die richtige Richtung, das erhöht den Verbrauch) oder
+   * „optimal" (nichts zu holen).
+   */
+  savingPct: number
 }
 
-function energyComplete(e?: Partial<FridgeEnergy>): e is FridgeEnergy {
-  return (
-    !!e &&
-    [e.beforeKwh, e.beforeHours, e.afterKwh, e.afterHours].every(
-      (v) => Number.isFinite(v) && (v as number) > 0,
-    )
-  )
+/** Ermittelt Bewertung und Stromsparpotenzial aus der Innentemperatur. */
+export function calcFridgeSaving(tempBefore: number): FridgeSaving {
+  const temp = Number.isFinite(tempBefore) ? tempBefore : REFERENCE_TEMP
+  const rating = rateFridge(temp)
+  const status = fridgeStatus(temp)
+  // Erwärmung vom aktuellen (zu kalten) Wert bis zur Empfehlung.
+  const warmupDegrees = Math.max(0, REFERENCE_TEMP - temp)
+  const savingPct = PERCENT_PER_DEGREE * warmupDegrees
+  return { rating, status, savingPct }
 }
 
 /**
- * Ermittelt die Stromersparnis durch eine wärmere Kühlschrank-Einstellung.
- * Priorität: echte Messung > Temperaturdifferenz > Potenzial-Schätzung.
+ * Tatsächlich erreichte Verbesserung zwischen zwei Messungen (Folgemessung
+ * nach angepasster Stufe) – analog zum Vorher/Nachher-Vergleich des
+ * Grundlast-Checks, nur bezogen auf die Temperatur statt auf Watt.
  */
-export function calcFridgeSaving(input: FridgeSavingInput): FridgeSaving {
-  const temp = Number.isFinite(input.tempBefore) ? input.tempBefore : REFERENCE_TEMP
-  const rating = rateFridge(temp)
-  const status = fridgeStatus(temp)
-  const price = Number.isFinite(input.workPriceCt) ? Math.max(0, input.workPriceCt) : 0
-  const labelKwh =
-    Number.isFinite(input.labelKwh) && (input.labelKwh as number) > 0 ? input.labelKwh : undefined
-  const annualBaseKwh = labelKwh ?? YEARLY_KWH
+export interface FridgeChange {
+  deltaDegrees: number
+  /** Grobe Ersparnis aus der tatsächlich erreichten Erwärmung. */
+  savingPct: number
+  /** Richtung der Temperatur (nicht des Verbrauchs): „up" = wärmer = spart bei vormals zu kaltem Kühlschrank Strom. */
+  direction: 'up' | 'down' | 'none'
+}
 
-  let method: FridgeMethod
-  let kwhSaved: number
-  let estimated: boolean
-
-  if (energyComplete(input.energy)) {
-    const e = input.energy
-    kwhSaved =
-      annualKwhFromPeriod(e.beforeKwh, e.beforeHours) - annualKwhFromPeriod(e.afterKwh, e.afterHours)
-    method = 'measured'
-    estimated = false
-  } else if (Number.isFinite(input.tempAfter)) {
-    // Sparen entsteht durchs Wärmer-Stellen: erreichte Erwärmung in °C.
-    const warmupDegrees = Math.max(0, (input.tempAfter as number) - temp)
-    kwhSaved = annualBaseKwh * PERCENT_PER_DEGREE * warmupDegrees
-    method = 'delta'
-    estimated = labelKwh === undefined
-  } else {
-    // Potenzial: Erwärmung vom aktuellen (zu kalten) Wert bis zur Empfehlung.
-    const warmupDegrees = Math.max(0, REFERENCE_TEMP - temp)
-    kwhSaved = annualBaseKwh * PERCENT_PER_DEGREE * warmupDegrees
-    method = 'estimate'
-    estimated = true
-  }
-
-  const yearlySaving = Math.max(0, Math.round((kwhSaved * price) / 100))
-  return { rating, status, method, yearlySaving, estimated, annualBaseKwh }
+export function fridgeChange(beforeTemp: number, afterTemp: number): FridgeChange {
+  const deltaDegrees = afterTemp - beforeTemp
+  const warmedDegrees = Math.max(0, Math.min(deltaDegrees, REFERENCE_TEMP - beforeTemp))
+  const savingPct = PERCENT_PER_DEGREE * warmedDegrees
+  const direction = deltaDegrees > 0.2 ? 'up' : deltaDegrees < -0.2 ? 'down' : 'none'
+  return { deltaDegrees, savingPct, direction }
 }

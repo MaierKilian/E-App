@@ -376,28 +376,23 @@
       },
       "run": {
         "tempLabel": "Current inside temperature",
+        "tempLabelAfter": "Temperature after the adjustment",
         "tempUnit": "°C",
         "tempStandard": "Recommended 5–7 °C",
         "hint": "Rule of thumb: each 1 °C warmer (towards 7 °C) saves ~6% electricity. Turn the dial down and re-measure after a few hours.",
-        "afterToggle": "Lowered the setting & re-measured",
-        "energyToggle": "Measured with a power meter",
-        "energyHint": "Plug an energy-cost meter between socket and fridge: read the accumulated kWh and runtime (hours) before and after the change.",
-        "before": "Before",
-        "after": "After",
-        "hoursUnit": "h",
-        "labelLabel": "Annual use per label",
-        "preview": "Potential saving: ≈ {{value}}/year"
+        "followUpHint": "Last time you were at {{temp}} °C ({{status}}). Measure again after adjusting the dial.",
+        "statusShort": {
+          "tooCold": "too cold",
+          "tooWarm": "too warm"
+        }
       },
       "result": {
-        "costPerYear": "€/year",
-        "perYear": "{{value}} €/year",
-        "savingLabel": "Savings ≈ {{value}}",
         "savingTitle": "Potential saving",
-        "estimated": "estimated",
-        "method": {
-          "measured": "From your before/after power measurement.",
-          "delta": "From the achieved temperature difference (~6% per °C).",
-          "estimate": "Potential of setting it to 7 °C (~6% per °C) – not adjusted yet."
+        "savingHint": "Potential if you adjust the dial towards 7 °C (~6% per °C).",
+        "change": {
+          "title": "Before / after",
+          "text": "From {{before}} °C to {{after}} °C.",
+          "saved": "≈ {{value}} less power use"
         },
         "status": {
           "tooCold": "Set too cold – this wastes electricity.",

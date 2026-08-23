@@ -11,6 +11,7 @@ import { ProgressRing } from '@/components/ui/ProgressRing'
 import { buildSteps } from './tasks'
 import { impactSummary } from './impact'
 import { remeasurePrompt, type RemeasurePrompt } from './base_load/remeasure'
+import { pendingFollowUpKeys } from './followUps'
 import { MeasurementFlow } from './views/MeasurementFlow'
 import { TradesView } from './views/TradesView'
 import { ByRoomView } from './views/ByRoomView'
@@ -90,6 +91,10 @@ export function MeasurementsPage() {
   // Anstoß, die Grundlast nach einer Maßnahme erneut zu messen – der einzige
   // Weg, aus geschätztem Potenzial einen belegten Erfolg zu machen.
   const remeasure = remeasurePrompt(results)
+  // Kleine Hinweispunkte je Check (siehe `followUps.ts`) – deckt zusätzlich zur
+  // ausführlichen Grundlast-Karte auch den Kühlschrank ab, dessen Ergebnis
+  // noch nicht gut war.
+  const followUpKeys = pendingFollowUpKeys(results)
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
   return (
@@ -138,7 +143,9 @@ export function MeasurementsPage() {
 
       {remeasure && <RemeasureCard prompt={remeasure} />}
 
-      {view === 'recommended' && <MeasurementFlow steps={steps} savingsEur={savingsEur} />}
+      {view === 'recommended' && (
+        <MeasurementFlow steps={steps} savingsEur={savingsEur} followUpKeys={followUpKeys} />
+      )}
       {view === 'trades' && <TradesView results={results} />}
       {view === 'byRoom' && <ByRoomView results={results} />}
     </div>

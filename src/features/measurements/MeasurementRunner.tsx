@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Check, ChevronRight, DoorOpen } from 'lucide-react'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
-import { useMeasurementDraftStore } from '@/store/measurementDraftStore'
+import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftStore'
 import { getMeasurementMeta } from './catalog'
 import { getMeasurementModule } from './registry'
 import { roomInstances, roomLabel, instanceKey } from './rooms'
@@ -53,9 +53,14 @@ export function MeasurementRunner() {
   const meta = getMeasurementMeta(id)
   const mod = getMeasurementModule(id)
 
-  // Messungen ohne eigene Erklärseite starten direkt beim Erfassen.
+  // Messungen ohne eigene Erklärseite starten direkt beim Erfassen. Dasselbe
+  // gilt, wenn zu dieser Instanz bereits ein Zwischenstand liegt (App
+  // geschlossen und später weitergemacht, z. B. der zweite Zählerstand beim
+  // Grundlast-Check): dann direkt zur Erfassung springen statt wieder bei der
+  // Erklärseite zu beginnen, wo der Nutzer erneut durchklicken müsste.
   const phases = mod?.Intro ? PHASES : PHASES_WITHOUT_INTRO
-  const initialPhase: RunnerPhase = mod?.Intro && !skipIntro ? 'intro' : 'run'
+  const hasDraft = Object.keys(readDraft(instanceKey(id, roomKey))).length > 0
+  const initialPhase: RunnerPhase = mod?.Intro && !skipIntro && !hasDraft ? 'intro' : 'run'
 
   const [phase, setPhase] = useState<RunnerPhase>(initialPhase)
   // Höchste bereits erreichte Phase – steuert, welche Segmente rückwärts

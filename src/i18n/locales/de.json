@@ -376,28 +376,23 @@
       },
       "run": {
         "tempLabel": "Aktuelle Innentemperatur",
+        "tempLabelAfter": "Temperatur nach der Anpassung",
         "tempUnit": "°C",
         "tempStandard": "Empfohlen 5–7 °C",
         "hint": "Faustregel: Pro 1 °C wärmer (Richtung 7 °C) sparst du ca. 6 % Strom. Senke die Stufe und miss nach ein paar Stunden erneut.",
-        "afterToggle": "Stufe gesenkt & neu gemessen",
-        "energyToggle": "Mit Strommessgerät gemessen",
-        "energyHint": "Energiekostenmessgerät zwischen Steckdose und Kühlschrank: aufsummierte kWh und Laufzeit (Stunden) vor und nach der Anpassung ablesen.",
-        "before": "Vorher",
-        "after": "Nachher",
-        "hoursUnit": "Std.",
-        "labelLabel": "Jahresverbrauch lt. Label",
-        "preview": "Mögliche Ersparnis: ≈ {{value}}/Jahr"
+        "followUpHint": "Beim letzten Mal warst du bei {{temp}} °C ({{status}}). Miss erneut, nachdem du die Stufe angepasst hast.",
+        "statusShort": {
+          "tooCold": "zu kalt",
+          "tooWarm": "zu warm"
+        }
       },
       "result": {
-        "costPerYear": "€/Jahr",
-        "perYear": "{{value}} €/Jahr",
-        "savingLabel": "Ersparnis ≈ {{value}}",
-        "savingTitle": "Mögliche Ersparnis",
-        "estimated": "geschätzt",
-        "method": {
-          "measured": "Aus deiner Strommessung vorher/nachher.",
-          "delta": "Aus der erreichten Temperaturdifferenz (≈6 % je °C).",
-          "estimate": "Potenzial bis 7 °C (≈6 % je °C) – noch nicht angepasst."
+        "savingTitle": "Mögliches Sparpotenzial",
+        "savingHint": "Potenzial bis 7 °C, wenn du die Stufe entsprechend anpasst (≈6 % je °C).",
+        "change": {
+          "title": "Vorher / Nachher",
+          "text": "Von {{before}} °C auf {{after}} °C.",
+          "saved": "≈ {{value}} weniger Stromverbrauch"
         },
         "status": {
           "tooCold": "Zu kalt eingestellt – das kostet unnötig Strom.",

@@ -48,7 +48,10 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
   const key = instanceKey('base_load')
   const d = readDraft(key)
 
-  const [mode, setMode] = useState<MeterMode>('instant')
+  // Liegt bereits eine erste Ablesung im Zwischenspeicher, direkt im
+  // Ablesungs-Modus starten – sonst verschwindet der Zwischenstand beim
+  // Wiedereinstieg hinter dem Watt-Eingabefeld, obwohl er noch da ist.
+  const [mode, setMode] = useState<MeterMode>(d.startAt ? 'readings' : 'instant')
   const [instantText, setInstantText] = useState('')
 
   // Zwei Ablesungen – über Stunden hinweg, daher persistiert.
