@@ -53,3 +53,18 @@ Vollständige Übersicht: **`docs/deployment.md`**. Das Wichtigste in Kürze:
   akzeptiert keine Trial-Credits). Reale Kosten ~0.
 - Web-Config in `src/lib/firebase.ts` ist **nicht geheim** und darf im Code
   stehen; der CI-Service-Account-Key dagegen **nur** als GitHub-Secret.
+
+## Rechtliches (Impressum, Datenschutz, Einwilligung)
+
+Vollständige Übersicht: **`docs/legal.md`**. Kurz:
+
+- Betreiberangaben ausschließlich in `src/features/legal/operator.ts` pflegen –
+  fehlende Pflichtfelder werden auf `/impressum` sichtbar markiert.
+- Rechtstexte (`/impressum`, `/datenschutz`) sind **nur deutsch**; Banner,
+  Fußzeile und Einstellungen bleiben zweisprachig.
+- **Google Analytics wird erst nach ausdrücklicher Einwilligung geladen**
+  (§ 25 Abs. 1 TDDDG). `lib/firebase.ts` darf Analytics **nicht** beim Start
+  initialisieren – nur `features/analytics/analytics.ts` ruft `loadAnalytics()`.
+- Kommt ein weiterer einwilligungsbedürftiger Dienst dazu: Kategorie in
+  `features/legal/consent.ts` ergänzen, Datenschutzerklärung erweitern **und
+  `CONSENT_VERSION` erhöhen** (sonst gilt die alte Einwilligung weiter).

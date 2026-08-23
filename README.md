@@ -29,6 +29,7 @@ src/
 │   ├── reports/
 │   └── education/
 ├── components/   # Wiederverwendbare UI-Bausteine
+├── features/legal/  # Impressum, Datenschutz, Einwilligung (siehe docs/legal.md)
 ├── store/        # Zentraler App-Zustand (Einstellungen …)
 ├── i18n/         # Übersetzungen (de, en)
 └── types/        # Domänen-Datentypen
@@ -41,7 +42,13 @@ npm install      # Abhängigkeiten installieren
 npm run dev      # Entwicklungsserver starten (http://localhost:5173)
 npm run build    # Produktions-Build erstellen
 npm run lint     # Code prüfen
+npm test         # Unit-Tests
 ```
+
+> **Vor der Veröffentlichung:** Die Betreiberangaben für das Impressum stehen in
+> `src/features/legal/operator.ts` und sind noch leer. Solange dort etwas fehlt,
+> weist die Impressumsseite sichtbar darauf hin. Details und die noch rechtlich
+> zu prüfenden Punkte: [`docs/legal.md`](docs/legal.md).
 
 ## Backlog / Ideen
 

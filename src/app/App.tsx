@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { Layout } from './Layout'
 import { useApplyTheme } from './useApplyTheme'
-import { track, syncAnalyticsConsent } from '@/features/analytics/analytics'
+import { track, applyAnalyticsConsent } from '@/features/analytics/analytics'
 import { OnboardingPage } from '@/features/onboarding/OnboardingPage'
 import { MeasurementsPage } from '@/features/measurements/MeasurementsPage'
 import { MeasurementRunner } from '@/features/measurements/MeasurementRunner'
@@ -22,6 +22,11 @@ import { SplashScreen } from '@/components/SplashScreen'
 import { DemoLoader } from '@/features/demo/DemoLoader'
 import { LoginGate } from '@/components/LoginGate'
 import { LandingPage } from '@/features/landing/LandingPage'
+import { ImprintPage } from '@/features/legal/ImprintPage'
+import { PrivacyPage } from '@/features/legal/PrivacyPage'
+import { ConsentBanner } from '@/features/legal/ConsentBanner'
+import { ConsentSettings } from '@/features/legal/ConsentSettings'
+import { useConsentStore } from '@/features/legal/consent'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 
@@ -40,13 +45,19 @@ function RouteTracker() {
 /**
  * Öffentliche Pfade, die auch ein Erst-Besucher direkt ansteuern darf, ohne auf
  * die Landing Page umgeleitet zu werden: die Landing selbst, ihre Vorschau, die
- * Anmeldung und ein geteilter Einladungslink.
+ * Anmeldung, ein geteilter Einladungslink – und die Rechtstexte.
+ *
+ * Impressum und Datenschutzerklärung MÜSSEN hier stehen: § 5 DDG verlangt
+ * „unmittelbare Erreichbarkeit". Eine Weiterleitung auf die Landing Page,
+ * bevor der Text sichtbar wird, wäre genau das nicht.
  */
 function isPublicPath(pathname: string) {
   return (
     pathname === '/' ||
     pathname === '/willkommen' ||
     pathname === '/login' ||
+    pathname === '/impressum' ||
+    pathname === '/datenschutz' ||
     pathname.startsWith('/join/')
   )
 }
@@ -96,12 +107,13 @@ function FirstVisitGate() {
 export function App() {
   useApplyTheme()
 
-  // Analytics-Einwilligung (Opt-out) beim Start und bei jeder Änderung auf
-  // Firebase Analytics übertragen, damit auch automatische Ereignisse folgen.
-  const analyticsEnabled = useSettingsStore((s) => s.analyticsEnabled)
+  // Die Einwilligung technisch durchsetzen – beim Start und nach jeder
+  // Änderung. Ohne Einwilligung wird Analytics nicht geladen; nach einem
+  // Widerruf werden Erfassung und Cookies abgeräumt.
+  const consentDecision = useConsentStore((s) => s.decision)
   useEffect(() => {
-    void syncAnalyticsConsent()
-  }, [analyticsEnabled])
+    void applyAnalyticsConsent()
+  }, [consentDecision])
 
   return (
     <>
@@ -132,9 +144,16 @@ export function App() {
             <Route path="/einstellungen/daten" element={<DataResetPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/join/:pid/:inviteId" element={<JoinProfilePage />} />
+            {/* Rechtstexte – ohne Anmeldung und ohne Onboarding erreichbar. */}
+            <Route path="/impressum" element={<ImprintPage />} />
+            <Route path="/datenschutz" element={<PrivacyPage />} />
             <Route path="*" element={<Navigate to="/onboarding" replace />} />
           </Route>
         </Routes>
+        {/* Einwilligung: Hinweis und Detail-Fenster liegen im Router, weil
+            beide auf Impressum/Datenschutz verlinken. */}
+        <ConsentBanner />
+        <ConsentSettings />
       </BrowserRouter>
       <SplashScreen />
     </>
