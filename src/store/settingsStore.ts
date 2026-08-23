@@ -18,7 +18,7 @@ function systemTheme(): Theme {
 interface SettingsState {
   theme: Theme
   setTheme: (theme: Theme) => void
-  /** Wurde die Erst-Einführung (Walkthrough) bereits gesehen/abgeschlossen? */
+  /** Wurde die Landing Page (das Value-Intro der App) bereits gesehen/verlassen? */
   introSeen: boolean
   setIntroSeen: (seen: boolean) => void
   /**

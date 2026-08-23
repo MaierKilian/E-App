@@ -52,8 +52,7 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
   }, [preview])
 
   // Beim Verlassen der Landing gilt die Einführung als gesehen: die Landing
-  // übernimmt die Rolle des Value-Intros. Dadurch überspringt der normale Flow
-  // das alte Overlay (dessen Verbleib ist eine spätere Entscheidung).
+  // ist das Value-Intro der App.
   // `location` verortet den geklickten CTA (hero / closing / preview).
   function startOnboarding(location: string) {
     void track('landing_cta_start', { location })

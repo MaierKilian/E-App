@@ -1978,7 +1978,6 @@
     "logout": "Abmelden",
     "appearance": "Darstellung",
     "help": "Hilfe",
-    "replayIntro": "Einführung erneut ansehen",
     "viewLanding": "Landing Page ansehen",
     "dataSection": "Daten",
     "privacy": "Datenschutz",
@@ -2097,38 +2096,6 @@
     "bannerLabel": "Demo-Wohnung",
     "exit": "Verlassen",
     "startOwn": "Selbst loslegen"
-  },
-  "onboardingIntro": {
-    "skip": "Überspringen",
-    "next": "Weiter",
-    "back": "Zurück",
-    "start": "Los geht's",
-    "signIn": "Anmelden / Registrieren",
-    "guest": "Als Gast fortfahren",
-    "example": "Beispiel",
-    "showerTitle": "Duschkopf",
-    "lpm": "L/min",
-    "showerYou": "Dein Kopf",
-    "showerEco": "Sparduschkopf",
-    "showerSave": "≈ 120 €/Jahr sparbar",
-    "chartMeter": "Strom",
-    "savingsLabel": "Sparpotenzial / Jahr",
-    "savings": "≈ 1.240 €",
-    "measures": "4 Maßnahmen für dich",
-    "slides": [
-      {
-        "title": "Wie viel läuft wirklich durch?",
-        "body": "Der Duschkopftest rechnet in 30 Sekunden Liter pro Minute aus – und was ein Sparduschkopf bringt."
-      },
-      {
-        "title": "Dein Verbrauch wird sichtbar",
-        "body": "Zählerstände eintragen – schon zwei Ablesungen zeigen deinen Verbrauch und Trend."
-      },
-      {
-        "title": "Sieh dein Sparpotenzial",
-        "body": "Aus deinem Profil und echten Messungen wird dein persönliches Sparziel in Euro."
-      }
-    ]
   },
   "tips": {
     "title": "Empfehlungen",
@@ -2313,7 +2280,8 @@
         },
         "measurement": {
           "title": "Messung mit Ergebnis",
-          "desc": "z. B. Duschkopf – ≈ 120 €/Jahr sparbar"
+          "desc": "z. B. Duschkopf – ≈ 120 €/Jahr sparbar",
+          "mockTitle": "Duschkopf"
         }
       },
       "cta": "Live-Beispiel öffnen",

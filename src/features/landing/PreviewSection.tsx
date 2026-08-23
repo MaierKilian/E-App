@@ -42,7 +42,7 @@ export function PreviewSection({ onOpenDemo }: { onOpenDemo: () => void }) {
           title={t('landing.preview.tiles.measurement.title')}
           desc={t('landing.preview.tiles.measurement.desc')}
         >
-          <MeasurementMock title={t('onboardingIntro.showerTitle')} />
+          <MeasurementMock title={t('landing.preview.tiles.measurement.mockTitle')} />
         </PreviewTile>
       </div>
 

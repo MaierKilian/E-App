@@ -19,7 +19,6 @@ import { DataResetPage } from '@/features/settings/DataResetPage'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { JoinProfilePage } from '@/features/profiles/JoinProfilePage'
 import { SplashScreen } from '@/components/SplashScreen'
-import { OnboardingIntro } from '@/components/OnboardingIntro'
 import { DemoLoader } from '@/features/demo/DemoLoader'
 import { LoginGate } from '@/components/LoginGate'
 import { LandingPage } from '@/features/landing/LandingPage'
@@ -39,20 +38,59 @@ function RouteTracker() {
 }
 
 /**
- * Einstieg auf „/": Erst-Besucher sehen die Landing Page, Wiederkehrer werden
- * direkt weitergeleitet. Als „schon dabei" gilt, wer die Einführung/Landing
- * bereits gesehen hat (`introSeen`), ein fertiges Profil besitzt
- * (`data.completed`) oder gerade die Demo betrachtet (`demoMode`).
+ * Öffentliche Pfade, die auch ein Erst-Besucher direkt ansteuern darf, ohne auf
+ * die Landing Page umgeleitet zu werden: die Landing selbst, ihre Vorschau, die
+ * Anmeldung und ein geteilter Einladungslink.
  */
-function LandingRoute() {
+function isPublicPath(pathname: string) {
+  return (
+    pathname === '/' ||
+    pathname === '/willkommen' ||
+    pathname === '/login' ||
+    pathname.startsWith('/join/')
+  )
+}
+
+/**
+ * Gilt jemand als „schon dabei"? Ja, wer die Landing bereits gesehen hat
+ * (`introSeen`), ein fertiges Profil besitzt (`data.completed`) oder gerade die
+ * Demo betrachtet (`demoMode`).
+ */
+function useIsReturningVisitor() {
   const introSeen = useSettingsStore((s) => s.introSeen)
   const demoMode = useSettingsStore((s) => s.demoMode)
   const completed = useOnboardingStore((s) => s.data.completed)
+  return introSeen || demoMode || completed
+}
 
-  if (introSeen || demoMode || completed) {
+/**
+ * Einstieg auf „/": Erst-Besucher sehen die Landing Page, Wiederkehrer werden
+ * direkt weitergeleitet.
+ */
+function LandingRoute() {
+  if (useIsReturningVisitor()) {
     return <Navigate to="/onboarding" replace />
   }
   return <LandingPage />
+}
+
+/**
+ * Die Landing Page ist der eine Einstieg für Erst-Besucher – egal, mit welcher
+ * URL sie ankommen.
+ *
+ * Ohne diese Weiche entschied allein der Pfad, was ein frischer Browser (neues
+ * Gerät, geleerter Speicher, privates Fenster) zu sehen bekam: Nur „/" zeigte
+ * die Landing Page, jede andere URL – ein Lesezeichen auf „/onboarding", ein
+ * geteilter Deep-Link, die 404-Umleitung auf GitHub Pages – führte direkt in
+ * die App bzw. früher in das alte Vollbild-Intro. Wer den Cache leerte, landete
+ * so wieder auf einer veralteten Startseite.
+ */
+function FirstVisitGate() {
+  const location = useLocation()
+  const returning = useIsReturningVisitor()
+
+  if (returning || isPublicPath(location.pathname)) return null
+  return <Navigate to="/" replace />
 }
 
 export function App() {
@@ -70,7 +108,7 @@ export function App() {
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
         <RouteTracker />
         <DemoLoader />
-        <OnboardingIntro />
+        <FirstVisitGate />
         <Routes>
           {/* Öffentliche Landing Page ohne App-Chrome (eigene Topbar). */}
           <Route path="/" element={<LandingRoute />} />

@@ -1978,7 +1978,6 @@
     "logout": "Sign out",
     "appearance": "Appearance",
     "help": "Help",
-    "replayIntro": "Replay introduction",
     "viewLanding": "View landing page",
     "dataSection": "Data",
     "privacy": "Privacy",
@@ -2097,38 +2096,6 @@
     "bannerLabel": "Demo home",
     "exit": "Leave",
     "startOwn": "Start my own"
-  },
-  "onboardingIntro": {
-    "skip": "Skip",
-    "next": "Next",
-    "back": "Back",
-    "start": "Let's go",
-    "signIn": "Sign in / Register",
-    "guest": "Continue as guest",
-    "example": "Example",
-    "showerTitle": "Showerhead",
-    "lpm": "L/min",
-    "showerYou": "Your head",
-    "showerEco": "Eco showerhead",
-    "showerSave": "≈ €120/year savable",
-    "chartMeter": "Electricity",
-    "savingsLabel": "Savings potential / year",
-    "savings": "≈ €1,240",
-    "measures": "4 measures for you",
-    "slides": [
-      {
-        "title": "How much really flows through?",
-        "body": "The showerhead test works out litres per minute in 30 seconds – and what an eco showerhead saves."
-      },
-      {
-        "title": "Your consumption becomes visible",
-        "body": "Enter meter readings – just two readings reveal your consumption and trend."
-      },
-      {
-        "title": "See your savings potential",
-        "body": "Your profile and real measurements turn into your personal savings target in euros."
-      }
-    ]
   },
   "tips": {
     "title": "Recommendations",
@@ -2313,7 +2280,8 @@
         },
         "measurement": {
           "title": "Measurement with result",
-          "desc": "e.g. showerhead – save ≈ €120/year"
+          "desc": "e.g. showerhead – save ≈ €120/year",
+          "mockTitle": "Shower head"
         }
       },
       "cta": "Open live example",

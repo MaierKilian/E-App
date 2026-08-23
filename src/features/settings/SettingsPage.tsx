@@ -43,7 +43,6 @@ export function SettingsPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const logoutAndLeave = useLogout()
-  const setIntroSeen = useSettingsStore((s) => s.setIntroSeen)
   const demoMode = useSettingsStore((s) => s.demoMode)
   const analyticsEnabled = useSettingsStore((s) => s.analyticsEnabled)
   const setAnalyticsEnabled = useSettingsStore((s) => s.setAnalyticsEnabled)
@@ -158,11 +157,6 @@ export function SettingsPage() {
 
       {/* Hilfe */}
       <SettingsSection title={t('settings.help')} icon={PlayCircle}>
-        <SettingsRow
-          icon={PlayCircle}
-          title={t('settings.replayIntro')}
-          onClick={() => setIntroSeen(false)}
-        />
         <SettingsRow icon={Sparkles} title={t('settings.viewLanding')} to="/willkommen" />
         <SettingsRow
           icon={MessageSquarePlus}
