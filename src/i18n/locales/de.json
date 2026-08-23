@@ -98,12 +98,7 @@
   "report": {
     "title": "Berichte",
     "subtitle": "Deine Daten als PDF zum Weitergeben.",
-    "variant": {
-      "short": "Kurzbericht",
-      "long": "Langbericht"
-    },
     "builder": {
-      "variant": "Umfang",
       "range": "Zeitraum",
       "export": "Als PDF exportieren",
       "exporting": "PDF wird erstellt …",
@@ -154,12 +149,21 @@
         "title": "Messungen-Bericht",
         "subtitle": "Ergebnisse, Bewertung und Sparpotenzial",
         "progress": "Erledigte Messungen",
-        "completed": "Erledigte Messungen",
         "savings": "Sparpotenzial",
         "savingsValue": "Sparpotenzial {{value}}",
         "openMeasurements": "Offene Messungen",
         "tips": "Tipp",
-        "actionNeeded": "Handlungsbedarf"
+        "actionNeeded": "Handlungsbedarf",
+        "overview": "Alle Ergebnisse, das Dringlichste zuerst",
+        "colMeasurement": "Messung",
+        "colResult": "Ergebnis",
+        "colRating": "Bewertung",
+        "colMeasuredAt": "Gemessen",
+        "colSaving": "€ / Jahr",
+        "colRoom": "Raum",
+        "rooms_one": "{{count}} Raum geprüft",
+        "rooms_other": "{{count}} Räume geprüft",
+        "measuredOn": "gemessen am {{date}}"
       },
       "monitoring": {
         "title": "Monitoring-Bericht",
@@ -179,7 +183,8 @@
         "averageLine": "Ø {{value}}",
         "staleReading_one": "Letzte Ablesung vor {{count}} Tag – Hochrechnung und Kosten sind entsprechend unsicher.",
         "staleReading_other": "Letzte Ablesung vor {{count}} Tagen – Hochrechnung und Kosten sind entsprechend unsicher.",
-        "noCurve": "Für eine Linie sind mindestens zwei Ablesungen nötig."
+        "noCurve": "Für eine Linie sind mindestens zwei Ablesungen nötig.",
+        "withoutReading": "Ohne Ablesung und deshalb ohne Auswertung: {{carriers}}."
       },
       "empty": {
         "none": "keine",
@@ -214,10 +219,6 @@
       "noData": "Noch keine Daten",
       "days_one": "{{count}} Tag",
       "days_other": "{{count}} Tage"
-    },
-    "variantDesc": {
-      "short": "Das Wichtigste auf einen Blick.",
-      "long": "Ausführlich, mit Verlauf, Historie und Tipps."
     }
   },
   "measurements": {
@@ -407,6 +408,11 @@
           "tooCold": "Wärmer einstellen",
           "optimal": "Weiter so",
           "tooWarm": "Kälter einstellen"
+        },
+        "summary": {
+          "good": "Die Temperatur liegt im empfohlenen Bereich von 5–7 °C – sparsam und sicher zugleich.",
+          "medium": "Die Temperatur weicht vom empfohlenen Bereich (5–7 °C) ab. Eine Stufe am Regler genügt meist.",
+          "high": "Die Temperatur liegt deutlich neben dem empfohlenen Bereich (5–7 °C): Zu kalt kostet unnötig Strom, zu warm lässt Lebensmittel schneller verderben."
         }
       }
     },
@@ -718,7 +724,13 @@
           "Putzwasser",
           "Reinigung",
           "Toilettenspülung"
-        ]
+        ],
+        "summary": {
+          "good": "Warmes Wasser ist schnell da – es läuft kaum Trinkwasser ungenutzt ab.",
+          "medium": "Bis warmes Wasser kommt, läuft etwas Trinkwasser ungenutzt ab. Aufgefangen lässt es sich weiterverwenden.",
+          "elevated": "Die Wartezeit ist lang – bei jeder Zapfung läuft spürbar Trinkwasser ungenutzt ab.",
+          "high": "Sehr lange Wartezeit: Pro Zapfung geht viel Trinkwasser ungenutzt weg. Meist liegt es an einer langen oder ungedämmten Leitung."
+        }
       }
     },
     "furniture_spacing": {
@@ -1031,7 +1043,13 @@
         "doneBadge": "Alles auf LED",
         "doneSummary_one": "Der geprüfte Raum ist bereits umgestellt.",
         "doneSummary_other": "Alle {{count}} geprüften Räume sind bereits umgestellt.",
-        "doneTip": "Achte beim Nachkaufen weiter auf LED mit warmweißem Licht."
+        "doneTip": "Achte beim Nachkaufen weiter auf LED mit warmweißem Licht.",
+        "summary": {
+          "good": "Alle geprüften Räume sind bereits auf LED umgestellt.",
+          "medium": "In einzelnen, wenig genutzten Räumen hängen noch alte Lampen – dort lohnt sich der Tausch als Nächstes.",
+          "elevated": "In mehreren Räumen hängen noch alte Lampen, darunter täglich genutzte. Der Tausch macht sich dort schnell bezahlt.",
+          "high": "In vielen und stark genutzten Räumen hängen noch alte Lampen – hier liegt das größte, am schnellsten hebbare Sparpotenzial."
+        }
       }
     },
     "remeasure": {

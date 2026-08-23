@@ -10,11 +10,7 @@ import {
   fmtDateShort,
   fmtPeriod,
 } from './pdf/format'
-import type { ReportVariant, ReportContentOptions } from './reportTypes'
 import type { MonitoringReportData, MonitoringEntry } from './monitoringReportData'
-
-/** Höchstens so viele Historien-Zeilen im Kurzbericht; der Rest wird gezählt. */
-const SHORT_HISTORY_ROWS = 8
 
 /**
  * Der Monitoring-Abschnitt des Energieberichts. Wird von
@@ -22,8 +18,6 @@ const SHORT_HISTORY_ROWS = 8
  */
 
 export interface GenerateMonitoringArgs {
-  variant: ReportVariant
-  options: ReportContentOptions
   t: TFunction
   language: string
   data: MonitoringReportData
@@ -34,7 +28,7 @@ export interface GenerateMonitoringArgs {
 /** Schreibt den Monitoring-Abschnitt (auch vom Gesamt-Bericht genutzt). */
 export function fillMonitoring(
   kit: PdfKit,
-  { variant, options, t, language, data, objectName }: GenerateMonitoringArgs,
+  { t, language, data, objectName }: GenerateMonitoringArgs,
   withHeader = true,
 ): void {
   if (withHeader) {
@@ -62,17 +56,32 @@ export function fillMonitoring(
   const numFine = numberFmt(language, 2)
   const cur = currencyFmt(language)
 
-  if (options.kpis) writeSummaryTable(kit, t, language, num, cur, data)
+  writeSummaryTable(kit, t, language, num, cur, data)
 
-  data.entries.forEach((e, idx) => {
-    // Im Langbericht bekommt jeder Zähler eine eigene Seite – sonst entscheidet
-    // der Zufall des Seitenumbruchs, wo ein Träger aufhört.
-    if (idx > 0) {
-      if (variant === 'long') kit.newPage()
-      else kit.gap(10)
-    }
-    if (variant === 'short') writeShortEntry(kit, t, language, num, numFine, cur, e, options)
-    else writeLongEntry(kit, t, language, num, numFine, cur, e, options)
+  // Träger ohne Ablesung bekommen keine eigene Seite: eine Überschrift plus
+  // „Noch keine Ablesung" füllt kein Blatt, und drei solcher Blätter am Ende
+  // lassen den Bericht wie einen Fehldruck aussehen. Sie stehen gesammelt in
+  // einer Zeile darunter.
+  const measured = data.entries.filter((e) => e.currentValue !== undefined)
+  const unmeasured = data.entries.filter((e) => e.currentValue === undefined)
+
+  // Der Hinweis steht vor den Zähler-Seiten, nicht hinter ihnen: Dort
+  // beantwortet er beim Lesen die Frage „und der Gaszähler?", statt als
+  // einzelne Zeile hinter der letzten vollen Seite zu stranden.
+  if (unmeasured.length > 0) {
+    kit.subtle(
+      t('report.pdf.monitoring.withoutReading', {
+        carriers: unmeasured.map((e) => t(`monitoring.energyTypes.${e.type}`)).join(', '),
+      }),
+    )
+    kit.gap(4)
+  }
+
+  measured.forEach((e, idx) => {
+    // Jeder Zähler bekommt eine eigene Seite – sonst entscheidet der Zufall des
+    // Seitenumbruchs, wo ein Träger aufhört.
+    if (idx > 0) kit.newPage()
+    writeCarrier(kit, t, language, num, numFine, cur, e)
   })
 }
 
@@ -156,6 +165,7 @@ function writeConsumptionChart(
   kit.chartCaption(
     t('report.pdf.monitoring.consumptionChart'),
     drawable ? t('report.pdf.monitoring.chartHint') : undefined,
+    { keepWith: drawable ? height : 0 },
   )
   if (!drawable) {
     kit.intervalBarChart([], { emptyNote: t('report.pdf.monitoring.noSegments') })
@@ -197,7 +207,7 @@ function writeReadingCurve(
   e: MonitoringEntry,
   height: number,
 ): void {
-  kit.chartCaption(t('report.pdf.monitoring.readingCurveTitle'))
+  kit.chartCaption(t('report.pdf.monitoring.readingCurveTitle'), undefined, { keepWith: height })
   kit.lineChart(e.points, {
     height,
     unit: e.unit,
@@ -363,8 +373,8 @@ function windowSub(language: string, e: MonitoringEntry): string | undefined {
   return fmtPeriod(e.windowFrom, e.windowTo, language)
 }
 
-/** Kompakte Zähler-Karte (Kurzfassung): Stand, Verbrauch, Vergleich, Kosten + kleines Diagramm. */
-function writeShortEntry(
+/** Zähler-Seite: Diagramm, Kennzahlen, Trend, Zählerstandsverlauf, Historie. */
+function writeCarrier(
   kit: PdfKit,
   t: TFunction,
   language: string,
@@ -372,103 +382,29 @@ function writeShortEntry(
   numFine: Intl.NumberFormat,
   cur: Intl.NumberFormat,
   e: MonitoringEntry,
-  options: ReportContentOptions,
 ): void {
-  if (e.currentValue === undefined) {
-    kit.carrierHead(t(`monitoring.energyTypes.${e.type}`), carrierColor(e), { keepWith: 20 })
-    kit.subtle(t('report.pdf.empty.noReading'))
-    return
-  }
-
-  // Ganzen Block zusammenhalten (kein Umbruch mitten in Titel/KPIs/Diagramm).
-  let est = 36
-  if (options.kpis) est += 70
-  if (options.comparison) est += 18
-  if (options.charts) est += 130
-  if (options.readingCurve) est += 124
-  kit.ensure(est)
-
+  // Titel + Diagramm + KPIs zusammenhalten (Historie darf umbrechen).
+  kit.ensure(36 + 184 + 150 + 19)
   kit.carrierHead(t(`monitoring.energyTypes.${e.type}`), carrierColor(e))
 
-  if (options.kpis) {
-    const cards = meterCards(t, language, num, numFine, cur, e, { withRate: false })
-    kit.kpiCards(cards, cards.length >= 3 ? 3 : 2)
-    writeStaleNote(kit, t, e)
-  }
+  writeConsumptionChart(kit, t, language, numFine, e, 165)
+  kit.gap(6)
+
+  const cards = meterCards(t, language, num, numFine, cur, e, { withRate: true })
+  // Vier Kacheln als 2x2 statt 3+1 – eine einzelne Kachel in der zweiten
+  // Reihe wirkt wie ein Umbruchfehler.
+  kit.kpiCards(cards, cards.length === 4 ? 2 : 3)
+  writeStaleNote(kit, t, e)
 
   // Nur zeigen, wenn es einen Vergleichswert gibt – ein Label ohne Zahl
   // erklärt nichts.
-  if (options.comparison && e.changePercent !== undefined) {
-    kit.trendBadge(e.changePercent, t('report.trend.vsPrevious'))
-  }
-
-  if (options.charts) {
-    kit.gap(6)
-    writeConsumptionChart(kit, t, language, numFine, e, 126)
-  }
-
-  if (options.readingCurve) {
-    kit.gap(6)
-    writeReadingCurve(kit, t, language, e, 110)
-  }
-
-  // Kurzbericht: nur die jüngsten Ablesungen, der Rest wird beziffert.
-  if (options.history) {
-    kit.gap(6)
-    writeHistory(kit, t, language, num, e, SHORT_HISTORY_ROWS)
-  }
-}
-
-/** Ausführliche Zähler-Seite (Langfassung). */
-function writeLongEntry(
-  kit: PdfKit,
-  t: TFunction,
-  language: string,
-  num: Intl.NumberFormat,
-  numFine: Intl.NumberFormat,
-  cur: Intl.NumberFormat,
-  e: MonitoringEntry,
-  options: ReportContentOptions,
-): void {
-  if (e.currentValue === undefined) {
-    kit.carrierHead(t(`monitoring.energyTypes.${e.type}`), carrierColor(e), { keepWith: 20 })
-    kit.subtle(t('report.pdf.empty.noReading'))
-    return
-  }
-
-  // Titel + Diagramm + KPIs zusammenhalten (Historie darf umbrechen).
-  let est = 36
-  if (options.charts) est += 184
-  if (options.kpis) est += 150
-  if (options.comparison) est += 19
-  kit.ensure(est)
-
-  kit.carrierHead(t(`monitoring.energyTypes.${e.type}`), carrierColor(e))
-
-  if (options.charts) {
-    writeConsumptionChart(kit, t, language, numFine, e, 165)
-    kit.gap(6)
-  }
-
-  if (options.kpis) {
-    const cards = meterCards(t, language, num, numFine, cur, e, { withRate: true })
-    // Vier Kacheln als 2x2 statt 3+1 – eine einzelne Kachel in der zweiten
-    // Reihe wirkt wie ein Umbruchfehler.
-    kit.kpiCards(cards, cards.length === 4 ? 2 : 3)
-    writeStaleNote(kit, t, e)
-  }
-
-  if (options.comparison && e.changePercent !== undefined) {
+  if (e.changePercent !== undefined) {
     kit.trendBadge(e.changePercent, t('report.trend.vsPrevious'))
     kit.gap(2)
   }
 
-  if (options.readingCurve) {
-    kit.gap(4)
-    writeReadingCurve(kit, t, language, e, 150)
-    kit.gap(6)
-  }
-
-  // Langbericht zeigt die vollständige Historie – hier ist Platz dafür.
-  if (options.history) writeHistory(kit, t, language, num, e)
+  kit.gap(4)
+  writeReadingCurve(kit, t, language, e, 150)
+  kit.gap(6)
+  writeHistory(kit, t, language, num, e)
 }

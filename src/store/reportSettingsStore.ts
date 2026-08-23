@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { RangeDays } from '@/features/reports/monitoringReportData'
-import type { ReportSections, ReportVariant } from '@/features/reports/reportTypes'
+import type { ReportSections } from '@/features/reports/reportTypes'
 
 /**
  * Zuletzt benutzte Einstellungen des Berichts.
@@ -14,10 +14,8 @@ import type { ReportSections, ReportVariant } from '@/features/reports/reportTyp
 export type StoredRange = RangeDays | 'auto'
 
 interface ReportSettingsState {
-  variant: ReportVariant
   sections: ReportSections
   range: StoredRange
-  setVariant: (variant: ReportVariant) => void
   setSections: (sections: ReportSections) => void
   setRange: (range: StoredRange) => void
 }
@@ -39,13 +37,17 @@ function pickSections(stored: Partial<ReportSections> | undefined): ReportSectio
   }
 }
 
+/** Übernimmt aus einem gespeicherten Stand nur die heute gültigen Felder. */
+function restore(persisted: unknown): Pick<ReportSettingsState, 'sections' | 'range'> {
+  const p = (persisted ?? {}) as Partial<ReportSettingsState>
+  return { sections: pickSections(p.sections), range: p.range ?? 'auto' }
+}
+
 export const useReportSettingsStore = create<ReportSettingsState>()(
   persist(
     (set) => ({
-      variant: 'short',
       sections: DEFAULT_SECTIONS,
       range: 'auto',
-      setVariant: (variant) => set({ variant }),
       setSections: (sections) => set({ sections }),
       setRange: (range) => set({ range }),
     }),
@@ -55,17 +57,16 @@ export const useReportSettingsStore = create<ReportSettingsState>()(
       //     Abschnitte.
       // v3: Der Profil-Abschnitt entfällt; ein gespeichertes `profile`-Feld
       //     wird verworfen.
+      // v4: Kurz-/Langbericht entfällt; ein gespeichertes `variant` wird
+      //     verworfen.
       // Ältere Stände haben die neuen Felder nicht und starten mit den
-      // Defaults; Umfang und Zeitraum bleiben erhalten.
-      version: 3,
-      migrate: (persisted) => {
-        const p = (persisted ?? {}) as Partial<ReportSettingsState>
-        return { ...p, sections: pickSections(p.sections) } as ReportSettingsState
-      },
-      merge: (persisted, current) => {
-        const p = (persisted ?? {}) as Partial<ReportSettingsState>
-        return { ...current, ...p, sections: pickSections(p.sections) }
-      },
+      // Defaults; der Zeitraum bleibt erhalten.
+      version: 4,
+      // Bewusst Feld für Feld statt `...persisted`: abgelegte Felder (`profile`,
+      // `variant`) liefen sonst als unbekannte Eigenschaften in den Zustand
+      // zurück und blieben dort für immer stehen.
+      migrate: (persisted) => restore(persisted) as ReportSettingsState,
+      merge: (persisted, current) => ({ ...current, ...restore(persisted) }),
     },
   ),
 )

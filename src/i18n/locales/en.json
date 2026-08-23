@@ -98,12 +98,7 @@
   "report": {
     "title": "Reports",
     "subtitle": "Your data as a PDF to share.",
-    "variant": {
-      "short": "Short report",
-      "long": "Detailed report"
-    },
     "builder": {
-      "variant": "Scope",
       "range": "Period",
       "export": "Export as PDF",
       "exporting": "Creating PDF …",
@@ -154,12 +149,21 @@
         "title": "Measurements report",
         "subtitle": "Results, rating and savings potential",
         "progress": "Completed measurements",
-        "completed": "Completed measurements",
         "savings": "Savings potential",
         "savingsValue": "Saves {{value}}",
         "openMeasurements": "Open measurements",
         "tips": "Tip",
-        "actionNeeded": "Needs action"
+        "actionNeeded": "Needs action",
+        "overview": "All results, most urgent first",
+        "colMeasurement": "Measurement",
+        "colResult": "Result",
+        "colRating": "Rating",
+        "colMeasuredAt": "Measured",
+        "colSaving": "€ / year",
+        "colRoom": "Room",
+        "rooms_one": "{{count}} room checked",
+        "rooms_other": "{{count}} rooms checked",
+        "measuredOn": "measured on {{date}}"
       },
       "monitoring": {
         "title": "Monitoring report",
@@ -179,7 +183,8 @@
         "averageLine": "Avg. {{value}}",
         "staleReading_one": "Last reading {{count}} day ago – projection and costs are correspondingly uncertain.",
         "staleReading_other": "Last reading {{count}} days ago – projection and costs are correspondingly uncertain.",
-        "noCurve": "A curve needs at least two readings."
+        "noCurve": "A curve needs at least two readings.",
+        "withoutReading": "No reading and therefore no analysis: {{carriers}}."
       },
       "empty": {
         "none": "none",
@@ -214,10 +219,6 @@
       "noData": "No data yet",
       "days_one": "{{count}} day",
       "days_other": "{{count}} days"
-    },
-    "variantDesc": {
-      "short": "The essentials at a glance.",
-      "long": "Detailed, with curves, history and tips."
     }
   },
   "measurements": {
@@ -407,6 +408,11 @@
           "tooCold": "Set warmer",
           "optimal": "Keep it up",
           "tooWarm": "Set colder"
+        },
+        "summary": {
+          "good": "The temperature is within the recommended 5–7 °C range – both efficient and safe.",
+          "medium": "The temperature is outside the recommended range (5–7 °C). One step on the dial is usually enough.",
+          "high": "The temperature is well outside the recommended range (5–7 °C): too cold wastes electricity, too warm spoils food faster."
         }
       }
     },
@@ -718,7 +724,13 @@
           "Cleaning water",
           "Cleaning",
           "Toilet flush"
-        ]
+        ],
+        "summary": {
+          "good": "Hot water arrives quickly – hardly any drinking water runs off unused.",
+          "medium": "Some drinking water runs off unused before the hot water arrives. Collected, it can still be put to use.",
+          "elevated": "The wait is long – a noticeable amount of drinking water runs off unused every time you draw water.",
+          "high": "Very long wait: a lot of drinking water is wasted per draw. Usually the cause is a long or uninsulated pipe."
+        }
       }
     },
     "furniture_spacing": {
@@ -1031,7 +1043,13 @@
         "doneBadge": "All LED",
         "doneSummary_one": "The room you checked is already switched over.",
         "doneSummary_other": "All {{count}} rooms you checked are already switched over.",
-        "doneTip": "Keep choosing warm-white LEDs when you buy replacements."
+        "doneTip": "Keep choosing warm-white LEDs when you buy replacements.",
+        "summary": {
+          "good": "All rooms checked have already been switched to LED.",
+          "medium": "A few rarely used rooms still have old lamps – those are the next ones worth swapping.",
+          "elevated": "Several rooms still have old lamps, some of them in daily use. Swapping those pays off quickly.",
+          "high": "Many heavily used rooms still have old lamps – this is the largest and most quickly realised saving."
+        }
       }
     },
     "remeasure": {

@@ -7,7 +7,8 @@ import {
   type FindingCard,
 } from './pdf/pdfKit'
 import { numberFmt, currencyFmt, fmtVal, fmtCur, fmtDate } from './pdf/format'
-import type { ReportVariant, ReportContentOptions } from './reportTypes'
+import { roomLabel } from '@/features/measurements/rooms'
+import type { MeasurementRating } from '@/features/measurements/types'
 import type {
   MeasurementsReportData,
   MeasurementEntry,
@@ -17,11 +18,14 @@ import type {
 /**
  * Der Messungen-Abschnitt des Energieberichts. Wird von
  * {@link generateReportPdf} in ein bestehendes Dokument geschrieben.
+ *
+ * Aufbau: Kennzahlreihe → Prioritätentabelle über alle Ergebnisse → Befunde
+ * nach Gewerk → offene Messungen. Die Tabelle beantwortet „was zuerst?", die
+ * Karten „was heißt das und was tue ich?" – zwei verschiedene Fragen, die eine
+ * einzelne Darstellung nicht beide gut beantwortet.
  */
 
 export interface GenerateMeasurementsArgs {
-  variant: ReportVariant
-  options: ReportContentOptions
   t: TFunction
   language: string
   data: MeasurementsReportData
@@ -38,14 +42,24 @@ export interface GenerateMeasurementsArgs {
 }
 
 /**
+ * Dringlichkeit einer Bewertung – bestimmt die Reihenfolge der Übersicht.
+ * Ein Bericht, der nach Katalog-Reihenfolge sortiert, verrät nicht, womit
+ * anzufangen ist.
+ */
+const RATING_URGENCY: Record<MeasurementRating, number> = {
+  high: 0,
+  elevated: 1,
+  medium: 2,
+  good: 3,
+}
+
+/**
  * Schreibt den Messungen-Abschnitt in ein bestehendes Kit
  * (auch vom Gesamt-Bericht genutzt). `withHeader=false` lässt den Kopfbalken weg.
  */
 export function fillMeasurements(
   kit: PdfKit,
   {
-    variant,
-    options,
     t,
     language,
     data,
@@ -67,18 +81,17 @@ export function fillMeasurements(
     })
   }
 
-  if (!summarized) writeProgressCards(kit, t, cur, data, options)
+  if (!summarized) writeProgressCards(kit, t, cur, data)
 
   if (data.entries.length === 0) {
     kit.subtle(t('report.pdf.empty.measurements'))
-  } else if (variant === 'short') {
-    writeFlatList(kit, t, num, cur, data.entries, options, tipsByMeasurement)
-  } else {
-    writeGrouped(kit, t, num, cur, data.groups, options, tipsByMeasurement)
+    return
   }
 
-  // Offene Messungen (nur Lang + aktiviert).
-  if (variant === 'long' && options.openMeasurements && data.open.length > 0) {
+  writeOverviewTable(kit, t, language, num, cur, data.entries)
+  writeGrouped(kit, t, language, num, cur, data.groups, tipsByMeasurement)
+
+  if (data.open.length > 0) {
     kit.subHead(t('report.pdf.measurements.openMeasurements'), { keepWith: 44 })
     const items: ChecklistItem[] = data.open.map((o) => ({
       title: t(`measurements.${o.id}.title`),
@@ -97,7 +110,6 @@ function writeProgressCards(
   t: TFunction,
   cur: Intl.NumberFormat,
   data: MeasurementsReportData,
-  options: ReportContentOptions,
 ): void {
   const cards: KpiCard[] = [
     {
@@ -105,7 +117,7 @@ function writeProgressCards(
       label: t('report.pdf.measurements.progress'),
     },
   ]
-  if (options.savings && data.savingsTotal > 0) {
+  if (data.savingsTotal > 0) {
     cards.push({
       value: fmtCur(data.savingsTotal, cur),
       label: t('report.pdf.measurements.savings'),
@@ -129,80 +141,147 @@ function writeProgressCards(
   kit.gap(4)
 }
 
-/** Flache Liste erledigter Messungen (Kurzfassung). */
-function writeFlatList(
+/**
+ * Alle Ergebnisse in einer Tabelle, das Dringlichste zuerst.
+ *
+ * Die Karten weiter unten stehen nach Gewerk – gut zum Lesen, unbrauchbar zum
+ * Priorisieren. Diese Tabelle ist die eine Stelle, an der sich mit einem Blick
+ * beantworten lässt: Was ist auffällig, was bringt Geld, wann wurde gemessen?
+ */
+function writeOverviewTable(
   kit: PdfKit,
   t: TFunction,
+  language: string,
   num: Intl.NumberFormat,
   cur: Intl.NumberFormat,
   entries: MeasurementEntry[],
-  options: ReportContentOptions,
-  tipsByMeasurement: Record<string, string[]>,
 ): void {
-  const first = entries[0]
-  const keepWith = first
-    ? kit.measureFindingCard(buildEntryCard(t, num, cur, first, options, false, tipsByMeasurement)) + 8
-    : 30
-  kit.subHead(t('report.pdf.measurements.completed'), { keepWith })
-  for (const e of entries) writeEntryCard(kit, t, num, cur, e, options, false, tipsByMeasurement)
+  const sorted = [...entries].sort(
+    (a, b) =>
+      RATING_URGENCY[a.rating] - RATING_URGENCY[b.rating] ||
+      (b.yearlySaving ?? 0) - (a.yearlySaving ?? 0),
+  )
+  const anySaving = sorted.some((e) => (e.yearlySaving ?? 0) > 0)
+
+  const headers = [
+    t('report.pdf.measurements.colMeasurement'),
+    t('report.pdf.measurements.colResult'),
+    t('report.pdf.measurements.colRating'),
+    t('report.pdf.measurements.colMeasuredAt'),
+  ]
+  if (anySaving) headers.push(t('report.pdf.measurements.colSaving'))
+
+  const rows = sorted.map((e) => {
+    const row = [
+      t(`measurements.${e.id}.title`),
+      fmtVal(e.primaryValue, e.unit, num),
+      t(`measurements.ratings.${e.rating}`),
+      e.measuredAt ? fmtDate(e.measuredAt, language) : '–',
+    ]
+    if (anySaving) row.push(e.yearlySaving ? fmtCur(e.yearlySaving, cur) : '–')
+    return row
+  })
+
+  kit.subHead(t('report.pdf.measurements.overview'), { keepWith: 60 })
+  kit.table(headers, rows, {
+    // Der Name braucht den meisten Platz; die Zahlenspalten sind schmal und
+    // stehen rechtsbündig, damit sich Beträge untereinander vergleichen lassen.
+    widths: anySaving ? [2.5, 1.2, 1.1, 1.1, 1.1] : [2.8, 1.3, 1.2, 1.2],
+    align: anySaving
+      ? ['left', 'right', 'left', 'right', 'right']
+      : ['left', 'right', 'left', 'right'],
+  })
 }
 
-/** Nach Gewerk gruppierte Liste mit Einordnung + Tipp (Langfassung). */
+/** Nach Gewerk gruppierte Befunde mit Einordnung, Räumen und Tipp. */
 function writeGrouped(
   kit: PdfKit,
   t: TFunction,
+  language: string,
   num: Intl.NumberFormat,
   cur: Intl.NumberFormat,
   groups: MeasurementGroup[],
-  options: ReportContentOptions,
   tipsByMeasurement: Record<string, string[]>,
 ): void {
   for (const g of groups) {
     const first = g.entries[0]
+    // Der Gewerk-Titel muss den vollen ersten Block halten, Raum-Tabelle
+    // eingeschlossen – sonst bleibt „Heizung" allein am Seitenende zurück.
     const keepWith = first
-      ? kit.measureFindingCard(buildEntryCard(t, num, cur, first, options, true, tipsByMeasurement)) + 8
+      ? entryBlockHeight(kit, t, language, num, cur, first, tipsByMeasurement)
       : 30
     kit.subHead(t(`measurements.categories.${g.category}`), { keepWith })
-    for (const e of g.entries) writeEntryCard(kit, t, num, cur, e, options, true, tipsByMeasurement)
+    for (const e of g.entries) writeEntryCard(kit, t, language, num, cur, e, tipsByMeasurement)
   }
 }
 
 /**
  * Ein Messergebnis als Karte. Einordnung und Tipp gehören mit in die Karte:
  * Vorher standen sie unterhalb der Trennlinie und damit optisch beim nächsten
- * Befund.
+ * Befund. Raumbezogene Messungen listen darunter ihre Einzelwerte – der
+ * Kartenwert allein wäre einer von mehreren Räumen, ohne dass das dastünde.
  */
 function writeEntryCard(
   kit: PdfKit,
   t: TFunction,
+  language: string,
   num: Intl.NumberFormat,
   cur: Intl.NumberFormat,
   e: MeasurementEntry,
-  options: ReportContentOptions,
-  detailed: boolean,
   tipsByMeasurement: Record<string, string[]>,
 ): void {
-  kit.findingCard(buildEntryCard(t, num, cur, e, options, detailed, tipsByMeasurement))
+  const card = buildEntryCard(t, language, num, cur, e, tipsByMeasurement)
+  const withRooms = e.rooms.length > 1
+  // Karte und Raum-Tabelle gehören zusammen: Landet die Tabelle allein auf der
+  // Folgeseite, steht dort eine Liste von Werten ohne die Messung, zu der sie
+  // gehört.
+  if (withRooms) kit.ensure(entryBlockHeight(kit, t, language, num, cur, e, tipsByMeasurement))
+
+  kit.findingCard(card)
+  if (!withRooms) return
+
+  kit.table(
+    [
+      t('report.pdf.measurements.colRoom'),
+      t('report.pdf.measurements.colResult'),
+      t('report.pdf.measurements.colRating'),
+    ],
+    e.rooms.map((r) => [
+      roomLabel(t, r.room),
+      fmtVal(r.value, r.unit, num),
+      t(`measurements.ratings.${r.rating}`),
+    ]),
+    { widths: [2.6, 1.2, 1.2], align: ['left', 'right', 'right'] },
+  )
+}
+
+/** Höhe von Karte plus zugehöriger Raum-Tabelle, ohne etwas zu zeichnen. */
+function entryBlockHeight(
+  kit: PdfKit,
+  t: TFunction,
+  language: string,
+  num: Intl.NumberFormat,
+  cur: Intl.NumberFormat,
+  e: MeasurementEntry,
+  tipsByMeasurement: Record<string, string[]>,
+): number {
+  const card = kit.measureFindingCard(buildEntryCard(t, language, num, cur, e, tipsByMeasurement))
+  return card + 8 + (e.rooms.length > 1 ? kit.measureTable(e.rooms.length) : 0)
 }
 
 /** Baut die Kartendaten eines Messergebnisses – ohne sie zu zeichnen. */
 function buildEntryCard(
   t: TFunction,
+  language: string,
   num: Intl.NumberFormat,
   cur: Intl.NumberFormat,
   e: MeasurementEntry,
-  options: ReportContentOptions,
-  detailed: boolean,
   tipsByMeasurement: Record<string, string[]>,
 ): FindingCard {
   const saving =
-    options.savings && e.yearlySaving && e.yearlySaving > 0
+    e.yearlySaving && e.yearlySaving > 0
       ? t('report.pdf.measurements.savingsValue', { value: fmtCur(e.yearlySaving, cur) })
       : undefined
-  const summary = detailed
-    ? t(`measurements.${e.id}.result.summary.${e.rating}`, { defaultValue: '' })
-    : ''
-  const tips = detailed && options.tips ? (tipsByMeasurement[e.id] ?? []) : []
 
   return {
     color: ratingColor(e.rating),
@@ -210,8 +289,24 @@ function buildEntryCard(
     value: fmtVal(e.primaryValue, e.unit, num),
     ratingLabel: t(`measurements.ratings.${e.rating}`),
     noteLabel: saving,
-    summary: summary || undefined,
-    tips: tips.length > 0 ? tips : undefined,
+    meta: entryMeta(t, language, e),
+    summary: t(`measurements.${e.id}.result.summary.${e.rating}`, { defaultValue: '' }) || undefined,
+    tips: tipsByMeasurement[e.id]?.length ? tipsByMeasurement[e.id] : undefined,
     tipLabel: t('report.pdf.measurements.tips'),
   }
+}
+
+/**
+ * Herkunftszeile einer Karte: wo und wann gemessen wurde. Bei genau einem
+ * geprüften Raum steht dessen Name; bei mehreren die Anzahl, weil die Liste
+ * darunter die Namen ohnehin einzeln nennt.
+ */
+function entryMeta(t: TFunction, language: string, e: MeasurementEntry): string | undefined {
+  const parts: string[] = []
+  if (e.rooms.length === 1) parts.push(roomLabel(t, e.rooms[0].room))
+  else if (e.rooms.length > 1) parts.push(t('report.pdf.measurements.rooms', { count: e.rooms.length }))
+  if (e.measuredAt) {
+    parts.push(t('report.pdf.measurements.measuredOn', { date: fmtDate(e.measuredAt, language) }))
+  }
+  return parts.length > 0 ? parts.join(' · ') : undefined
 }

@@ -2,8 +2,7 @@ import type { TFunction } from 'i18next'
 import { PdfKit, ratingColor, type HeroStat } from './pdf/pdfKit'
 import { currencyFmt, fmtCur, fmtDate, reportFileName } from './pdf/format'
 import type { ReportDocument } from './pdf/deliver'
-import type { ReportSections, ReportVariant } from './reportTypes'
-import { defaultContentOptions } from './reportTypes'
+import type { ReportSections } from './reportTypes'
 import { fillMeasurements } from './generateMeasurementsPdf'
 import { fillMonitoring } from './generateMonitoringPdf'
 import type { MeasurementsReportData } from './measurementsReportData'
@@ -13,13 +12,16 @@ import type { MonitoringReportData } from './monitoringReportData'
  * Erzeugt den Energiebericht aus den gewählten Abschnitten.
  *
  * Der Bericht ist die Summe seiner Abschnitte – Messungen und Monitoring – und
- * nicht einer von mehreren Berichtstypen. Welche Bausteine ein Abschnitt
- * enthält, ergibt sich allein aus `variant`; einzelne Inhalte werden nicht
- * mehr durchgereicht.
+ * nicht einer von mehreren Berichtstypen. Jeder Abschnitt zeigt alles, was er
+ * hat; eine Kurzfassung, die Ergebnisse weglässt, beantwortet genau die Fragen
+ * nicht, wegen derer ein Bericht weitergegeben wird.
+ *
+ * Jedes Kapitel beginnt auf einer neuen Seite. Sonst hängt der Anfang eines
+ * Kapitels davon ab, wie lang das vorherige zufällig geworden ist – und die
+ * Zusammenfassung teilt sich die erste Seite mit dem ersten Befund.
  */
 
 export interface GenerateReportArgs {
-  variant: ReportVariant
   sections: ReportSections
   t: TFunction
   language: string
@@ -37,9 +39,8 @@ export interface GenerateReportArgs {
 }
 
 export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
-  const { variant, sections, t, language, measurements, monitoring, tipsByMeasurement } = args
+  const { sections, t, language, measurements, monitoring, tipsByMeasurement } = args
   const kit = new PdfKit()
-  const options = defaultContentOptions(variant)
   const objectName = args.objectName?.trim() || undefined
 
   kit.masthead({
@@ -59,21 +60,28 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
   // Nummerierte Abschnitte machen die Gliederung im Kopf schon vor dem Lesen
   // sichtbar – und verraten, wie viel noch kommt.
   let index = 0
-  const eyebrow = () =>
-    t('report.pdf.sectionCount', { n: ++index, total })
+  /** Kapitel-Überschrift auf einer frischen Seite. */
+  const chapter = (titleKey: string) => {
+    if (!multi) return
+    kit.newPage()
+    kit.sectionHeader(t(titleKey), {
+      eyebrow: t('report.pdf.sectionCount', { n: ++index, total }),
+      keepWith: 70,
+    })
+  }
 
   if (sections.measurements) {
-    if (multi) kit.sectionHeader(t('report.pdf.section.measurements'), { eyebrow: eyebrow(), keepWith: 70 })
+    chapter('report.pdf.section.measurements')
     fillMeasurements(
       kit,
-      { variant, options, t, language, data: measurements, objectName, summarized, tipsByMeasurement },
+      { t, language, data: measurements, objectName, summarized, tipsByMeasurement },
       false,
     )
   }
 
   if (sections.monitoring) {
-    if (multi) kit.sectionHeader(t('report.pdf.section.monitoring'), { eyebrow: eyebrow(), keepWith: 70 })
-    fillMonitoring(kit, { variant, options, t, language, data: monitoring, objectName }, false)
+    chapter('report.pdf.section.monitoring')
+    fillMonitoring(kit, { t, language, data: monitoring, objectName }, false)
   }
 
   kit.finalizeFooters(

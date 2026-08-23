@@ -78,7 +78,7 @@ function result(
 
 // Viele abgeschlossene Checks – ganzhaus- und raumbezogen.
 const RESULTS: MeasurementResult[] = [
-  result('showerhead', 'elevated', 11.4, 'L/min', 34, { details: { liters: 1.9, seconds: 10 } }),
+  result('showerhead', 'medium', 11.4, 'L/min', 34, { details: { liters: 1.9, seconds: 10 } }),
   result('hot_water_wait', 'medium', 24, 's', 33, { details: { seconds: 24 } }),
   result('base_load', 'elevated', 132, 'W', 20, { details: { watts: 132 } }),
   result('standby', 'high', 31, 'W', 19, { details: { watts: 31 } }),

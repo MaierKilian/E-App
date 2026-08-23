@@ -16,12 +16,13 @@ import { buildTips } from '@/features/tips/buildTips'
 import { tipsByMeasurement } from '@/features/tips/tipsForReport'
 import { buildMeasurementsReportData } from './measurementsReportData'
 import { buildMonitoringReportData, suggestRangeDays, type RangeDays } from './monitoringReportData'
-import type { ReportSections, ReportVariant } from './reportTypes'
+import type { ReportSections } from './reportTypes'
 
 /**
  * Berichte: ein Energiebericht als PDF, zusammengesetzt aus den gewählten
- * Abschnitten (Messungen, Monitoring). Umfang und Zeitraum sind die einzigen
- * weiteren Stellschrauben – alles andere ergibt sich daraus.
+ * Abschnitten – Messungen, Monitoring oder beides. Der Zeitraum des Monitorings
+ * ist die einzige weitere Stellschraube; einen Umfang (kurz/lang) gibt es
+ * bewusst nicht mehr.
  */
 export function ReportsPage() {
   const { t } = useTranslation()
@@ -52,8 +53,9 @@ export function ReportsPage() {
     [profile, readingsByType, rangeDays, tariff],
   )
   const measurementsData = useMemo(
-    () => buildMeasurementsReportData({ results, categories: [] }),
-    [results],
+    // `rooms` benennt die Einzelergebnisse raumbezogener Messungen im Bericht.
+    () => buildMeasurementsReportData({ results, categories: [], rooms: profile.rooms }),
+    [results, profile.rooms],
   )
 
   const metersWithData = monitoringData.entries.filter((e) => e.readingCount > 0).length
@@ -83,8 +85,6 @@ export function ReportsPage() {
       <PageHeader title={t('report.title')} subtitle={t('report.subtitle')} />
 
       <ReportSummary
-        variant={settings.variant}
-        onVariantChange={settings.setVariant}
         sections={sections}
         monitoring={monitoringData}
         measurements={measurementsData}
@@ -125,7 +125,6 @@ export function ReportsPage() {
       </Card>
 
       <ShareBar
-        variant={settings.variant}
         sections={sections}
         monitoring={monitoringData}
         measurements={measurementsData}
@@ -141,8 +140,6 @@ export function ReportsPage() {
 // --- Kopfbereich ---------------------------------------------------------
 
 interface SummaryProps {
-  variant: ReportVariant
-  onVariantChange: (variant: ReportVariant) => void
   sections: ReportSections
   monitoring: ReturnType<typeof buildMonitoringReportData>
   measurements: ReturnType<typeof buildMeasurementsReportData>
@@ -151,13 +148,9 @@ interface SummaryProps {
 }
 
 /**
- * Kopfkarte: Papier-Motiv, die Fakten, die tatsächlich im PDF landen, und der
- * Umfang. Der Umfang steht hier statt in einer eigenen Karte, damit Kopf,
- * Inhalt und Schaltfläche zusammen auf einen Bildschirm passen.
+ * Kopfkarte: Papier-Motiv und die Fakten, die tatsächlich im PDF landen.
  */
 function ReportSummary({
-  variant,
-  onVariantChange,
   sections,
   monitoring,
   measurements,
@@ -183,7 +176,7 @@ function ReportSummary({
   return (
     <Card className="!p-4">
       <div className="flex items-center gap-4">
-        <ReportPreview variant={variant} />
+        <ReportPreview />
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold text-foreground">
             {objectName ?? t('home.profileNameFallback')}
@@ -195,18 +188,6 @@ function ReportSummary({
         </div>
       </div>
 
-      <div className="mt-3">
-        <Segmented
-          ariaLabel={t('report.builder.variant')}
-          options={[
-            { key: 'short', label: t('report.variant.short') },
-            { key: 'long', label: t('report.variant.long') },
-          ]}
-          value={variant}
-          onChange={(key) => onVariantChange(key as ReportVariant)}
-        />
-        <p className="mt-2 text-xs text-muted">{t(`report.variantDesc.${variant}`)}</p>
-      </div>
     </Card>
   )
 }
@@ -294,7 +275,6 @@ function RangePicker({ value, onChange }: RangePickerProps) {
 type ExportStatus = 'idle' | 'busy' | 'done' | 'shared' | 'error'
 
 interface ShareBarProps {
-  variant: ReportVariant
   sections: ReportSections
   monitoring: ReturnType<typeof buildMonitoringReportData>
   measurements: ReturnType<typeof buildMeasurementsReportData>
@@ -305,7 +285,6 @@ interface ShareBarProps {
 
 /** Fixe Leiste mit Teilen-/Download-Schaltfläche und Rückmeldung. */
 function ShareBar({
-  variant,
   sections,
   monitoring,
   measurements,
@@ -331,7 +310,6 @@ function ShareBar({
     try {
       const { generateReportPdf } = await import('./generateReportPdf')
       const report = generateReportPdf({
-        variant,
         sections,
         t,
         language: i18n.language,
@@ -409,20 +387,16 @@ function ShareBar({
  * neutralen Tönen wie das erzeugte PDF. Bewusst textlos: bei dieser Größe wäre
  * Text unlesbar, und erfundene Beschriftungen würden mehr versprechen als das
  * PDF hält. Als SVG mit viewBox gezeichnet, damit das Motiv bei jeder Größe
- * vollständig bleibt. Der Langbericht zeigt zusätzlich gestapelte Seiten.
+ * vollständig bleibt. Die gestapelten Seiten stehen für den mehrseitigen
+ * Bericht.
  */
-function ReportPreview({ variant }: { variant: ReportVariant }) {
-  const long = variant === 'long'
-  const rows = long ? [84, 68, 76, 58] : [84, 68]
+function ReportPreview() {
+  const rows = [84, 68, 76, 58]
 
   return (
     <div aria-hidden="true" className="relative w-[56px] shrink-0">
-      {long && (
-        <>
-          <div className="absolute inset-x-1.5 -bottom-1 top-2 rotate-[6deg] origin-bottom rounded-md bg-zinc-300/70" />
-          <div className="absolute inset-x-1 -bottom-0.5 top-1.5 rotate-[3deg] origin-bottom rounded-md bg-zinc-200" />
-        </>
-      )}
+      <div className="absolute inset-x-1.5 -bottom-1 top-2 rotate-[6deg] origin-bottom rounded-md bg-zinc-300/70" />
+      <div className="absolute inset-x-1 -bottom-0.5 top-1.5 rotate-[3deg] origin-bottom rounded-md bg-zinc-200" />
 
       <div className="relative overflow-hidden rounded-md border border-black/10 bg-white shadow-[0_10px_20px_-10px_rgba(20,30,10,0.45)]">
         <svg viewBox="0 0 100 141" className="block w-full">
@@ -475,8 +449,7 @@ interface SegmentedProps {
 
 /**
  * Zusammenhängender Umschalter für genau eine Wahl aus wenigen Möglichkeiten.
- * Ein Element statt mehrerer freistehender Schaltflächen – dieselbe Form für
- * Umfang und Zeitraum, damit beide als gleichartige Wahl lesbar sind.
+ * Ein Element statt mehrerer freistehender Schaltflächen.
  */
 function Segmented({ ariaLabel, options, value, onChange }: SegmentedProps) {
   return (

@@ -34,6 +34,11 @@ const MARGIN_TOP = 54
 // der Satz eine ganze Zeile pro Seite.
 const MARGIN_BOTTOM = 56
 const CONTENT_W = PAGE_W - MARGIN_X * 2
+
+// Tabellen-Maße: Zeilen- und Kopfhöhe sowie das seitliche Zellpolster.
+const TABLE_ROW_H = 19
+const TABLE_HEAD_H = 18
+const CELL_PAD = 6
 /** Grundlinie der Fußzeile, gemessen vom Seitenende. */
 const FOOTER_BASELINE = PAGE_H - 32
 
@@ -171,6 +176,12 @@ export interface FindingCard {
   ratingLabel: string
   /** Optionaler zweiter Chip, z. B. Sparpotenzial. */
   noteLabel?: string
+  /**
+   * Kleine Zeile unter dem Titel: Ort und Zeitpunkt der Messung. Ohne sie ist
+   * ein weitergegebener Bericht nicht einzuordnen – man sieht Werte, aber
+   * nicht, wo und wann sie entstanden sind.
+   */
+  meta?: string
   /** Einordnung in einem Satz. */
   summary?: string
   /**
@@ -508,9 +519,15 @@ export class PdfKit {
     this.y = base + 10
   }
 
-  /** Titel eines Diagramms samt optionalem erklärendem Untertitel. */
-  chartCaption(title: string, hint?: string): void {
-    this.ensure(hint ? 30 : 18)
+  /**
+   * Titel eines Diagramms samt optionalem erklärendem Untertitel.
+   *
+   * `keepWith` ist die Höhe des Diagramms darunter: Ohne sie prüft die
+   * Überschrift nur ihren eigenen Platzbedarf und bleibt als letzte Zeile einer
+   * Seite zurück, während das Diagramm allein auf der nächsten steht.
+   */
+  chartCaption(title: string, hint?: string, opts: { keepWith?: number } = {}): void {
+    this.ensure((hint ? 30 : 18) + (opts.keepWith ?? 0))
     this.put(title, MARGIN_X, this.y + 8, { size: 9, bold: true, color: PALETTE.body })
     this.y += 12
     if (hint) {
@@ -617,7 +634,7 @@ export class PdfKit {
    * „Auffällig" sehr wohl.
    */
   findingCard(card: FindingCard): void {
-    const { pad, textX, leftW, innerW, summaryLines, tipLines, tipTop, cardH } =
+    const { pad, textX, leftW, innerW, metaH, summaryLines, tipLines, tipTop, cardH } =
       this.layoutFindingCard(card)
     const dotX = MARGIN_X + pad + 3.5
     const rightEdge = MARGIN_X + CONTENT_W - pad
@@ -658,7 +675,11 @@ export class PdfKit {
       })
     }
 
-    let sy = top + 32
+    if (card.meta) {
+      this.put(card.meta, textX, top + 35, { size: 7.5, color: PALETTE.muted, maxWidth: leftW })
+    }
+
+    let sy = top + 32 + metaH
     for (const line of summaryLines) {
       sy += 11.5
       this.put(line, textX, sy, { size: 8.5, color: PALETTE.muted })
@@ -696,6 +717,7 @@ export class PdfKit {
     textX: number
     leftW: number
     innerW: number
+    metaH: number
     summaryLines: string[]
     tipLines: string[]
     tipTop: number
@@ -706,6 +728,7 @@ export class PdfKit {
     const leftW = CONTENT_W * 0.52 - pad
     const innerW = CONTENT_W - pad * 2
 
+    const metaH = card.meta ? 11 : 0
     const summaryLines = card.summary ? this.wrap(card.summary, leftW, { size: 8.5 }) : []
     const tipLines = (card.tips ?? []).flatMap((tip) =>
       this.wrap(tip, innerW - 20, { size: 8.5 }),
@@ -714,14 +737,14 @@ export class PdfKit {
     // Höhe beider Spalten getrennt bestimmen, die höhere gewinnt. Die Chips
     // stehen nebeneinander, nicht gestapelt – gestapelt zwingen sie der Karte
     // eine Höhe auf, die die linke Spalte nicht füllt.
-    let leftBottom = 28
+    let leftBottom = 28 + metaH
     if (summaryLines.length > 0) leftBottom += 4 + summaryLines.length * 11.5
     const rightBottom = 28 + 5 + 13.5
     let contentH = Math.max(leftBottom, rightBottom)
     const tipTop = contentH + 8
     if (tipLines.length > 0) contentH = tipTop + 14 + tipLines.length * 11.5 + 6
 
-    return { pad, textX, leftW, innerW, summaryLines, tipLines, tipTop, cardH: contentH + pad }
+    return { pad, textX, leftW, innerW, metaH, summaryLines, tipLines, tipTop, cardH: contentH + pad }
   }
 
   /**
@@ -805,8 +828,8 @@ export class PdfKit {
     if (rows.length === 0) return
     const cols = headers.length
     const { align = [], widths, emphasizeLast = false } = opts
-    const rowH = 19
-    const headH = 18
+    const rowH = TABLE_ROW_H
+    const headH = TABLE_HEAD_H
 
     // Spaltenbreiten aus den Anteilen; ohne Angabe gleich breit.
     const share = widths && widths.length === cols ? widths : new Array(cols).fill(1)
@@ -815,10 +838,13 @@ export class PdfKit {
     const colX = colW.map((_, i) => MARGIN_X + colW.slice(0, i).reduce((a, b) => a + b, 0))
 
     // x-Position und Ausrichtung einer Zelle (rechtsbündig = Spaltenende).
+    // Das Polster ist bewusst breiter als eine Haaresbreite: Endet eine
+    // rechtsbündige Spalte direkt dort, wo die nächste linksbündig beginnt,
+    // kleben „11,4 L/min" und „Auffällig" zu einem Wort zusammen.
     const cellPos = (i: number): { x: number; align: 'left' | 'right' } =>
       align[i] === 'right'
-        ? { x: colX[i] + colW[i] - 2, align: 'right' }
-        : { x: colX[i] + 2, align: 'left' }
+        ? { x: colX[i] + colW[i] - CELL_PAD, align: 'right' }
+        : { x: colX[i] + CELL_PAD, align: 'left' }
 
     const drawHead = () => {
       headers.forEach((h, i) => {
@@ -858,7 +884,7 @@ export class PdfKit {
           bold: isTotal,
           color: isTotal ? PALETTE.ink : PALETTE.body,
           align: a,
-          maxWidth: colW[i] - 6,
+          maxWidth: colW[i] - CELL_PAD * 2,
         })
       })
       if (!isTotal && r < rows.length - 1) {
@@ -869,6 +895,14 @@ export class PdfKit {
       this.y += rowH
     })
     this.y += 10
+  }
+
+  /**
+   * Höhe einer Tabelle mit `rowCount` Zeilen, ohne sie zu zeichnen. Damit lässt
+   * sich eine Tabelle mit dem zusammenhalten, wozu sie gehört.
+   */
+  measureTable(rowCount: number): number {
+    return TABLE_HEAD_H + rowCount * TABLE_ROW_H + 6
   }
 
   /** Historien-Tabelle: Datum links, Zählerstand rechts. */
