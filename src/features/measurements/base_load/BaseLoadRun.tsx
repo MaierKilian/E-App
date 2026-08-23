@@ -6,6 +6,7 @@ import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftSto
 import { useReadingsStore } from '@/store/readingsStore'
 import { stats } from '@/features/monitoring/readings'
 import { SelectChip } from '@/components/ui/SelectChip'
+import { parseDecimalInput } from '@/lib/decimalInput'
 import { instanceKey } from '../rooms'
 import { RATING_COLOR } from '../rating'
 import { ReadingCapture } from './ReadingCapture'
@@ -24,11 +25,6 @@ const DEFAULT_RESOLUTION = 0.1
 
 /** Welcher Zählerstand gerade erfasst wird. */
 type Capturing = 'start' | 'end'
-
-function parseNum(raw: string): number {
-  const v = Number(raw.replace(',', '.'))
-  return Number.isFinite(v) && v >= 0 ? v : 0
-}
 
 /**
  * Durchführung des Grundlast-Checks.
@@ -53,7 +49,7 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
   const d = readDraft(key)
 
   const [mode, setMode] = useState<MeterMode>('instant')
-  const [instantW, setInstantW] = useState(0)
+  const [instantText, setInstantText] = useState('')
 
   // Zwei Ablesungen – über Stunden hinweg, daher persistiert.
   const [resolution, setResolution] = useState(d.resolution ?? DEFAULT_RESOLUTION)
@@ -117,6 +113,7 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
     : undefined
   const recommendedMs = recommendedWaitMs(resolution)
 
+  const instantW = parseDecimalInput(instantText, i18n.language) ?? 0
   const watts =
     mode === 'instant'
       ? instantW
@@ -203,11 +200,11 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
             </span>
             <span className="flex items-center gap-2">
               <input
-                type="number"
+                type="text"
                 inputMode="decimal"
-                min={0}
-                value={instantW > 0 ? instantW : ''}
-                onChange={(e) => setInstantW(parseNum(e.target.value))}
+                autoComplete="off"
+                value={instantText}
+                onChange={(e) => setInstantText(e.target.value)}
                 placeholder="0"
                 className="focus-ring w-24 rounded-xl border border-border bg-surface/70 px-3 py-2 text-right font-semibold tabular-nums text-foreground"
               />

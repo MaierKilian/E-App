@@ -951,7 +951,8 @@
           "hintFirst": "Trage den Zählerstand ein, den dein Stromzähler jetzt anzeigt.",
           "hintSecond": "Trage den Zählerstand ein, den dein Stromzähler jetzt anzeigt.",
           "confirm": "Übernehmen",
-          "cancel": "Abbrechen"
+          "cancel": "Abbrechen",
+          "readAs": "Wird gelesen als {{value}} kWh."
         },
         "restart": "Neu beginnen",
         "resultLabel": "Ermittelte Grundlast"

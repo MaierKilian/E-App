@@ -951,7 +951,8 @@
           "hintFirst": "Enter the reading your electricity meter shows right now.",
           "hintSecond": "Enter the reading your electricity meter shows right now.",
           "confirm": "Use value",
-          "cancel": "Cancel"
+          "cancel": "Cancel",
+          "readAs": "Read as {{value}} kWh."
         },
         "restart": "Start over",
         "resultLabel": "Base load measured"

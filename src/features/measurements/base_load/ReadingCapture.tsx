@@ -2,6 +2,7 @@ import { lazy, Suspense, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X, ScanLine } from 'lucide-react'
 import { ENERGY_META } from '@/features/monitoring/energyConfig'
+import { parseDecimalInput } from '@/lib/decimalInput'
 
 // Der Scanner zieht Tesseract.js (WASM) nach – nur bei Bedarf laden.
 const MeterScanner = lazy(() =>
@@ -39,16 +40,16 @@ export function ReadingCapture({
   onConfirm,
   onClose,
 }: ReadingCaptureProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [text, setText] = useState('')
   const [scanning, setScanning] = useState(false)
   const accent = ENERGY_META.electricity.accent
 
-  const parsed = Number.parseFloat(text.replace(',', '.'))
-  const finite = Number.isFinite(parsed) && parsed >= 0
+  const parsed = parseDecimalInput(text, i18n.language)
   // Ein rückläufiger Zählerstand ist immer ein Tippfehler – Zähler laufen vorwärts.
-  const tooLow = finite && lastReading !== undefined && parsed <= lastReading
-  const valid = finite && !tooLow
+  const tooLow = parsed !== undefined && lastReading !== undefined && parsed <= lastReading
+  const valid = parsed !== undefined && !tooLow
+  const kwhFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 3 })
 
   return (
     <div
@@ -75,14 +76,13 @@ export function ReadingCapture({
       <div className="flex flex-1 flex-col justify-center gap-4">
         <div className="flex items-center justify-center gap-2">
           <input
-            type="number"
-            min={0}
-            step="any"
+            type="text"
             inputMode="decimal"
+            autoComplete="off"
             autoFocus
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="0,0"
+            placeholder={kwhFmt.format(1234.5)}
             aria-label={t('measurements.base_load.run.capture.valueLabel')}
             className="w-52 rounded-2xl border border-border bg-surface-2/60 px-4 py-4 text-center text-3xl font-bold tabular-nums text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
           />
@@ -92,7 +92,11 @@ export function ReadingCapture({
         <p className="min-h-[1.25rem] text-center text-xs text-muted">
           {tooLow
             ? t('measurements.base_load.run.capture.tooLow')
-            : t('measurements.base_load.run.capture.decimalHint')}
+            : parsed !== undefined
+              ? t('measurements.base_load.run.capture.readAs', {
+                  value: kwhFmt.format(parsed),
+                })
+              : t('measurements.base_load.run.capture.decimalHint')}
         </p>
 
         <div className="flex justify-center">
@@ -126,7 +130,7 @@ export function ReadingCapture({
       <div className="flex flex-col gap-2">
         <button
           type="button"
-          onClick={() => valid && onConfirm(parsed)}
+          onClick={() => valid && parsed !== undefined && onConfirm(parsed)}
           disabled={!valid}
           className="w-full rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
         >
