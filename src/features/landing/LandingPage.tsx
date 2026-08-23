@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import {
+  ChevronDown,
   ChevronRight,
   Play,
   TrendingDown,
@@ -79,13 +80,15 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
 
       {/* Schlanke Topbar */}
       <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-4">
-        <span className="flex items-center gap-2 font-semibold">
-          {/* Logo dekorativ – der Text „E-App" liefert bereits den Namen. */}
-          <span aria-hidden="true">
-            <Logo className="h-6 w-6" />
-          </span>
+        {/* Logo führt wie in der App zurück zum Zuhause-Bereich. */}
+        <button
+          type="button"
+          onClick={() => startOnboarding('logo')}
+          className="focus-ring flex items-center gap-2 rounded-lg font-semibold"
+        >
+          <Logo className="h-6 w-6" />
           <span>E-App</span>
-        </span>
+        </button>
         <button
           type="button"
           onClick={goToLogin}
@@ -140,11 +143,17 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
         <HeroMock />
       </section>
 
+      <ScrollCue />
+
       {/* ② „So läuft eine Messung ab" – erst der Weg … */}
       <GuidedSection />
 
+      <ScrollCue />
+
       {/* ③ „So sieht's mit Daten aus" – … dann das Ergebnis. */}
       <PreviewSection onOpenDemo={() => openDemo('preview')} />
+
+      <ScrollCue />
 
       {/* ④ Was du machen kannst */}
       <section className="mx-auto w-full max-w-5xl px-5 py-12 md:py-16">
@@ -158,6 +167,8 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
           <Feature icon={FileText} title={t('landing.features.report.title')} desc={t('landing.features.report.desc')} />
         </div>
       </section>
+
+      <ScrollCue />
 
       {/* ⑤ Abschluss-CTA */}
       <section className="mx-auto w-full max-w-3xl px-5 pb-16 pt-4 text-center md:pb-20 md:pt-8">
@@ -193,6 +204,20 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
           </button>
         </p>
       </section>
+    </div>
+  )
+}
+
+/**
+ * Scroll-Hinweis zwischen zwei Abschnitten: ein sanft schwingender Pfeil nach
+ * unten. Rein dekorativ (kein Ziel, kein Klick) – zeigt nur, dass unter jedem
+ * Abschnitt noch mehr kommt, statt es dem Zufall des Herunterscrollens zu
+ * überlassen.
+ */
+function ScrollCue() {
+  return (
+    <div className="flex justify-center py-1" aria-hidden="true">
+      <ChevronDown className="scroll-cue h-6 w-6 text-muted/60" />
     </div>
   )
 }

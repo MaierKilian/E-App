@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Check, ChevronRight, Search, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Check, ChevronRight, GraduationCap, Search, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useProgressStore } from '@/store/progressStore'
@@ -21,42 +21,13 @@ type Section = 'faq' | 'glossary' | 'measurements' | 'university' | 'flashcards'
 /** Oberste Ebene: allgemeines Energiewissen vs. HTW-GEIT-Studieninhalte. */
 type Group = 'general' | 'university'
 
-const GROUPS: Group[] = ['general', 'university']
-
 /** Welche Unterpunkte zu welcher Gruppe gehören. */
 const GROUP_SECTIONS: Record<Group, Section[]> = {
   general: ['faq', 'glossary', 'measurements'],
   university: ['university', 'flashcards'],
 }
 
-/** Ebene 1: schlichter 2er-Umschalter zwischen den Gruppen. */
-function GroupSwitch({ group, onChange }: { group: Group; onChange: (g: Group) => void }) {
-  const { t } = useTranslation()
-  return (
-    <div className="flex gap-2">
-      {GROUPS.map((g) => {
-        const active = g === group
-        return (
-          <button
-            key={g}
-            type="button"
-            onClick={() => onChange(g)}
-            aria-pressed={active}
-            className={`flex-1 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors ${
-              active
-                ? 'bg-primary text-primary-foreground'
-                : 'glass text-foreground hover:bg-surface-2/70'
-            }`}
-          >
-            {t(`education.groups.${g}`)}
-          </button>
-        )
-      })}
-    </div>
-  )
-}
-
-/** Ebene 2: horizontal scrollbare Themen-Chips der aktuellen Gruppe. */
+/** Horizontal scrollbare Themen-Chips der aktuellen Gruppe. */
 function SectionSwitch({
   sections,
   section,
@@ -68,7 +39,7 @@ function SectionSwitch({
 }) {
   const { t } = useTranslation()
   return (
-    <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+    <div className="no-scrollbar -mx-1 flex min-w-0 flex-1 gap-2 overflow-x-auto px-1 pb-1">
       {sections.map((s) => {
         const active = s === section
         return (
@@ -88,6 +59,31 @@ function SectionSwitch({
         )
       })}
     </div>
+  )
+}
+
+/**
+ * Rechtsbündiger Icon-Button zum HTW-GEIT-Bereich. Ersetzt den früheren, gleich
+ * breiten 2er-Umschalter: der Hochschulteil ist ein Nebenpfad, kein
+ * gleichwertiger zweiter Hauptbereich, und wird perspektivisch entfernt – ein
+ * dezenter Zugang statt zweier prominenter Buttons trägt das schon heute.
+ */
+function UniversityToggle({ group, onToggle }: { group: Group; onToggle: () => void }) {
+  const { t } = useTranslation()
+  const active = group === 'university'
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={active}
+      aria-label={t('education.groups.university')}
+      title={t('education.groups.university')}
+      className={`focus-ring shrink-0 rounded-full p-2.5 transition-colors ${
+        active ? 'bg-primary text-primary-foreground' : 'glass text-muted hover:text-foreground'
+      }`}
+    >
+      <GraduationCap className="h-4 w-4" />
+    </button>
   )
 }
 
@@ -121,6 +117,9 @@ function FaqView() {
   }, [q])
 
   const popular = FAQ.filter((item) => item.popular)
+  // „Alle Fragen" listet bewusst nur den Rest – die beliebten stehen bereits
+  // oben, eine zweite Kopie darunter wäre reine Wiederholung.
+  const rest = FAQ.filter((item) => !item.popular)
   const searching = q.length > 0
 
   return (
@@ -165,17 +164,19 @@ function FaqView() {
               ))}
             </div>
           )}
-          <div className="space-y-3">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-              {t('education.faqAll')}
-            </h2>
-            {FAQ.map((item) => (
-              <AccordionItem key={item.q} title={item.q}>
-                <p>{item.a}</p>
-                <SourceLink source={item.source} />
-              </AccordionItem>
-            ))}
-          </div>
+          {rest.length > 0 && (
+            <div className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+                {t('education.faqAll')}
+              </h2>
+              {rest.map((item) => (
+                <AccordionItem key={item.q} title={item.q}>
+                  <p>{item.a}</p>
+                  <SourceLink source={item.source} />
+                </AccordionItem>
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>
@@ -393,8 +394,13 @@ export function EducationPage() {
         subtitle={t('pages.education.subtitle')}
       />
 
-      <GroupSwitch group={group} onChange={selectGroup} />
-      <SectionSwitch sections={GROUP_SECTIONS[group]} section={section} onChange={setSection} />
+      <div className="flex items-center gap-2">
+        <SectionSwitch sections={GROUP_SECTIONS[group]} section={section} onChange={setSection} />
+        <UniversityToggle
+          group={group}
+          onToggle={() => selectGroup(group === 'university' ? 'general' : 'university')}
+        />
+      </div>
 
       {section === 'faq' && <FaqView />}
       {section === 'glossary' && <GlossaryView />}

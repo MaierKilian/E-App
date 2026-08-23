@@ -2029,7 +2029,17 @@
         "desc": "Deletes all user data (profile, measurements, tariffs, meter readings, learning progress). Theme and language are kept; the introduction is shown again."
       }
     },
-    "learning": "Learning"
+    "learning": "Learning",
+    "changelogEntry": "Changelog",
+    "changelogHint": "New and changed features at a glance"
+  },
+  "changelog": {
+    "title": "Changelog",
+    "subtitle": "New and changed features of the E-App at a glance.",
+    "empty": "No entries yet.",
+    "downloadPdf": "Download as PDF",
+    "pdfFileName": "e-app-changelog.pdf",
+    "pdfFootnote": "E-App - Changelog"
   },
   "feedback": {
     "open": "Give feedback",

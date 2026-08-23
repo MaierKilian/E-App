@@ -12,10 +12,11 @@ export function Header() {
   return (
     <header className="glass-bar sticky top-0 z-20 border-b border-border/60">
       <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-4">
-        <div className="flex items-center gap-2 font-semibold">
+        {/* Logo führt wie in jeder App zurück zum Zuhause-Bereich (erster Nav-Punkt). */}
+        <NavLink to="/onboarding" className="focus-ring flex items-center gap-2 rounded-lg font-semibold">
           <Logo className="h-6 w-6 text-foreground" />
           <span>{t('app.name')}</span>
-        </div>
+        </NavLink>
 
         <nav className="hidden md:flex items-center gap-1 ml-4">
           {NAV_ITEMS.map((item) => (

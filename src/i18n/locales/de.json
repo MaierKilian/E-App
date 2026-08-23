@@ -2029,7 +2029,17 @@
         "desc": "Löscht alle Nutzerdaten (Profil, Messungen, Tarife, Zählerstände, Lernfortschritt). Theme und Sprache bleiben erhalten; die Einführung wird wieder angezeigt."
       }
     },
-    "learning": "Lernen"
+    "learning": "Lernen",
+    "changelogEntry": "Änderungsprotokoll",
+    "changelogHint": "Neue und geänderte Funktionen im Überblick"
+  },
+  "changelog": {
+    "title": "Änderungsprotokoll",
+    "subtitle": "Neue und geänderte Funktionen der E-App im Überblick.",
+    "empty": "Noch keine Einträge.",
+    "downloadPdf": "Als PDF herunterladen",
+    "pdfFileName": "e-app-aenderungsprotokoll.pdf",
+    "pdfFootnote": "E-App · Änderungsprotokoll"
   },
   "feedback": {
     "open": "Feedback geben",
