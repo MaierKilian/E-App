@@ -12,6 +12,19 @@ interface MeasurementsState {
    * Schlüssel: `instanceKey(id, roomKey)` – also "id" oder "id@room".
    */
   results: Partial<Record<string, MeasurementResult>>
+  /**
+   * Jeweils das *vorherige* Ergebnis je Mess-Instanz, gleicher Schlüssel.
+   *
+   * Damit lässt sich zeigen, was eine Maßnahme gebracht hat: erst messen, etwas
+   * ändern, erneut messen. Nur der Grundlast-Check nutzt das bisher – er ist
+   * die einzige Messung, deren Ergebnis der Nutzer selbst nachprüfen kann,
+   * während alle anderen Checks mit Modellwerten rechnen.
+   *
+   * Bewusst nur eine Stufe tief: Für den Vorher/Nachher-Vergleich reicht die
+   * letzte Messung, und eine unbegrenzte Historie im localStorage wäre für den
+   * Zweck unnötiger Ballast.
+   */
+  previousResults: Partial<Record<string, MeasurementResult>>
   /** Räume (Instanz-Schlüssel), die als „nichts zu messen" markiert sind. */
   skippedRooms: string[]
   /** Zuletzt gewählte Ansicht im Messungen-Bereich. */
@@ -55,17 +68,29 @@ export const useMeasurementsStore = create<MeasurementsState>()(
   persist(
     (set) => ({
       results: defaultResults,
+      previousResults: {},
       skippedRooms: [],
       measurementsView: 'recommended',
       saveResult: (result) =>
-        set((state) => ({
-          results: { ...state.results, [instanceKey(result.id, result.roomKey)]: result },
-        })),
+        set((state) => {
+          const key = instanceKey(result.id, result.roomKey)
+          const replaced = state.results[key]
+          return {
+            results: { ...state.results, [key]: result },
+            // Die abgelöste Messung als Vergleichspunkt behalten.
+            previousResults: replaced
+              ? { ...state.previousResults, [key]: replaced }
+              : state.previousResults,
+          }
+        }),
       clearResult: (id, roomKey) =>
         set((state) => {
+          const key = instanceKey(id, roomKey)
           const next = { ...state.results }
-          delete next[instanceKey(id, roomKey)]
-          return { results: next }
+          const nextPrev = { ...state.previousResults }
+          delete next[key]
+          delete nextPrev[key]
+          return { results: next, previousResults: nextPrev }
         }),
       toggleSkippedRoom: (roomKey) =>
         set((state) => ({
@@ -74,7 +99,13 @@ export const useMeasurementsStore = create<MeasurementsState>()(
             : [...state.skippedRooms, roomKey],
         })),
       setMeasurementsView: (v) => set({ measurementsView: v }),
-      resetAll: () => set({ results: {}, skippedRooms: [], measurementsView: 'recommended' }),
+      resetAll: () =>
+        set({
+          results: {},
+          previousResults: {},
+          skippedRooms: [],
+          measurementsView: 'recommended',
+        }),
     }),
     {
       name: 'eapp-measurements',
@@ -86,6 +117,7 @@ export const useMeasurementsStore = create<MeasurementsState>()(
           ...current,
           ...p,
           results: { ...current.results, ...dropLegacyResults(p.results) },
+          previousResults: dropLegacyResults(p.previousResults),
           skippedRooms: p.skippedRooms ?? current.skippedRooms,
           measurementsView: p.measurementsView ?? current.measurementsView,
         }

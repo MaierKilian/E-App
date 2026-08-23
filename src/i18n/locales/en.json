@@ -894,7 +894,7 @@
         "stepsTitle": "How it works",
         "imageAlt": "Illustration: person reading the base load on the electricity meter",
         "steps": [
-          "Switch off devices in active use – leave always-on ones (fridge, router) running",
+          "Switch off devices in active use – but do not unplug them",
           "Record the meter reading – photograph it or type it in",
           "Read it again later – ideally the next morning"
         ],
@@ -903,10 +903,10 @@
         "detailsTitle": "What is base load?",
         "details": [
           "Even when nothing is actively running, your home draws power continuously – standby, refrigeration, router and so on.",
-          "Switch off everything in active use for the measurement, but leave always-on devices like the fridge and router running.",
+          "Important: only switch devices off, do not unplug them. Standby draw should be part of the measurement – it is exactly what you want to get rid of later. Always-on devices like the fridge and router stay on anyway.",
           "If your meter shows power directly in watts, you can simply read it off. Otherwise you record the meter reading twice – the app works out the power from the gap.",
           "You do not have to wait between readings: record the value in the evening and read it again the next morning. Overnight also averages out the fridge's cycling.",
-          "Even 20–30 watts of constant draw add up to noticeable costs over a year."
+          "Measure again later – once you have got rid of always-on consumers. The app will then show you how much you actually saved."
         ],
         "start": "Start check"
       },
@@ -958,6 +958,12 @@
         "resultLabel": "Base load measured"
       },
       "result": {
+        "change": {
+          "title": "Before / after",
+          "down": "From {{before}} W to {{after}} W – {{delta}} W less (±{{tolerance}} W). That is around €{{eur}} a year, measured rather than estimated.",
+          "up": "From {{before}} W to {{after}} W – {{delta}} W more (±{{tolerance}} W). A new always-on device?",
+          "none": "From {{before}} W to {{after}} W. The difference is below the measurement accuracy of ±{{tolerance}} W, so it cannot be confirmed."
+        },
         "ratings": {
           "good": "Low",
           "medium": "Okay",

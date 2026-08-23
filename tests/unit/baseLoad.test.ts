@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   baseLoadShare,
   calcBaseLoad,
+  baseLoadChange,
   rateBaseLoad,
   readingsQuality,
   recommendedWaitMs,
@@ -150,5 +151,48 @@ describe('rateBaseLoad', () => {
   it('ignoriert einen unbrauchbaren Jahresverbrauch', () => {
     expect(calcBaseLoad(60, 30, 0).rating).toBe('good')
     expect(calcBaseLoad(400, 30, Number.NaN).rating).toBe('high')
+  })
+})
+
+describe('baseLoadChange', () => {
+  const NIGHT = { uncertainty: 0.09 }
+
+  it('belegt eine deutliche Senkung und beziffert sie', () => {
+    const c = baseLoadChange({ watts: 180, ...NIGHT }, { watts: 138, ...NIGHT }, 35)
+    expect(c!.direction).toBe('down')
+    expect(c!.significant).toBe(true)
+    expect(c!.deltaWatts).toBe(42)
+    // Unsicherheiten quadratisch addiert: sqrt((0,09*180)^2 + (0,09*138)^2).
+    expect(c!.toleranceWatts).toBeCloseTo(20.4, 1)
+    // 42 W ueber ein Jahr bei 35 ct/kWh.
+    expect(c!.annualEur).toBe(129)
+  })
+
+  it('weist eine Aenderung unterhalb der Messgenauigkeit nicht aus', () => {
+    const c = baseLoadChange({ watts: 180, ...NIGHT }, { watts: 172, ...NIGHT }, 35)
+    expect(c!.significant).toBe(false)
+    // Ohne Beleg auch kein Euro-Betrag.
+    expect(c!.annualEur).toBe(0)
+  })
+
+  it('kann mit zwei Momentaufnahmen kaum etwas belegen', () => {
+    // Ohne bekannte Genauigkeit gilt die grobe Annahme fuer Momentaufnahmen –
+    // dieselben 42 W reichen dann nicht.
+    const c = baseLoadChange({ watts: 180 }, { watts: 138 }, 35)
+    expect(c!.significant).toBe(false)
+  })
+
+  it('erkennt einen Anstieg', () => {
+    const c = baseLoadChange({ watts: 120, ...NIGHT }, { watts: 190, ...NIGHT }, 35)
+    expect(c!.direction).toBe('up')
+    expect(c!.significant).toBe(true)
+    expect(c!.deltaWatts).toBe(70)
+    // Ein Anstieg ist keine Ersparnis.
+    expect(c!.annualEur).toBe(0)
+  })
+
+  it('liefert undefined ohne verwertbare Messungen', () => {
+    expect(baseLoadChange({ watts: 0 }, { watts: 138 }, 35)).toBeUndefined()
+    expect(baseLoadChange({ watts: 180 }, { watts: 0 }, 35)).toBeUndefined()
   })
 })

@@ -1,11 +1,13 @@
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
-import { Gauge, ArrowRight, AlertTriangle, LineChart } from 'lucide-react'
+import { Gauge, ArrowRight, AlertTriangle, LineChart, TrendingDown } from 'lucide-react'
 import { useReadingsStore } from '@/store/readingsStore'
+import { useMeasurementsStore } from '@/store/measurementsStore'
+import { useTariffStore } from '@/store/tariffStore'
 import { stats } from '@/features/monitoring/readings'
 import { ResultHero } from '../ResultHero'
 import { RATING_COLOR } from '../rating'
-import { baseLoadShare } from './baseLoad'
+import { baseLoadShare, baseLoadChange } from './baseLoad'
 import type { ResultProps } from '../runnerTypes'
 
 /**
@@ -32,6 +34,25 @@ export function BaseLoadResult({ result }: ResultProps) {
   // (für den Anteil zählt allein die kWh-Menge).
   const share = baseLoadShare(annualKwh, stats(electricityReadings ?? []))
 
+  // Vorher/Nachher: der einzige Nachweis in der App, dem keine Schätzung
+  // zugrunde liegt – hier steht, was eine Maßnahme wirklich gebracht hat.
+  // Der Ergebnis-Schirm erscheint, *bevor* gespeichert wird: Dann steht in
+  // `results` noch die vorherige Messung, `previousResults` ist leer. Nach dem
+  // Speichern ist es umgekehrt. Deshalb beides prüfen und die Messung nehmen,
+  // die nicht die gerade gezeigte ist.
+  const stored = useMeasurementsStore((st) => st.results['base_load'])
+  const storedBefore = useMeasurementsStore((st) => st.previousResults['base_load'])
+  const previous =
+    stored && stored.completedAt !== result.completedAt ? stored : storedBefore
+  const workPriceCt = useTariffStore((st) => st.electricityWorkPrice)
+  const change = previous
+    ? baseLoadChange(
+        { watts: previous.primaryValue, uncertainty: previous.details?.uncertainty },
+        { watts, uncertainty: result.details?.uncertainty },
+        workPriceCt,
+      )
+    : undefined
+
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
   const pctFmt = new Intl.NumberFormat(i18n.language, {
     style: 'percent',
@@ -48,6 +69,41 @@ export function BaseLoadResult({ result }: ResultProps) {
         badgeLabel={t(`measurements.base_load.result.ratings.${result.rating}`)}
         summary={t(`measurements.base_load.result.summary.${result.rating}`)}
       />
+
+      {change && (
+        <div className="glass rounded-3xl p-4">
+          <div className="flex gap-2.5">
+            {change.significant && change.direction === 'down' ? (
+              <TrendingDown
+                className="mt-0.5 h-4 w-4 shrink-0"
+                style={{ color: RATING_COLOR.good }}
+                aria-hidden="true"
+              />
+            ) : (
+              <Gauge className="mt-0.5 h-4 w-4 shrink-0 text-muted" aria-hidden="true" />
+            )}
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">
+                {t('measurements.base_load.result.change.title')}
+              </p>
+              <p className="mt-1 text-sm text-muted">
+                {t(
+                  change.significant
+                    ? `measurements.base_load.result.change.${change.direction}`
+                    : 'measurements.base_load.result.change.none',
+                  {
+                    before: numFmt.format(previous?.primaryValue ?? 0),
+                    after: numFmt.format(watts),
+                    delta: numFmt.format(change.deltaWatts),
+                    tolerance: numFmt.format(change.toleranceWatts),
+                    eur: numFmt.format(change.annualEur),
+                  },
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className="glass rounded-3xl p-4 text-center">

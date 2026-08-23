@@ -244,3 +244,79 @@ export function baseLoadShare(
     implausible: share > IMPLAUSIBLE_SHARE,
   }
 }
+
+/**
+ * Angenommene Unsicherheit einer Momentaufnahme (Zähler mit Watt-Anzeige).
+ *
+ * Sie hat keine gemessene Genauigkeit: Der Wert hängt davon ab, ob der
+ * Kühlschrank-Kompressor gerade läuft. Bewusst grob angesetzt – dadurch gilt
+ * ein Unterschied zwischen zwei Momentaufnahmen fast nie als belegt, was
+ * ehrlich ist: Beweisen lässt er sich damit nicht.
+ */
+const SNAPSHOT_UNCERTAINTY = 0.25
+
+/** Untergrenze der Toleranz (W). Zwei Nächte sind nie exakt gleich. */
+const MIN_TOLERANCE_W = 5
+
+/** Eine Messung, wie sie für den Vorher/Nachher-Vergleich gebraucht wird. */
+export interface BaseLoadPoint {
+  watts: number
+  /** Relative Unsicherheit (0,09 = ±9 %); fehlt bei Momentaufnahmen. */
+  uncertainty?: number
+}
+
+export interface BaseLoadChange {
+  /** Veränderung in Watt, positiv = gesunken. */
+  deltaWatts: number
+  /** Unsicherheit der Veränderung in Watt (±). */
+  toleranceWatts: number
+  /** true, wenn die Veränderung größer als ihre Unsicherheit ist. */
+  significant: boolean
+  direction: 'down' | 'up'
+  /** Jährliche Ersparnis in € – nur bei belegter Senkung, sonst 0. */
+  annualEur: number
+}
+
+/**
+ * Vergleicht zwei Grundlast-Messungen und sagt, ob der Unterschied echt ist.
+ *
+ * Das ist der eine Punkt, an dem die App nicht schätzt, sondern nachweist: Wer
+ * Dauerverbraucher abgeschafft hat, sieht hier, was es tatsächlich gebracht
+ * hat – nicht, was es laut Modell bringen sollte.
+ *
+ * Entscheidend ist die Toleranz. Zwei Messungen mit je ±9 % lassen einen
+ * Unterschied von 8 W nicht erkennen; ihn trotzdem als Erfolg auszuweisen wäre
+ * eine Erfindung. Die Unsicherheiten werden quadratisch addiert (sie sind
+ * unabhängig voneinander), mit {@link MIN_TOLERANCE_W} als Untergrenze.
+ *
+ * @param previous Frühere Messung.
+ * @param current Aktuelle Messung.
+ * @param workPriceCt Arbeitspreis in ct/kWh.
+ */
+export function baseLoadChange(
+  previous: BaseLoadPoint,
+  current: BaseLoadPoint,
+  workPriceCt: number,
+): BaseLoadChange | undefined {
+  if (!(previous.watts > 0) || !(current.watts > 0)) return undefined
+
+  const err = (p: BaseLoadPoint) => p.watts * (p.uncertainty ?? SNAPSHOT_UNCERTAINTY)
+  const toleranceWatts = Math.max(
+    MIN_TOLERANCE_W,
+    Math.sqrt(err(previous) ** 2 + err(current) ** 2),
+  )
+
+  const deltaWatts = previous.watts - current.watts
+  const significant = Math.abs(deltaWatts) > toleranceWatts
+  const direction: BaseLoadChange['direction'] = deltaWatts >= 0 ? 'down' : 'up'
+  const annualKwh = (Math.abs(deltaWatts) * HOURS_PER_YEAR) / 1000
+  const annualEur = significant && direction === 'down' ? (annualKwh * workPriceCt) / 100 : 0
+
+  return {
+    deltaWatts: Math.round(Math.abs(deltaWatts) * 10) / 10,
+    toleranceWatts: Math.round(toleranceWatts * 10) / 10,
+    significant,
+    direction,
+    annualEur: Math.round(annualEur),
+  }
+}

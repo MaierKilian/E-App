@@ -894,7 +894,7 @@
         "stepsTitle": "So funktioniert’s",
         "imageAlt": "Illustration: Person liest die Grundlast am Stromzähler ab",
         "steps": [
-          "Aktive Geräte ausschalten – Dauerläufer (Kühlschrank, Router) an lassen",
+          "Aktive Geräte ausschalten – aber nicht ausstecken",
           "Zählerstand erfassen – abfotografieren oder eintippen",
           "Später erneut ablesen – am besten am nächsten Morgen"
         ],
@@ -903,10 +903,10 @@
         "detailsTitle": "Was ist die Grundlast?",
         "details": [
           "Auch wenn nichts aktiv läuft, zieht dein Haushalt dauerhaft Strom – Standby, Kühlgeräte, Router & Co.",
-          "Schalte für die Messung alle aktiv genutzten Geräte aus, lass aber Dauerläufer wie Kühlschrank und Router an.",
+          "Wichtig: Geräte nur ausschalten, nicht ausstecken. Der Standby-Verbrauch soll mitgemessen werden – er ist ja das, was du später loswerden willst. Dauerläufer wie Kühlschrank und Router bleiben ohnehin an.",
           "Zeigt dein Zähler die Leistung direkt in Watt an, kannst du sie einfach ablesen. Sonst erfasst du zweimal den Zählerstand – die App rechnet die Leistung aus dem Abstand aus.",
           "Zwischen den Ablesungen musst du nicht warten: Erfasse den Stand abends, lies am nächsten Morgen erneut ab. Über Nacht wird auch die Taktung des Kühlschranks herausgemittelt.",
-          "Schon 20–30 Watt Dauerlast summieren sich über das Jahr zu spürbaren Kosten."
+          "Miss später noch einmal – nachdem du Dauerverbraucher abgeschafft hast. Die App zeigt dir dann, wie viel du wirklich eingespart hast."
         ],
         "start": "Check starten"
       },
@@ -958,6 +958,12 @@
         "resultLabel": "Ermittelte Grundlast"
       },
       "result": {
+        "change": {
+          "title": "Vorher / Nachher",
+          "down": "Von {{before}} W auf {{after}} W – {{delta}} W weniger (±{{tolerance}} W). Das sind rund {{eur}} € im Jahr, gemessen statt geschätzt.",
+          "up": "Von {{before}} W auf {{after}} W – {{delta}} W mehr (±{{tolerance}} W). Ein neuer Dauerverbraucher?",
+          "none": "Von {{before}} W auf {{after}} W. Der Unterschied liegt unter der Messgenauigkeit von ±{{tolerance}} W – belegen lässt er sich damit nicht."
+        },
         "ratings": {
           "good": "Niedrig",
           "medium": "Okay",
