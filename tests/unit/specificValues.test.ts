@@ -1,4 +1,4 @@
-// Spezifische Kennwerte: Verbrauch bezogen auf Fläche bzw. Personen.
+// Spezifische Kennwerte: Energie bezogen auf die Wohnfläche, Wasser auf Personen.
 
 import { describe, expect, it } from 'vitest'
 import {
@@ -75,11 +75,21 @@ describe('specificValue – Wärme', () => {
 })
 
 describe('specificValue – Strom und Wasser', () => {
-  it('bezieht Strom auf Personen, nicht auf die Fläche', () => {
-    // 3000 kWh bei 2 Personen -> 1500 kWh/Person·a
+  it('bezieht Strom auf die Wohnfläche, nicht auf die Personenzahl', () => {
+    // 3000 kWh auf 100 m² -> 30 kWh/m²·a
     const s = specificValue('electricity', 3000, PROFILE)
-    expect(s?.basis).toBe('perPersonKwh')
-    expect(s?.value).toBeCloseTo(1500, 6)
+    expect(s?.basis).toBe('perAreaKwh')
+    expect(s?.value).toBeCloseTo(30, 6)
+  })
+
+  it('vergleicht Strom mit dem Flächen-Richtwert, nicht mit dem Wärmebedarf', () => {
+    // Der Baujahrs-Richtwert (150 + 20) gilt für Wärme, nicht für Haushaltsstrom.
+    expect(specificValue('electricity', 3000, PROFILE)?.benchmark).toBe(32)
+  })
+
+  it('liefert Strom ohne Wohnfläche nichts', () => {
+    const profile = { ...PROFILE, livingArea: 0 } as OnboardingData
+    expect(specificValue('electricity', 3000, profile)).toBeUndefined()
   })
 
   it('rechnet Wasser in Liter pro Person und Tag', () => {
@@ -90,9 +100,9 @@ describe('specificValue – Strom und Wasser', () => {
     expect(s?.benchmark).toBe(125)
   })
 
-  it('liefert ohne Personenzahl nichts', () => {
+  it('liefert Wasser ohne Personenzahl nichts', () => {
     const profile = { ...PROFILE, personsCount: 0 } as OnboardingData
-    expect(specificValue('electricity', 3000, profile)).toBeUndefined()
+    expect(specificValue('water', 91.25, profile)).toBeUndefined()
   })
 })
 

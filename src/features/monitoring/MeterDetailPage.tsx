@@ -29,7 +29,6 @@ const RANGE_DAYS: Record<RangeKey, number | null> = { d7: 7, d30: 30, all: null 
 /** Anzeige-Einheit je Bezugsgröße des spezifischen Kennwerts. */
 const SPECIFIC_UNIT_KEY = {
   perAreaKwh: 'monitoring.detail.specificPerArea',
-  perPersonKwh: 'monitoring.detail.specificPerPerson',
   perPersonLiterDay: 'monitoring.detail.specificPerPersonDay',
 } as const
 

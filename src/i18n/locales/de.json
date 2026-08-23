@@ -1109,7 +1109,6 @@
       "costBasisEstimate": "geschätzt aus {{months}} Mon.",
       "specific": "Spezifisch",
       "specificPerArea": "kWh/m²·a",
-      "specificPerPerson": "kWh/Person·a",
       "specificPerPersonDay": "l/Person·Tag",
       "benchmarkTypical": "typisch {{value}}",
       "benchmarkNone": "kein Vergleichswert",

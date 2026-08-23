@@ -1,4 +1,5 @@
 import { jsPDF } from 'jspdf'
+import { isoToTime, timeAxisPositions } from '@/lib/timeAxis'
 
 /**
  * Wiederverwendbares PDF-Design-Kit (jsPDF) für die E-App-Berichte.
@@ -877,7 +878,14 @@ export class PdfKit {
 
   // --- Diagramme ---
 
-  /** Liniendiagramm (Vektor): Gitter, Linie, Punkte, x-Datumslabels, y-Marken. */
+  /**
+   * Liniendiagramm (Vektor): Gitter, Linie, Punkte, x-Datumslabels, y-Marken.
+   *
+   * Die x-Achse ist eine echte Datumsachse – zwischen zwei Ablesungen liegt so
+   * viel Platz, wie zwischen ihnen Zeit vergangen ist. Ein Mindestabstand hält
+   * dicht aufeinander folgende Ablesungen trotzdem als eigene Punkte lesbar
+   * (siehe `timeAxisPositions`).
+   */
   lineChart(points: LinePoint[], opts: LineChartOptions = {}): void {
     const { height = 150, unit = '', color = PALETTE.ink, language, emptyNote } = opts
     const clean = points.filter((p) => Number.isFinite(p.value))
@@ -914,7 +922,15 @@ export class PdfKit {
       })
     }
 
-    const sx = (i: number) => plotX + (plotW * i) / (clean.length - 1)
+    // Punktdurchmesser (2 × 4.2 pt) plus etwas Luft – enger dürfen zwei
+    // Ablesungen nicht zusammenrücken, sonst verschmelzen ihre Marker.
+    const MIN_POINT_GAP = 11
+    const offsets = timeAxisPositions(
+      clean.map((p) => isoToTime(p.date)),
+      plotW,
+      MIN_POINT_GAP,
+    )
+    const sx = (i: number) => plotX + offsets[i]
     const sy = (v: number) => baseY - ((v - scale.min) / scale.span) * plotH
 
     this.setDraw(color)
@@ -934,14 +950,27 @@ export class PdfKit {
       this.doc.circle(sx(i), sy(clean[i].value), 2.6, 'F')
     }
 
-    // x-Datumslabels (erst, mittig, letzt — vermeidet Überlappung).
-    const labelIdx =
-      clean.length <= 2 ? [0, clean.length - 1] : [0, Math.floor((clean.length - 1) / 2), clean.length - 1]
-    const seen = new Set<number>()
+    // x-Datumslabels: erstes und letztes immer, dazwischen eines nahe der
+    // Mitte. Weil die Punkte jetzt an ihrer echten Datumsposition sitzen, wird
+    // das mittlere Label an seiner Position gewählt (nicht am Index) und nur
+    // gesetzt, wenn es die Randlabels nicht berührt.
     const spansYear = dayDiff(clean[0].date, clean[clean.length - 1].date) > 300
+    const labelW = spansYear ? 46 : 38
+    const labelIdx = [0]
+    if (clean.length > 2) {
+      let mid = -1
+      let bestDist = Infinity
+      for (let i = 1; i < clean.length - 1; i++) {
+        const dist = Math.abs(offsets[i] - plotW / 2)
+        if (dist < bestDist) {
+          bestDist = dist
+          mid = i
+        }
+      }
+      if (mid > 0 && offsets[mid] >= labelW && offsets[mid] <= plotW - labelW) labelIdx.push(mid)
+    }
+    labelIdx.push(clean.length - 1)
     for (const i of labelIdx) {
-      if (seen.has(i)) continue
-      seen.add(i)
       const align = i === 0 ? 'left' : i === clean.length - 1 ? 'right' : 'center'
       this.put(formatAxisDate(clean[i].date, language, spansYear), sx(i), baseY + 13, {
         size: 7,

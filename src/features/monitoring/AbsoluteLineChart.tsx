@@ -1,5 +1,6 @@
 import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { isoToTime, timeAxisPositions } from '@/lib/timeAxis'
 
 export interface LinePoint {
   /** ISO-Datum yyyy-mm-dd der Ablesung. */
@@ -30,13 +31,16 @@ const PAD_BOTTOM = 8
  * typ-eigenen Akzent; Achsen/Grid die Border-Tokens. Mobile-first, 100 %
  * Breite, kein horizontaler Überlauf.
  *
- * Die x-Achse ist **zeit-proportional**: Punkte sitzen entsprechend ihrem
- * tatsächlichen Datumsabstand – ein großer zeitlicher Sprung erzeugt auch
- * einen großen horizontalen Abstand (nicht mehr gleichmäßig je Ablesung).
+ * Die x-Achse ist eine **echte Datumsachse**: Punkte sitzen entsprechend ihrem
+ * tatsächlichen Datumsabstand – ein großer zeitlicher Sprung erzeugt auch einen
+ * großen horizontalen Abstand. Ein Mindestabstand verhindert dabei, dass dicht
+ * aufeinander folgende Ablesungen zu einem Klumpen verschmelzen und einzeln
+ * nicht mehr treffbar sind (siehe `timeAxisPositions`).
  *
- * Zusätzlich ein **Scrubber** wie in der Apple-Wetter-App: Tippen/Ziehen auf
+ * Zusätzlich ein **Scrubber** wie in der Apple-Wetter-App: Zeigen/Ziehen auf
  * dem Graphen wählt den nächstgelegenen Messpunkt; eine mitlaufende Blase zeigt
- * dessen Datum und Wert. Bedienbar per Maus, Touch und Tastatur (Pfeiltasten).
+ * dessen Datum und Wert. Mit der Maus genügt Darüberfahren, auf dem Touchscreen
+ * Tippen/Ziehen; per Tastatur gehen die Pfeiltasten von Punkt zu Punkt.
  */
 export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartProps) {
   const { t, i18n } = useTranslation()
@@ -104,18 +108,12 @@ export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartPro
   const innerH = VB_H - PAD_TOP - PAD_BOTTOM
   const baseline = VB_H - PAD_BOTTOM
 
-  // Zeit-proportionale Position: Anteil 0..1 anhand des Datums (nicht des Index).
-  const times = points.map((p) => parseTime(p.date))
-  const tMin = Math.min(...times)
-  const tMax = Math.max(...times)
-  const tSpan = tMax - tMin
-  const frac = (i: number): number => {
-    if (points.length === 1) return 0.5
-    // Fallback auf gleichmäßige Verteilung, wenn alle Daten identisch/ungültig.
-    if (!(tSpan > 0) || Number.isNaN(times[i])) return i / (points.length - 1)
-    return (times[i] - tMin) / tSpan
-  }
-  const x = (i: number): number => PAD_L + innerW * frac(i)
+  // Position auf der Datumsachse, mit Mindestabstand zwischen zwei Punkten:
+  // Bei r=3 verdecken sich zwei Marker unter 7 Einheiten Abstand gegenseitig,
+  // und der Scrubber könnte den hinteren nicht mehr einzeln treffen.
+  const MIN_POINT_GAP = 7
+  const offsets = timeAxisPositions(points.map((p) => isoToTime(p.date)), innerW, MIN_POINT_GAP)
+  const x = (i: number): number => PAD_L + offsets[i]
   const y = (v: number): number => PAD_TOP + innerH * (1 - (v - yMin) / (yMax - yMin || 1))
   // Position in % der Gesamtbreite (für HTML-Overlays: Blase, Achsen-Labels).
   const leftPct = (i: number): number => (x(i) / VB_W) * 100
@@ -177,9 +175,17 @@ export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartPro
     setScrubbing(true)
     setActive(indexFromClientX(e.clientX))
   }
+  // Mit der Maus genügt Darüberfahren – „hovern" ist dort die erwartete Geste,
+  // und ohne sie bliebe der Wert eines Punktes nur per Ziehen ablesbar. Auf dem
+  // Touchscreen feuert `pointermove` ohnehin erst nach dem Aufsetzen.
   function handlePointerMove(e: React.PointerEvent) {
-    if (!scrubbing) return
+    if (!scrubbing && e.pointerType !== 'mouse') return
     setActive(indexFromClientX(e.clientX))
+  }
+  /** Maus weg → zurück auf die jüngste Ablesung (der Ruhezustand der Blase). */
+  function handlePointerLeave(e: React.PointerEvent) {
+    if (scrubbing || e.pointerType !== 'mouse') return
+    setActive(points.length - 1)
   }
   function endScrub(e: React.PointerEvent) {
     if (e.currentTarget.hasPointerCapture(e.pointerId)) {
@@ -240,6 +246,7 @@ export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartPro
         onPointerMove={handlePointerMove}
         onPointerUp={endScrub}
         onPointerCancel={endScrub}
+        onPointerLeave={handlePointerLeave}
         onKeyDown={handleKeyDown}
       >
         <defs>

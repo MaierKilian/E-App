@@ -7,18 +7,17 @@ import type { OnboardingData } from '@/types'
  * Erst dadurch wird ein Verbrauch vergleichbar: „1400 m³ Gas" sagt niemandem
  * etwas, „138 kWh/m²·a" ordnet sich sofort in die Baujahrs-Richtwerte ein.
  *
- * **Der Nenner ist nicht überall die Wohnfläche.** Nur Wärme skaliert mit der
- * Fläche – Haushaltsstrom hängt an Personen und Geräten, Wasser ebenfalls. Ein
- * Single auf 120 m² verbraucht nicht doppelt so viel Strom wie auf 60 m².
- * Deshalb je Träger eine eigene Bezugsgröße (siehe `SPECIFIC_BASIS`).
+ * **Der Nenner ist nicht überall derselbe.** Alle Energieträger – Wärme wie
+ * Strom – werden auf die Wohnfläche bezogen, weil das die Größe ist, die auf
+ * dem Energieausweis und in jedem Gebäude-Vergleich steht. Wasser bleibt bei
+ * Liter je Person und Tag: dort ist die Fläche kein sinnvoller Nenner, und
+ * l/m²·Tag entspräche keinem gebräuchlichen Vergleichswert.
  */
 
 /** Bezugsgröße, auf die der Jahresverbrauch umgerechnet wird. */
 export type SpecificBasis =
   /** kWh je m² Wohnfläche und Jahr – der Kennwert aus dem Energieausweis. */
   | 'perAreaKwh'
-  /** kWh je Person und Jahr – die übliche Größe für Haushaltsstrom. */
-  | 'perPersonKwh'
   /** Liter je Person und Tag – der übliche Wasser-Vergleich. */
   | 'perPersonLiterDay'
 
@@ -27,7 +26,7 @@ const SPECIFIC_BASIS: Partial<Record<EnergyType, SpecificBasis>> = {
   oil: 'perAreaKwh',
   pellets: 'perAreaKwh',
   heat_pump: 'perAreaKwh',
-  electricity: 'perPersonKwh',
+  electricity: 'perAreaKwh',
   water: 'perPersonLiterDay',
 }
 
@@ -100,8 +99,14 @@ export interface SpecificValue {
   benchmark?: number
 }
 
-/** Durchschnittlicher Haushaltsstrom je Person und Jahr (kWh) – grober Richtwert. */
-const ELECTRICITY_BENCHMARK_PER_PERSON = 1500
+/**
+ * Durchschnittlicher Haushaltsstrom je m² Wohnfläche und Jahr (kWh).
+ *
+ * Hergeleitet aus den beiden gängigen Durchschnitten: rund 1.500 kWh je Person
+ * und Jahr bei etwa 47 m² Wohnfläche je Person ergibt ~32 kWh/m²·a. Wie alle
+ * Werte hier ein grober Richtwert zum Einordnen, keine Norm.
+ */
+const ELECTRICITY_BENCHMARK_PER_SQM = 32
 /** Durchschnittlicher Trinkwasserverbrauch je Person und Tag (Liter). */
 const WATER_BENCHMARK_LITER_PER_PERSON_DAY = 125
 
@@ -140,27 +145,26 @@ export function specificValue(
   const yearlyKwh = yearlyUnits * factor
   if (!Number.isFinite(yearlyKwh) || yearlyKwh <= 0) return undefined
 
-  if (basis === 'perPersonKwh') {
-    const persons = positive(profile.personsCount)
-    if (!persons) return undefined
-    return {
-      basis,
-      value: yearlyKwh / persons,
-      benchmark: ELECTRICITY_BENCHMARK_PER_PERSON,
-    }
-  }
-
   const area = positive(profile.livingArea)
   if (!area) return undefined
+  return { basis, value: yearlyKwh / area, benchmark: areaBenchmark(type, profile) }
+}
+
+/**
+ * Vergleichswert je m² und Jahr.
+ *
+ * Strom und Wärme teilen sich zwar die Bezugsgröße, aber nicht den Richtwert:
+ * Haushaltsstrom hängt an Geräten und Personen, der Wärmebedarf am Baujahr der
+ * Gebäudehülle. Ein gemeinsamer Wert wäre für beide falsch.
+ */
+function areaBenchmark(
+  type: EnergyType,
+  profile: Pick<OnboardingData, 'buildingYear' | 'hotWaterType'>,
+): number | undefined {
+  if (type === 'electricity') return ELECTRICITY_BENCHMARK_PER_SQM
   const base = heatDemandBenchmark(profile.buildingYear)
-  return {
-    basis,
-    value: yearlyKwh / area,
-    benchmark:
-      base === undefined
-        ? undefined
-        : base + HOT_WATER_SURCHARGE_KWH_PER_SQM * hotWaterShare(profile.hotWaterType),
-  }
+  if (base === undefined) return undefined
+  return base + HOT_WATER_SURCHARGE_KWH_PER_SQM * hotWaterShare(profile.hotWaterType)
 }
 
 /**

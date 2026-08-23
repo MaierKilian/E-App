@@ -311,7 +311,6 @@ function meterCards(
 /** Anzeige-Einheit je Bezugsgröße (dieselben Texte wie in der App). */
 const SPECIFIC_UNIT_KEY = {
   perAreaKwh: 'monitoring.detail.specificPerArea',
-  perPersonKwh: 'monitoring.detail.specificPerPerson',
   perPersonLiterDay: 'monitoring.detail.specificPerPersonDay',
 } as const
 
