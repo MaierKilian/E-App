@@ -1038,6 +1038,11 @@
         "doneSummary_other": "Alle {{count}} geprüften Räume sind bereits umgestellt.",
         "doneTip": "Achte beim Nachkaufen weiter auf LED mit warmweißem Licht."
       }
+    },
+    "remeasure": {
+      "title": "Jetzt nachmessen",
+      "text": "Du hast vor {{days}} Tagen den {{check}} gemacht. Miss die Grundlast erneut – dann siehst du schwarz auf weiß, was deine Änderungen gebracht haben.",
+      "cta": "Grundlast erneut messen"
     }
   },
   "monitoring": {

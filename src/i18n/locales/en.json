@@ -1038,6 +1038,11 @@
         "doneSummary_other": "All {{count}} rooms you checked are already switched over.",
         "doneTip": "Keep choosing warm-white LEDs when you buy replacements."
       }
+    },
+    "remeasure": {
+      "title": "Time to measure again",
+      "text": "You did the {{check}} {{days}} days ago. Measure the base load again – then you will see in black and white what your changes achieved.",
+      "cta": "Measure base load again"
     }
   },
   "onboarding": {
