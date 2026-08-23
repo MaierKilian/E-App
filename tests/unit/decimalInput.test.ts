@@ -19,6 +19,17 @@ describe('parseDecimalInput (deutsch)', () => {
     expect(parseDecimalInput('13200.45')).toBe(13200.45)
   })
 
+  it('liest Preise mit drei Nachkommastellen richtig', () => {
+    // Vor einer Tausendergruppe steht nie eine fuehrende Null – also Dezimaltrenner.
+    expect(parseDecimalInput('0.350')).toBe(0.35)
+    expect(parseDecimalInput('0,350')).toBe(0.35)
+    expect(parseDecimalInput('1.250')).toBe(1250)
+  })
+
+  it('deutet lange Vorkommastellen nie als Tausendergruppe', () => {
+    expect(parseDecimalInput('13200.400')).toBe(13200.4)
+  })
+
   it('kommt ohne Trenner und mit Leerzeichen zurecht', () => {
     expect(parseDecimalInput('13200')).toBe(13200)
     expect(parseDecimalInput(' 13 200,4 ')).toBe(13200.4)

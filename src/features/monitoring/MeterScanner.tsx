@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { X, Camera, RotateCcw, Check, Loader2, AlertTriangle, Flashlight, FlashlightOff } from 'lucide-react'
 import { cropAndPreprocess, recognizeDigits } from './ocr'
+import { parseDecimalInput } from '@/lib/decimalInput'
 import { recognizeMeterRemote, REMOTE_SCAN_ENABLED } from './scanRemote'
 
 interface MeterScannerProps {
@@ -176,11 +177,11 @@ export function MeterScanner({ unit, accent, lastReading, onResult, onClose }: M
   }
 
   function apply() {
-    const parsed = Number.parseFloat(text.replace(',', '.'))
-    if (Number.isFinite(parsed) && parsed >= 0) onResult(parsed)
+    const parsed = parseDecimalInput(text, i18n.language)
+    if (parsed !== undefined) onResult(parsed)
   }
 
-  const parsedValue = Number.parseFloat(text.replace(',', '.'))
+  const parsedValue = parseDecimalInput(text, i18n.language) ?? NaN
   const lowConfidence = phase === 'confirm' && (text === '' || confidence < LOW_CONFIDENCE)
   const lastLabel =
     lastReading !== undefined && lastReading > 0

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { parseDecimalInput } from '@/lib/decimalInput'
 import { Modal } from '@/components/ui/Modal'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { useTariffStore, resolvePrice, resolveEnergyContent } from '@/store/tariffStore'
@@ -15,14 +16,13 @@ interface TariffModalProps {
 }
 
 /** Wandelt eine Texteingabe in eine Zahl um, mit Fallback bei leer/ungültig. */
-function parseNumber(value: string, fallback: number): number {
-  const parsed = Number.parseFloat(value.replace(',', '.'))
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback
+function parseNumber(value: string, fallback: number, language: string): number {
+  return parseDecimalInput(value, language) ?? fallback
 }
 
 /** Modal zum Erfassen / Bearbeiten des Preises eines Energieträgers. */
 export function TariffModal({ open, onClose, type = 'electricity' }: TariffModalProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const setTypePrice = useTariffStore((s) => s.setTypePrice)
   const skipPrompt = useTariffStore((s) => s.skipPrompt)
   // Wichtig: Primitive selektieren (nicht ein neues Objekt), sonst wirft
@@ -57,9 +57,9 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
   if (!meta) return null
 
   function handleSave() {
-    setTypePrice(type, parseNumber(work, meta!.defaultWork), parseNumber(base, meta!.defaultBase))
+    setTypePrice(type, parseNumber(work, meta!.defaultWork, i18n.language), parseNumber(base, meta!.defaultBase, i18n.language))
     if (showContent) {
-      const parsed = parseNumber(content, currentContent)
+      const parsed = parseNumber(content, currentContent, i18n.language)
       if (parsed > 0) setEnergyContent(type, parsed)
     }
     onClose()
@@ -86,9 +86,9 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
           <div className="flex items-center gap-2">
             <input
               id="tariff-work"
-              type="number"
-              min={0}
-              step="any"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
               value={work}
               onChange={(e) => setWork(e.target.value)}
               className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -108,9 +108,9 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
           <div className="flex items-center gap-2">
             <input
               id="tariff-base"
-              type="number"
-              min={0}
-              step="any"
+              type="text"
+              inputMode="decimal"
+              autoComplete="off"
               value={base}
               onChange={(e) => setBase(e.target.value)}
               className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"
@@ -135,9 +135,9 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
             <div className="flex items-center gap-2">
               <input
                 id="tariff-content"
-                type="number"
-                min={0}
-                step="any"
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="flex-1 rounded-lg border border-border bg-surface-2 px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40"

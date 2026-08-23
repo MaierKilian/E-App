@@ -4,6 +4,7 @@ import { useTariffStore } from '@/store/tariffStore'
 import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftStore'
 import { Stepper } from '@/components/ui/Stepper'
 import { instanceKey } from '../rooms'
+import { DecimalField } from '@/components/ui/DecimalField'
 import { calcFridgeSaving } from './fridge'
 import type { RunProps } from '../runnerTypes'
 
@@ -26,16 +27,10 @@ function NumField({
 }) {
   return (
     <label className="flex items-center gap-1.5 text-xs text-muted">
-      <input
-        type="number"
-        inputMode="decimal"
-        min={0}
-        value={value ?? ''}
+      <DecimalField
+        value={value}
         placeholder={placeholder}
-        onChange={(e) => {
-          const n = Number(e.target.value.replace(',', '.'))
-          onChange(Number.isFinite(n) && e.target.value !== '' ? n : undefined)
-        }}
+        onChange={onChange}
         className="focus-ring w-20 rounded-lg border border-border bg-surface px-2 py-1.5 text-center text-sm text-foreground"
       />
       {unit}

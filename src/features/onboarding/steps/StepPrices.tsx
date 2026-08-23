@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { parseDecimalInput } from '@/lib/decimalInput'
 import { Wallet } from 'lucide-react'
 import type { OnboardingData } from '@/types'
 import type { EnergyType } from '@/store/readingsStore'
@@ -7,12 +8,9 @@ import { useTariffStore, resolvePrice } from '@/store/tariffStore'
 import { PRICE_META } from '@/features/monitoring/priceConfig'
 import { InfoButton } from '@/components/ui/InfoButton'
 
-/** Wandelt eine Texteingabe in eine Zahl um (Komma erlaubt); '' bei ungültig. */
-function parse(value: string): number | null {
-  const trimmed = value.trim()
-  if (trimmed === '') return null
-  const n = Number.parseFloat(trimmed.replace(',', '.'))
-  return Number.isFinite(n) && n >= 0 ? n : null
+/** Wandelt eine Texteingabe in eine Zahl um (Komma erlaubt); null bei ungültig. */
+function parse(value: string, language: string): number | null {
+  return parseDecimalInput(value, language) ?? null
 }
 
 /** Ermittelt die je nach Profil relevanten, bepreisbaren Energieträger. */
@@ -63,7 +61,7 @@ export function StepPrices({ data }: StepPricesProps) {
 
   function handleChange(type: EnergyType, raw: string) {
     setValues((v) => ({ ...v, [type]: raw }))
-    const parsed = parse(raw)
+    const parsed = parse(raw, i18n.language)
     if (parsed === null) {
       clearTypePrice(type)
     } else {
@@ -98,8 +96,9 @@ export function StepPrices({ data }: StepPricesProps) {
               <div className="flex items-center gap-2">
                 <input
                   id={`price-${type}`}
-                  type="number"
+                  type="text"
                   inputMode="decimal"
+                  autoComplete="off"
                   min={0}
                   step="any"
                   value={values[type] ?? ''}

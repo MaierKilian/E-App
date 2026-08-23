@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react'
 import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/readingsStore'
 import { OdometerInput } from './OdometerInput'
 import { clampInt } from './odometer'
+import { parseDecimalInput } from '@/lib/decimalInput'
 
 // Der Scanner zieht Tesseract.js (WASM) nach – nur bei Bedarf laden.
 const MeterScanner = lazy(() =>
@@ -53,7 +54,7 @@ export function AddReadingScreen({
   editReading,
   onClose,
 }: AddReadingScreenProps) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const addReading = useReadingsStore((s) => s.addReading)
   const updateReading = useReadingsStore((s) => s.updateReading)
 
@@ -78,12 +79,8 @@ export function AddReadingScreen({
   }
 
   /** Aktuell gültiger numerischer Wert (Zählwerk oder Tastatur). */
-  const parsedText = Number.parseFloat(text.replace(',', '.'))
-  const effectiveValue = keyboard
-    ? Number.isFinite(parsedText) && parsedText >= 0
-      ? parsedText
-      : NaN
-    : value
+  const parsedText = parseDecimalInput(text, i18n.language)
+  const effectiveValue = keyboard ? (parsedText ?? NaN) : value
   const valid = date !== '' && Number.isFinite(effectiveValue) && effectiveValue >= 0
 
   function handleSave() {
@@ -150,10 +147,9 @@ export function AddReadingScreen({
         {keyboard ? (
           <div className="flex items-center justify-center gap-2">
             <input
-              type="number"
-              min={0}
-              step="any"
+              type="text"
               inputMode="decimal"
+              autoComplete="off"
               autoFocus
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -181,7 +177,7 @@ export function AddReadingScreen({
             onClick={() => {
               if (keyboard) {
                 // Tastatur -> Zählwerk: ganzzahligen Anteil übernehmen.
-                setValue(clampInt(Number.isFinite(parsedText) ? parsedText : 0, max))
+                setValue(clampInt(parsedText ?? 0, max))
               } else {
                 // Zählwerk -> Tastatur: aktuellen Wert vorbelegen.
                 setText(String(value))

@@ -6,6 +6,7 @@ import { SelectChip } from '@/components/ui/SelectChip'
 import { calcStandby, totalWatts } from './standby'
 import type { StandbyDevice, StandbyDeviceType } from './standby'
 import type { RunProps } from '../runnerTypes'
+import { DecimalField } from '@/components/ui/DecimalField'
 
 const DEVICE_TYPES: StandbyDeviceType[] = [
   'tv',
@@ -85,9 +86,8 @@ export function StandbyRun({ onEvaluate }: RunProps) {
     updateEntry(id, { watts: clampWatts(current + delta) })
   }
 
-  function handleWattsInput(id: number, raw: string) {
-    const value = Number(raw.replace(',', '.'))
-    updateEntry(id, { watts: clampWatts(value) })
+  function handleWattsInput(id: number, value: number | undefined) {
+    updateEntry(id, { watts: clampWatts(value ?? 0) })
   }
 
   function handleEvaluate() {
@@ -174,13 +174,9 @@ export function StandbyRun({ onEvaluate }: RunProps) {
               >
                 −
               </button>
-              <input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                step={WATTS_STEP}
-                value={entry.watts > 0 ? entry.watts : ''}
-                onChange={(e) => handleWattsInput(entry.id, e.target.value)}
+              <DecimalField
+                value={entry.watts > 0 ? entry.watts : undefined}
+                onChange={(v) => handleWattsInput(entry.id, v)}
                 placeholder="0"
                 aria-label={t('measurements.standby.run.wattsLabel')}
                 className="focus-ring w-20 rounded-xl border border-border bg-surface/70 px-3 py-2 text-right font-semibold tabular-nums text-foreground"

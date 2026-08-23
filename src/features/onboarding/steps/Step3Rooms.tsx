@@ -3,6 +3,7 @@ import { Stepper } from '@/components/ui/Stepper'
 import { getRoomIcon } from '../roomIcons'
 import { resolveRoomArea } from '@/features/measurements/room_temperature/roomAreas'
 import type { OnboardingData, RoomType, RoomEntry } from '@/types'
+import { DecimalField } from '@/components/ui/DecimalField'
 
 interface Props {
   data: OnboardingData
@@ -50,9 +51,8 @@ export function Step3Rooms({ data, onChange }: Props) {
     return data.rooms.find((r) => r.type === type)?.areaSqm
   }
 
-  function setArea(type: RoomType, raw: string) {
-    const value = Number(raw.replace(',', '.'))
-    const areaSqm = Number.isFinite(value) && value > 0 ? value : undefined
+  function setArea(type: RoomType, value: number | undefined) {
+    const areaSqm = value !== undefined && value > 0 ? value : undefined
     onChange({
       rooms: data.rooms.map((r) => (r.type === type ? { ...r, areaSqm } : r)),
     })
@@ -100,16 +100,12 @@ export function Step3Rooms({ data, onChange }: Props) {
                         onChange={(v) => setCount(type, v)}
                       />
                       <label className="flex items-center gap-1.5 text-xs text-muted">
-                        <input
-                          type="number"
-                          inputMode="decimal"
-                          min={1}
-                          max={200}
-                          value={getArea(type) ?? ''}
+                        <DecimalField
+                          value={getArea(type)}
                           placeholder={String(
                             Math.round(resolveRoomArea(data.rooms, data.livingArea, type).areaSqm),
                           )}
-                          onChange={(e) => setArea(type, e.target.value)}
+                          onChange={(v) => setArea(type, v)}
                           aria-label={t('onboarding.step3.areaLabel')}
                           className="w-14 rounded-lg border border-border bg-surface px-2 py-1 text-center text-sm text-foreground focus-ring"
                         />

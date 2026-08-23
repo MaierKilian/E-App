@@ -12,6 +12,7 @@ import {
   type HotWaterSource,
 } from './hotWaterEnergy'
 import type { RunProps } from '../runnerTypes'
+import { DecimalField } from '@/components/ui/DecimalField'
 
 const DEFAULT_LITERS = 5
 
@@ -44,9 +45,8 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
     setLiters((v) => Math.max(0.1, Math.min(50, Math.round((v + delta) * 10) / 10)))
   }
 
-  function handleManualSeconds(raw: string) {
-    const value = Number(raw.replace(',', '.'))
-    setSeconds(Number.isFinite(value) && value > 0 ? value : 0)
+  function handleManualSeconds(value: number | undefined) {
+    setSeconds(value !== undefined && value > 0 ? value : 0)
   }
 
   function handleEvaluate() {
@@ -153,14 +153,10 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
           {t('measurements.showerhead.run.secondsManual')}
         </label>
         <div className="flex items-center gap-1.5">
-          <input
+          <DecimalField
             id="manual-seconds"
-            type="number"
-            inputMode="decimal"
-            min={0}
-            step={0.1}
-            value={seconds > 0 ? seconds : ''}
-            onChange={(e) => handleManualSeconds(e.target.value)}
+            value={seconds > 0 ? seconds : undefined}
+            onChange={handleManualSeconds}
             placeholder={t('measurements.showerhead.run.secondsPlaceholder')}
             className="focus-ring w-24 rounded-xl border border-border bg-surface/70 px-3 py-2 text-right font-semibold tabular-nums text-foreground"
           />
