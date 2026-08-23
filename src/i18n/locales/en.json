@@ -111,7 +111,8 @@
       "exportError": "Export failed. Please try again.",
       "share": "Share PDF",
       "shareDone": "PDF shared.",
-      "sections": "Contents"
+      "sections": "Contents",
+      "emptyHint": "A report needs at least one measurement or one meter reading."
     },
     "range": {
       "d7": "7 days",
@@ -146,7 +147,6 @@
       "page": "Page {{n}} / {{total}}",
       "footnote": "Created with the E-App",
       "section": {
-        "profile": "Profile",
         "measurements": "Measurements",
         "monitoring": "Monitoring"
       },
@@ -185,8 +185,7 @@
         "none": "none",
         "measurements": "No measurements completed yet.",
         "monitoring": "No energy sources active.",
-        "noReading": "No reading yet",
-        "profile": "No profile details saved yet."
+        "noReading": "No reading yet"
       },
       "fileLabel": "Energy-report",
       "sectionCount": "Section {{n}} of {{total}}",
@@ -213,16 +212,12 @@
       "measurements_one": "{{count}} measurement",
       "measurements_other": "{{count}} measurements",
       "noData": "No data yet",
-      "profileOnly": "Building data only",
       "days_one": "{{count}} day",
       "days_other": "{{count}} days"
     },
     "variantDesc": {
       "short": "The essentials at a glance.",
       "long": "Detailed, with curves, history and tips."
-    },
-    "sectionDetail": {
-      "profile": "Building data"
     }
   },
   "measurements": {

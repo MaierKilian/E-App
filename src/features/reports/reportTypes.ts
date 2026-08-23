@@ -4,9 +4,11 @@ export type ReportVariant = 'short' | 'long'
 /**
  * Abschnitte des Berichts. Der Bericht ist die Summe der gewählten Abschnitte –
  * es gibt keine vorgelagerte Wahl eines Berichtstyps mehr.
+ *
+ * Die Gebäudedaten aus dem Profil sind bewusst kein Abschnitt: Stammdaten, die
+ * der Empfänger ohnehin kennt, machen aus einem Bericht keine Aussage.
  */
 export interface ReportSections {
-  profile: boolean
   measurements: boolean
   monitoring: boolean
 }

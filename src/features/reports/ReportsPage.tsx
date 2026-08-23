@@ -20,8 +20,8 @@ import type { ReportSections, ReportVariant } from './reportTypes'
 
 /**
  * Berichte: ein Energiebericht als PDF, zusammengesetzt aus den gewählten
- * Abschnitten (Profil, Messungen, Monitoring). Umfang und Zeitraum sind die
- * einzigen weiteren Stellschrauben – alles andere ergibt sich daraus.
+ * Abschnitten (Messungen, Monitoring). Umfang und Zeitraum sind die einzigen
+ * weiteren Stellschrauben – alles andere ergibt sich daraus.
  */
 export function ReportsPage() {
   const { t } = useTranslation()
@@ -58,20 +58,16 @@ export function ReportsPage() {
 
   const metersWithData = monitoringData.entries.filter((e) => e.readingCount > 0).length
   const available = {
-    // Das Profil steht immer zur Verfügung; die anderen brauchen Daten.
-    profile: true,
     measurements: measurementsData.doneCount > 0,
     monitoring: metersWithData > 0,
   }
 
   // Ein Abschnitt ohne Daten wird nie exportiert, auch wenn er gespeichert ist.
   const sections: ReportSections = {
-    profile: settings.sections.profile,
     measurements: settings.sections.measurements && available.measurements,
     monitoring: settings.sections.monitoring && available.monitoring,
   }
-  const activeCount =
-    Number(sections.profile) + Number(sections.measurements) + Number(sections.monitoring)
+  const activeCount = Number(sections.measurements) + Number(sections.monitoring)
 
   /** Abschnitt umschalten; der letzte aktive bleibt stehen (leerer Bericht). */
   const toggleSection = (key: keyof ReportSections) => {
@@ -100,13 +96,6 @@ export function ReportsPage() {
         <div className="px-5 pt-4">
           <SectionLabel>{t('report.builder.sections')}</SectionLabel>
         </div>
-        <SectionRow
-          label={t('report.pdf.section.profile')}
-          detail={t('report.sectionDetail.profile')}
-          checked={sections.profile}
-          disabled={sections.profile && activeCount <= 1}
-          onToggle={() => toggleSection('profile')}
-        />
         <SectionRow
           label={t('report.pdf.section.measurements')}
           detail={
@@ -141,6 +130,9 @@ export function ReportsPage() {
         monitoring={monitoringData}
         measurements={measurementsData}
         profile={profile}
+        // Ohne Messungen und ohne Ablesungen gäbe es nichts zu berichten – die
+        // Gebäudedaten allein sind kein Bericht mehr.
+        canExport={activeCount > 0}
       />
     </div>
   )
@@ -197,7 +189,7 @@ function ReportSummary({
             {objectName ?? t('home.profileNameFallback')}
           </p>
           <p className="mt-1 text-xs text-muted">
-            {facts.length > 0 ? facts.join(' · ') : t('report.facts.profileOnly')}
+            {facts.length > 0 ? facts.join(' · ') : t('report.facts.noData')}
           </p>
           {period && <p className="mt-0.5 text-xs text-muted">{period}</p>}
         </div>
@@ -307,10 +299,19 @@ interface ShareBarProps {
   monitoring: ReturnType<typeof buildMonitoringReportData>
   measurements: ReturnType<typeof buildMeasurementsReportData>
   profile: ReturnType<typeof useOnboardingStore.getState>['data']
+  /** Gibt es überhaupt einen Abschnitt mit Daten? */
+  canExport: boolean
 }
 
 /** Fixe Leiste mit Teilen-/Download-Schaltfläche und Rückmeldung. */
-function ShareBar({ variant, sections, monitoring, measurements, profile }: ShareBarProps) {
+function ShareBar({
+  variant,
+  sections,
+  monitoring,
+  measurements,
+  profile,
+  canExport,
+}: ShareBarProps) {
   const { t, i18n } = useTranslation()
   // Für die Empfehlungen im Bericht: dieselben Rohergebnisse, aus denen auch
   // der Tipps-Bereich der App seine Vorschläge baut.
@@ -334,13 +335,7 @@ function ShareBar({ variant, sections, monitoring, measurements, profile }: Shar
         sections,
         t,
         language: i18n.language,
-        profile: {
-          profileName: profile.profileName,
-          buildingType: profile.buildingType,
-          livingArea: profile.livingArea,
-          buildingYear: profile.buildingYear,
-          personsCount: profile.personsCount,
-        },
+        objectName: profile.profileName,
         measurements,
         monitoring,
         // Dieselben Empfehlungen wie im Tipps-Bereich der App – der Bericht
@@ -378,6 +373,9 @@ function ShareBar({ variant, sections, monitoring, measurements, profile }: Shar
             {t('report.builder.exportError')}
           </p>
         )}
+        {!canExport && status === 'idle' && (
+          <p className="mb-2 text-center text-sm text-muted">{t('report.builder.emptyHint')}</p>
+        )}
         {(status === 'done' || status === 'shared') && (
           <p
             role="status"
@@ -390,7 +388,7 @@ function ShareBar({ variant, sections, monitoring, measurements, profile }: Shar
         <button
           type="button"
           onClick={handleExport}
-          disabled={status === 'busy'}
+          disabled={status === 'busy' || !canExport}
           className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-base font-semibold text-primary-foreground shadow-[0_4px_14px_color-mix(in_srgb,var(--primary)_35%,transparent)] transition-[transform,background-color] duration-200 active:scale-[0.98] disabled:opacity-60"
         >
           {shareable ? <Share2 className="w-5 h-5" /> : <Download className="w-5 h-5" />}

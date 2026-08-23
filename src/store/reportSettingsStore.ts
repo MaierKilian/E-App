@@ -23,9 +23,20 @@ interface ReportSettingsState {
 }
 
 const DEFAULT_SECTIONS: ReportSections = {
-  profile: true,
   measurements: true,
   monitoring: true,
+}
+
+/**
+ * Nur die heute bekannten Abschnitte übernehmen. Gespeicherte Stände können
+ * abgelegte Abschnitte (z. B. `profile`) enthalten – die dürfen nicht als
+ * unbekanntes Feld in den Zustand zurücklaufen.
+ */
+function pickSections(stored: Partial<ReportSections> | undefined): ReportSections {
+  return {
+    measurements: stored?.measurements ?? DEFAULT_SECTIONS.measurements,
+    monitoring: stored?.monitoring ?? DEFAULT_SECTIONS.monitoring,
+  }
 }
 
 export const useReportSettingsStore = create<ReportSettingsState>()(
@@ -41,20 +52,19 @@ export const useReportSettingsStore = create<ReportSettingsState>()(
     {
       name: 'eapp-report-settings',
       // v2: Inhalts-, Zähler- und Gewerke-Auswahl entfallen zugunsten der
-      // Abschnitte. Ältere Stände haben diese Felder nicht und starten mit den
+      //     Abschnitte.
+      // v3: Der Profil-Abschnitt entfällt; ein gespeichertes `profile`-Feld
+      //     wird verworfen.
+      // Ältere Stände haben die neuen Felder nicht und starten mit den
       // Defaults; Umfang und Zeitraum bleiben erhalten.
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const p = (persisted ?? {}) as Partial<ReportSettingsState>
-        return { ...p, sections: p.sections ?? DEFAULT_SECTIONS } as ReportSettingsState
+        return { ...p, sections: pickSections(p.sections) } as ReportSettingsState
       },
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<ReportSettingsState>
-        return {
-          ...current,
-          ...p,
-          sections: { ...DEFAULT_SECTIONS, ...(p.sections ?? {}) },
-        }
+        return { ...current, ...p, sections: pickSections(p.sections) }
       },
     },
   ),

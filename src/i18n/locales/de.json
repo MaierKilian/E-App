@@ -111,7 +111,8 @@
       "exportError": "Export fehlgeschlagen. Bitte erneut versuchen.",
       "share": "PDF teilen",
       "shareDone": "PDF geteilt.",
-      "sections": "Inhalt"
+      "sections": "Inhalt",
+      "emptyHint": "Für einen Bericht braucht es mindestens eine Messung oder eine Ablesung."
     },
     "range": {
       "d7": "7 Tage",
@@ -146,7 +147,6 @@
       "page": "Seite {{n}} / {{total}}",
       "footnote": "Erstellt mit der E-App",
       "section": {
-        "profile": "Profil",
         "measurements": "Messungen",
         "monitoring": "Monitoring"
       },
@@ -185,8 +185,7 @@
         "none": "keine",
         "measurements": "Noch keine Messungen erledigt.",
         "monitoring": "Keine Energieträger aktiv.",
-        "noReading": "Noch keine Ablesung",
-        "profile": "Noch keine Profilangaben hinterlegt."
+        "noReading": "Noch keine Ablesung"
       },
       "fileLabel": "Energiebericht",
       "sectionCount": "Abschnitt {{n}} von {{total}}",
@@ -213,16 +212,12 @@
       "measurements_one": "{{count}} Messung",
       "measurements_other": "{{count}} Messungen",
       "noData": "Noch keine Daten",
-      "profileOnly": "Nur Gebäudedaten",
       "days_one": "{{count}} Tag",
       "days_other": "{{count}} Tage"
     },
     "variantDesc": {
       "short": "Das Wichtigste auf einen Blick.",
       "long": "Ausführlich, mit Verlauf, Historie und Tipps."
-    },
-    "sectionDetail": {
-      "profile": "Gebäudedaten"
     }
   },
   "measurements": {
