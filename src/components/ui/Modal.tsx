@@ -29,6 +29,10 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
 
   return (
     <div
+      // Marker fürs Feedback-Screenshot: ein offenes Modal (meist das
+      // Feedback-Fenster selbst) soll die Aufnahme des Bildschirms dahinter
+      // nicht verdecken – siehe `features/feedback/captureScreenshot.ts`.
+      data-modal-overlay="true"
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-md p-4"
       onClick={onClose}
     >

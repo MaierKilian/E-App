@@ -2,67 +2,51 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight } from 'lucide-react'
 import { useReadingsStore } from '@/store/readingsStore'
-import { useTariffStore, resolvePrice } from '@/store/tariffStore'
-import { activeEnergyTypes, ENERGY_META, isSeasonal } from '@/features/monitoring/energyConfig'
-import { PRICE_META } from '@/features/monitoring/priceConfig'
-import { sortByDate, stats, yearOverYearTrend } from '@/features/monitoring/readings'
+import { activeEnergyTypes, ENERGY_META } from '@/features/monitoring/energyConfig'
+import { sortByDate, consumptionTrend, daysSinceLastReading } from '@/features/monitoring/readings'
 import { TrendBadge } from '@/features/monitoring/MeterTrend'
 import type { OnboardingData } from '@/types'
 
 /**
  * Kompakte Energie-Status-Karte für die Startseite.
  *
- * Zeigt die hochgerechneten Jahreswerte der Energieträger des Profils als Reihe
- * gleichwertiger, schlanker Kacheln (Strom zuerst, dann Gas/Öl/Pellets/… bzw.
- * PV/Solarthermie). Wasser wird hier bewusst ausgeblendet.
+ * Zeigt je aktivem Energieträger des Profils den zuletzt abgelesenen
+ * Zählerstand als Reihe gleichwertiger, schlanker Kacheln (Strom zuerst, dann
+ * Gas/Öl/Pellets/… bzw. PV/Solarthermie). Wasser wird hier bewusst ausgeblendet.
  *
- * Es erscheinen NUR Träger mit echten Zählerständen (mind. zwei Ablesungen →
- * belastbare Jahreshochrechnung); ohne solche wird nichts gerendert, damit auf
- * der Startseite keine geratene Zahl steht. Antippen öffnet den jeweiligen Zähler.
+ * Es erscheinen NUR Träger mit mindestens einer echten Ablesung; ohne eine
+ * solche wird nichts gerendert, damit auf der Startseite kein Platzhalter
+ * steht. Der Trend-Badge (Tagesverbrauch ggü. Vorzeitraum bzw. Vorjahr)
+ * erscheint erst ab der zweiten Ablesung. Antippen öffnet den jeweiligen Zähler.
  */
 export function EnergySummaryCard({ data }: { data: OnboardingData }) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const readingsByType = useReadingsStore((s) => s.readings)
-  const tariff = useTariffStore()
 
-  const eurFmt = new Intl.NumberFormat(i18n.language, {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  })
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
-  // Jahres-Hochrechnung je aktivem Träger (Reihenfolge = ORDER, Strom zuerst).
-  // Wasser bleibt außen vor; nur Träger mit echten Zählerständen bleiben übrig.
+  // Zuletzt abgelesener Zählerstand je aktivem Träger (Reihenfolge = ORDER,
+  // Strom zuerst). Wasser bleibt außen vor; nur Träger mit mindestens einer
+  // echten Ablesung bleiben übrig.
   const carriers = activeEnergyTypes(data)
     .filter((type) => type !== 'water')
     .map((type) => {
       const readings = sortByDate(readingsByType[type] ?? [])
-      const priceMeta = PRICE_META[type]
-      const eurPerUnit = priceMeta ? resolvePrice(tariff, type).work * priceMeta.priceToEur : undefined
-      const s = stats(readings, eurPerUnit, { seasonal: isSeasonal(type) })
+      const last = readings[readings.length - 1]
       return {
         type,
         meta: ENERGY_META[type],
-        costEur: s.projectedYearCostEur,
-        amount: s.projectedYearKwh,
-        basis: s.projectionBasis,
-        // Ganze Monate, gerundet – „aus 4 Mon. geschätzt" ist greifbarer als 118 Tage.
-        basisMonths: Math.max(1, Math.round((s.projectionDays ?? 0) / 30)),
-        // Jahr gegen Vorjahr – passt zur Jahreszahl daneben. Ohne zwei volle
-        // Jahre gibt es keinen Badge, statt einen irreführenden zu zeigen.
-        trend: yearOverYearTrend(readings),
+        lastValue: last?.value,
+        sinceDays: daysSinceLastReading(readings),
+        // Tagesverbrauch ggü. Vorzeitraum (bzw. Vorjahr, wenn die Historie
+        // reicht) – erfordert mindestens zwei Ablesungen.
+        trend: consumptionTrend(readings),
       }
     })
-    .filter((c) => c.amount !== undefined)
+    .filter((c) => c.lastValue !== undefined)
 
   if (carriers.length === 0) return null
-
-  // In den Kacheln stehen Euro-Betraege, sobald fuer jeden Traeger ein Preis
-  // hinterlegt ist. Dann waere "Verbrauch / Jahr" schlicht die falsche
-  // Ueberschrift; ohne Preis (Anzeige in kWh/m3) bleibt sie richtig.
-  const allCosts = carriers.every((c) => c.costEur !== undefined)
 
   return (
     <div className="glass relative overflow-hidden rounded-3xl p-4">
@@ -80,7 +64,7 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
         className="focus-ring relative flex w-full items-center justify-between gap-2"
       >
         <span className="text-xs font-medium uppercase tracking-wide text-muted">
-          {t(allCosts ? 'home.energy.overlineCost' : 'home.energy.overline')}
+          {t('home.energy.overlineMeter')}
         </span>
         <ChevronRight className="h-4 w-4 shrink-0 text-muted" />
       </button>
@@ -89,16 +73,18 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
       <div className="relative mt-3 flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {carriers.map((c) => {
           const Icon = c.meta.icon
-          const value =
-            c.costEur !== undefined
-              ? eurFmt.format(c.costEur)
-              : `${numFmt.format(c.amount ?? 0)} ${c.meta.unit}`
+          const lastReadText =
+            c.sinceDays === undefined
+              ? null
+              : c.sinceDays === 0
+                ? t('monitoring.overview.readToday')
+                : t('monitoring.overview.readDaysAgo', { count: c.sinceDays })
           return (
             <button
               key={c.type}
               type="button"
               onClick={() => navigate(`/monitoring/${c.type}`)}
-              className="focus-ring flex min-w-[8.5rem] flex-1 flex-col gap-1.5 rounded-2xl border border-border/60 bg-surface-2/40 p-3 text-left transition-transform active:scale-[0.98]"
+              className="focus-ring flex min-w-[9.5rem] flex-1 flex-col gap-1.5 rounded-2xl border border-border/60 bg-surface-2/40 p-3 text-left transition-transform active:scale-[0.98]"
             >
               <span className="flex items-center gap-1.5">
                 <span
@@ -111,28 +97,24 @@ export function EnergySummaryCard({ data }: { data: OnboardingData }) {
                   {t(`monitoring.energyTypes.${c.type}`)}
                 </span>
               </span>
-              <span className="flex items-baseline gap-1.5">
-                {/* Ohne „≈": darunter steht bereits, worauf die Zahl beruht
-                    („letzte 12 Monate" bzw. „geschätzt aus N Mon."). Das ist
-                    präziser als ein Symbol – und bei einem gemessenen
-                    Jahreswert wäre das Ungefähr-Zeichen schlicht falsch. */}
-                <span className="text-xl font-bold leading-none tabular-nums text-foreground">
-                  {value}
+              {/* Zählerstand links, Trend rechtsbündig in derselben Zeile – der
+                  Trend bewertet die Verbrauchsrichtung, nicht den Stand selbst,
+                  und steht deshalb klar abgesetzt am Kachelrand. Die Einheit
+                  steht bewusst unten bei „zuletzt abgelesen" statt direkt hinterm
+                  Wert: Zählerstände können sechsstellig werden, dann bräuchten
+                  Zahl, Einheit UND Badge nebeneinander mehr Platz, als eine
+                  schmale Kachel hat – abgeschnitten wäre die Zahl unbrauchbar. */}
+              <span className="flex items-baseline justify-between gap-1.5">
+                <span className="truncate text-xl font-bold leading-none tabular-nums text-foreground">
+                  {numFmt.format(c.lastValue ?? 0)}
                 </span>
                 {c.trend && <TrendBadge trend={c.trend} compact />}
               </span>
-              {/* Woher die Zahl kommt: echter Jahreswert oder Schaetzung aus
-                  kuerzerer Historie. Ohne das liest sich beides gleich.
-                  Steht ein Trend-Badge daneben, gehoert sein Bezug hierher:
-                  sonst liest man die "+36 %" als Veraenderung gegenueber dem
-                  Vormonat statt gegenueber dem Vorjahr. Bewusst umbrechend
-                  statt abgeschnitten – abgeschnitten waere der Zusatz nutzlos. */}
-              <span className="text-[10px] leading-snug text-muted">
-                {c.basis === 'fullYear'
-                  ? t('home.energy.basisFullYear')
-                  : t('home.energy.basisEstimate', { months: c.basisMonths })}
-                {c.trend && ` · ${t('home.energy.basisTrend')}`}
-              </span>
+              {lastReadText && (
+                <span className="text-[10px] leading-snug text-muted">
+                  {c.meta.unit} · {lastReadText}
+                </span>
+              )}
             </button>
           )
         })}

@@ -45,6 +45,12 @@ export interface FeedbackInput {
    * anbietbar – bei Gästen gibt es keine Adresse.
    */
   contactOk: boolean
+  /**
+   * Screenshot des Bildschirms beim Öffnen des Fensters (Data-URL, JPEG),
+   * damit sich ein gemeldetes Problem nachstellen lässt. `null`, wenn die
+   * Aufnahme (noch) nicht vorlag oder der Nutzer sie abgewählt hat.
+   */
+  screenshot: string | null
 }
 
 /**
@@ -83,6 +89,14 @@ export async function submitFeedback(input: FeedbackInput): Promise<void> {
     sentiment: input.sentiment,
     category: input.category,
     text: input.text.trim().slice(0, FEEDBACK_TEXT_LIMIT),
+
+    // Screenshot des Bildschirms beim Öffnen (Data-URL) – zeigt, wie die App
+    // aussah, als das Problem auftrat. Firestore-Dokumente sind auf 1 MiB
+    // begrenzt; die Aufnahme ist auf ~480px Breite herunterskaliert, ein
+    // deutlich zu großer Wert (z. B. durch ein sehr breites Gerät) wird
+    // sicherheitshalber verworfen statt den ganzen Schreibvorgang zu riskieren.
+    screenshot:
+      input.screenshot && input.screenshot.length < 900_000 ? input.screenshot : null,
 
     // Wie es zustande kam.
     kind: 'general',

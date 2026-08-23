@@ -33,7 +33,7 @@ type Phase = 'form' | 'sending' | 'done' | 'error'
  * `Modal` rendert seine Kinder nur im geöffneten Zustand, dadurch startet das
  * Formular bei jedem Öffnen von selbst leer – ganz ohne Zurücksetz-Effekt.
  */
-function FeedbackForm({ source, presetSentiment, onClose, onSubmitted }: FeedbackFormProps) {
+function FeedbackForm({ source, presetSentiment, screenshot, onClose, onSubmitted }: FeedbackFormProps) {
   const { t } = useTranslation()
   const location = useLocation()
   const user = useUser()
@@ -45,6 +45,10 @@ function FeedbackForm({ source, presetSentiment, onClose, onSubmitted }: Feedbac
   const [category, setCategory] = useState<FeedbackCategory | null>(null)
   const [text, setText] = useState('')
   const [contactOk, setContactOk] = useState(false)
+  // Screenshot ist standardmäßig dabei (der ganze Zweck der Aufnahme), aber
+  // abwählbar – ein Bildschirmfoto ist sensibler als Route/Version/Gerät und
+  // verdient eine eigene, sichtbare Entscheidung statt automatisch mitzulaufen.
+  const [includeScreenshot, setIncludeScreenshot] = useState(true)
   const [phase, setPhase] = useState<Phase>('form')
   const textRef = useRef<HTMLTextAreaElement>(null)
 
@@ -84,6 +88,7 @@ function FeedbackForm({ source, presetSentiment, onClose, onSubmitted }: Feedbac
         source,
         route: location.pathname,
         contactOk,
+        screenshot: includeScreenshot ? screenshot : null,
       })
       markSubmitted()
       void track('feedback_submitted', {
@@ -182,6 +187,34 @@ function FeedbackForm({ source, presetSentiment, onClose, onSubmitted }: Feedbac
         )}
       </div>
 
+      {/* Screenshot: nur anbieten, wenn die Aufnahme (im Hintergrund beim
+          Öffnen gestartet) tatsächlich vorliegt – sonst gäbe es nichts zum
+          Abwählen. Eigene, sichtbare Zustimmung statt automatisch mitzulaufen:
+          ein Bildschirmfoto ist sensibler als Route/Version/Gerät. */}
+      {screenshot && (
+        <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-border bg-surface-2/40 px-3 py-2.5">
+          <input
+            type="checkbox"
+            checked={includeScreenshot}
+            onChange={(e) => setIncludeScreenshot(e.target.checked)}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--primary)]"
+          />
+          <img
+            src={screenshot}
+            alt=""
+            className="h-11 w-11 shrink-0 rounded-md border border-border object-cover"
+          />
+          <span className="min-w-0">
+            <span className="block text-xs font-medium text-foreground">
+              {t('feedback.screenshot.label')}
+            </span>
+            <span className="block text-[11px] leading-snug text-muted">
+              {t('feedback.screenshot.hint')}
+            </span>
+          </span>
+        </label>
+      )}
+
       {/* Rückfragen: nur für Angemeldete – bei Gästen gibt es keine Adresse. */}
       {user?.email && (
         <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-border bg-surface-2/40 px-3 py-2.5">
@@ -229,6 +262,8 @@ interface FeedbackFormProps {
   source: FeedbackSource
   /** Vorgewählte Stimmung (von der Nachfrage-Karte), sonst null. */
   presetSentiment: Sentiment | null
+  /** Screenshot des Bildschirms beim Öffnen, oder null solange er (noch) fehlt. */
+  screenshot: string | null
   onClose: () => void
   /** Meldet den Erfolg nach oben, damit die Überschrift mitwechselt. */
   onSubmitted: () => void
@@ -248,6 +283,7 @@ export function FeedbackModal() {
   const open = useFeedbackStore((s) => s.open)
   const source = useFeedbackStore((s) => s.source)
   const presetSentiment = useFeedbackStore((s) => s.presetSentiment)
+  const screenshot = useFeedbackStore((s) => s.screenshot)
   const closeFeedback = useFeedbackStore((s) => s.closeFeedback)
   const [submitted, setSubmitted] = useState(false)
 
@@ -268,6 +304,7 @@ export function FeedbackModal() {
       <FeedbackForm
         source={source}
         presetSentiment={presetSentiment}
+        screenshot={screenshot}
         onClose={handleClose}
         onSubmitted={() => setSubmitted(true)}
       />

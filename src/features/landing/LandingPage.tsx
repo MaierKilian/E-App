@@ -13,7 +13,7 @@ import {
   Lock,
   Check,
   Users,
-  GraduationCap,
+  Smartphone,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Logo } from '@/components/ui/Logo'
@@ -136,7 +136,7 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
             <TrustChip icon={Lock} label={t('landing.trust.local')} />
             <TrustChip icon={Check} label={t('landing.trust.free')} />
             <TrustChip icon={Users} label={t('landing.trust.everyone')} />
-            <TrustChip icon={GraduationCap} label={t('landing.trust.learning')} />
+            <TrustChip icon={Smartphone} label={t('landing.trust.anyDevice')} />
           </div>
         </div>
 

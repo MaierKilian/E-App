@@ -1912,11 +1912,7 @@
     "profileMissing_other": "Noch {{count}} Angaben offen",
     "completeCta": "Vervollständigen",
     "energy": {
-      "overline": "Verbrauch / Jahr",
-      "overlineCost": "Energiekosten / Jahr",
-      "basisFullYear": "letzte 12 Monate",
-      "basisEstimate": "geschätzt aus {{months}} Mon.",
-      "basisTrend": "ggü. Vorjahr"
+      "overlineMeter": "Zählerstand"
     },
     "hero": {
       "title": "Geschätzte Energiekosten",
@@ -2029,17 +2025,7 @@
         "desc": "Löscht alle Nutzerdaten (Profil, Messungen, Tarife, Zählerstände, Lernfortschritt). Theme und Sprache bleiben erhalten; die Einführung wird wieder angezeigt."
       }
     },
-    "learning": "Lernen",
-    "changelogEntry": "Änderungsprotokoll",
-    "changelogHint": "Neue und geänderte Funktionen im Überblick"
-  },
-  "changelog": {
-    "title": "Änderungsprotokoll",
-    "subtitle": "Neue und geänderte Funktionen der E-App im Überblick.",
-    "empty": "Noch keine Einträge.",
-    "downloadPdf": "Als PDF herunterladen",
-    "pdfFileName": "e-app-aenderungsprotokoll.pdf",
-    "pdfFootnote": "E-App · Änderungsprotokoll"
+    "learning": "Lernen"
   },
   "feedback": {
     "open": "Feedback geben",
@@ -2084,6 +2070,10 @@
     },
     "textLabel": "Dein Feedback",
     "contextHint": "Seite, App-Version und Gerät werden automatisch mitgesendet.",
+    "screenshot": {
+      "label": "Screenshot beifügen",
+      "hint": "Zeigt uns, wie dieser Bildschirm bei dir aussah."
+    },
     "submit": "Absenden",
     "sending": "Wird gesendet …",
     "thanksTitle": "Danke!",
@@ -2332,7 +2322,7 @@
       "local": "Lokal & privat",
       "free": "Kostenlos",
       "everyone": "Für jeden Haushalt",
-      "learning": "Mit HTW-Lerninhalten"
+      "anyDevice": "Auf jedem Gerät nutzbar"
     },
     "closing": {
       "title": "Bereit, deinem Verbrauch auf die Spur zu kommen?",

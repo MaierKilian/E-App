@@ -15,7 +15,6 @@ import {
   MessageSquarePlus,
   GraduationCap,
   SlidersHorizontal,
-  History,
 } from 'lucide-react'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useUser, useIsAuthenticated } from '@/store/authStore'
@@ -195,12 +194,6 @@ export function SettingsPage() {
           title={t('app.name')}
           subtitle={t('app.tagline')}
           right={<span className="shrink-0 text-xs font-medium text-muted">{APP_VERSION}</span>}
-        />
-        <SettingsRow
-          icon={History}
-          title={t('settings.changelogEntry')}
-          subtitle={t('settings.changelogHint')}
-          to="/aenderungsprotokoll"
         />
       </SettingsSection>
     </div>

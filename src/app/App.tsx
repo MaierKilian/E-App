@@ -14,7 +14,6 @@ import { LearnPage } from '@/features/education/flashcards/LearnPage'
 import { StatsView } from '@/features/education/flashcards/StatsView'
 import { PaceView } from '@/features/education/flashcards/PaceView'
 import { TipsPage } from '@/features/tips/TipsPage'
-import { ChangelogPage } from '@/features/changelog/ChangelogPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
 import { DataResetPage } from '@/features/settings/DataResetPage'
 import { LoginPage } from '@/features/auth/LoginPage'
@@ -129,7 +128,6 @@ export function App() {
             <Route path="/lernen/statistik" element={<StatsView />} />
             <Route path="/lernen/tempo" element={<PaceView />} />
             <Route path="/tipps" element={<TipsPage />} />
-            <Route path="/aenderungsprotokoll" element={<ChangelogPage />} />
             <Route path="/einstellungen" element={<SettingsPage />} />
             <Route path="/einstellungen/daten" element={<DataResetPage />} />
             <Route path="/login" element={<LoginPage />} />

@@ -1912,11 +1912,7 @@
     "profileMissing_other": "{{count}} details left",
     "completeCta": "Complete",
     "energy": {
-      "overline": "Consumption / year",
-      "overlineCost": "Energy costs / year",
-      "basisFullYear": "last 12 months",
-      "basisEstimate": "estimated from {{months}} mo.",
-      "basisTrend": "vs. last year"
+      "overlineMeter": "Meter reading"
     },
     "hero": {
       "title": "Estimated energy costs",
@@ -2029,17 +2025,7 @@
         "desc": "Deletes all user data (profile, measurements, tariffs, meter readings, learning progress). Theme and language are kept; the introduction is shown again."
       }
     },
-    "learning": "Learning",
-    "changelogEntry": "Changelog",
-    "changelogHint": "New and changed features at a glance"
-  },
-  "changelog": {
-    "title": "Changelog",
-    "subtitle": "New and changed features of the E-App at a glance.",
-    "empty": "No entries yet.",
-    "downloadPdf": "Download as PDF",
-    "pdfFileName": "e-app-changelog.pdf",
-    "pdfFootnote": "E-App - Changelog"
+    "learning": "Learning"
   },
   "feedback": {
     "open": "Give feedback",
@@ -2084,6 +2070,10 @@
     },
     "textLabel": "Your feedback",
     "contextHint": "Page, app version and device are sent along automatically.",
+    "screenshot": {
+      "label": "Attach screenshot",
+      "hint": "Shows us what this screen looked like for you."
+    },
     "submit": "Send",
     "sending": "Sending …",
     "thanksTitle": "Thank you!",
@@ -2332,7 +2322,7 @@
       "local": "Local & private",
       "free": "Free",
       "everyone": "For every household",
-      "learning": "With HTW learning content"
+      "anyDevice": "Works on any device"
     },
     "closing": {
       "title": "Ready to get on top of your energy use?",

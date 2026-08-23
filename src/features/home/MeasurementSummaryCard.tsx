@@ -1,3 +1,4 @@
+import { useLayoutEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight } from 'lucide-react'
@@ -10,8 +11,50 @@ import type { MeasurementResult } from '@/features/measurements/types'
 import { measurementProgress, recentResults } from './measurementSummary'
 import { resultValueText } from '@/features/measurements/resultValue'
 
-/** So viele der zuletzt gemessenen Ergebnisse passen ohne Scrollen auf den Screen. */
-const RECENT_COUNT = 3
+/** Höchstens so viele der zuletzt gemessenen Ergebnisse werden überhaupt erwogen. */
+const MAX_RECENT = 3
+
+/**
+ * Wie viele der zuletzt gemessenen Ergebnisse (bis zu `available`) angezeigt
+ * werden, ohne dass der Zuhause-Screen scrollen muss: startet optimistisch bei
+ * `available` und nimmt sich Eintrag für Eintrag zurück, solange die Seite
+ * höher als der sichtbare Bereich ist – so bleiben die Wohnprofile am Ende der
+ * Seite ohne Scrollen erreichbar. Läuft vor dem ersten Bildaufbau, damit
+ * nichts sichtbar „springt". Nie unter 1, solange überhaupt ein Ergebnis da ist.
+ */
+function useFitRecentCount(available: number): number {
+  // Bei geänderter Ergebnismenge (neue Messung, anderes Profil) wieder von
+  // vorn probieren statt bei einem zu kleinen Stand von vorher zu bleiben –
+  // direkt während des Renderns angepasst, ohne eigenen Effekt (React-Muster
+  // „State beim Wechsel eines Werts zurücksetzen").
+  const [prevAvailable, setPrevAvailable] = useState(available)
+  const [count, setCount] = useState(available)
+  if (available !== prevAvailable) {
+    setPrevAvailable(available)
+    setCount(available)
+  }
+
+  useLayoutEffect(() => {
+    function fitToViewport() {
+      if (count <= 1 || typeof window === 'undefined') return
+      if (document.documentElement.scrollHeight > window.innerHeight) {
+        setCount((c) => Math.max(1, c - 1))
+      }
+    }
+    fitToViewport()
+  })
+
+  useLayoutEffect(() => {
+    if (typeof window === 'undefined') return
+    function onResize() {
+      setCount(available)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [available])
+
+  return Math.min(count, available)
+}
 
 /**
  * Messungs-Karte auf dem Zuhause-Einstieg: Fortschritt und die zuletzt
@@ -35,8 +78,9 @@ export function MeasurementSummaryCard() {
   const rooms = useOnboardingStore((s) => s.data.rooms)
 
   const { done, total } = measurementProgress(results)
-  const recent = recentResults(results, RECENT_COUNT)
-
+  const recentAvailable = recentResults(results, MAX_RECENT)
+  const visibleCount = useFitRecentCount(recentAvailable.length)
+  const recent = recentAvailable.slice(0, visibleCount)
 
   /** Raumname eines Ergebnisses, wo der Schlüssel einen Raum bezeichnet. */
   function subLabel(r: MeasurementResult): string | undefined {

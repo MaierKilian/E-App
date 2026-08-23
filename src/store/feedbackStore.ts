@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware'
 // Nur der Typ – zur Laufzeit erzeugt das keine Abhängigkeit auf das Feature und
 // damit keinen Zyklus (`submitFeedback.ts` importiert `FeedbackSource` von hier).
 import type { Sentiment } from '@/features/feedback/submitFeedback'
+import { captureAppScreenshot } from '@/features/feedback/captureScreenshot'
 
 /** Woher wurde das Feedback-Fenster geöffnet? Wandert als `source` mit. */
 export type FeedbackSource = 'header' | 'menu' | 'settings' | 'prompt'
@@ -50,6 +51,12 @@ interface FeedbackState {
    * schon auf ein Gesicht getippt hat, soll die Auswahl nicht wiederholen.
    */
   presetSentiment: Sentiment | null
+  /**
+   * Screenshot des Bildschirms im Moment des Öffnens (Data-URL), damit wir als
+   * Entwickler sehen, wie die App aussah, als das Problem auftrat. `null`
+   * solange die Aufnahme läuft oder fehlgeschlagen ist. (nicht gespeichert)
+   */
+  screenshot: string | null
 
   openFeedback: (source: FeedbackSource, presetSentiment?: Sentiment) => void
   closeFeedback: () => void
@@ -88,10 +95,20 @@ export const useFeedbackStore = create<FeedbackState>()(
       open: false,
       source: 'header',
       presetSentiment: null,
+      screenshot: null,
 
-      openFeedback: (source, presetSentiment = undefined) =>
-        set({ open: true, source, presetSentiment: presetSentiment ?? null }),
-      closeFeedback: () => set({ open: false }),
+      openFeedback: (source, presetSentiment = undefined) => {
+        set({ open: true, source, presetSentiment: presetSentiment ?? null, screenshot: null })
+        // Sofort auslösen, solange der Bildschirm noch den Zustand zeigt, der
+        // zum Feedback geführt hat. Läuft asynchron im Hintergrund – das
+        // Fenster wartet nicht darauf, ein Screenshot ist ein Zusatz.
+        void captureAppScreenshot().then((shot) => {
+          // Inzwischen geschlossen oder erneut geöffnet? Dann gilt die
+          // Aufnahme nicht mehr fürs aktuelle Fenster.
+          if (useFeedbackStore.getState().open) set({ screenshot: shot })
+        })
+      },
+      closeFeedback: () => set({ open: false, screenshot: null }),
       markPrompted: () => set({ lastPromptedAt: Date.now(), promptedThisSession: true }),
       markDismissed: () =>
         set((s) => ({ dismissCount: s.dismissCount + 1, lastPromptedAt: Date.now() })),
