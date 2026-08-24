@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { OnboardingData, RoomEntry, RoomType } from '@/types'
+import type { HeatTransferType, OnboardingData, RoomEntry, RoomType } from '@/types'
 
 /**
  * Migriert zusammengeführte Raumtypen aus älteren Profilen:
@@ -74,6 +74,8 @@ interface OnboardingState {
   editReturnTo: string | null
   setStep: (step: number) => void
   updateData: (partial: Partial<OnboardingData>) => void
+  addRoom: (type: RoomType) => string
+  setRoomHeatTransfer: (type: RoomType, transfer: HeatTransferType) => void
   complete: () => void
   editProfile: () => void
   editSection: (step: number, returnTo?: string) => void
@@ -83,7 +85,7 @@ interface OnboardingState {
 
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       data: defaultData,
       currentStep: -1,
       flowMode: 'linear',
@@ -91,6 +93,40 @@ export const useOnboardingStore = create<OnboardingState>()(
       setStep: (step) => set({ currentStep: step }),
       updateData: (partial) =>
         set((state) => ({ data: { ...state.data, ...partial } })),
+      // Einen Raum anlegen und den Schlüssel der NEUEN Instanz zurückgeben.
+      //
+      // Gebraucht mitten in einem Check, dem die Raumangabe fehlt: Dort soll
+      // der Nutzer nach dem Antippen sofort in genau diesem Raum messen. Gibt
+      // es den Typ schon, entsteht eine weitere Instanz („Schlafzimmer 2") –
+      // deshalb der Rückgabewert, sonst müsste der Aufrufer den Index selbst
+      // ausrechnen und läge bei gleichzeitigen Änderungen daneben.
+      addRoom: (type) => {
+        const existing = get().data.rooms.find((r) => r.type === type)
+        const index = existing ? Math.max(1, Math.floor(existing.count ?? 1)) : 0
+        set((state) => ({
+          data: {
+            ...state.data,
+            rooms: existing
+              ? state.data.rooms.map((r) =>
+                  r.type === type ? { ...r, count: index + 1 } : r,
+                )
+              : [...state.data.rooms, { type, count: 1 }],
+          },
+        }))
+        return `${type}#${index}`
+      },
+      // Wärmeübergabe eines Raumtyps setzen. Kommt aus dem Möbelabstand-Check,
+      // wenn das Profil sie noch nicht kennt (Schnellstart-Raum): Der Check
+      // erhebt die Angabe selbst, statt stillschweigend Heizkörper anzunehmen.
+      setRoomHeatTransfer: (type, transfer) =>
+        set((state) => ({
+          data: {
+            ...state.data,
+            rooms: state.data.rooms.map((r) =>
+              r.type === type ? { ...r, heatTransfer: transfer } : r,
+            ),
+          },
+        })),
       complete: () =>
         set((state) => ({ data: { ...state.data, completed: true }, flowMode: 'linear', editReturnTo: null })),
       // Öffnet den Profil-Hub (Übersicht) im Bearbeitungsmodus, ohne vorhandene

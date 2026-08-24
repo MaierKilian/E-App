@@ -32,12 +32,16 @@ const OPTIONS: { labelKey: string; value: FurnitureAnswer }[] = [
 export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
   const { t } = useTranslation()
   const rooms = useOnboardingStore((s) => s.data.rooms)
+  const setRoomHeatTransfer = useOnboardingStore((s) => s.setRoomHeatTransfer)
 
   const parsed = roomKey ? parseRoomKey(roomKey) : null
-  const underfloor = parsed
-    ? rooms.find((r) => r.type === parsed.type)?.heatTransfer === 'underfloor'
-    : false
   const roomType = parsed?.type
+  // Der Check braucht die Wärmeübergabe – er stellt völlig andere Fragen, je
+  // nachdem ob ein Heizkörper freistehen muss oder eine Fußbodenheizung nicht
+  // zugestellt werden darf. Weiß das Profil sie nicht (Raum aus dem
+  // Schnellstart), erhebt der Check sie selbst, statt Heizkörper zu unterstellen.
+  const transfer = roomType ? rooms.find((r) => r.type === roomType)?.heatTransfer : undefined
+  const underfloor = transfer === 'underfloor'
   const keys = questionKeys(underfloor, roomType)
   const HeadIcon = underfloor ? Grip : Flame
 
@@ -83,6 +87,39 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
         details,
       },
     })
+  }
+
+  // Solange die Wärmeübergabe offen ist, wären die Fragen darunter geraten.
+  if (!transfer) {
+    return (
+      <div className="glass rounded-3xl p-5">
+        <p className="font-medium text-foreground">
+          {t('measurements.furniture_spacing.run.transferQuestion')}
+        </p>
+        <p className="mt-1 text-sm text-muted">
+          {t('measurements.furniture_spacing.run.transferHint', {
+            room: roomType ? t(`onboarding.step3.roomTypes.${roomType}`) : '',
+          })}
+        </p>
+        <div className="mt-4 grid grid-cols-2 gap-2.5">
+          {(['radiator', 'underfloor'] as const).map((option) => {
+            const Icon = option === 'underfloor' ? Grip : Flame
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => roomType && setRoomHeatTransfer(roomType, option)}
+                disabled={!roomType}
+                className="glass focus-ring flex flex-col items-center gap-2 rounded-2xl px-3 py-4 text-sm font-semibold text-foreground transition-transform active:scale-[0.97] disabled:opacity-40"
+              >
+                <Icon className="h-5 w-5 text-primary" />
+                {t(`onboarding.step5.${option}Short`)}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    )
   }
 
   return (

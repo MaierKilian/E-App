@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Check, Lightbulb, HelpCircle } from 'lucide-react'
+import { Check, Lightbulb, HelpCircle, Plus } from 'lucide-react'
 import { Modal } from '@/components/ui/Modal'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { roomInstances, roomLabel } from '../rooms'
+import { RoomCreateSheet } from '../RoomCreateSheet'
 import { lightingDetails, openRoomKeys, rateLighting, type RoomLampState } from './lighting'
 import type { RunProps } from '../runnerTypes'
 
@@ -22,6 +23,7 @@ export function LightingRun({ onEvaluate }: RunProps) {
 
   const [answers, setAnswers] = useState<Partial<Record<string, RoomLampState>>>({})
   const [helpOpen, setHelpOpen] = useState(false)
+  const [addRoomOpen, setAddRoomOpen] = useState(false)
 
   const answered = Object.values(answers).filter(Boolean).length
 
@@ -68,6 +70,11 @@ export function LightingRun({ onEvaluate }: RunProps) {
           {t('measurements.lighting.run.roomsTitle')}
         </p>
         <p className="mb-4 text-xs text-muted">{t('measurements.lighting.run.roomsHint')}</p>
+        {/* Ohne Räume rendert die Liste sonst schlicht nichts – ein leerer
+            Schirm ohne Hinweis, in dem jeder Schnellstart-Nutzer landete. */}
+        {instances.length === 0 && (
+          <p className="mb-3 text-sm text-muted">{t('measurements.roomPicker.emptyHint')}</p>
+        )}
         <ul className="space-y-2.5">
           {instances.map((inst) => {
             const value = answers[inst.key]
@@ -100,6 +107,19 @@ export function LightingRun({ onEvaluate }: RunProps) {
             )
           })}
         </ul>
+
+        <button
+          type="button"
+          onClick={() => setAddRoomOpen(true)}
+          className={`focus-ring flex w-full items-center justify-center gap-1.5 rounded-2xl px-5 text-sm font-medium transition-colors ${
+            instances.length === 0
+              ? 'bg-primary py-3 font-semibold text-primary-foreground hover:opacity-90'
+              : 'mt-3 border border-dashed border-border py-2.5 text-muted hover:text-foreground'
+          }`}
+        >
+          <Plus className="h-4 w-4" />
+          {t('measurements.roomPicker.add')}
+        </button>
       </div>
 
       <div className="glass flex items-center justify-between gap-3 rounded-3xl p-4">
@@ -142,6 +162,15 @@ export function LightingRun({ onEvaluate }: RunProps) {
           )}
         </ul>
       </Modal>
+
+      <RoomCreateSheet
+        open={addRoomOpen}
+        onClose={() => setAddRoomOpen(false)}
+        onCreated={() => {
+          /* Der neue Raum erscheint über den Store sofort in der Liste – hier
+             ist nichts weiter zu tun, der Check bleibt stehen wo er ist. */
+        }}
+      />
     </div>
   )
 }

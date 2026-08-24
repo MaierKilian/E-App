@@ -283,7 +283,9 @@
       "phaseIntro": "Info",
       "phaseRun": "Measure",
       "phaseResult": "Result",
-      "estimated": "estimated"
+      "estimated": "estimated",
+      "saveAndNext": "Save & continue: {{room}}",
+      "saveAndOverview": "Save & back to overview"
     },
     "showerhead": {
       "title": "Showerhead Test",
@@ -633,7 +635,12 @@
       "progress": "{{done}} of {{total}} measurements done – the results are listed below."
     },
     "roomPicker": {
-      "subtitle": "Which room do you want to measure?"
+      "subtitle": "Which room do you want to measure?",
+      "add": "Add a room",
+      "addTitle": "Which room?",
+      "addSubtitle": "A tap is enough. Size and heating can follow later in your profile.",
+      "addAnother": "already {{n}}× – tap again for another",
+      "emptyHint": "This check needs at least one room. Add one here – it only takes a moment."
     },
     "flow": {
       "stepOf": "Step {{current}} of {{total}}",
@@ -797,7 +804,9 @@
         },
         "measureToggle": "Distance measured",
         "distanceUnit": "cm",
-        "distanceHint": "Distance between the front edge of the furniture and the radiator, level with the air inlet at the bottom. At least {{target}} cm of clear space is recommended."
+        "distanceHint": "Distance between the front edge of the furniture and the radiator, level with the air inlet at the bottom. At least {{target}} cm of clear space is recommended.",
+        "transferQuestion": "How is this room heated?",
+        "transferHint": "The questions depend on it. This applies to every “{{room}}” and can be changed in your profile."
       },
       "result": {
         "ratings": {

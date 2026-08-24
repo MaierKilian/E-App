@@ -283,7 +283,9 @@
       "phaseIntro": "Info",
       "phaseRun": "Messen",
       "phaseResult": "Ergebnis",
-      "estimated": "geschätzt"
+      "estimated": "geschätzt",
+      "saveAndNext": "Speichern & weiter: {{room}}",
+      "saveAndOverview": "Speichern & zur Übersicht"
     },
     "showerhead": {
       "title": "Duschkopf-Test",
@@ -633,7 +635,12 @@
       "progress": "{{done}} von {{total}} Messungen erledigt – die Ergebnisse stehen unten."
     },
     "roomPicker": {
-      "subtitle": "Für welchen Raum möchtest du die Messung durchführen?"
+      "subtitle": "Für welchen Raum möchtest du die Messung durchführen?",
+      "add": "Raum anlegen",
+      "addTitle": "Welchen Raum?",
+      "addSubtitle": "Antippen genügt. Größe und Heizung kannst du später im Profil ergänzen.",
+      "addAnother": "bereits {{n}}× – erneut tippen für einen weiteren",
+      "emptyHint": "Für diesen Check brauchst du mindestens einen Raum. Leg ihn hier an – das dauert einen Moment."
     },
     "flow": {
       "stepOf": "Schritt {{current}} von {{total}}",
@@ -797,7 +804,9 @@
         },
         "measureToggle": "Abstand gemessen",
         "distanceUnit": "cm",
-        "distanceHint": "Abstand zwischen Möbelvorderkante und Heizkörper, auf Höhe der Luftöffnung unten. Empfohlen sind mindestens {{target}} cm freier Raum."
+        "distanceHint": "Abstand zwischen Möbelvorderkante und Heizkörper, auf Höhe der Luftöffnung unten. Empfohlen sind mindestens {{target}} cm freier Raum.",
+        "transferQuestion": "Wie wird dieser Raum warm?",
+        "transferHint": "Danach richten sich die Fragen. Die Angabe gilt für alle Räume vom Typ „{{room}}\" und lässt sich im Profil ändern."
       },
       "result": {
         "ratings": {

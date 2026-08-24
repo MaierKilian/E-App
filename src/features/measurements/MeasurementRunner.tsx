@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useSearchParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Check, ChevronRight, DoorOpen } from 'lucide-react'
+import { ArrowLeft, Check, ChevronDown, ChevronRight, DoorOpen, Plus } from 'lucide-react'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftStore'
 import { getMeasurementMeta } from './catalog'
 import { getMeasurementModule } from './registry'
-import { roomInstances, roomLabel, instanceKey } from './rooms'
+import { roomInstances, roomLabel, instanceKey, type RoomInstance } from './rooms'
 import { displayableSavingEur } from './impact'
+import { RoomCreateSheet } from './RoomCreateSheet'
 import { FeedbackPrompt } from '@/features/feedback/FeedbackPrompt'
 import type { RunnerPhase, RunOutcome } from './runnerTypes'
 import type { MeasurementResult } from './types'
@@ -18,7 +19,16 @@ interface SavedState {
   savings: number
   nextHref: string
   nextRoomName?: string
+  /**
+   * Der Nutzer wollte weitermessen. Dann fällt der Erfolgsmoment kürzer aus –
+   * wer sechs Räume abarbeitet, will keine sechs Konfetti-Momente.
+   */
+  continuing: boolean
 }
+
+/** Anzeigedauer des Erfolgs-Zwischenschritts (ms). */
+const SAVED_DELAY_MS = 1600
+const SAVED_DELAY_CONTINUING_MS = 700
 
 const PHASES: RunnerPhase[] = ['intro', 'run', 'result']
 
@@ -47,6 +57,7 @@ export function MeasurementRunner() {
   // die Intro-Phase überspringen und direkt mit dem Messen beginnen.
   const skipIntro = searchParams.get('begin') === '1'
   const saveResult = useMeasurementsStore((s) => s.saveResult)
+  const results = useMeasurementsStore((s) => s.results)
   const clearDraft = useMeasurementDraftStore((s) => s.clearDraft)
   const rooms = useOnboardingStore((s) => s.data.rooms)
 
@@ -68,6 +79,7 @@ export function MeasurementRunner() {
   const [maxReached, setMaxReached] = useState(phases.indexOf(initialPhase))
   const [outcome, setOutcome] = useState<RunOutcome | null>(null)
   const [justSaved, setJustSaved] = useState<SavedState | null>(null)
+  const [addRoomOpen, setAddRoomOpen] = useState(false)
 
   // Wechselt der Raum (z. B. „auto weiter" durch die Räume), Ablauf zurücksetzen.
   // Bewusst während des Renderns statt im Effekt: Sonst zeigt der neue Raum für
@@ -82,10 +94,13 @@ export function MeasurementRunner() {
     setJustSaved(null)
   }
 
-  // Erfolgs-Zwischenschritt: nach kurzer Anzeige automatisch weiter.
+  // Erfolgs-Zwischenschritt: nach kurzer Anzeige automatisch weiter. Das Ziel
+  // hat der Nutzer auf dem Ergebnis-Schirm selbst gewählt (siehe `handleSave`),
+  // hier wird es nur noch angesteuert.
   useEffect(() => {
     if (!justSaved) return
-    const tid = setTimeout(() => navigate(justSaved.nextHref), 1600)
+    const delay = justSaved.continuing ? SAVED_DELAY_CONTINUING_MS : SAVED_DELAY_MS
+    const tid = setTimeout(() => navigate(justSaved.nextHref), delay)
     return () => clearTimeout(tid)
   }, [justSaved, navigate])
 
@@ -106,8 +121,14 @@ export function MeasurementRunner() {
 
   const { Intro, Run, Result } = mod
   const phaseIndex = phases.indexOf(phase)
-  const roomInst = roomKey ? roomInstances(rooms).find((r) => r.key === roomKey) : undefined
-  const roomSuffix = roomInst ? ` · ${roomLabel(t, roomInst)}` : ''
+  const instances = roomInstances(rooms)
+  const roomInst = roomKey ? instances.find((r) => r.key === roomKey) : undefined
+
+  // Nächster noch offener Raum dieser Messung – schon vor dem Speichern
+  // bekannt, damit der Ergebnis-Schirm ihn beim Namen nennen kann.
+  const nextOpenRoom = meta.perRoom
+    ? instances.find((inst) => inst.key !== roomKey && !results[instanceKey(id, inst.key)])
+    : undefined
 
   function goToPhase(next: RunnerPhase) {
     const nextIndex = phases.indexOf(next)
@@ -120,27 +141,40 @@ export function MeasurementRunner() {
     goToPhase('result')
   }
 
-  function handleSave(result: MeasurementResult) {
+  /** Wohin es nach dem Speichern geht – der Nutzer entscheidet das im Ergebnis. */
+  type SaveTarget = 'overview' | 'nextRoom'
+
+  function handleSave(result: MeasurementResult, target: SaveTarget = 'overview') {
     // Eine Messung darf ihren Schlüssel selbst setzen (z. B. Entnahmestelle);
     // sonst greift der Raum aus der URL.
     const full = { ...result, roomKey: result.roomKey ?? roomKey }
     saveResult(full)
     // Zwischenspeicher dieser Messung verwerfen (Ablauf abgeschlossen).
     clearDraft(instanceKey(id, full.roomKey))
-    // Nächstes Ziel bestimmen: bei Pro-Raum der nächste offene Raum, sonst Übersicht.
-    let nextHref = '/measurements'
-    let nextRoomName: string | undefined
-    if (meta!.perRoom) {
-      const fresh = useMeasurementsStore.getState().results
-      const open = roomInstances(rooms).find((inst) => !fresh[instanceKey(id, inst.key)])
-      if (open) {
-        nextHref = `/measurements/${id}?room=${encodeURIComponent(open.key)}`
-        nextRoomName = roomLabel(t, open)
-      }
-    }
-    // Nur ein belastbarer Betrag ueber der Anzeigeschwelle wird genannt – der
-    // Schirm direkt nach dem Messen ist die sichtbarste Euro-Aussage der App.
-    setJustSaved({ savings: displayableSavingEur(full) ?? 0, nextHref, nextRoomName })
+
+    // Vorher sprang der Ablauf nach dem Speichern ungefragt zum nächsten Raum.
+    // Wer nur einen Raum messen wollte, landete überraschend im nächsten; wer
+    // alle messen wollte, wusste vorher nicht, wohin es geht. Jetzt steht die
+    // Wahl auf dem Ergebnis-Schirm, und hier wird sie nur noch ausgeführt.
+    const goNext = target === 'nextRoom' && nextOpenRoom !== undefined
+    setJustSaved({
+      // Nur ein belastbarer Betrag ueber der Anzeigeschwelle wird genannt – der
+      // Schirm direkt nach dem Messen ist die sichtbarste Euro-Aussage der App.
+      savings: displayableSavingEur(full) ?? 0,
+      // `begin=1` überspringt die Erklärseite: Wer „weiter" wählt, hat sie für
+      // diesen Check gerade gelesen. Ohne das steht sie vor jedem einzelnen
+      // Raum erneut da – und aus dem schnellen Durchlauf wird ein Hindernislauf.
+      nextHref: goNext
+        ? `/measurements/${id}?room=${encodeURIComponent(nextOpenRoom!.key)}&begin=1`
+        : '/measurements',
+      nextRoomName: goNext ? roomLabel(t, nextOpenRoom!) : undefined,
+      continuing: goNext,
+    })
+  }
+
+  /** Zu einem anderen Raum derselben Messung wechseln (Chip im Kopf). */
+  function switchRoom(key: string) {
+    navigate(`/measurements/${id}?room=${encodeURIComponent(key)}`, { replace: true })
   }
 
   return (
@@ -155,10 +189,19 @@ export function MeasurementRunner() {
           {t('nav.measurements')}
         </button>
 
-        <h1 className="mt-3 text-2xl font-bold">
-          {t(`measurements.${id}.title`)}
-          {roomSuffix && <span className="text-muted font-semibold">{roomSuffix}</span>}
-        </h1>
+        <h1 className="mt-3 text-2xl font-bold">{t(`measurements.${id}.title`)}</h1>
+
+        {/* Der Raum stand bisher als toter Text-Suffix in der Überschrift. Wer
+            versehentlich im falschen Raum landete, kam nur über den Rückweg zur
+            Übersicht wieder heraus – als Chip ist der Wechsel eine Berührung. */}
+        {roomInst && (
+          <RoomChip
+            current={roomInst.key}
+            instances={instances}
+            onSwitch={switchRoom}
+            onAddRoom={() => setAddRoomOpen(true)}
+          />
+        )}
 
         {/* Phasen-Segmente: Info · Messen · Ergebnis. Bereits erreichte
             vorherige Segmente dienen als Rück-Navigation (nur zurück). */}
@@ -213,20 +256,123 @@ export function MeasurementRunner() {
       {phase === 'result' && outcome && (
         <>
           <Result result={outcome.result} />
-          <div className="flex flex-col gap-2.5 sm:flex-row">
+          <div className="flex flex-col gap-2.5">
+            {/* Wer alle Heizkörper am Stück abarbeitet, soll nicht nach jedem
+                Raum über die Übersicht laufen. Der Knopf nennt den nächsten
+                Raum – „weiter" ohne Ziel ist vor einem Bildschirmwechsel eine
+                Zumutung. */}
+            {nextOpenRoom && (
+              <button
+                type="button"
+                onClick={() => handleSave(outcome.result, 'nextRoom')}
+                className="flex w-full items-center justify-center gap-1.5 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]"
+              >
+                {t('measurements.common.saveAndNext', { room: roomLabel(t, nextOpenRoom) })}
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            )}
+            <div className="flex flex-col gap-2.5 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => handleSave(outcome.result)}
+                className={`flex flex-1 items-center justify-center gap-1 rounded-2xl px-5 py-3 text-sm transition-[transform,opacity,colors] active:scale-[0.97] ${
+                  nextOpenRoom
+                    ? 'border border-border bg-surface/70 font-medium text-foreground hover:bg-surface-2'
+                    : 'bg-primary font-semibold text-primary-foreground hover:opacity-90'
+                }`}
+              >
+                {t(nextOpenRoom ? 'measurements.common.saveAndOverview' : 'measurements.common.save')}
+              </button>
+              <button
+                type="button"
+                onClick={() => goToPhase('run')}
+                className="flex flex-1 items-center justify-center gap-1 rounded-2xl border border-border bg-surface/70 px-5 py-3 text-sm font-medium text-foreground transition-[transform,colors] hover:bg-surface-2 active:scale-[0.97]"
+              >
+                {t('measurements.common.again')}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+
+      <RoomCreateSheet
+        open={addRoomOpen}
+        onClose={() => setAddRoomOpen(false)}
+        onCreated={switchRoom}
+      />
+    </div>
+  )
+}
+
+/**
+ * Raum-Anzeige im Kopf einer Pro-Raum-Messung: zeigt den aktuellen Raum und
+ * klappt die übrigen zum Wechseln auf – samt „Raum anlegen".
+ */
+function RoomChip({
+  current,
+  instances,
+  onSwitch,
+  onAddRoom,
+}: {
+  current: string
+  instances: RoomInstance[]
+  onSwitch: (key: string) => void
+  onAddRoom: () => void
+}) {
+  const { t } = useTranslation()
+  const [open, setOpen] = useState(false)
+  const inst = instances.find((r) => r.key === current)
+  if (!inst) return null
+
+  return (
+    <div className="relative mt-1.5 inline-block">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="glass focus-ring flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-foreground"
+      >
+        <DoorOpen className="h-4 w-4 text-primary" />
+        {roomLabel(t, inst)}
+        <ChevronDown className={`h-4 w-4 text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            onClick={() => setOpen(false)}
+            className="fixed inset-0 z-10 cursor-default"
+          />
+          <div className="glass absolute left-0 z-20 mt-2 w-52 rounded-2xl p-1">
+            {instances.map((r) => (
+              <button
+                key={r.key}
+                type="button"
+                onClick={() => {
+                  setOpen(false)
+                  if (r.key !== current) onSwitch(r.key)
+                }}
+                className={`flex w-full items-center rounded-xl px-3 py-2 text-left text-sm font-medium transition-colors ${
+                  r.key === current
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground hover:bg-surface-2/70'
+                }`}
+              >
+                {roomLabel(t, r)}
+              </button>
+            ))}
             <button
               type="button"
-              onClick={() => handleSave(outcome.result)}
-              className="flex flex-1 items-center justify-center gap-1 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]"
+              onClick={() => {
+                setOpen(false)
+                onAddRoom()
+              }}
+              className="flex w-full items-center gap-1.5 rounded-xl px-3 py-2 text-left text-sm font-medium text-primary transition-colors hover:bg-surface-2/70"
             >
-              {t('measurements.common.save')}
-            </button>
-            <button
-              type="button"
-              onClick={() => goToPhase('run')}
-              className="flex flex-1 items-center justify-center gap-1 rounded-2xl border border-border bg-surface/70 px-5 py-3 text-sm font-medium text-foreground transition-[transform,colors] hover:bg-surface-2 active:scale-[0.97]"
-            >
-              {t('measurements.common.again')}
+              <Plus className="h-4 w-4" />
+              {t('measurements.roomPicker.add')}
             </button>
           </div>
         </>
@@ -284,13 +430,25 @@ function SavedInterstitial({ state, onContinue }: { state: SavedState; onContinu
   )
 }
 
-/** Raum-Auswahl für Pro-Raum-Messungen (mit Status je Raum). */
+/**
+ * Raum-Auswahl für Pro-Raum-Messungen (mit Status je Raum).
+ *
+ * Ohne angelegte Räume stand hier bisher nur „Du hast noch keine Zimmer
+ * ausgewählt" – eine Sackgasse, in der jeder Schnellstart-Nutzer landete. Jetzt
+ * ist das Anlegen dort die Hauptaktion und steht sonst als Zeile unter der
+ * Liste.
+ */
 function RoomPicker({ id }: { id: string }) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const rooms = useOnboardingStore((s) => s.data.rooms)
   const results = useMeasurementsStore((s) => s.results)
   const instances = roomInstances(rooms)
+  const [addOpen, setAddOpen] = useState(false)
+
+  function startIn(key: string) {
+    navigate(`/measurements/${id}?room=${encodeURIComponent(key)}`)
+  }
 
   return (
     <div className="space-y-5">
@@ -305,14 +463,12 @@ function RoomPicker({ id }: { id: string }) {
 
       <div>
         <h1 className="text-2xl font-bold">{t(`measurements.${id}.title`)}</h1>
-        <p className="mt-1 text-muted">{t('measurements.roomPicker.subtitle')}</p>
+        <p className="mt-1 text-muted">
+          {t(instances.length === 0 ? 'measurements.roomPicker.emptyHint' : 'measurements.roomPicker.subtitle')}
+        </p>
       </div>
 
-      {instances.length === 0 ? (
-        <div className="glass rounded-3xl p-6 text-center text-sm text-muted">
-          {t('measurements.byRoom.noRooms')}
-        </div>
-      ) : (
+      {instances.length > 0 && (
         <div className="space-y-2">
           {instances.map((inst) => {
             const done = Boolean(results[instanceKey(id, inst.key)])
@@ -320,7 +476,7 @@ function RoomPicker({ id }: { id: string }) {
               <button
                 key={inst.key}
                 type="button"
-                onClick={() => navigate(`/measurements/${id}?room=${encodeURIComponent(inst.key)}`)}
+                onClick={() => startIn(inst.key)}
                 className="glass flex w-full items-center gap-3 rounded-2xl p-3 text-left transition-transform active:scale-[0.99]"
               >
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
@@ -339,6 +495,22 @@ function RoomPicker({ id }: { id: string }) {
           })}
         </div>
       )}
+
+      {/* Ohne Räume der Primärknopf, mit Räumen eine ruhige Zeile darunter. */}
+      <button
+        type="button"
+        onClick={() => setAddOpen(true)}
+        className={
+          instances.length === 0
+            ? 'flex w-full items-center justify-center gap-1.5 rounded-2xl bg-primary px-5 py-3.5 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]'
+            : 'focus-ring flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border px-5 py-3 text-sm font-medium text-muted transition-colors hover:text-foreground'
+        }
+      >
+        <Plus className="h-4 w-4" />
+        {t('measurements.roomPicker.add')}
+      </button>
+
+      <RoomCreateSheet open={addOpen} onClose={() => setAddOpen(false)} onCreated={startIn} />
     </div>
   )
 }

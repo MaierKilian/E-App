@@ -108,7 +108,14 @@ export type LocationMode = 'manual' | 'automatic' | 'skip'
 export interface RoomEntry {
   type: RoomType
   count: number
-  heatTransfer: HeatTransferType
+  /**
+   * Wärmeübergabe im Raum. **Optional**, weil „noch nicht beantwortet" ein
+   * eigener Zustand sein muss: Vorher stand hier bei jedem neuen Raum
+   * `'radiator'`, und der Möbelabstand-Check bewertete stillschweigend
+   * Heizkörper – auch in Räumen mit Fußbodenheizung. Fehlt der Wert, fragt der
+   * Check einmal nach und schreibt die Antwort zurück.
+   */
+  heatTransfer?: HeatTransferType
   /** Optionale Wohnfläche dieses Raumtyps in m² (gilt je Raum-Instanz). Fehlt
    *  sie, greift ein typischer Fallback-Wert je Raumtyp. */
   areaSqm?: number
