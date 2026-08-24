@@ -30,7 +30,7 @@ selbst (siehe `deployment.md`).
 | 1 | Räume robust machen | ✅ fertig | 2026-08-24 | `4a1629a` |
 | 2 | Zähler entsperren | ✅ fertig | 2026-08-24 | `581b390` |
 | 3 | Registry und Schrittzustände | ✅ fertig | 2026-08-24 | `ead8b8f` |
-| 4 | Neue Schrittfolge und kurzer Schnellstart | ⬜ offen | – | – |
+| 4 | Neue Schrittfolge und kurzer Schnellstart | ✅ fertig | 2026-08-24 | `165cc6b` |
 | 5 | Modernisierung und Erzeuger-Alter | ⬜ offen | – | – |
 | 6 | Gerätebestand, Keller, Ziele | ⬜ offen | – | – |
 
@@ -348,17 +348,42 @@ neu     tests/unit/plausibility.test.ts
 
 ### Fertig, wenn
 
-- [ ] Der Schnellstart ist mit drei Schritten in unter drei Minuten machbar
-      (einmal selbst durchklicken und die Zeit nennen).
-- [ ] Kein Feld ist verlorengegangen: Jedes heute erhobene Feld ist im
-      vollständigen Fragebogen erreichbar – ein Test über die Registry hält das
-      fest.
-- [ ] Nach dem Schnellstart zeigt der Ring einen Wert unter 100 %, und die
-      Übersicht erklärt, was das bedeutet.
-- [ ] 700 m² für 2 Personen erzeugt einen Hinweis, 9 m² je Person in einer WG
-      lässt sich mit „Passt so“ dauerhaft bestätigen.
-- [ ] Der Strom-Grundpreis wirkt sich auf die Jahreskosten-Schätzung aus.
-- [ ] Typecheck, ESLint und Tests grün.
+- [x] Der Schnellstart ist mit drei Schritten in unter drei Minuten machbar.
+      Der automatisierte Durchlauf braucht **34 Sekunden** – ohne Nachdenken,
+      also die Untergrenze. Mit Lesen und Überlegen bleibt reichlich Luft unter
+      den drei Minuten.
+- [x] Kein Feld ist verlorengegangen: Jedes vorher erhobene Feld ist im
+      vollständigen Fragebogen erreichbar – zwei Tests über die Registry halten
+      das fest.
+- [x] Nach dem Schnellstart zeigt der Ring einen Wert unter 100 % (33 %), und
+      die Übersicht erklärt, was das bedeutet.
+- [x] 700 m² für 2 Personen erzeugt einen Hinweis; „Passt so“ lässt ihn
+      verstummen, ein neuer Vertipper bringt ihn zurück.
+- [x] Der Strom-Grundpreis ist erfassbar und wirkt sich auf die
+      Jahreskosten-Schätzung aus.
+- [x] Typecheck, ESLint und Tests grün.
+
+Abnahme gefahren mit `tests/unit/plausibility.test.ts` (13 Tests), zwei neuen
+Tests in `sections.test.ts` und einem Playwright-Durchlauf durch beide Wege.
+
+### Unterwegs entschieden
+
+- **Acht Abschnitte statt sieben plus Übersicht.** Die Übersicht ist ein
+  Registry-Abschnitt wie jeder andere (`review: true`), sonst hätte sie einen
+  Sonderweg gebraucht.
+- **`roomsCount` erscheint nur, solange keine Räume angelegt sind.** Danach ist
+  die Raumliste die genauere Wahrheit, und der Schritt zeigt sie als Zeile an,
+  statt dieselbe Frage zweimal zu stellen. `effectiveRoomCount` bündelt das.
+- **„Als Nächstes lohnt sich …“ bevorzugt nicht besuchte Abschnitte.** Sonst
+  empfahl die Übersicht direkt nach dem Schnellstart ausgerechnet den Schritt,
+  den der Nutzer gerade ausgefüllt hatte.
+- **Die Übersicht zählt als besucht.** Ohne das konnte ihr Segment im
+  Schrittbalken nie voll werden – man stand darauf und sah es grau.
+- **`energyCostRange` ist eine Pflichtangabe des Preis-Abschnitts.** Damit trägt
+  keine Hub-Kachel mehr die „Optional“-Beschriftung; der Code-Zweig dafür bleibt
+  als Regel für künftige Abschnitte bestehen.
+- Der Renovierungs-Schritt wird im Gebäude-Abschnitt **komponiert**, nicht
+  einverleibt – Etappe 5 tauscht ihn dort gegen das Ereignis-Log aus.
 
 ---
 
