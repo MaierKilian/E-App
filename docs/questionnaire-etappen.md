@@ -27,7 +27,7 @@ selbst (siehe `deployment.md`).
 | # | Etappe | Status | Abgeschlossen | Commit |
 |---|---|---|---|---|
 | 0 | Vorarbeit: Fortschrittszahlen aus einer Quelle | ✅ fertig | 2026-08-24 | `d403a63` |
-| 1 | Räume robust machen | ⬜ offen | – | – |
+| 1 | Räume robust machen | ✅ fertig | 2026-08-24 | `4a1629a` |
 | 2 | Zähler entsperren | ⬜ offen | – | – |
 | 3 | Registry und Schrittzustände | ⬜ offen | – | – |
 | 4 | Neue Schrittfolge und kurzer Schnellstart | ⬜ offen | – | – |
@@ -112,21 +112,38 @@ neu     src/features/onboarding/RoomTypePicker.tsx
 
 ### Fertig, wenn
 
-- [ ] Mit **null** Räumen ist jeder der neun Checks bis zum Ergebnis durchführbar.
-- [ ] Ein im Check angelegter Raum erscheint anschließend im Fragebogen-Schritt
+- [x] Mit **null** Räumen ist jeder der neun Checks bis zum Ergebnis durchführbar.
+- [x] Ein im Check angelegter Raum erscheint anschließend im Fragebogen-Schritt
       „Räume“, in der Raum-Ansicht und im Fortschritt – ohne Neuladen.
-- [ ] Ein zweiter Raum desselben Typs landet als eigene Instanz (`bedroom#1`),
+- [x] Ein zweiter Raum desselben Typs landet als eigene Instanz (`bedroom#1`),
       und der Check startet in **dieser** Instanz.
-- [ ] Der Ergebnis-Schirm eines Pro-Raum-Checks nennt den nächsten offenen Raum
+- [x] Der Ergebnis-Schirm eines Pro-Raum-Checks nennt den nächsten offenen Raum
       beim Namen; ohne weiteren Raum steht dort „zur Übersicht“.
-- [ ] Der Möbelabstand-Check fragt die Wärmeübergabe nur, wenn das Profil sie
+- [x] Der Möbelabstand-Check fragt die Wärmeübergabe nur, wenn das Profil sie
       nicht kennt, und schreibt sie zurück.
-- [ ] Typecheck, ESLint und `npx vitest run` grün.
+- [x] Typecheck, ESLint und `npx vitest run` grün.
+
+Abnahme gefahren mit `tests/unit/roomCreation.test.ts` (Store-Ebene) und einem
+Playwright-Durchlauf gegen die laufende App (Bedienebene, Skript im Scratchpad
+der Session).
+
+### Unterwegs entschieden
+
+- **`RoomEntry.heatTransfer` ist jetzt optional.** „Noch nicht beantwortet“
+  musste ein eigener Zustand werden – sonst kann kein Check erkennen, ob das
+  Profil die Antwort kennt oder nur den Default `'radiator'` trägt. Neue Räume
+  entstehen ohne Wert, bestehende Profile behalten ihren.
+- **„Speichern & weiter“ überspringt die Erklärseite** (`begin=1`). Beim Test
+  fiel auf, dass der nächste Raum sonst wieder auf der Info-Phase startet – bei
+  sechs Räumen sechsmal dieselbe Anleitung.
+- Der **Beleuchtungs-Check** brauchte dieselbe Raumanlage wie die beiden
+  Pro-Raum-Checks; das war in der ursprünglichen Analyse untergegangen.
 
 ### Offene Entscheidung
 
 Instanz-genaue Abweichungen (`RoomEntry.overrides`, Konzept 5.5) kommen
-**später**. Bis dahin schreibt der Check auf Typ-Ebene zurück und sagt das auch.
+**später**. Bis dahin schreibt der Check auf Typ-Ebene zurück und sagt das auch
+(„gilt für alle Räume vom Typ Küche“).
 
 ---
 
@@ -258,6 +275,10 @@ neu     tests/unit/sections.test.ts
    Ausstattung · Standort & Wohnsituation. `Step5HeatTransfer` löst sich auf
    (Wärmeübergabe → Räume, Lüftung/Dämmung → Gebäude); `windowAge` und
    `energyCostRange` und `occupancyStatus` ziehen in ihre neuen Schritte.
+   *Aus Etappe 1:* `heatTransfer` ist optional geworden, ein Raum ohne Angabe
+   hat in der Wärmeübergabe-Tabelle also keine Vorauswahl mehr. Das ist
+   beabsichtigt (unbeantwortet ≠ Heizkörper) und macht das Feld in der Registry
+   aus Etappe 3 erst zählbar.
 2. **Schnellstart: drei Schritte** – Zuhause · Heizung & Warmwasser · Preise,
    dann die Übersicht. Keine Messgeräte-Checkliste, kein Profilbild.
 3. **Plausibilitätsprüfung** `onboarding/plausibility.ts` (reine Funktion):
