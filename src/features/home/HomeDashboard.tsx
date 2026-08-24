@@ -9,7 +9,7 @@ import type { OnboardingData } from '@/types'
 import { ProgressRing } from './ProgressRing'
 import { EnergySummaryCard } from './EnergySummaryCard'
 import { MeasurementSummaryCard } from './MeasurementSummaryCard'
-import { profileCompleteness, profileMissingCount } from './estimateEnergy'
+import { profileCompleteness, profileMissingCount } from '@/features/onboarding/sections'
 import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
 import { useTipContext } from '@/features/tips/useTipContext'
 

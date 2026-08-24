@@ -1,0 +1,267 @@
+import { User, Building2, DoorOpen, Flame, Layers, Gauge, Hammer, MapPin, Wallet, ClipboardCheck } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import type { OnboardingData } from '@/types'
+
+/**
+ * Die eine Liste, aus der Fragebogen-Flow, Titel, Profil-Hub, Abschnitts-Status
+ * und Fortschritt folgen.
+ *
+ * Vorher war die Schrittreihenfolge an fünf Stellen unabhängig kodiert:
+ * `QUICK_TOTAL`/`DETAILED_TOTAL`, zwei Titel-Arrays, zwei `switch`-Blöcke, das
+ * `SECTIONS`-Array des Hubs und noch einmal `sectionStatus`. Jede Kopie musste
+ * dasselbe wissen, und genau das ging schief: `profileChecks` prüfte 16 Felder,
+ * `sectionStatus` 19 – der Prozentbalken im Hub konnte 100 % zeigen, während die
+ * Kacheln darunter offene Angaben meldeten.
+ *
+ * Dasselbe Muster wie `measurements/catalog.ts` bei den Messungen: eine
+ * Registry, alles andere leitet sich ab.
+ */
+
+/**
+ * Die Abschnitte des Fragebogens.
+ *
+ * Als Union statt `string`, damit der Compiler erzwingt, dass jeder Abschnitt
+ * einen Inhalt hat (siehe `SECTION_BODIES` in `OnboardingPage`). Ein Test
+ * könnte das auch prüfen – aber erst zur Laufzeit, und ein vergessener
+ * Abschnitt wäre bis dahin eine leere Seite.
+ */
+export type SectionId =
+  | 'profile'
+  | 'building'
+  | 'rooms'
+  | 'heating'
+  | 'envelope'
+  | 'instruments'
+  | 'renovation'
+  | 'location'
+  | 'prices'
+  | 'review'
+
+/** Eine Einzelangabe eines Abschnitts. */
+export interface SectionField {
+  /** Stabiler Schlüssel; zugleich der i18n-Schlüssel unter `onboarding.fields.*`. */
+  id: string
+  /** Ist die Angabe sinnvoll befüllt? Eine Prüfung, überall dieselbe. */
+  answered: (d: OnboardingData) => boolean
+  /**
+   * Optionale Angaben zählen **nicht** in den Fortschritts-Nenner. Sonst wäre
+   * 100 % nur mit Angaben erreichbar, die die App selbst als optional
+   * beschriftet – der Ring bliebe für alle dauerhaft unter voll.
+   */
+  optional?: boolean
+}
+
+export interface OnboardingSection {
+  /** Stabile id – trägt den Besuchsstatus (`visitedSections`). */
+  id: SectionId
+  titleKey: string
+  icon: LucideIcon
+  /** Wird dieser Abschnitt im Schnellstart gezeigt? */
+  quick: boolean
+  /** Abschluss-Schritt ohne Eingaben (Übersicht) – trägt keine Aktionsleiste. */
+  review?: boolean
+  fields: SectionField[]
+}
+
+/** Kurzschreibweise für eine Pflichtangabe. */
+function field(id: string, answered: (d: OnboardingData) => boolean): SectionField {
+  return { id, answered }
+}
+
+/** Kurzschreibweise für eine freiwillige Angabe (zählt nicht im Nenner). */
+function optional(id: string, answered: (d: OnboardingData) => boolean): SectionField {
+  return { id, answered, optional: true }
+}
+
+/**
+ * Reihenfolge und Inhalt entsprechen dem heutigen vollständigen Fragebogen.
+ * Der Zuschnitt der Abschnitte ändert sich erst in einer späteren Etappe –
+ * hier geht es nur darum, dass die App ihn aus **einer** Quelle kennt.
+ */
+export const ONBOARDING_SECTIONS: OnboardingSection[] = [
+  {
+    id: 'profile',
+    titleKey: 'onboarding.step1.title',
+    icon: User,
+    quick: true,
+    fields: [
+      optional('profileImage', (d) => Boolean((d.profileImage ?? '').trim())),
+      field('profileName', (d) => (d.profileName ?? '').trim().length > 0),
+      field('personsCount', (d) => d.personsCount > 0),
+      field('goals', (d) => d.goals.length > 0),
+      field('occupancyStatus', (d) => d.occupancyStatus !== null),
+    ],
+  },
+  {
+    id: 'building',
+    titleKey: 'onboarding.step2.title',
+    icon: Building2,
+    quick: true,
+    fields: [
+      field('buildingYear', (d) => d.buildingYear > 0),
+      field('buildingType', (d) => Boolean(d.buildingType)),
+      field('livingArea', (d) => d.livingArea > 0),
+      field('floors', (d) => d.floors > 0),
+      field('windowAge', (d) => d.windowAge !== 'unknown'),
+    ],
+  },
+  {
+    id: 'rooms',
+    titleKey: 'onboarding.step3.title',
+    icon: DoorOpen,
+    quick: false,
+    fields: [
+      field('rooms', (d) => d.rooms.length > 0),
+      optional('roomAreas', (d) => d.rooms.some((r) => (r.areaSqm ?? 0) > 0)),
+    ],
+  },
+  {
+    id: 'heating',
+    titleKey: 'onboarding.step4.title',
+    icon: Flame,
+    quick: true,
+    fields: [
+      field('heatGenerators', (d) => d.heatGenerators.length > 0),
+      field('hotWaterType', (d) => d.hotWaterType !== 'unknown'),
+    ],
+  },
+  {
+    id: 'envelope',
+    titleKey: 'onboarding.step5.title',
+    icon: Layers,
+    quick: false,
+    fields: [
+      // Die Wärmeübergabe wird hier gefragt (Tabelle je Raum). Seit sie
+      // optional ist, lässt sich „noch nicht beantwortet“ überhaupt erst
+      // zählen – vorher stand bei jedem Raum stillschweigend „Heizkörper“.
+      field('heatTransfer', (d) => d.rooms.length > 0 && d.rooms.every((r) => Boolean(r.heatTransfer))),
+      field('ventilationType', (d) => d.ventilationType !== 'unknown'),
+      field('insulationState', (d) => d.insulationState !== 'unknown'),
+    ],
+  },
+  {
+    id: 'instruments',
+    titleKey: 'onboarding.step6.title',
+    icon: Gauge,
+    quick: true,
+    fields: [
+      field('instruments', (d) => d.instruments.length > 0),
+      field('energyCostRange', (d) => d.energyCostRange !== 'unknown'),
+    ],
+  },
+  {
+    id: 'renovation',
+    titleKey: 'onboarding.step7renovation.title',
+    icon: Hammer,
+    quick: false,
+    fields: [field('lastRenovationYear', (d) => d.lastRenovationYear !== 'unknown')],
+  },
+  {
+    id: 'location',
+    titleKey: 'onboarding.step7.title',
+    icon: MapPin,
+    quick: false,
+    // Die App beschriftet die Postleitzahl selbst als optional – dann darf sie
+    // den Fortschritt auch nicht bremsen.
+    fields: [optional('postalCode', (d) => (d.postalCode ?? '').trim().length > 0)],
+  },
+  {
+    id: 'prices',
+    titleKey: 'onboarding.prices.title',
+    icon: Wallet,
+    quick: true,
+    // Preise liegen im `tariffStore`, nicht in `OnboardingData`; leere Felder
+    // behalten sinnvolle Standardwerte. Nichts zu zählen.
+    fields: [],
+  },
+  {
+    id: 'review',
+    titleKey: 'onboarding.step8.title',
+    icon: ClipboardCheck,
+    quick: true,
+    review: true,
+    fields: [],
+  },
+]
+
+/** Abschnitte des gewählten Wegs, in der Reihenfolge des Fragebogens. */
+export function sectionsFor(mode: 'quick' | 'detailed'): OnboardingSection[] {
+  return mode === 'quick'
+    ? ONBOARDING_SECTIONS.filter((s) => s.quick)
+    : ONBOARDING_SECTIONS
+}
+
+/** Abschnitte, die der Profil-Hub als Kacheln zeigt (alles außer der Übersicht). */
+export function hubSections(): OnboardingSection[] {
+  return ONBOARDING_SECTIONS.filter((s) => !s.review)
+}
+
+/** Beantwortungsstand eines Abschnitts (nur Pflichtangaben zählen). */
+export interface SectionStatus {
+  open: number
+  total: number
+  /** Füllgrad 0..100; ein Abschnitt ohne Pflichtangaben gilt als voll. */
+  pct: number
+}
+
+export function statusOf(section: OnboardingSection, data: OnboardingData): SectionStatus {
+  const required = section.fields.filter((f) => !f.optional)
+  const open = required.filter((f) => !f.answered(data)).length
+  const total = required.length
+  return { open, total, pct: total === 0 ? 100 : Math.round(((total - open) / total) * 100) }
+}
+
+/**
+ * Zustand eines Abschnitts für Fortschrittsanzeige und Hub.
+ *
+ * „Angefangen“ ist die eigentliche Neuerung: Ein durchgeklickter, aber
+ * unvollständiger Schritt sah bisher aus wie ein fertiger. Er ist eine offene
+ * Schleife und soll auffallen – ein nie besuchter Schritt ist dagegen nur noch
+ * nicht dran.
+ */
+export type SectionState = 'open' | 'started' | 'complete'
+
+export function stateOf(
+  section: OnboardingSection,
+  data: OnboardingData,
+  visited: readonly string[],
+): SectionState {
+  const { open, total } = statusOf(section, data)
+  // Ein Abschnitt ohne Pflichtangabe (Preise, Übersicht) hat nichts zu
+  // erledigen – „fertig" wäre er trotzdem erst, wenn der Nutzer dort war.
+  // Sonst stünden im Schrittbalken die letzten Segmente von Anfang an voll.
+  if (total === 0) return visited.includes(section.id) ? 'complete' : 'open'
+  if (open === 0) return 'complete'
+  return visited.includes(section.id) ? 'started' : 'open'
+}
+
+/**
+ * Profil-Vollständigkeit in Prozent – gemessen am **vollständigen** Fragebogen.
+ *
+ * Nach dem Schnellstart steht hier bewusst kein 100 %: Der Wert beschreibt das
+ * Profil, nicht den gewählten Weg. Dieselbe Feldliste speist die Abschnitts-
+ * Kacheln, deshalb können beide sich nicht mehr widersprechen.
+ */
+export function profileCompleteness(data: OnboardingData): number {
+  const { answered, total } = fieldTally(data)
+  return total === 0 ? 100 : Math.round((answered / total) * 100)
+}
+
+/** Anzahl noch offener Pflichtangaben über alle Abschnitte. */
+export function profileMissingCount(data: OnboardingData): number {
+  const { answered, total } = fieldTally(data)
+  return total - answered
+}
+
+function fieldTally(data: OnboardingData): { answered: number; total: number } {
+  let answered = 0
+  let total = 0
+  for (const section of ONBOARDING_SECTIONS) {
+    for (const f of section.fields) {
+      if (f.optional) continue
+      total += 1
+      if (f.answered(data)) answered += 1
+    }
+  }
+  return { answered, total }
+}

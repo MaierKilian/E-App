@@ -559,6 +559,19 @@ body {
 }
 
 /* Edel „leuchtender" Fortschrittsbalken. */
+/*
+  „Angefangen": ein Schritt, den der Nutzer gesehen, aber nicht ausgefüllt hat.
+  Streifen statt Vollfläche, damit er sich auf einen Blick von „fertig"
+  unterscheidet – auch für Augen, die den Farbunterschied nicht sicher trennen.
+*/
+.progress-striped {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--color-primary) 0 3px,
+    color-mix(in srgb, var(--color-primary) 35%, transparent) 3px 6px
+  );
+}
+
 .progress-glow {
   background-image: linear-gradient(
     90deg,

@@ -1410,9 +1410,10 @@
       "subtitle": "Pick a section to complete or change your details.",
       "sectionOpen": "{{count}} open",
       "sectionComplete": "complete",
-      "optional": "Optional · Smart home",
+      "optional": "Optional",
       "backToOverview": "Overview",
-      "done": "Done"
+      "done": "Done",
+      "sectionStarted": "started"
     },
     "prices": {
       "title": "Energy prices",

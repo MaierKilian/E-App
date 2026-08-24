@@ -72,7 +72,16 @@ interface OnboardingState {
   currentStep: number
   flowMode: FlowMode
   editReturnTo: string | null
+  /**
+   * Abschnitte, die der Nutzer schon geöffnet hatte (Registry-ids).
+   *
+   * Trägt den Zustand „angefangen": Ein durchgeklickter, aber unvollständiger
+   * Schritt sah bisher aus wie ein fertiger. Ohne diese Liste ist „noch nicht
+   * dran" von „begonnen und liegengelassen" nicht zu unterscheiden.
+   */
+  visitedSections: string[]
   setStep: (step: number) => void
+  markVisited: (id: string) => void
   updateData: (partial: Partial<OnboardingData>) => void
   addRoom: (type: RoomType) => string
   setRoomHeatTransfer: (type: RoomType, transfer: HeatTransferType) => void
@@ -90,7 +99,16 @@ export const useOnboardingStore = create<OnboardingState>()(
       currentStep: -1,
       flowMode: 'linear',
       editReturnTo: null,
+      visitedSections: [],
       setStep: (step) => set({ currentStep: step }),
+      // Beim Rendern eines Abschnitts gesetzt, nicht beim Verlassen: Sonst
+      // zählte ein Zurück-Wischen nicht als Besuch.
+      markVisited: (id) =>
+        set((state) =>
+          state.visitedSections.includes(id)
+            ? state
+            : { visitedSections: [...state.visitedSections, id] },
+        ),
       updateData: (partial) =>
         set((state) => ({ data: { ...state.data, ...partial } })),
       // Einen Raum anlegen und den Schlüssel der NEUEN Instanz zurückgeben.
@@ -143,7 +161,14 @@ export const useOnboardingStore = create<OnboardingState>()(
           editReturnTo: returnTo ?? null,
         })),
       clearReturnTo: () => set({ editReturnTo: null }),
-      reset: () => set({ data: defaultData, currentStep: -1, flowMode: 'linear', editReturnTo: null }),
+      reset: () =>
+        set({
+          data: defaultData,
+          currentStep: -1,
+          flowMode: 'linear',
+          editReturnTo: null,
+          visitedSections: [],
+        }),
     }),
     {
       name: 'eapp-onboarding',
@@ -158,6 +183,7 @@ export const useOnboardingStore = create<OnboardingState>()(
           ...current,
           ...p,
           data: mergedData,
+          visitedSections: p.visitedSections ?? current.visitedSections,
           editReturnTo: null, // Navigationszustand nicht sitzungsübergreifend speichern
         }
       },

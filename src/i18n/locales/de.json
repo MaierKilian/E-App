@@ -1559,9 +1559,10 @@
       "subtitle": "Wähle einen Abschnitt, um deine Angaben zu ergänzen oder zu ändern.",
       "sectionOpen": "{{count}} offen",
       "sectionComplete": "vollständig",
-      "optional": "Optional · Smart Home",
+      "optional": "Optional",
       "backToOverview": "Übersicht",
-      "done": "Fertig"
+      "done": "Fertig",
+      "sectionStarted": "angefangen"
     },
     "prices": {
       "title": "Verbrauchspreise",

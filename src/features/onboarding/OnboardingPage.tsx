@@ -1,9 +1,18 @@
+import { useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft, ChevronRight, Sparkles, Info } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { StepIndicator } from './StepIndicator'
 import { ProfileHub } from './ProfileHub'
+import {
+  ONBOARDING_SECTIONS,
+  sectionsFor,
+  stateOf,
+  type OnboardingSection,
+  type SectionId,
+} from './sections'
 import { Step0Mode } from './steps/Step0Mode'
 import { Step1Profile } from './steps/Step1Profile'
 import { Step2Building } from './steps/Step2Building'
@@ -20,102 +29,67 @@ import { HomeDashboard } from '@/features/home/HomeDashboard'
 import { PageHeader } from '@/components/ui/PageHeader'
 import type { OnboardingData } from '@/types'
 
-// Quick flow steps (indices 0..5, displayed as steps 1..6):
-// 0 = Profile, 1 = Building, 2 = Heating, 3 = Instruments, 4 = Prices, 5 = Review
-const QUICK_TOTAL = 6
-
-// Detailed flow steps (indices 0..9, displayed as steps 1..10):
-// 0 = Profile, 1 = Building, 2 = Rooms, 3 = Heating, 4 = HeatTransfer,
-// 5 = Instruments, 6 = Renovation, 7 = Location, 8 = Prices, 9 = Review
-const DETAILED_TOTAL = 10
-
-function getStepTitle(step: number, mode: 'quick' | 'detailed', t: (key: string) => string): string {
-  if (mode === 'quick') {
-    const keys = [
-      'onboarding.step1.title',
-      'onboarding.step2.title',
-      'onboarding.step4.title',
-      'onboarding.step6.title',
-      'onboarding.prices.title',
-      'onboarding.step8.title',
-    ]
-    return t(keys[step] ?? keys[0])
-  }
-  const keys = [
-    'onboarding.step1.title',
-    'onboarding.step2.title',
-    'onboarding.step3.title',
-    'onboarding.step4.title',
-    'onboarding.step5.title',
-    'onboarding.step6.title',
-    'onboarding.step7renovation.title',
-    'onboarding.step7.title',
-    'onboarding.prices.title',
-    'onboarding.step8.title',
-  ]
-  return t(keys[step] ?? keys[0])
-}
-
-/** Titel eines Abschnitts im Bearbeitungsmodus (Detailed-Sektionen). */
-function getSectionTitle(index: number, t: (key: string) => string): string {
-  // Index entspricht den Detailed-Schritten (0..8, inkl. Preise); 9 = Review wird nicht editiert.
-  return getStepTitle(index, 'detailed', t)
-}
-
 interface StepContentProps {
-  step: number
-  mode: 'quick' | 'detailed'
   data: OnboardingData
   onChange: (partial: Partial<OnboardingData>) => void
+  /** Vollständiger Fragebogen – die Schritte blenden dann mehr Felder ein. */
+  detailed: boolean
 }
 
-function QuickStepContent({ step, data, onChange }: Omit<StepContentProps, 'mode'>) {
-  switch (step) {
-    case 0: return <Step1Profile data={data} onChange={onChange} />
-    case 1: return <Step2Building data={data} onChange={onChange} />
-    case 2: return <Step4Heating data={data} onChange={onChange} />
-    case 3: return <Step6Instruments data={data} onChange={onChange} />
-    case 4: return <StepPrices data={data} />
-    case 5: return <Step8Review data={data} />
-    default: return null
-  }
+/**
+ * Was in einem Abschnitt gerendert wird, je Registry-id.
+ *
+ * Ersetzt die früheren zwei `switch`-Blöcke (Quick und Detailed), die dieselben
+ * Schritte in zwei Reihenfolgen aufzählten. Welche Abschnitte ein Weg zeigt,
+ * steht jetzt allein in `sections.ts`; hier steht nur noch, womit man sie füllt.
+ * Über `SectionId` erzwingt der Compiler, dass kein Abschnitt ohne Inhalt
+ * bleibt.
+ */
+const SECTION_BODIES: Record<SectionId, (p: StepContentProps) => ReactNode> = {
+  profile: ({ data, onChange, detailed }) => (
+    <Step1Profile data={data} onChange={onChange} detailed={detailed} />
+  ),
+  building: ({ data, onChange, detailed }) => (
+    <Step2Building data={data} onChange={onChange} detailed={detailed} />
+  ),
+  rooms: ({ data, onChange }) => <Step3Rooms data={data} onChange={onChange} />,
+  heating: ({ data, onChange, detailed }) => (
+    <Step4Heating data={data} onChange={onChange} detailed={detailed} />
+  ),
+  envelope: ({ data, onChange }) => <Step5HeatTransfer data={data} onChange={onChange} />,
+  instruments: ({ data, onChange, detailed }) => (
+    <Step6Instruments data={data} onChange={onChange} detailed={detailed} />
+  ),
+  renovation: ({ data, onChange }) => <Step7Renovation data={data} onChange={onChange} />,
+  location: ({ data, onChange }) => <Step7Location data={data} onChange={onChange} />,
+  prices: ({ data }) => <StepPrices data={data} />,
+  review: ({ data }) => <Step8Review data={data} />,
 }
 
-function DetailedStepContent({ step, data, onChange }: Omit<StepContentProps, 'mode'>) {
-  switch (step) {
-    case 0: return <Step1Profile data={data} onChange={onChange} detailed />
-    case 1: return <Step2Building data={data} onChange={onChange} detailed />
-    case 2: return <Step3Rooms data={data} onChange={onChange} />
-    case 3: return <Step4Heating data={data} onChange={onChange} detailed />
-    case 4: return <Step5HeatTransfer data={data} onChange={onChange} />
-    case 5: return <Step6Instruments data={data} onChange={onChange} detailed />
-    case 6: return <Step7Renovation data={data} onChange={onChange} />
-    case 7: return <Step7Location data={data} onChange={onChange} />
-    case 8: return <StepPrices data={data} />
-    case 9: return <Step8Review data={data} />
-    default: return null
-  }
-}
-
-/** Inhalt eines einzelnen Abschnitts im Bearbeitungsmodus (Detailed-Sektionen). */
-function EditSectionBody({
-  index,
+/**
+ * Rendert einen Abschnitt und merkt sich, dass er gesehen wurde.
+ *
+ * Der Besuch wird beim Rendern vermerkt, nicht beim Verlassen: Sonst zählte ein
+ * Zurück-Wischen nicht als Besuch, und der Schritt bliebe „offen“, obwohl der
+ * Nutzer ihn vor sich hatte.
+ */
+function SectionBody({
+  section,
   data,
   onChange,
+  detailed,
 }: {
-  index: number
+  section: OnboardingSection
   data: OnboardingData
   onChange: (partial: Partial<OnboardingData>) => void
+  detailed: boolean
 }) {
-  return <DetailedStepContent step={index} data={data} onChange={onChange} />
-}
+  const markVisited = useOnboardingStore((s) => s.markVisited)
+  useEffect(() => {
+    if (!section.review) markVisited(section.id)
+  }, [section.id, section.review, markVisited])
 
-function StepBody({ mode, step, data, onChange }: StepContentProps) {
-  return mode === 'quick' ? (
-    <QuickStepContent step={step} data={data} onChange={onChange} />
-  ) : (
-    <DetailedStepContent step={step} data={data} onChange={onChange} />
-  )
+  return <>{SECTION_BODIES[section.id]({ data, onChange, detailed })}</>
 }
 
 /**
@@ -138,25 +112,32 @@ const SECONDARY_BTN =
 export function OnboardingPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const { data, currentStep, flowMode, editReturnTo, setStep, updateData, complete, editProfile, clearReturnTo } =
+  const { data, currentStep, flowMode, editReturnTo, visitedSections, setStep, updateData, complete, editProfile, clearReturnTo } =
     useOnboardingStore()
 
   // Step -1 = mode selection (Step0Mode), steps >= 0 = actual flow steps
   const isOnModeSelection = currentStep === -1
   const mode = data.mode
 
-  const totalSteps = mode === 'quick' ? QUICK_TOTAL : DETAILED_TOTAL
+  // Die Schritte des gewählten Wegs – die einzige Stelle, an der die
+  // Reihenfolge herkommt (siehe `sections.ts`).
+  const flowSections = sectionsFor(mode)
+  const totalSteps = flowSections.length
   const isLastStep = !isOnModeSelection && currentStep === totalSteps - 1
+  const activeSection = flowSections[currentStep]
   // Der Review-Schritt bringt eigene Karten mit – kein zusätzlicher Card-Rahmen.
-  const isReviewStep = isLastStep
+  const isReviewStep = Boolean(activeSection?.review)
 
   if (data.completed) {
     return <HomeDashboard data={data} onEdit={editProfile} />
   }
 
   // Bearbeitungsmodus: Profil-Hub (currentStep -2) bzw. einzelner Abschnitt (>= 0).
+  // Im Bearbeitungsmodus zählen immer die Indizes der vollständigen Liste –
+  // auch für Schnellstart-Profile, die dort alle Abschnitte nachtragen können.
   if (flowMode === 'edit') {
-    if (currentStep === -2) {
+    const editSectionDef = ONBOARDING_SECTIONS[currentStep]
+    if (currentStep === -2 || !editSectionDef) {
       return (
         <div className="pb-24">
           <ProfileHub data={data} onOpenSection={setStep} onDone={complete} />
@@ -167,7 +148,7 @@ export function OnboardingPage() {
     return (
       <div className="pb-24">
         <PageHeader
-          title={getSectionTitle(currentStep, t)}
+          title={t(editSectionDef.titleKey)}
           back={{
             label: t('onboarding.hub.backToOverview'),
             onClick: () => { clearReturnTo(); setStep(-2) },
@@ -176,7 +157,7 @@ export function OnboardingPage() {
 
         <div key={`edit-${currentStep}`} className="animate-step-in mt-5">
           <Card>
-            <EditSectionBody index={currentStep} data={data} onChange={updateData} />
+            <SectionBody section={editSectionDef} data={data} onChange={updateData} detailed />
           </Card>
         </div>
 
@@ -259,22 +240,27 @@ export function OnboardingPage() {
     )
   }
 
+  if (!activeSection) return null
+
+  const body = (
+    <SectionBody
+      section={activeSection}
+      data={data}
+      onChange={updateData}
+      detailed={mode === 'detailed'}
+    />
+  )
+
   return (
     <div className="pb-24">
       <StepIndicator
         currentStep={currentStep}
-        totalSteps={totalSteps}
-        title={getStepTitle(currentStep, mode, t)}
+        title={t(activeSection.titleKey)}
+        states={flowSections.map((s) => stateOf(s, data, visitedSections))}
       />
 
       <div key={`${mode}-${currentStep}`} className="animate-step-in mt-5">
-        {isReviewStep ? (
-          <StepBody mode={mode} step={currentStep} data={data} onChange={updateData} />
-        ) : (
-          <Card>
-            <StepBody mode={mode} step={currentStep} data={data} onChange={updateData} />
-          </Card>
-        )}
+        {isReviewStep ? body : <Card>{body}</Card>}
       </div>
 
       <ActionBar>
