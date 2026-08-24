@@ -1,6 +1,6 @@
 import type { OnboardingData } from '@/types'
 import type { EnergyType, MeterReading } from '@/store/readingsStore'
-import { ENERGY_META, activeEnergyTypes, isSeasonal } from '@/features/monitoring/energyConfig'
+import { ENERGY_META, boardEnergyTypes, isSeasonal } from '@/features/monitoring/energyConfig'
 import { PRICE_META } from '@/features/monitoring/priceConfig'
 import { resolvePrice } from '@/store/tariffStore'
 import { sortByDate } from '@/features/monitoring/readings'
@@ -324,9 +324,11 @@ export function buildMonitoringReportData({
   tariff,
   types,
 }: BuildMonitoringArgs): MonitoringReportData {
-  const active = activeEnergyTypes(profile)
+  // Über die Träger des Boards statt über die des Profils: Ein selbst
+  // angelegter Zähler gehört genauso in den Bericht wie ein vorgeschlagener.
+  const available = boardEnergyTypes(profile, readingsByType)
   const filter = types && types.length > 0 ? new Set(types) : undefined
-  const selected = filter ? active.filter((t) => filter.has(t)) : active
+  const selected = filter ? available.filter((t) => filter.has(t)) : available
   const entries = selected.map((type) =>
     buildEntry(type, readingsByType, rangeDays, tariff, profile),
   )

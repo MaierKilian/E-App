@@ -2,34 +2,37 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronRight } from 'lucide-react'
 import { useReadingsStore } from '@/store/readingsStore'
-import { activeEnergyTypes, ENERGY_META } from '@/features/monitoring/energyConfig'
+import { ALL_ENERGY_TYPES, ENERGY_META } from '@/features/monitoring/energyConfig'
 import { sortByDate, consumptionTrend, daysSinceLastReading } from '@/features/monitoring/readings'
 import { TrendBadge } from '@/features/monitoring/MeterTrend'
-import type { OnboardingData } from '@/types'
 
 /**
  * Kompakte Energie-Status-Karte für die Startseite.
  *
- * Zeigt je aktivem Energieträger des Profils den zuletzt abgelesenen
- * Zählerstand als Reihe gleichwertiger, schlanker Kacheln (Strom zuerst, dann
- * Gas/Öl/Pellets/… bzw. PV/Solarthermie). Wasser wird hier bewusst ausgeblendet.
+ * Zeigt je erfasstem Energieträger den zuletzt abgelesenen Zählerstand als
+ * Reihe gleichwertiger, schlanker Kacheln (Strom zuerst, dann Gas/Öl/Pellets/…
+ * bzw. PV/Solarthermie). Wasser wird hier bewusst ausgeblendet.
+ *
+ * Maßgeblich sind die Ablesungen, nicht das Profil: Ein selbst angelegter
+ * Zähler gehört genauso hierher wie ein vom Fragebogen vorgeschlagener.
  *
  * Es erscheinen NUR Träger mit mindestens einer echten Ablesung; ohne eine
  * solche wird nichts gerendert, damit auf der Startseite kein Platzhalter
  * steht. Der Trend-Badge (Tagesverbrauch ggü. Vorzeitraum bzw. Vorjahr)
  * erscheint erst ab der zweiten Ablesung. Antippen öffnet den jeweiligen Zähler.
  */
-export function EnergySummaryCard({ data }: { data: OnboardingData }) {
+export function EnergySummaryCard() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const readingsByType = useReadingsStore((s) => s.readings)
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
-  // Zuletzt abgelesener Zählerstand je aktivem Träger (Reihenfolge = ORDER,
-  // Strom zuerst). Wasser bleibt außen vor; nur Träger mit mindestens einer
-  // echten Ablesung bleiben übrig.
-  const carriers = activeEnergyTypes(data)
+  // Zuletzt abgelesener Zählerstand je Träger (Reihenfolge = ORDER, Strom
+  // zuerst). Wasser bleibt außen vor; der Filter unten lässt nur Träger mit
+  // mindestens einer echten Ablesung übrig – deshalb hier über alle statt über
+  // die des Profils: Ein selbst angelegter Zähler zählt genauso.
+  const carriers = ALL_ENERGY_TYPES
     .filter((type) => type !== 'water')
     .map((type) => {
       const readings = sortByDate(readingsByType[type] ?? [])

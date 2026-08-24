@@ -1482,7 +1482,12 @@
       "ghostHint": "This is how your trend will look once you enter two meter readings.",
       "reorderHint": "Press and hold a widget, then drag to rearrange.",
       "trendVsLastYear": "versus last year",
-      "trendVsPrevious": "versus previous period"
+      "trendVsPrevious": "versus previous period",
+      "addMeter": "Add a meter",
+      "addMeterTitle": "Which meter?",
+      "addMeterKnown": "already on your board",
+      "pvPrompt": "You told us about a solar system – but no generation has been recorded yet.",
+      "pvPromptCta": "Record generation"
     },
     "detail": {
       "back": "Monitoring",

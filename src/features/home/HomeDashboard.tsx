@@ -107,7 +107,7 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
       </div>
 
       {/* 2. Energie-Status (nur mit echten Zählerständen) */}
-      <EnergySummaryCard data={data} />
+      <EnergySummaryCard />
 
       {/* 3. Messungen: Fortschritt und die zuletzt erzielten Ergebnisse.
              Steht vor den Empfehlungen, weil die Empfehlungen daraus folgen –

@@ -9,7 +9,7 @@ import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { useReportSettingsStore } from '@/store/reportSettingsStore'
-import { activeEnergyTypes } from '@/features/monitoring/energyConfig'
+import { boardEnergyTypes } from '@/features/monitoring/energyConfig'
 import { fmtPeriod } from './pdf/format'
 import { canSharePdf, deliverReport } from './pdf/deliver'
 import { buildTips } from '@/features/tips/buildTips'
@@ -35,7 +35,12 @@ export function ReportsPage() {
   const tariff = useTariffStore()
   const settings = useReportSettingsStore()
 
-  const meterTypes = useMemo(() => activeEnergyTypes(profile), [profile])
+  // Auch selbst angelegte Zähler stehen im Bericht zur Wahl, nicht nur die vom
+  // Profil vorgeschlagenen.
+  const meterTypes = useMemo(
+    () => boardEnergyTypes(profile, readingsByType),
+    [profile, readingsByType],
+  )
 
   // Zeitraum: selbst gewählter Wert gilt, sonst passend zu den vorhandenen
   // Ablesungen ableiten (ein fester Default träfe oft gar keine Daten).

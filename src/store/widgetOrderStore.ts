@@ -7,7 +7,7 @@ interface WidgetOrderState {
    * Vom Nutzer festgelegte Reihenfolge der Monitoring-Widgets.
    * Position 0 = großes Hero-Widget, danach das Kachel-Raster.
    * Leer = noch nichts angeordnet → es gilt die Standard-Reihenfolge aus dem
-   * Profil (`activeEnergyTypes`). Nur bekannte, noch aktive Typen werden beim
+   * Profil (`boardEnergyTypes`). Nur bekannte, noch sichtbare Typen werden beim
    * Anzeigen berücksichtigt; neue Energieträger hängen automatisch hinten an.
    */
   order: EnergyType[]

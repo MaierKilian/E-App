@@ -35,6 +35,15 @@ interface SettingsState {
    */
   analyticsEnabled: boolean
   setAnalyticsEnabled: (on: boolean) => void
+  /**
+   * Wurde der Anstoß, die PV-Erzeugung zu erfassen, weggeklickt?
+   *
+   * Er erscheint, wenn im Profil eine PV-Anlage steht, aber noch kein einziger
+   * Erzeugungswert erfasst wurde. Ohne dieses Flag stünde er dort dauerhaft –
+   * ein Hinweis, den man nicht loswird, ist eine Mahnung.
+   */
+  pvPromptDismissed: boolean
+  dismissPvPrompt: () => void
 }
 
 /**
@@ -54,6 +63,8 @@ export const useSettingsStore = create<SettingsState>()(
       setDemoMode: (demoMode) => set({ demoMode }),
       analyticsEnabled: true,
       setAnalyticsEnabled: (analyticsEnabled) => set({ analyticsEnabled }),
+      pvPromptDismissed: false,
+      dismissPvPrompt: () => set({ pvPromptDismissed: true }),
     }),
     {
       name: 'eapp-settings',

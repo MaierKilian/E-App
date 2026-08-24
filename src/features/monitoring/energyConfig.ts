@@ -1,6 +1,6 @@
 import { Zap, Droplet, Flame, Fuel, Trees, Heater, Sun, SunMedium } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import type { EnergyType } from '@/store/readingsStore'
+import type { EnergyType, MeterReading } from '@/store/readingsStore'
 import type { OnboardingData } from '@/types'
 
 /**
@@ -62,6 +62,17 @@ const ORDER: EnergyType[] = [
   'solar_thermal',
 ]
 
+/**
+ * Alle Energieträger, die die App kennt – jeder davon steht jederzeit zur
+ * Auswahl.
+ *
+ * Der Fragebogen ist ein Startpunkt, kein Türsteher: Vorher entschied das
+ * Profil, welche Zähler es überhaupt gibt, und wer im Schnellstart keine PV
+ * angegeben hatte, konnte seine Erzeugung nie erfassen. Das Profil schlägt jetzt
+ * vor (siehe {@link suggestedEnergyTypes}), es sperrt nichts mehr.
+ */
+export const ALL_ENERGY_TYPES: EnergyType[] = ORDER
+
 /** Wärmeerzeuger des Profils → zugehöriger Energieträger. */
 export const HEAT_GENERATOR_MAP: Partial<Record<string, EnergyType>> = {
   gas_boiler: 'gas',
@@ -72,16 +83,38 @@ export const HEAT_GENERATOR_MAP: Partial<Record<string, EnergyType>> = {
 }
 
 /**
- * Ermittelt die für das aktuelle Profil relevanten Energieträger.
- * Strom und Wasser sind immer dabei; Wärmeerzeuger und PV kommen aus dem
- * Onboarding hinzu. Ergebnis ist nach ORDER sortiert und duplikatfrei.
+ * Energieträger, die das Profil nahelegt.
+ *
+ * Strom und Wasser hat jeder Haushalt; Wärmeerzeuger und PV kommen aus dem
+ * Fragebogen. Das steuert die **Vorbelegung** des Zähler-Boards und die
+ * **Erinnerungen** – nicht mehr, was erfassbar ist. Ergebnis ist nach ORDER
+ * sortiert und duplikatfrei.
  */
-export function activeEnergyTypes(data: OnboardingData): EnergyType[] {
+export function suggestedEnergyTypes(data: OnboardingData): EnergyType[] {
   const set = new Set<EnergyType>(['electricity', 'water'])
   for (const gen of data.heatGenerators ?? []) {
     const mapped = HEAT_GENERATOR_MAP[gen]
     if (mapped) set.add(mapped)
   }
   if (data.hasPV === 'yes') set.add('pv')
+  return ORDER.filter((type) => set.has(type))
+}
+
+/**
+ * Träger, die auf dem Board stehen: was das Profil nahelegt **plus** alles,
+ * wofür schon abgelesen wurde.
+ *
+ * Die zweite Hälfte ist der Punkt. Ein selbst angelegter Zähler muss auch dann
+ * sichtbar bleiben, wenn das Profil ihn nicht nahelegt – sonst wäre er nach dem
+ * ersten Eintrag wieder verschwunden.
+ */
+export function boardEnergyTypes(
+  data: OnboardingData,
+  readingsByType: Partial<Record<EnergyType, MeterReading[]>>,
+): EnergyType[] {
+  const set = new Set<EnergyType>(suggestedEnergyTypes(data))
+  for (const type of ORDER) {
+    if ((readingsByType[type]?.length ?? 0) > 0) set.add(type)
+  }
   return ORDER.filter((type) => set.has(type))
 }

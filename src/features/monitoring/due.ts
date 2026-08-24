@@ -1,6 +1,6 @@
 import type { MeterReading, ReminderFrequency, EnergyType } from '@/store/readingsStore'
 import type { OnboardingData } from '@/types'
-import { activeEnergyTypes } from './energyConfig'
+import { boardEnergyTypes } from './energyConfig'
 import { sortByDate } from './readings'
 
 /**
@@ -32,7 +32,15 @@ export function isTypeDue(
   return due ? due.getTime() < now : false
 }
 
-/** Liste der aktiven Energieträger mit überfälliger Ablesung. */
+/**
+ * Energieträger mit überfälliger Ablesung.
+ *
+ * Geht über die Träger des Boards, nicht mehr über die des Profils: Ein selbst
+ * angelegter Zähler soll genauso erinnern wie ein vom Fragebogen
+ * vorgeschlagener. Umgekehrt bleibt es dabei, dass ohne eine einzige Ablesung
+ * nie erinnert wird (siehe {@link isTypeDue}) – sonst mahnte die App jeden
+ * Haushalt zu Pellets, nur weil der Träger existiert.
+ */
 export function dueTypes(
   data: OnboardingData,
   readingsByType: Partial<Record<EnergyType, MeterReading[]>>,
@@ -40,7 +48,7 @@ export function dueTypes(
   now: number,
 ): EnergyType[] {
   if (freq === 'off') return []
-  return activeEnergyTypes(data).filter((type) =>
+  return boardEnergyTypes(data, readingsByType).filter((type) =>
     isTypeDue(sortByDate(readingsByType[type] ?? []), freq, now),
   )
 }

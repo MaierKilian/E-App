@@ -1115,7 +1115,12 @@
       "ghostHint": "So sieht dein Verlauf aus, sobald du zwei Zählerstände einträgst.",
       "reorderHint": "Widget gedrückt halten und ziehen, um es anzuordnen.",
       "trendVsLastYear": "gegenüber Vorjahr",
-      "trendVsPrevious": "gegenüber Vorzeitraum"
+      "trendVsPrevious": "gegenüber Vorzeitraum",
+      "addMeter": "Zähler hinzufügen",
+      "addMeterTitle": "Welcher Zähler?",
+      "addMeterKnown": "schon auf dem Board",
+      "pvPrompt": "Du hast eine Photovoltaik-Anlage angegeben – bisher ohne erfasste Erzeugung.",
+      "pvPromptCta": "Erzeugung erfassen"
     },
     "detail": {
       "back": "Monitoring",

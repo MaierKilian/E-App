@@ -6,7 +6,7 @@ import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/re
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore, resolvePrice, resolveEnergyContent } from '@/store/tariffStore'
 import { SelectChip } from '@/components/ui/SelectChip'
-import { ENERGY_META, activeEnergyTypes, isSeasonal } from './energyConfig'
+import { ENERGY_META, isSeasonal } from './energyConfig'
 import { PRICE_META } from './priceConfig'
 import { AbsoluteLineChart, type LinePoint } from './AbsoluteLineChart'
 import { AddReadingScreen } from './AddReadingScreen'
@@ -47,12 +47,13 @@ export function MeterDetailPage() {
   const [range, setRange] = useState<RangeKey>('all')
   const [now] = useState(() => Date.now())
 
-  const active = activeEnergyTypes(data)
   const type = rawType as EnergyType
   const priceWork = useTariffStore((st) => resolvePrice(st, type).work)
   const kwhPerUnit = useTariffStore((st) => resolveEnergyContent(st, type))
-  // Ungültiger / nicht aktiver Träger → zurück zur Übersicht.
-  if (!type || !active.includes(type)) {
+  // Nur ein der App unbekannter Träger führt zurück. Die frühere Sperre
+  // („nicht im Profil" → Umleitung) ist entfallen: Wer im Schnellstart keine PV
+  // angegeben hat, konnte seine Erzeugung sonst nie erfassen.
+  if (!type || !(type in ENERGY_META)) {
     return <Navigate to="/monitoring" replace />
   }
 
