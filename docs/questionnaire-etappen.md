@@ -31,7 +31,7 @@ selbst (siehe `deployment.md`).
 | 2 | Zähler entsperren | ✅ fertig | 2026-08-24 | `581b390` |
 | 3 | Registry und Schrittzustände | ✅ fertig | 2026-08-24 | `ead8b8f` |
 | 4 | Neue Schrittfolge und kurzer Schnellstart | ✅ fertig | 2026-08-24 | `165cc6b` |
-| 5 | Modernisierung und Erzeuger-Alter | ⬜ offen | – | – |
+| 5 | Modernisierung und Erzeuger-Alter | ✅ fertig | 2026-08-24 | `b1f675c` |
 | 6 | Gerätebestand, Keller, Ziele | ⬜ offen | – | – |
 
 **Abhängigkeiten:** 4 braucht 1 und 3 · 5 braucht 3 · 6 braucht 4.
@@ -435,17 +435,35 @@ neu     tests/unit/renovationProjection.test.ts
 
 ### Fertig, wenn
 
-- [ ] Drei Sanierungsjahre lassen sich anlegen, bearbeiten, löschen; die Liste
+- [x] Drei Sanierungsjahre lassen sich anlegen, bearbeiten, löschen; die Liste
       bleibt chronologisch.
-- [ ] Der Hinzufügen-Knopf ist in jeder Listenlänge erreichbar.
-- [ ] Ein Altprofil wird verlustfrei in ein Ereignis migriert und als geschätzt
+- [x] Der Hinzufügen-Knopf ist in jeder Listenlänge erreichbar.
+- [x] Ein Altprofil wird verlustfrei in ein Ereignis migriert und als geschätzt
       ausgewiesen.
-- [ ] Die Effizienz-Einordnung liefert für dieselben Bauteile dieselbe Zahl wie
+- [x] Die Effizienz-Einordnung liefert für dieselben Bauteile dieselbe Zahl wie
       vorher – ein Test vergleicht alt gegen neu.
-- [ ] Ein 24 Jahre alter Gaskessel erzeugt einen Tipp in der Gruppe „Braucht
-      etwas Vorbereitung“.
-- [ ] Demo-Profil, Firestore-Sync und die Übersichtsseite funktionieren.
-- [ ] Typecheck, ESLint und Tests grün.
+- [x] Ein 24 Jahre alter Gaskessel erzeugt einen Tipp. **Nicht wie hier notiert
+      in einer Gruppe „Braucht etwas Vorbereitung“** – die Tipps-Seite kennt
+      keine Aufwandsgruppen, sie hat eine Liste mit den Sofortmaßnahmen oben.
+      Geprüft wurde deshalb das, was die Formulierung meinte: Der Tipp steht
+      hinter den Sofortmaßnahmen und verdrängt keine.
+- [x] Demo-Profil, Firestore-Sync und die Übersichtsseite funktionieren.
+- [x] Typecheck, ESLint und Tests grün (Firestore-Rules-Test braucht den
+      Emulator, wie immer).
+
+### Unterwegs gefunden
+
+Drei Fehler, die es schon vorher gab und die erst durch diese Etappe sichtbar
+wurden – alle mitbehoben:
+
+- Die **Übersichtsseite** zeigte die abgeleitete Spanne statt der eingetragenen
+  Jahre: Wer 2005 eintrug, las „2000–2010“.
+- Die **Aufwandszeile der Tipps** hieß ab einer Stunde immer „kostenlos“ – bis
+  zum Heizungstausch gab es keinen langen Tipp, der etwas kostet.
+- Der **Cloud-Sync** schreibt Profile per `setState` direkt in den Store und
+  ging damit an den Feld-Migrationen des `persist`-Merge vorbei. Beide Wege
+  teilen sich jetzt `migrateOnboardingData`. **Für Etappe 6 mitnehmen:** Jede
+  neue Migration gehört dorthin, nicht in den `merge`-Block.
 
 ---
 
