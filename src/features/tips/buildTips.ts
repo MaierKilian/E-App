@@ -13,7 +13,7 @@ import {
   Wind,
   Flame,
 } from 'lucide-react'
-import type { OnboardingData, RoomType } from '@/types'
+import type { OnboardingData, RoomType, UserGoal } from '@/types'
 import type { MeasurementResult, MeasurementRating } from '@/features/measurements/types'
 import type { EnergyType, MeterReading } from '@/store/readingsStore'
 import { resultSavingsEur } from '@/features/measurements/impact'
@@ -234,18 +234,59 @@ function isQuickWin(tip: Tip): boolean {
 }
 
 /**
- * Reihenfolge der Empfehlungen: erst die Sofortmaßnahmen, dann der Rest –
- * innerhalb beider Gruppen nach Ersparnis, bei Gleichstand nach Kosten und
- * Aufwand. Reine €-Sortierung schob früher „Sofa vom Heizkörper wegrücken"
- * hinter „smarte Thermostate für 120 €".
+ * Gewicht eines Gewerks je Ziel – die Stelle, an der die Ziel-Frage endlich
+ * etwas bewirkt. Sie wurde seit jeher erhoben und nirgends gelesen.
+ *
+ * `save_costs`, `curiosity` und `htw_study` bleiben leer: Die vorhandene
+ * €-Sortierung *ist* die Antwort auf „Kosten sparen", und für Neugier und
+ * Studienteilnahme gibt es keine sachliche Reihenfolge, die besser wäre als
+ * die bisherige. Ohne Ziel ändert sich damit nichts.
  */
-function compareTips(a: Tip, b: Tip): number {
+const GOAL_CATEGORY_BONUS: Record<UserGoal, Partial<Record<TipCategory, number>>> = {
+  save_costs: {},
+  reduce_co2: { heating: 2, electricity: 1 }, // Wärme trägt den größten CO₂-Hebel
+  improve_comfort: { heating: 2 }, // Raumklima und Zugluft zuerst
+  curiosity: {},
+  htw_study: {},
+}
+
+/** Höchster Bonus über alle gewählten Ziele – Ziele addieren sich nicht. */
+function goalBonus(tip: Tip, goals: readonly UserGoal[] | undefined): number {
+  let best = 0
+  for (const goal of goals ?? []) {
+    const bonus = GOAL_CATEGORY_BONUS[goal]?.[tip.category] ?? 0
+    if (bonus > best) best = bonus
+  }
+  return best
+}
+
+/**
+ * Reihenfolge der Empfehlungen: erst die Sofortmaßnahmen, dann das Ziel des
+ * Nutzers, dann Ersparnis, Kosten und Aufwand. Reine €-Sortierung schob früher
+ * „Sofa vom Heizkörper wegrücken" hinter „smarte Thermostate für 120 €".
+ *
+ * **Das Ziel steht hinter den Sofortmaßnahmen, nicht davor.** Der Grund für
+ * deren Vorrang („wer eine Liste aufschlägt, soll zuerst etwas finden, das er
+ * ohne Einkauf und Termin abhaken kann") gilt unabhängig vom Ziel; das Ziel
+ * entscheidet *innerhalb* der Gruppen. Es zählt vor allem bei `improve_comfort`:
+ * Ein zugiger Raum hat oft gar kein `savingEur` und rutschte in reiner
+ * €-Sortierung ans Ende – ausgerechnet bei dem Nutzer, der die App wegen des
+ * Komforts geöffnet hat.
+ */
+function compareTips(a: Tip, b: Tip, goals?: readonly UserGoal[]): number {
   const quick = Number(isQuickWin(b)) - Number(isQuickWin(a))
   if (quick !== 0) return quick
+  const goal = goalBonus(b, goals) - goalBonus(a, goals)
+  if (goal !== 0) return goal
   const saving = (b.savingEur ?? 0) - (a.savingEur ?? 0)
   if (saving !== 0) return saving
   if (a.costEur !== b.costEur) return a.costEur - b.costEur
   return a.effortMinutes - b.effortMinutes
+}
+
+/** Ziele, die die Reihenfolge tatsächlich verändern – für die Anzeige. */
+export function sortingGoals(goals: readonly UserGoal[] | undefined): UserGoal[] {
+  return (goals ?? []).filter((g) => Object.keys(GOAL_CATEGORY_BONUS[g] ?? {}).length > 0)
 }
 
 /**
@@ -615,5 +656,5 @@ export function buildTips(
     })
   }
 
-  return tips.sort(compareTips)
+  return tips.sort((a, b) => compareTips(a, b, data.goals))
 }

@@ -148,6 +148,10 @@ const onboardingData: OnboardingData = {
   // Ereignis-Log ist die Eingabe; die Altfelder darunter sind die Ableitung.
   renovations: [{ id: 'demo-2006', year: 2006, items: ['windows'] }],
   heatGeneratorYears: { gas_boiler: 2004 },
+  // Kühl-Gefrier-Kombination in der Küche – bedient beide Checks, so wie die
+  // Beispiel-Wohnung sie auch beide zeigt.
+  appliances: [{ kind: 'fridge_freezer', room: 'kitchen' }],
+  appliancesAnswered: true,
   lastRenovationYear: '2000_2010',
   renovationItems: ['windows'],
 }
@@ -163,7 +167,7 @@ export function buildDemoSnapshot(): Record<string, unknown> {
     },
     measurements: {
       results: measurementResults,
-      skippedRooms: [],
+      skipped: [],
       measurementsView: 'recommended',
     },
     readings: {

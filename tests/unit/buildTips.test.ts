@@ -6,7 +6,7 @@
 // Thermostate für 120 €".
 
 import { describe, expect, it } from 'vitest'
-import { buildTips } from '@/features/tips/buildTips'
+import { buildTips, sortingGoals } from '@/features/tips/buildTips'
 import type { MeasurementResult } from '@/features/measurements/types'
 import type { OnboardingData } from '@/types'
 
@@ -369,5 +369,73 @@ describe('buildTips – Herkunft der Empfehlung', () => {
     const trend = tips.find((t) => t.id === 'consumption_up_electricity')
     expect(trend).toBeDefined()
     expect(trend?.source).toBeUndefined()
+  })
+})
+
+describe('Ziele bestimmen die Reihenfolge – innerhalb der Gruppen', () => {
+  /**
+   * `goals` wurde seit jeher erhoben und nirgends gelesen. Jetzt wirkt die
+   * Angabe – aber nur dort, wo sie etwas zu entscheiden hat: Der Vorrang der
+   * Sofortmaßnahmen gilt unabhängig vom Ziel.
+   */
+  const withGoals = (goals: string[]) => ({ ...PROFILE, goals }) as unknown as OnboardingData
+
+  /**
+   * Zwei Sofortmaßnahmen – beide kostenlos, beide in Minuten erledigt. Genau
+   * hier entscheidet das Ziel: Der Kühlschrank-Tipp trägt einen gemessenen
+   * Euro-Betrag, der zu kalte Raum trägt keinen.
+   */
+  const MIXED: Record<string, MeasurementResult> = {
+    fridge: result({
+      id: 'fridge',
+      details: { temperature: 3, yearlySaving: 40, savingEstimated: 0 },
+    }),
+    room_temperature: result({
+      id: 'room_temperature',
+      roomKey: 'bedroom#0',
+      primaryValue: 15,
+      unit: '°C',
+      details: { temperature: 15 },
+    }),
+  }
+
+  it('lässt die Reihenfolge ohne Ziel exakt wie bisher', () => {
+    // Die eingeübte Anzeige darf sich nicht ändern, nur weil es die Ziel-Stufe
+    // jetzt gibt.
+    const ohne = buildTips(PROFILE, MIXED).map((t) => t.id)
+    const kosten = buildTips(withGoals(['save_costs']), MIXED).map((t) => t.id)
+    expect(kosten).toEqual(ohne)
+    expect(ohne.indexOf('fridge')).toBeLessThan(ohne.indexOf('room_cold'))
+  })
+
+  it('stellt bei „Komfort" den Wärme-Tipp ohne €-Betrag nach vorn', () => {
+    // Ein zu kalter Raum hat gar kein `savingEur` und stand in reiner
+    // €-Sortierung hinten – ausgerechnet bei dem Nutzer, der die App wegen des
+    // Komforts geöffnet hat.
+    const ids = buildTips(withGoals(['improve_comfort']), MIXED).map((t) => t.id)
+    expect(ids.indexOf('room_cold')).toBeLessThan(ids.indexOf('fridge'))
+  })
+
+  it('lässt Sofortmaßnahmen auch bei einem Ziel vorn', () => {
+    // Der alte Kessel ist der größte Hebel und trägt beim CO₂-Ziel das höchste
+    // Gewicht – und steht trotzdem hinter dem kostenlosen Zwei-Minuten-Tipp.
+    const tips = buildTips(
+      {
+        ...withGoals(['reduce_co2']),
+        heatGenerators: ['gas_boiler'],
+        heatGeneratorYears: { gas_boiler: new Date().getFullYear() - 30 },
+      } as unknown as OnboardingData,
+      MIXED,
+    )
+    const ids = tips.map((t) => t.id)
+    expect(ids).toContain('old_boiler')
+    expect(ids.indexOf('fridge')).toBeLessThan(ids.indexOf('old_boiler'))
+  })
+
+  it('nennt nur Ziele, die wirklich etwas verändern', () => {
+    // „Sortiert nach deinem Ziel: Kosten sparen" wäre eine Behauptung ohne
+    // Deckung – für dieses Ziel ist die €-Sortierung die Voreinstellung.
+    expect(sortingGoals(['save_costs', 'curiosity'])).toEqual([])
+    expect(sortingGoals(['save_costs', 'improve_comfort'])).toEqual(['improve_comfort'])
   })
 })

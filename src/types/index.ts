@@ -78,6 +78,20 @@ export type RenovationItem =
   | 'basement_ceiling'
   | 'nothing'
 
+/**
+ * Kühl- und Gefriergeräte.
+ *
+ * `fridge_freezer` ist die verbreitete Kombination in einem Gehäuse – sie zählt
+ * für beide Checks, sonst müsste der Nutzer zweimal dasselbe Gerät angeben.
+ */
+export type ApplianceKind = 'fridge' | 'freezer' | 'fridge_freezer'
+
+export interface ApplianceEntry {
+  kind: ApplianceKind
+  /** Wo es steht – speist die Raum-Zuordnung des Checks. */
+  room?: RoomType
+}
+
 export type BuildingType = 'apartment' | 'house'
 
 export type HeatGeneratorType =
@@ -182,6 +196,17 @@ export interface OnboardingData {
   renovations: RenovationEvent[] | null
   /** Baujahr je gewähltem Wärmeerzeuger (optional, „weiß nicht" = fehlt). */
   heatGeneratorYears: Partial<Record<HeatGeneratorType, number>>
+  /**
+   * Vorhandene Kühl- und Gefriergeräte.
+   *
+   * Zusammen mit {@link OnboardingData.appliancesAnswered}: leer **und**
+   * beantwortet heißt ausdrücklich „wir haben keines" – dann fallen die
+   * zugehörigen Checks aus Zähler und Nenner. Leer und unbeantwortet heißt nur,
+   * dass die Frage noch offen ist; gesperrt wird deswegen nichts.
+   */
+  appliances: ApplianceEntry[]
+  /** true = die Gerätefrage wurde beantwortet (auch mit „keines"). */
+  appliancesAnswered: boolean
   /**
    * Abgeleitet aus {@link OnboardingData.renovations} – bleibt für Demo-Profil,
    * Firestore-Sync und die Übersichtsseite erhalten. Nicht direkt bearbeiten.

@@ -93,7 +93,8 @@
     "smartHome": "Smarte Geräte können Verbrauchsdaten liefern und die Auswertung verbessern.",
     "energyCost": "Eine grobe Schätzung genügt, um Einsparpotenziale in Euro abzubilden.",
     "renovation": "Renovierungen verbessern den Dämmstandard und senken den Energiebedarf.",
-    "location": "Mit der Postleitzahl können später regionale Klima- und Wetterdaten einfließen."
+    "location": "Mit der Postleitzahl können später regionale Klima- und Wetterdaten einfließen.",
+    "appliances": "Der Kühlschrank- und der Gefriergerät-Check messen jeweils ein reales Gerät. Ohne diese Angabe schlägt die App Checks vor, die es bei dir nicht zu messen gibt – und der Fortschritt käme nie bei 100 % an. „Haben wir nicht\" nimmt den passenden Check heraus; du kannst das hier jederzeit zurücknehmen."
   },
   "report": {
     "title": "Berichte",
@@ -285,7 +286,8 @@
       "phaseResult": "Ergebnis",
       "estimated": "geschätzt",
       "saveAndNext": "Speichern & weiter: {{room}}",
-      "saveAndOverview": "Speichern & zur Übersicht"
+      "saveAndOverview": "Speichern & zur Übersicht",
+      "gateHint": "Einmal beantwortet – die Angabe landet in deinem Profil und lässt sich dort ändern."
     },
     "showerhead": {
       "title": "Duschkopf-Test",
@@ -411,6 +413,9 @@
           "medium": "Die Temperatur weicht vom empfohlenen Bereich (5–7 °C) ab. Eine Stufe am Regler genügt meist.",
           "high": "Die Temperatur liegt deutlich neben dem empfohlenen Bereich (5–7 °C): Zu kalt kostet unnötig Strom, zu warm lässt Lebensmittel schneller verderben."
         }
+      },
+      "gate": {
+        "question": "Habt ihr einen Kühlschrank?"
       }
     },
     "standby": {
@@ -622,6 +627,9 @@
           "tooWarm": "zu warm – kälter stellen",
           "tooCold": "zu kalt – wärmer stellen spart Strom"
         }
+      },
+      "gate": {
+        "question": "Habt ihr ein Gefriergerät?"
       }
     },
     "impact": {
@@ -1625,6 +1633,17 @@
       "beforeBuildingYear": "Liegt vor dem Baujahr {{year}} – Tippfehler?",
       "generatorAge": "Deine Heizung ist rund {{years}} Jahre alt.",
       "toHeating": "Im Heizungs-Schritt ändern"
+    },
+    "appliances": {
+      "title": "Kühl- und Gefriergeräte",
+      "subtitle": "Damit wir nur Checks vorschlagen, die es bei dir auch zu messen gibt.",
+      "roomLabel": "Wo steht es? (optional)",
+      "none": "Haben wir nicht",
+      "kinds": {
+        "fridge": "Kühlschrank",
+        "freezer": "Gefriergerät",
+        "fridge_freezer": "Kühl-Gefrier-Kombination"
+      }
     }
   },
   "pages": {
@@ -2285,7 +2304,9 @@
     "source": "Aus $t(measurements.{{measurement}}.title) · {{when}}",
     "sourceDaysAgo_one": "vor {{count}} Tag gemessen",
     "sourceDaysAgo_other": "vor {{count}} Tagen gemessen",
-    "sourceToday": "heute gemessen"
+    "sourceToday": "heute gemessen",
+    "sortedByGoal": "Sortiert nach deinem Ziel: {{goals}}",
+    "changeGoal": "ändern"
   },
   "scan": {
     "button": "Scannen",

@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   ArrowRight,
   Ruler,
+  Target,
 } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
@@ -20,7 +21,7 @@ import { useTipsStore } from '@/store/tipsStore'
 import { useTipContext } from './useTipContext'
 import { roomLabel } from '@/features/measurements/rooms'
 import { displaySavingEur, savingRange } from '@/features/measurements/savingsDisplay'
-import { buildTips, type Tip, type TipCategory } from './buildTips'
+import { buildTips, sortingGoals, type Tip, type TipCategory } from './buildTips'
 
 /** Farbcodierung der Icon-Kachel je Gewerk (Structured-Stil, ruhige Akzente). */
 const ACCENT: Record<TipCategory, string> = {
@@ -301,6 +302,7 @@ export function TipsPage() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const data = useOnboardingStore((s) => s.data)
+  const editSection = useOnboardingStore((s) => s.editSection)
   const results = useMeasurementsStore((s) => s.results)
   const doneIds = useTipsStore((s) => s.doneIds)
   const dismissedIds = useTipsStore((s) => s.dismissedIds)
@@ -335,6 +337,11 @@ export function TipsPage() {
   // Gratis-Maßnahmen vorgehen.
   const topId = active[0]?.id
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
+
+  // Nur Ziele nennen, die die Reihenfolge wirklich verändert haben. „Sortiert
+  // nach deinem Ziel: Kosten sparen" wäre eine Behauptung ohne Deckung – für
+  // dieses Ziel ist die €-Sortierung ohnehin die Voreinstellung.
+  const goalNames = sortingGoals(data.goals).map((g) => t(`onboarding.step1.goalOptions.${g}`))
 
   // Fortschritt: Anteil erledigter Maßnahmen an allen (offen + erledigt).
   const totalTracked = active.length + done.length
@@ -408,6 +415,26 @@ export function TipsPage() {
               </div>
             )}
           </div>
+
+          {/* Ohne diese Zeile wirkt die Reihenfolge willkürlich – und die
+              Ziel-Frage bliebe für den Nutzer folgenlos, obwohl sie es
+              technisch nicht mehr ist. */}
+          {goalNames.length > 0 && (
+            <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 px-1 text-xs text-muted">
+              <Target className="h-3.5 w-3.5 shrink-0 text-primary" />
+              {t('tips.sortedByGoal', { goals: goalNames.join(' · ') })}
+              <button
+                type="button"
+                onClick={() => {
+                  editSection(0, '/tips')
+                  navigate('/onboarding')
+                }}
+                className="focus-ring rounded font-semibold text-primary transition-colors hover:underline"
+              >
+                {t('tips.changeGoal')}
+              </button>
+            </p>
+          )}
 
           {/* Offene Maßnahmen */}
           {active.length > 0 ? (

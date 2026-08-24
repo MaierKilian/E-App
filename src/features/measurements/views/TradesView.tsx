@@ -2,13 +2,13 @@ import { useTranslation } from 'react-i18next'
 import { Flame, Droplet, Zap, Waves } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
-import { useMeasurementsStore } from '@/store/measurementsStore'
 import { MEASUREMENT_CATALOG } from '../catalog'
 import type { MeasurementCategory } from '../catalog'
 import type { MeasurementResult } from '../types'
 import { anyResultFor } from '../rooms'
 import { countingRooms, isMeasurementDone, measurementProgress } from '../progress'
 import { GroupTileGrid, type TileGroup, type TileItem } from './GroupTileGrid'
+import { useSkippedKeys } from '../useSkipped'
 
 interface ViewProps {
   results: Partial<Record<string, MeasurementResult>>
@@ -42,8 +42,8 @@ const CATEGORY_COLOR: Record<MeasurementCategory, string> = {
 export function TradesView({ results }: ViewProps) {
   const { t } = useTranslation()
   const rooms = useOnboardingStore((s) => s.data.rooms)
-  const skippedRooms = useMeasurementsStore((s) => s.skippedRooms)
-  const instances = countingRooms(rooms, skippedRooms)
+  const skipped = useSkippedKeys()
+  const instances = countingRooms(rooms, skipped)
 
   const groups: TileGroup[] = CATEGORY_ORDER.map((category) => ({
     key: category,

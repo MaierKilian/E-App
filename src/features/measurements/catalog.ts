@@ -103,7 +103,10 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     available: true,
     category: 'electricity',
     estimatedMinutes: 10,
-    rooms: ['kitchen'],
+    // Der Zweitkühlschrank im Keller ist verbreitet. Beide Checks liefern ein
+    // Ergebnis fürs ganze Zuhause – die zusätzliche Zuordnung ändert deshalb
+    // nur, in welcher Raum-Kachel sie auftauchen, nicht die Zählung.
+    rooms: ['kitchen', 'basement'],
   },
   {
     id: 'freezer',
@@ -112,7 +115,9 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     available: true,
     category: 'electricity',
     estimatedMinutes: 5,
-    rooms: ['kitchen'],
+    // Die Gefriertruhe steht typisch im Keller oder Hauswirtschaftsraum – dort
+    // suchte man den Check bisher vergeblich, weil er auf der Küche festhing.
+    rooms: ['kitchen', 'basement', 'utility_room'],
   },
 ]
 

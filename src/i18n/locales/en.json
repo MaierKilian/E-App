@@ -93,7 +93,8 @@
     "smartHome": "Smart devices can provide consumption data and improve the analysis.",
     "energyCost": "A rough estimate is enough to express savings potential in euros.",
     "renovation": "Renovations improve the insulation standard and reduce the energy demand.",
-    "location": "Your postal code lets regional climate and weather data flow in later."
+    "location": "Your postal code lets regional climate and weather data flow in later.",
+    "appliances": "The fridge and freezer checks each measure a real appliance. Without this answer the app suggests checks you have nothing to measure for – and your progress would never reach 100 %. “We have none” takes the matching check out; you can undo that here at any time."
   },
   "report": {
     "title": "Reports",
@@ -285,7 +286,8 @@
       "phaseResult": "Result",
       "estimated": "estimated",
       "saveAndNext": "Save & continue: {{room}}",
-      "saveAndOverview": "Save & back to overview"
+      "saveAndOverview": "Save & back to overview",
+      "gateHint": "Answer once – it goes into your profile and can be changed there."
     },
     "showerhead": {
       "title": "Showerhead Test",
@@ -411,6 +413,9 @@
           "medium": "The temperature is outside the recommended range (5–7 °C). One step on the dial is usually enough.",
           "high": "The temperature is well outside the recommended range (5–7 °C): too cold wastes electricity, too warm spoils food faster."
         }
+      },
+      "gate": {
+        "question": "Do you have a fridge?"
       }
     },
     "standby": {
@@ -622,6 +627,9 @@
           "tooWarm": "too warm – set colder",
           "tooCold": "too cold – setting warmer saves power"
         }
+      },
+      "gate": {
+        "question": "Do you have a freezer?"
       }
     },
     "impact": {
@@ -1476,6 +1484,17 @@
       "beforeBuildingYear": "Earlier than the build year {{year}} – typo?",
       "generatorAge": "Your boiler is about {{years}} years old.",
       "toHeating": "Change in the heating step"
+    },
+    "appliances": {
+      "title": "Fridges and freezers",
+      "subtitle": "So we only suggest checks you actually have something to measure for.",
+      "roomLabel": "Where is it? (optional)",
+      "none": "We have none",
+      "kinds": {
+        "fridge": "Fridge",
+        "freezer": "Freezer",
+        "fridge_freezer": "Fridge-freezer"
+      }
     }
   },
   "monitoring": {
@@ -2285,7 +2304,9 @@
     "source": "From $t(measurements.{{measurement}}.title) · {{when}}",
     "sourceDaysAgo_one": "measured {{count}} day ago",
     "sourceDaysAgo_other": "measured {{count}} days ago",
-    "sourceToday": "measured today"
+    "sourceToday": "measured today",
+    "sortedByGoal": "Sorted by your goal: {{goals}}",
+    "changeGoal": "change"
   },
   "scan": {
     "button": "Scan",

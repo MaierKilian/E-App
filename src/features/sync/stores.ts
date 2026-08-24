@@ -54,6 +54,12 @@ export function hydrate(remote: Record<string, unknown>) {
   // `setState` geht am `persist`-Merge vorbei: Ein Profil aus der Cloud käme
   // sonst ohne die Feld-Migrationen an, die ein lokal geladenes durchläuft.
   useOnboardingStore.setState((s) => ({ data: migrateOnboardingData(s.data) }))
+  // Dasselbe für die Skip-Liste, die früher `skippedRooms` hieß: Ohne diese
+  // Zeile käme sie aus einem älteren Cloud-Stand als `undefined` an und der
+  // erste Klick auf „nichts zu messen" liefe ins Leere.
+  useMeasurementsStore.setState((s) => ({
+    skipped: s.skipped ?? (s as { skippedRooms?: string[] }).skippedRooms ?? [],
+  }))
 }
 
 /**

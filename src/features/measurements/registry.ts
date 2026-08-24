@@ -21,11 +21,10 @@ import { BaseLoadResult } from './base_load/BaseLoadResult'
 import { LightingRun } from './lighting/LightingRun'
 import { LightingResult } from './lighting/LightingResult'
 import { FridgeIntro } from './fridge/FridgeIntro'
-import { FridgeRun } from './fridge/FridgeRun'
 import { FridgeResult } from './fridge/FridgeResult'
 import { FreezerIntro } from './freezer/FreezerIntro'
-import { FreezerRun } from './freezer/FreezerRun'
 import { FreezerResult } from './freezer/FreezerResult'
+import { GatedFridgeRun, GatedFreezerRun } from './ApplianceGate'
 
 /**
  * Registry der durchführbaren Messungen: id → {Intro, Run, Result}.
@@ -70,12 +69,15 @@ export const MEASUREMENT_MODULES: Partial<Record<MeasurementId, MeasurementModul
   },
   fridge: {
     Intro: FridgeIntro,
-    Run: FridgeRun,
+    // Beide Checks unterstellten bisher, dass es das Gerät gibt. Die Hülle
+    // fragt einmal nach, wenn das Profil nichts weiß, und schreibt die Antwort
+    // dorthin zurück – im Check nachtragbar, im Profil-Hub änderbar.
+    Run: GatedFridgeRun,
     Result: FridgeResult,
   },
   freezer: {
     Intro: FreezerIntro,
-    Run: FreezerRun,
+    Run: GatedFreezerRun,
     Result: FreezerResult,
   },
 }

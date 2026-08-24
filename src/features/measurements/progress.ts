@@ -23,15 +23,16 @@ export type Results = Partial<Record<string, MeasurementResult>>
  *
  * Als „nichts zu messen" markierte Räume (Raum-Ansicht) fallen heraus – sonst
  * bliebe der Ring dauerhaft unter 100 %, obwohl der Nutzer den Raum bewusst
- * ausgenommen hat.
+ * ausgenommen hat. Dieselbe Liste trägt inzwischen auch übersprungene Checks;
+ * Raum-Schlüssel (`bedroom#0`) und Mess-Schlüssel (`freezer`) sind nie gleich.
  */
 export function countingRooms(
   rooms: RoomEntry[],
-  skippedRooms: readonly string[] = [],
+  skipped: readonly string[] = [],
 ): RoomInstance[] {
-  if (skippedRooms.length === 0) return roomInstances(rooms)
-  const skipped = new Set(skippedRooms)
-  return roomInstances(rooms).filter((inst) => !skipped.has(inst.key))
+  if (skipped.length === 0) return roomInstances(rooms)
+  const set = new Set(skipped)
+  return roomInstances(rooms).filter((inst) => !set.has(inst.key))
 }
 
 /**
@@ -64,13 +65,21 @@ export function isMeasurementDone(
 }
 
 /**
- * Messungen, die überhaupt in eine Fortschrittszahl gehören: verfügbar, und –
- * bei Pro-Raum-Checks – nur solange es zählende Räume gibt. Ohne Räume wäre der
- * Nenner sonst unerreichbar.
+ * Messungen, die überhaupt in eine Fortschrittszahl gehören: verfügbar, nicht
+ * übersprungen, und – bei Pro-Raum-Checks – nur solange es zählende Räume gibt.
+ * Ohne Räume wäre der Nenner sonst unerreichbar.
+ *
+ * Ein übersprungener Check fällt aus Zähler **und** Nenner. „Wir haben kein
+ * Gefriergerät" hieße sonst 8 von 9 für immer – eine Zahl, die dem Nutzer einen
+ * Rückstand vorwirft, den es nicht gibt.
  */
-export function countableMeasurements(instances: RoomInstance[]): MeasurementMeta[] {
+export function countableMeasurements(
+  instances: RoomInstance[],
+  skipped: readonly string[] = [],
+): MeasurementMeta[] {
+  const set = new Set(skipped)
   return MEASUREMENT_CATALOG.filter(
-    (m) => m.available && (!m.perRoom || instances.length > 0),
+    (m) => m.available && !set.has(m.id) && (!m.perRoom || instances.length > 0),
   )
 }
 
@@ -81,10 +90,10 @@ export function countableMeasurements(instances: RoomInstance[]): MeasurementMet
 export function catalogProgress(
   results: Results,
   rooms: RoomEntry[],
-  skippedRooms: readonly string[] = [],
+  skipped: readonly string[] = [],
 ): { done: number; total: number } {
-  const instances = countingRooms(rooms, skippedRooms)
-  const countable = countableMeasurements(instances)
+  const instances = countingRooms(rooms, skipped)
+  const countable = countableMeasurements(instances, skipped)
   return {
     done: countable.filter((meta) => isMeasurementDone(results, meta, instances)).length,
     total: countable.length,

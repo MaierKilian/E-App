@@ -25,9 +25,9 @@ type Results = Partial<Record<string, MeasurementResult>>
 export function measurementProgress(
   results: Results,
   rooms: RoomEntry[] = [],
-  skippedRooms: readonly string[] = [],
+  skipped: readonly string[] = [],
 ): { done: number; total: number } {
-  return catalogProgress(results, rooms, skippedRooms)
+  return catalogProgress(results, rooms, skipped)
 }
 
 /**

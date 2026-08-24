@@ -25,13 +25,20 @@ interface MeasurementsState {
    * Zweck unnötiger Ballast.
    */
   previousResults: Partial<Record<string, MeasurementResult>>
-  /** Räume (Instanz-Schlüssel), die als „nichts zu messen" markiert sind. */
-  skippedRooms: string[]
+  /**
+   * Übersprungen: Raum-Instanzen ODER Mess-Schlüssel.
+   *
+   * Hieß früher `skippedRooms` und kannte nur Räume. Seit ein Check auch als
+   * „betrifft uns nicht" gelten kann (kein Gefriergerät), filtern Zähler und
+   * Nenner über dieselbe Liste – zwei Listen für denselben Zweck wären zwei
+   * Gelegenheiten, sie auseinanderlaufen zu lassen.
+   */
+  skipped: string[]
   /** Zuletzt gewählte Ansicht im Messungen-Bereich. */
   measurementsView: MeasurementsView
   saveResult: (result: MeasurementResult) => void
   clearResult: (id: MeasurementId, roomKey?: string) => void
-  toggleSkippedRoom: (roomKey: string) => void
+  toggleSkipped: (key: string) => void
   setMeasurementsView: (v: MeasurementsView) => void
   resetAll: () => void
 }
@@ -69,7 +76,7 @@ export const useMeasurementsStore = create<MeasurementsState>()(
     (set) => ({
       results: defaultResults,
       previousResults: {},
-      skippedRooms: [],
+      skipped: [],
       measurementsView: 'recommended',
       saveResult: (result) =>
         set((state) => {
@@ -92,18 +99,18 @@ export const useMeasurementsStore = create<MeasurementsState>()(
           delete nextPrev[key]
           return { results: next, previousResults: nextPrev }
         }),
-      toggleSkippedRoom: (roomKey) =>
+      toggleSkipped: (key) =>
         set((state) => ({
-          skippedRooms: state.skippedRooms.includes(roomKey)
-            ? state.skippedRooms.filter((r) => r !== roomKey)
-            : [...state.skippedRooms, roomKey],
+          skipped: state.skipped.includes(key)
+            ? state.skipped.filter((k) => k !== key)
+            : [...state.skipped, key],
         })),
       setMeasurementsView: (v) => set({ measurementsView: v }),
       resetAll: () =>
         set({
           results: {},
           previousResults: {},
-          skippedRooms: [],
+          skipped: [],
           measurementsView: 'recommended',
         }),
     }),
@@ -118,7 +125,12 @@ export const useMeasurementsStore = create<MeasurementsState>()(
           ...p,
           results: { ...current.results, ...dropLegacyResults(p.results) },
           previousResults: dropLegacyResults(p.previousResults),
-          skippedRooms: p.skippedRooms ?? current.skippedRooms,
+          // Altstände tragen die Liste noch unter `skippedRooms`; sie enthält
+          // dieselben Raum-Schlüssel und wird unverändert übernommen.
+          skipped:
+            p.skipped ??
+            (p as { skippedRooms?: string[] }).skippedRooms ??
+            current.skipped,
           measurementsView: p.measurementsView ?? current.measurementsView,
         }
       },

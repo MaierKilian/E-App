@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type {
+  ApplianceEntry,
   HeatTransferType,
   OnboardingData,
   RenovationEvent,
@@ -67,6 +68,8 @@ const defaultData: OnboardingData = {
   energyCostRange: 'unknown',
   renovations: null,
   heatGeneratorYears: {},
+  appliances: [],
+  appliancesAnswered: false,
   lastRenovationYear: 'unknown',
   renovationItems: [],
 }
@@ -93,6 +96,10 @@ export function migrateOnboardingData(stored: Partial<OnboardingData> | undefine
     if (migrated !== null) Object.assign(data, derivedLegacyFields(migrated))
   }
   if (!data.heatGeneratorYears) data.heatGeneratorYears = {}
+  if (!Array.isArray(data.appliances)) data.appliances = []
+  // Ein Altprofil hat die Frage nie gesehen – sie gilt als offen, nicht als
+  // mit „keines" beantwortet. Sonst verschwänden beide Checks stillschweigend.
+  if (typeof data.appliancesAnswered !== 'boolean') data.appliancesAnswered = false
   return data
 }
 
@@ -123,6 +130,7 @@ interface OnboardingState {
   addRoom: (type: RoomType) => string
   setRoomHeatTransfer: (type: RoomType, transfer: HeatTransferType) => void
   setRenovations: (events: RenovationEvent[] | null) => void
+  setAppliances: (appliances: ApplianceEntry[], answered?: boolean) => void
   complete: () => void
   editProfile: () => void
   editSection: (step: number, returnTo?: string) => void
@@ -181,6 +189,13 @@ export const useOnboardingStore = create<OnboardingState>()(
             renovations: events,
             ...derivedLegacyFields(events),
           },
+        })),
+      // Gerätebestand setzen. Die Frage gilt danach als beantwortet – auch mit
+      // leerer Liste, denn „wir haben keines" ist eine Antwort und muss von
+      // „noch nicht gefragt" unterscheidbar bleiben.
+      setAppliances: (appliances, answered = true) =>
+        set((state) => ({
+          data: { ...state.data, appliances, appliancesAnswered: answered },
         })),
       // Wärmeübergabe eines Raumtyps setzen. Kommt aus dem Möbelabstand-Check,
       // wenn das Profil sie noch nicht kennt (Schnellstart-Raum): Der Check

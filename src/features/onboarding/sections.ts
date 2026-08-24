@@ -160,7 +160,12 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
     titleKey: 'onboarding.sectionTitles.equipment',
     icon: Gauge,
     quick: false,
-    fields: [field('instruments', (d) => d.instruments.length > 0)],
+    fields: [
+      field('instruments', (d) => d.instruments.length > 0),
+      // Beantwortet ist die Frage auch mit „wir haben keines" – erst dann
+      // fallen Kühl- und Gefrier-Check aus der Fortschrittszählung.
+      field('appliances', (d) => d.appliancesAnswered),
+    ],
   },
   {
     id: 'location',

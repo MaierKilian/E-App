@@ -144,3 +144,55 @@ describe('Gleichlauf der Ansichten', () => {
     })
   }
 })
+
+describe('Übersprungene Checks fallen aus Zähler und Nenner', () => {
+  /**
+   * Der Anlass: Ein Haushalt ohne Gefriergerät bekam einen Check, den er nie
+   * abschließen konnte – und der seit der Vereinheitlichung der Zählung den
+   * Ring dauerhaft bei 8 von 9 festhielt. Eine Zahl, die einen Rückstand
+   * behauptet, den es nicht gibt.
+   */
+  it('nimmt den Check aus dem Nenner, nicht nur aus dem Zähler', () => {
+    const instances = countingRooms(ROOMS)
+    const alle = countableMeasurements(instances)
+    const ohne = countableMeasurements(instances, ['freezer'])
+    expect(ohne).toHaveLength(alle.length - 1)
+    expect(ohne.some((m) => m.id === 'freezer')).toBe(false)
+  })
+
+  it('lässt denselben Nenner-Wert auch im Ring ankommen', () => {
+    const voll = catalogProgress({}, ROOMS)
+    const ohne = catalogProgress({}, ROOMS, ['freezer'])
+    expect(ohne.total).toBe(voll.total - 1)
+  })
+
+  it('erreicht ohne Gefriergerät 100 %', () => {
+    const instances = countingRooms(ROOMS)
+    const results: Record<string, MeasurementResult> = {}
+    for (const meta of countableMeasurements(instances, ['freezer'])) {
+      if (meta.perRoom) {
+        for (const inst of instances) results[instanceKey(meta.id, inst.key)] = result(meta.id, inst.key)
+      } else {
+        results[meta.id] = result(meta.id)
+      }
+    }
+    const { done, total } = catalogProgress(results, ROOMS, ['freezer'])
+    expect(done).toBe(total)
+  })
+
+  it('filtert Räume und Checks aus derselben Liste', () => {
+    // Raum-Schlüssel und Mess-Schlüssel können nie kollidieren – deshalb genügt
+    // eine Liste für beides.
+    const mixed = ['bedroom#1', 'freezer']
+    expect(countingRooms(ROOMS, mixed).some((i) => i.key === 'bedroom#1')).toBe(false)
+    expect(countableMeasurements(countingRooms(ROOMS, mixed), mixed).some((m) => m.id === 'freezer')).toBe(
+      false,
+    )
+  })
+
+  it('lässt den übersprungenen Check auch aus der Schrittliste fallen', () => {
+    const ids = buildSteps(ROOMS, {}, t, ['freezer']).map((s) => s.meta.id)
+    expect(ids).not.toContain('freezer')
+    expect(ids).toContain('fridge')
+  })
+})

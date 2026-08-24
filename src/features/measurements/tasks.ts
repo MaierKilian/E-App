@@ -32,11 +32,11 @@ export function buildSteps(
   rooms: RoomEntry[],
   results: Partial<Record<string, MeasurementResult>>,
   t: TFunction,
-  skippedRooms: readonly string[] = [],
+  skipped: readonly string[] = [],
 ): MeasurementStep[] {
-  const instances = countingRooms(rooms, skippedRooms)
+  const instances = countingRooms(rooms, skipped)
   const steps: MeasurementStep[] = []
-  for (const meta of countableMeasurements(instances)) {
+  for (const meta of countableMeasurements(instances, skipped)) {
     const { done, total } = measurementProgress(results, meta, instances)
     const next = meta.perRoom
       ? instances.find((inst) => !results[instanceKey(meta.id, inst.key)])

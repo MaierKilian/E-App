@@ -7,6 +7,7 @@ import { MEASUREMENT_CATALOG, appliesToRoom } from '../catalog'
 import type { MeasurementResult } from '../types'
 import { roomInstances, roomLabel, instanceKey, anyResultFor } from '../rooms'
 import { GroupTileGrid, type TileGroup, type TileItem } from './GroupTileGrid'
+import { useSkippedKeys } from '../useSkipped'
 
 interface ViewProps {
   results: Partial<Record<string, MeasurementResult>>
@@ -22,8 +23,8 @@ export function ByRoomView({ results }: ViewProps) {
   const navigate = useNavigate()
   const editSection = useOnboardingStore((s) => s.editSection)
   const rooms = useOnboardingStore((s) => s.data.rooms)
-  const skippedRooms = useMeasurementsStore((s) => s.skippedRooms)
-  const toggleSkippedRoom = useMeasurementsStore((s) => s.toggleSkippedRoom)
+  const skippedKeys = useSkippedKeys()
+  const toggleSkipped = useMeasurementsStore((s) => s.toggleSkipped)
 
   if (rooms.length === 0) {
     return (
@@ -90,8 +91,8 @@ export function ByRoomView({ results }: ViewProps) {
   const groups = [...homeGroup, ...roomGroups]
 
   const skip = {
-    skipped: new Set<string>(skippedRooms),
-    onToggle: (key: string) => toggleSkippedRoom(key),
+    skipped: new Set<string>(skippedKeys),
+    onToggle: (key: string) => toggleSkipped(key),
   }
 
   return <GroupTileGrid groups={groups} skip={skip} />

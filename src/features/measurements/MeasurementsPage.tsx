@@ -16,6 +16,7 @@ import { pendingFollowUpKeys } from './followUps'
 import { MeasurementFlow } from './views/MeasurementFlow'
 import { TradesView } from './views/TradesView'
 import { ByRoomView } from './views/ByRoomView'
+import { useSkippedKeys } from './useSkipped'
 
 type View = MeasurementsView
 const VIEWS: View[] = ['recommended', 'trades', 'byRoom']
@@ -81,14 +82,14 @@ export function MeasurementsPage() {
   const results = useMeasurementsStore((s) => s.results)
   const view = useMeasurementsStore((s) => s.measurementsView)
   const setView = useMeasurementsStore((s) => s.setMeasurementsView)
-  const skippedRooms = useMeasurementsStore((s) => s.skippedRooms)
+  const skipped = useSkippedKeys()
   const rooms = useOnboardingStore((s) => s.data.rooms)
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
 
   // Ring und Schrittliste kommen aus derselben Rechnung wie die Zuhause-Karte
   // und die Gewerke-Kacheln (siehe `progress.ts`).
-  const steps = buildSteps(rooms, results, t, skippedRooms)
-  const { done, total } = catalogProgress(results, rooms, skippedRooms)
+  const steps = buildSteps(rooms, results, t, skipped)
+  const { done, total } = catalogProgress(results, rooms, skipped)
 
   const { savingsEur, co2Kg } = impactSummary(results, workPriceCt)
   // Anstoß, die Grundlast nach einer Maßnahme erneut zu messen – der einzige

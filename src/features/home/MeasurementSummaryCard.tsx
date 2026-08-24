@@ -10,6 +10,7 @@ import { parseRoomKey, roomLabel } from '@/features/measurements/rooms'
 import type { MeasurementResult } from '@/features/measurements/types'
 import { measurementProgress, recentResults } from './measurementSummary'
 import { resultValueText } from '@/features/measurements/resultValue'
+import { useSkippedKeys } from '@/features/measurements/useSkipped'
 
 /** Höchstens so viele der zuletzt gemessenen Ergebnisse werden überhaupt erwogen. */
 const MAX_RECENT = 3
@@ -75,10 +76,10 @@ export function MeasurementSummaryCard() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const results = useMeasurementsStore((s) => s.results)
-  const skippedRooms = useMeasurementsStore((s) => s.skippedRooms)
+  const skipped = useSkippedKeys()
   const rooms = useOnboardingStore((s) => s.data.rooms)
 
-  const { done, total } = measurementProgress(results, rooms, skippedRooms)
+  const { done, total } = measurementProgress(results, rooms, skipped)
   const recentAvailable = recentResults(results, MAX_RECENT)
   const visibleCount = useFitRecentCount(recentAvailable.length)
   const recent = recentAvailable.slice(0, visibleCount)

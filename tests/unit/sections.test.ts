@@ -65,6 +65,10 @@ const FULL = {
   energyCostRange: '100_200',
   lastRenovationYear: 'never',
   renovations: [],
+  // „Wir haben keines" ist eine vollwertige Antwort – ein Haushalt ohne
+  // Gefriergerät muss 100 % erreichen können.
+  appliances: [],
+  appliancesAnswered: true,
 } as unknown as OnboardingData
 
 describe('Registry ist widerspruchsfrei', () => {

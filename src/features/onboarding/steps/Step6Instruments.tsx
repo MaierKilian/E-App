@@ -17,6 +17,7 @@ import { Field } from '@/components/ui/Field'
 import { SelectChip } from '@/components/ui/SelectChip'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { getModelTypes } from '../instrumentOptions'
+import { AppliancePicker } from '../AppliancePicker'
 import type {
   OnboardingData,
   InstrumentType,
@@ -226,6 +227,20 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
           ))}
         </div>
       </div>
+
+      {/* Kühl- und Gefriergeräte: die einzige Angabe, die beide Checks brauchen
+          und die bisher nirgends stand. Ohne sie bekam ein Haushalt ohne
+          Gefriertruhe einen Check, den er nie abschließen konnte. */}
+      <Field title={t('onboarding.appliances.title')} info={t('info.appliances')}>
+        <p className="mb-2.5 text-sm text-muted">{t('onboarding.appliances.subtitle')}</p>
+        <AppliancePicker
+          value={data.appliances}
+          answered={data.appliancesAnswered}
+          onChange={(appliances, appliancesAnswered) =>
+            onChange({ appliances, appliancesAnswered })
+          }
+        />
+      </Field>
 
       {detailed && (
         <>
