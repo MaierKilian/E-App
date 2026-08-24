@@ -1,9 +1,15 @@
 import { useTranslation } from 'react-i18next'
+import { Flame, Grip } from 'lucide-react'
 import { Stepper } from '@/components/ui/Stepper'
 import { DecimalField } from '@/components/ui/DecimalField'
 import { RoomTypePicker } from '../RoomTypePicker'
 import { resolveRoomArea } from '@/features/measurements/room_temperature/roomAreas'
-import type { OnboardingData, RoomType, RoomEntry } from '@/types'
+import type { OnboardingData, RoomType, RoomEntry, HeatTransferType } from '@/types'
+
+const TRANSFERS: { value: HeatTransferType; icon: typeof Flame }[] = [
+  { value: 'radiator', icon: Flame },
+  { value: 'underfloor', icon: Grip },
+]
 
 interface Props {
   data: OnboardingData
@@ -46,10 +52,20 @@ export function Step3Rooms({ data, onChange }: Props) {
     return data.rooms.find((r) => r.type === type)?.areaSqm
   }
 
+  function getTransfer(type: RoomType): HeatTransferType | undefined {
+    return data.rooms.find((r) => r.type === type)?.heatTransfer
+  }
+
   function setArea(type: RoomType, value: number | undefined) {
     const areaSqm = value !== undefined && value > 0 ? value : undefined
     onChange({
       rooms: data.rooms.map((r) => (r.type === type ? { ...r, areaSqm } : r)),
+    })
+  }
+
+  function setTransfer(type: RoomType, heatTransfer: HeatTransferType) {
+    onChange({
+      rooms: data.rooms.map((r) => (r.type === type ? { ...r, heatTransfer } : r)),
     })
   }
 
@@ -80,6 +96,33 @@ export function Step3Rooms({ data, onChange }: Props) {
               />
               {t('onboarding.step3.areaUnit')}
             </label>
+
+            {/* Die Wärmeübergabe stand vorher in einem eigenen Schritt als
+                Tabelle über alle Raumtypen. Hier steht sie beim Raum, den sie
+                beschreibt – und der Möbelabstand-Check braucht sie ohnehin
+                raumweise. Keine Vorauswahl: „noch nicht beantwortet" ist ein
+                eigener Zustand, sonst behauptete die App Heizkörper. */}
+            <div className="flex w-full gap-1">
+              {TRANSFERS.map(({ value, icon: Icon }) => {
+                const active = getTransfer(type) === value
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setTransfer(type, value)}
+                    aria-pressed={active}
+                    className={`focus-ring flex flex-1 items-center justify-center gap-1 rounded-lg px-1.5 py-1 text-[11px] font-medium transition-[background-color,color] ${
+                      active
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-surface-2/70 text-muted hover:text-foreground'
+                    }`}
+                  >
+                    <Icon className="h-3 w-3 shrink-0" />
+                    {t(`onboarding.step5.${value}Short`)}
+                  </button>
+                )
+              })}
+            </div>
           </div>
         )}
       />

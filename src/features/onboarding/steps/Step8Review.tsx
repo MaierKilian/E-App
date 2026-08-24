@@ -1,5 +1,8 @@
 import { useTranslation } from 'react-i18next'
+import { CheckCircle2, Sparkles } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
+import { profileCompleteness, nextSection } from '../sections'
+import { useOnboardingStore } from '@/store/onboardingStore'
 import type { OnboardingData } from '@/types'
 import type { EnergyType } from '@/store/readingsStore'
 import { useTariffStore, resolvePrice } from '@/store/tariffStore'
@@ -37,6 +40,51 @@ function ReviewSection({ title, children }: ReviewSectionProps) {
   )
 }
 
+/**
+ * Freischalt-Bilanz statt eines blanken „Fertig".
+ *
+ * Nach dem Schnellstart steht hier bewusst kein 100 % (der Wert misst am
+ * vollständigen Fragebogen). Ohne Erklärung liest sich das wie ein Versäumnis –
+ * mit Erklärung wie ein Angebot. Deshalb zuerst, was jetzt geht, dann was die
+ * nächste Angabe bringt.
+ */
+function UnlockSummary({ data }: Props) {
+  const { t } = useTranslation()
+  const pct = profileCompleteness(data)
+  const hasRooms = data.rooms.length > 0
+  // Ohne Räume laufen sechs der neun Checks; Raumklima, Möbelabstand und der
+  // LED-Check brauchen mindestens einen Raum (siehe Konzept Abschnitt 1).
+  const ready = hasRooms ? 9 : 6
+  const visitedSections = useOnboardingStore((s) => s.visitedSections)
+  const next = nextSection(data, visitedSections)
+
+  return (
+    <Card className="space-y-2">
+      <p className="flex items-center gap-1.5 text-sm font-semibold text-primary">
+        <Sparkles className="h-4 w-4 shrink-0" />
+        {t('onboarding.step8.unlockTitle')}
+      </p>
+      <p className="text-sm text-foreground">
+        {pct >= 100
+          ? t('onboarding.step8.unlockComplete')
+          : t('onboarding.step8.unlockProgress', { pct })}
+      </p>
+      <p className="flex items-start gap-1.5 text-sm text-foreground">
+        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
+        {t('onboarding.step8.unlockReady', { count: ready })}
+      </p>
+      {!hasRooms && (
+        <p className="text-sm text-muted">{t('onboarding.step8.unlockOpenRooms')}</p>
+      )}
+      {next && (
+        <p className="text-sm text-muted">
+          {t('onboarding.step8.unlockNext', { section: t(next.titleKey) })}
+        </p>
+      )}
+    </Card>
+  )
+}
+
 export function Step8Review({ data }: Props) {
   const { t, i18n } = useTranslation()
 
@@ -62,6 +110,7 @@ export function Step8Review({ data }: Props) {
     .join(', ')
 
   const heatTransferSummary = data.rooms
+    .filter((r) => Boolean(r.heatTransfer))
     .map(
       (r) =>
         `${t(`onboarding.step3.roomTypes.${r.type}`)}: ${t(`onboarding.step5.${r.heatTransfer}`)}`,
@@ -93,6 +142,8 @@ export function Step8Review({ data }: Props) {
 
   return (
     <div className="space-y-4">
+      <UnlockSummary data={data} />
+
       <p className="text-sm text-muted">{t('onboarding.step8.subtitle')}</p>
 
       <ReviewSection title={t('onboarding.step8.sections.profile')}>

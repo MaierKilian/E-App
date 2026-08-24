@@ -79,8 +79,8 @@ describe('Registry ist widerspruchsfrei', () => {
     // Der Compiler erzwingt über `SectionId`, dass jeder Abschnitt einen Inhalt
     // hat; hier die Gegenrichtung – eine id ohne Registry-Eintrag.
     const ids: SectionId[] = [
-      'profile', 'building', 'rooms', 'heating', 'envelope',
-      'instruments', 'renovation', 'location', 'prices', 'review',
+      'home', 'rooms', 'heating', 'prices',
+      'building', 'equipment', 'location', 'review',
     ]
     expect(ONBOARDING_SECTIONS.map((s) => s.id).sort()).toEqual([...ids].sort())
   })
@@ -146,27 +146,56 @@ describe('Fortschritt und Abschnitts-Status stimmen überein', () => {
 })
 
 describe('Drei Zustände', () => {
-  const profile = ONBOARDING_SECTIONS.find((s) => s.id === 'profile')!
+  const home = ONBOARDING_SECTIONS.find((s) => s.id === 'home')!
 
   it('nie besucht und unvollständig = offen', () => {
-    expect(stateOf(profile, EMPTY, [])).toBe('open')
+    expect(stateOf(home, EMPTY, [])).toBe('open')
   })
 
   it('besucht und unvollständig = angefangen', () => {
-    expect(stateOf(profile, EMPTY, ['profile'])).toBe('started')
+    expect(stateOf(home, EMPTY, ['home'])).toBe('started')
   })
 
   it('vollständig bleibt vollständig, ob besucht oder nicht', () => {
-    expect(stateOf(profile, FULL, [])).toBe('complete')
-    expect(stateOf(profile, FULL, ['profile'])).toBe('complete')
+    expect(stateOf(home, FULL, [])).toBe('complete')
+    expect(stateOf(home, FULL, ['home'])).toBe('complete')
   })
 
   it('nennt einen Abschnitt ohne Pflichtangaben erst nach dem Besuch fertig', () => {
-    // Sonst stünden Preise und Übersicht im Schrittbalken von Anfang an voll –
-    // der Nutzer war dort nie.
-    const prices = ONBOARDING_SECTIONS.find((s) => s.id === 'prices')!
-    expect(statusOf(prices, EMPTY).total).toBe(0)
-    expect(stateOf(prices, EMPTY, [])).toBe('open')
-    expect(stateOf(prices, EMPTY, ['prices'])).toBe('complete')
+    // Sonst stünde die Übersicht im Schrittbalken von Anfang an voll – der
+    // Nutzer war dort nie.
+    const review = ONBOARDING_SECTIONS.find((s) => s.review)!
+    expect(statusOf(review, EMPTY).total).toBe(0)
+    expect(stateOf(review, EMPTY, [])).toBe('open')
+    expect(stateOf(review, EMPTY, ['review'])).toBe('complete')
+  })
+})
+
+describe('Kein Feld ist verlorengegangen', () => {
+  /**
+   * Der Zuschnitt der Abschnitte hat sich geändert – die Angaben nicht. Jede
+   * Angabe, die die App vor dem Umbau erhoben hat, muss im vollständigen
+   * Fragebogen weiterhin zählbar sein.
+   */
+  const ERHOBEN = [
+    'profileName', 'profileImage', 'personsCount', 'goals', 'occupancyStatus',
+    'buildingYear', 'buildingType', 'livingArea', 'floors', 'windowAge',
+    'rooms', 'heatTransfer', 'roomAreas',
+    'heatGenerators', 'hotWaterType',
+    'ventilationType', 'insulationState',
+    'instruments', 'energyCostRange',
+    'lastRenovationYear', 'postalCode',
+  ]
+
+  it('führt jede vorher erhobene Angabe weiter', () => {
+    const known = new Set(ONBOARDING_SECTIONS.flatMap((s) => s.fields.map((f) => f.id)))
+    expect([...ERHOBEN].filter((id) => !known.has(id))).toEqual([])
+  })
+
+  it('zeigt jede davon in einem Abschnitt des vollständigen Fragebogens', () => {
+    const inFlow = new Set(
+      sectionsFor('detailed').flatMap((s) => s.fields.map((f) => f.id)),
+    )
+    expect([...ERHOBEN].filter((id) => !inFlow.has(id))).toEqual([])
   })
 })

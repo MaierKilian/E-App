@@ -139,22 +139,25 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
         </div>
       </Field>
 
+      {/* PV steht auch im Schnellstart: nicht als Freischaltung – die entfiel
+          mit dem Entsperren der Zähler –, sondern damit die Erinnerung
+          entstehen kann, den Erzeugungszähler anzulegen. */}
+      <Field title={t('onboarding.step4.hasPV')} info={t('info.pv')}>
+        <div className="flex flex-wrap gap-2">
+          {PV_OPTIONS.map((option) => (
+            <OptionChip
+              key={option}
+              icon={PV_ICONS[option]}
+              label={t(`onboarding.step4.pvOptions.${option}`)}
+              selected={data.hasPV === option}
+              onClick={() => onChange({ hasPV: option as PVOption })}
+            />
+          ))}
+        </div>
+      </Field>
+
       {detailed && (
         <>
-          <Field title={t('onboarding.step4.hasPV')} info={t('info.pv')}>
-            <div className="flex flex-wrap gap-2">
-              {PV_OPTIONS.map((option) => (
-                <OptionChip
-                  key={option}
-                  icon={PV_ICONS[option]}
-                  label={t(`onboarding.step4.pvOptions.${option}`)}
-                  selected={data.hasPV === option}
-                  onClick={() => onChange({ hasPV: option as PVOption })}
-                />
-              ))}
-            </div>
-          </Field>
-
           <Field title={t('onboarding.step4.hasExtraFireplace')} info={t('info.fireplace')}>
             <div className="flex gap-2">
               <OptionChip

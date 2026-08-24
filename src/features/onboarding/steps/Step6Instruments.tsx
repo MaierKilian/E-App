@@ -22,7 +22,6 @@ import type {
   InstrumentType,
   InstrumentEntry,
   SmartHomeDevice,
-  EnergyCostRange,
 } from '@/types'
 
 interface Props {
@@ -59,7 +58,6 @@ const SMART_HOME_ICONS: Record<SmartHomeDevice, LucideIcon> = {
   smart_plugs: Plug,
   none: Ban,
 }
-const ENERGY_COST_RANGES: EnergyCostRange[] = ['under_100', '100_200', '200_350', 'over_350', 'unknown']
 
 /**
  * Eine Geräte-Zeile (Checklist-Stil): Icon + Name + Auswahl-Haken. Ist das Gerät
@@ -245,18 +243,6 @@ export function Step6Instruments({ data, onChange, detailed = false }: Props) {
             </div>
           </Field>
 
-          <Field title={t('onboarding.step6.energyCostRange')} info={t('info.energyCost')}>
-            <div className="flex flex-wrap gap-2">
-              {ENERGY_COST_RANGES.map((range) => (
-                <OptionChip
-                  key={range}
-                  label={t(`onboarding.step6.energyCostOptions.${range}`)}
-                  selected={data.energyCostRange === range}
-                  onClick={() => onChange({ energyCostRange: range })}
-                />
-              ))}
-            </div>
-          </Field>
         </>
       )}
     </div>

@@ -1284,7 +1284,8 @@
       "profileNameHint": "Frei wählbar – praktisch, wenn du mehrere Wohnungen vergleichst.",
       "personsHint": "Beeinflusst Warmwasser- und Stromverbrauch.",
       "goalsHint": "Wir priorisieren passende Messungen und Tipps. Mehrfachauswahl möglich.",
-      "statusHint": "Beeinflusst, welche Maßnahmen für dich realistisch sind."
+      "statusHint": "Beeinflusst, welche Maßnahmen für dich realistisch sind.",
+      "roomsFromList": "Zimmer laut deiner Raumliste: {{count}}"
     },
     "step2": {
       "title": "Basisdaten",
@@ -1552,7 +1553,13 @@
         "postalCode": "Postleitzahl",
         "goals": "Ziele",
         "occupancyStatus": "Status"
-      }
+      },
+      "unlockTitle": "Das kannst du jetzt",
+      "unlockProgress": "Profil zu {{pct}} % vollständig – das reicht für den Start.",
+      "unlockReady": "Sofort möglich: {{count}} von 9 Checks, alle Zähler, €-Beträge.",
+      "unlockOpenRooms": "Noch nicht: Raumklima, Möbelabstand und der LED-Check. Die Räume legst du beim ersten dieser Checks an – oder hier in zwei Minuten auf einmal.",
+      "unlockComplete": "Profil vollständig – alle neun Checks stehen bereit.",
+      "unlockNext": "Als Nächstes lohnt sich: {{section}}"
     },
     "hub": {
       "title": "Profil-Übersicht",
@@ -1576,7 +1583,34 @@
         "oil": "Auf der Liefer-/Tankrechnung – Preis je Liter (€/l).",
         "pellets": "Auf der Liefer-/Jahresabrechnung – Preis je Kilogramm (€/kg).",
         "heat_pump": "Falls deine Wärmepumpe einen eigenen Stromtarif hat – sonst wie der Haushaltsstrom (ct/kWh)."
-      }
+      },
+      "basePrice": "Grundpreis"
+    },
+    "sectionTitles": {
+      "home": "Dein Zuhause",
+      "rooms": "Räume",
+      "heating": "Heizung & Warmwasser",
+      "prices": "Preise & Kosten",
+      "building": "Gebäudehülle & Modernisierung",
+      "equipment": "Ausstattung",
+      "location": "Standort & Wohnsituation",
+      "review": "Prüfen & Speichern"
+    },
+    "plausibility": {
+      "area_per_person_low": "{{area}} m² für {{persons}} Personen – nur {{perPerson}} m² pro Person. Stimmt das?",
+      "area_per_person_high": "{{area}} m² für {{persons}} Personen – das sind {{perPerson}} m² pro Person. Tippfehler?",
+      "area_per_room_low": "{{area}} m² auf {{rooms}} Zimmer – nur {{perRoom}} m² pro Zimmer. Stimmt das?",
+      "area_per_room_high": "{{area}} m² auf {{rooms}} Zimmer – das sind {{perRoom}} m² pro Zimmer. Tippfehler?",
+      "accept": "Passt so"
+    },
+    "benefits": {
+      "home": "eine genauere Verbrauchsschätzung",
+      "rooms": "drei weitere Checks",
+      "heating": "die Warmwasser-Rechnung und passende Zähler",
+      "prices": "€-Beträge statt bloßer Mengen",
+      "building": "die Effizienz-Einordnung deines Gebäudes",
+      "equipment": "die Abstandsmessung im Möbel-Check",
+      "location": "Maßnahmen, die zu deiner Wohnsituation passen"
     }
   },
   "pages": {
@@ -1980,7 +2014,8 @@
       "doneLine": "{{done}} von {{total}} erledigt",
       "emptyTitle": "Noch keine Messung",
       "emptyHint": "Fang mit einer einfachen an – zehn Minuten genügen."
-    }
+    },
+    "profileNext": "{{section}} ergänzen → {{benefit}}"
   },
   "settings": {
     "open": "Einstellungen öffnen",

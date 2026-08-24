@@ -18,7 +18,6 @@ import { Step1Profile } from './steps/Step1Profile'
 import { Step2Building } from './steps/Step2Building'
 import { Step3Rooms } from './steps/Step3Rooms'
 import { Step4Heating } from './steps/Step4Heating'
-import { Step5HeatTransfer } from './steps/Step5HeatTransfer'
 import { Step6Instruments } from './steps/Step6Instruments'
 import { Step7Location } from './steps/Step7Location'
 import { Step7Renovation } from './steps/Step7Renovation'
@@ -46,23 +45,30 @@ interface StepContentProps {
  * bleibt.
  */
 const SECTION_BODIES: Record<SectionId, (p: StepContentProps) => ReactNode> = {
-  profile: ({ data, onChange, detailed }) => (
+  home: ({ data, onChange, detailed }) => (
     <Step1Profile data={data} onChange={onChange} detailed={detailed} />
-  ),
-  building: ({ data, onChange, detailed }) => (
-    <Step2Building data={data} onChange={onChange} detailed={detailed} />
   ),
   rooms: ({ data, onChange }) => <Step3Rooms data={data} onChange={onChange} />,
   heating: ({ data, onChange, detailed }) => (
     <Step4Heating data={data} onChange={onChange} detailed={detailed} />
   ),
-  envelope: ({ data, onChange }) => <Step5HeatTransfer data={data} onChange={onChange} />,
-  instruments: ({ data, onChange, detailed }) => (
+  prices: ({ data, onChange, detailed }) => (
+    <StepPrices data={data} onChange={onChange} detailed={detailed} />
+  ),
+  // Hülle und Modernisierung in einem Schritt: Das Fensteralter und „Fenster
+  // saniert" sind dieselbe Frage und standen vorher in zwei Schritten.
+  building: ({ data, onChange }) => (
+    <>
+      <Step2Building data={data} onChange={onChange} />
+      <div className="mt-6 border-t border-border pt-6">
+        <Step7Renovation data={data} onChange={onChange} />
+      </div>
+    </>
+  ),
+  equipment: ({ data, onChange, detailed }) => (
     <Step6Instruments data={data} onChange={onChange} detailed={detailed} />
   ),
-  renovation: ({ data, onChange }) => <Step7Renovation data={data} onChange={onChange} />,
   location: ({ data, onChange }) => <Step7Location data={data} onChange={onChange} />,
-  prices: ({ data }) => <StepPrices data={data} />,
   review: ({ data }) => <Step8Review data={data} />,
 }
 
@@ -86,8 +92,8 @@ function SectionBody({
 }) {
   const markVisited = useOnboardingStore((s) => s.markVisited)
   useEffect(() => {
-    if (!section.review) markVisited(section.id)
-  }, [section.id, section.review, markVisited])
+    markVisited(section.id)
+  }, [section.id, markVisited])
 
   return <>{SECTION_BODIES[section.id]({ data, onChange, detailed })}</>
 }

@@ -1,4 +1,4 @@
-import { User, Building2, DoorOpen, Flame, Layers, Gauge, Hammer, MapPin, Wallet, ClipboardCheck } from 'lucide-react'
+import { Home, DoorOpen, Flame, Layers, Gauge, MapPin, Wallet, ClipboardCheck } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { OnboardingData } from '@/types'
 
@@ -26,15 +26,13 @@ import type { OnboardingData } from '@/types'
  * Abschnitt wäre bis dahin eine leere Seite.
  */
 export type SectionId =
-  | 'profile'
-  | 'building'
+  | 'home'
   | 'rooms'
   | 'heating'
-  | 'envelope'
-  | 'instruments'
-  | 'renovation'
-  | 'location'
   | 'prices'
+  | 'building'
+  | 'equipment'
+  | 'location'
   | 'review'
 
 /** Eine Einzelangabe eines Abschnitts. */
@@ -74,109 +72,111 @@ function optional(id: string, answered: (d: OnboardingData) => boolean): Section
 }
 
 /**
- * Reihenfolge und Inhalt entsprechen dem heutigen vollständigen Fragebogen.
- * Der Zuschnitt der Abschnitte ändert sich erst in einer späteren Etappe –
- * hier geht es nur darum, dass die App ihn aus **einer** Quelle kennt.
+ * Die Schrittfolge des vollständigen Fragebogens.
+ *
+ * Sortiert nach dem, was der Nutzer als zusammengehörig erlebt – und die Preise
+ * stehen früh: Sie skalieren jeden €-Betrag der App und standen vorher an
+ * vorletzter Stelle, wo die Aufmerksamkeit am geringsten ist. Früher als hier
+ * geht nicht, weil erst die Heizungsfrage bestimmt, welche Träger überhaupt
+ * abgefragt werden.
+ *
+ * Der Schnellstart ist eine Teilmenge (`quick`), kein eigener Flow: Zuhause,
+ * Heizung, Preise, Übersicht.
  */
 export const ONBOARDING_SECTIONS: OnboardingSection[] = [
   {
-    id: 'profile',
-    titleKey: 'onboarding.step1.title',
-    icon: User,
+    id: 'home',
+    titleKey: 'onboarding.sectionTitles.home',
+    icon: Home,
     quick: true,
     fields: [
       optional('profileImage', (d) => Boolean((d.profileImage ?? '').trim())),
       field('profileName', (d) => (d.profileName ?? '').trim().length > 0),
-      field('personsCount', (d) => d.personsCount > 0),
-      field('goals', (d) => d.goals.length > 0),
-      field('occupancyStatus', (d) => d.occupancyStatus !== null),
-    ],
-  },
-  {
-    id: 'building',
-    titleKey: 'onboarding.step2.title',
-    icon: Building2,
-    quick: true,
-    fields: [
-      field('buildingYear', (d) => d.buildingYear > 0),
       field('buildingType', (d) => Boolean(d.buildingType)),
       field('livingArea', (d) => d.livingArea > 0),
+      field('personsCount', (d) => d.personsCount > 0),
+      field('buildingYear', (d) => d.buildingYear > 0),
       field('floors', (d) => d.floors > 0),
-      field('windowAge', (d) => d.windowAge !== 'unknown'),
+      field('goals', (d) => d.goals.length > 0),
     ],
   },
   {
     id: 'rooms',
-    titleKey: 'onboarding.step3.title',
+    titleKey: 'onboarding.sectionTitles.rooms',
     icon: DoorOpen,
     quick: false,
     fields: [
       field('rooms', (d) => d.rooms.length > 0),
+      // Die Wärmeübergabe steht jetzt beim Raum, den sie beschreibt. Zählbar
+      // ist sie überhaupt erst, seit sie optional ist – vorher stand bei jedem
+      // Raum stillschweigend „Heizkörper".
+      field(
+        'heatTransfer',
+        (d) => d.rooms.length > 0 && d.rooms.every((r) => Boolean(r.heatTransfer)),
+      ),
       optional('roomAreas', (d) => d.rooms.some((r) => (r.areaSqm ?? 0) > 0)),
     ],
   },
   {
     id: 'heating',
-    titleKey: 'onboarding.step4.title',
+    titleKey: 'onboarding.sectionTitles.heating',
     icon: Flame,
     quick: true,
     fields: [
       field('heatGenerators', (d) => d.heatGenerators.length > 0),
       field('hotWaterType', (d) => d.hotWaterType !== 'unknown'),
+      // PV wandert in den Schnellstart – nicht als Freischaltung (die entfiel
+      // mit Etappe 2), sondern damit die Erinnerung entstehen kann, den
+      // Erzeugungszähler anzulegen.
+      optional('hasPV', (d) => d.hasPV !== 'no'),
     ],
-  },
-  {
-    id: 'envelope',
-    titleKey: 'onboarding.step5.title',
-    icon: Layers,
-    quick: false,
-    fields: [
-      // Die Wärmeübergabe wird hier gefragt (Tabelle je Raum). Seit sie
-      // optional ist, lässt sich „noch nicht beantwortet“ überhaupt erst
-      // zählen – vorher stand bei jedem Raum stillschweigend „Heizkörper“.
-      field('heatTransfer', (d) => d.rooms.length > 0 && d.rooms.every((r) => Boolean(r.heatTransfer))),
-      field('ventilationType', (d) => d.ventilationType !== 'unknown'),
-      field('insulationState', (d) => d.insulationState !== 'unknown'),
-    ],
-  },
-  {
-    id: 'instruments',
-    titleKey: 'onboarding.step6.title',
-    icon: Gauge,
-    quick: true,
-    fields: [
-      field('instruments', (d) => d.instruments.length > 0),
-      field('energyCostRange', (d) => d.energyCostRange !== 'unknown'),
-    ],
-  },
-  {
-    id: 'renovation',
-    titleKey: 'onboarding.step7renovation.title',
-    icon: Hammer,
-    quick: false,
-    fields: [field('lastRenovationYear', (d) => d.lastRenovationYear !== 'unknown')],
-  },
-  {
-    id: 'location',
-    titleKey: 'onboarding.step7.title',
-    icon: MapPin,
-    quick: false,
-    // Die App beschriftet die Postleitzahl selbst als optional – dann darf sie
-    // den Fortschritt auch nicht bremsen.
-    fields: [optional('postalCode', (d) => (d.postalCode ?? '').trim().length > 0)],
   },
   {
     id: 'prices',
-    titleKey: 'onboarding.prices.title',
+    titleKey: 'onboarding.sectionTitles.prices',
     icon: Wallet,
     quick: true,
     // Preise liegen im `tariffStore`, nicht in `OnboardingData`; leere Felder
-    // behalten sinnvolle Standardwerte. Nichts zu zählen.
-    fields: [],
+    // behalten sinnvolle Standardwerte. Die Kostenspanne zählt dagegen mit –
+    // sie steht hier, weil sie von Euro handelt, nicht von Messgeräten.
+    fields: [field('energyCostRange', (d) => d.energyCostRange !== 'unknown')],
+  },
+  {
+    id: 'building',
+    titleKey: 'onboarding.sectionTitles.building',
+    icon: Layers,
+    quick: false,
+    fields: [
+      field('windowAge', (d) => d.windowAge !== 'unknown'),
+      field('insulationState', (d) => d.insulationState !== 'unknown'),
+      field('ventilationType', (d) => d.ventilationType !== 'unknown'),
+      field('lastRenovationYear', (d) => d.lastRenovationYear !== 'unknown'),
+    ],
+  },
+  {
+    id: 'equipment',
+    titleKey: 'onboarding.sectionTitles.equipment',
+    icon: Gauge,
+    quick: false,
+    fields: [field('instruments', (d) => d.instruments.length > 0)],
+  },
+  {
+    id: 'location',
+    titleKey: 'onboarding.sectionTitles.location',
+    icon: MapPin,
+    quick: false,
+    fields: [
+      // Mieter oder Eigentümer entscheidet, welche Maßnahmen überhaupt in Frage
+      // kommen – das gehört neben den Standort, nicht neben den Profilnamen.
+      field('occupancyStatus', (d) => d.occupancyStatus !== null),
+      // Die App beschriftet die Postleitzahl selbst als optional – dann darf sie
+      // den Fortschritt auch nicht bremsen.
+      optional('postalCode', (d) => (d.postalCode ?? '').trim().length > 0),
+    ],
   },
   {
     id: 'review',
-    titleKey: 'onboarding.step8.title',
+    titleKey: 'onboarding.sectionTitles.review',
     icon: ClipboardCheck,
     quick: true,
     review: true,
@@ -251,6 +251,26 @@ export function profileCompleteness(data: OnboardingData): number {
 export function profileMissingCount(data: OnboardingData): number {
   const { answered, total } = fieldTally(data)
   return total - answered
+}
+
+/**
+ * Der Abschnitt, an dem die nächste Angabe am meisten bringt.
+ *
+ * Speist die Nutzen-Formulierung auf dem Zuhause-Einstieg und die
+ * Freischalt-Bilanz: „Räume ergänzen → drei weitere Checks" sagt dasselbe wie
+ * „Noch 11 Angaben offen", aber als Gewinn statt als Restarbeit.
+ *
+ * Noch nicht besuchte Abschnitte gehen vor. Sonst empfiehlt die Übersicht
+ * direkt nach dem Schnellstart ausgerechnet den Schritt, den der Nutzer gerade
+ * ausgefüllt hat – dort sind zwar noch Felder offen, aber er hat sie eben
+ * bewusst übersprungen.
+ */
+export function nextSection(
+  data: OnboardingData,
+  visited: readonly string[] = [],
+): OnboardingSection | undefined {
+  const open = hubSections().filter((section) => statusOf(section, data).open > 0)
+  return open.find((section) => !visited.includes(section.id)) ?? open[0]
 }
 
 function fieldTally(data: OnboardingData): { answered: number; total: number } {

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Tag,
@@ -6,16 +7,18 @@ import {
   ThermometerSun,
   Sparkles,
   GraduationCap,
-  Key,
+  Building2,
   Home,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Stepper } from '@/components/ui/Stepper'
+import { Slider } from '@/components/ui/Slider'
 import { OptionChip } from '@/components/ui/OptionChip'
 import { Field } from '@/components/ui/Field'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { AvatarPicker } from '@/components/AvatarPicker'
-import type { OnboardingData, UserGoal, OccupancyStatus } from '@/types'
+import { PlausibilityNote } from '../PlausibilityNote'
+import type { OnboardingData, UserGoal, BuildingType } from '@/types'
 
 interface Props {
   data: OnboardingData
@@ -32,14 +35,26 @@ const GOAL_ICONS: Record<UserGoal, LucideIcon> = {
   htw_study: GraduationCap,
 }
 
-const OCCUPANCY_STATUSES: OccupancyStatus[] = ['tenant', 'owner']
-const OCCUPANCY_ICONS: Record<OccupancyStatus, LucideIcon> = {
-  tenant: Key,
-  owner: Home,
+const BUILDING_TYPES: BuildingType[] = ['apartment', 'house']
+const BUILDING_ICONS: Record<BuildingType, LucideIcon> = {
+  apartment: Building2,
+  house: Home,
 }
 
+/**
+ * „Zuhause" – der erste Schritt beider Wege.
+ *
+ * Führt zusammen, was der Nutzer als eine Frage erlebt: Wer wohnt hier, wie
+ * groß, in was für einem Gebäude. Vorher standen Personen und Wohnfläche in
+ * zwei getrennten Schritten, obwohl die Plausibilitätsprüfung beide braucht und
+ * niemand sie getrennt denkt.
+ *
+ * Mieter/Eigentümer ist bewusst nicht mehr hier: Die Angabe entscheidet, welche
+ * Maßnahmen überhaupt in Frage kommen, und steht deshalb beim Standort.
+ */
 export function Step1Profile({ data, onChange, detailed = false }: Props) {
   const { t } = useTranslation()
+  const [areaText, setAreaText] = useState(String(data.livingArea))
 
   function toggleGoal(goal: UserGoal) {
     const current = data.goals
@@ -48,15 +63,24 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
     })
   }
 
+  function handleAreaBlur() {
+    const parsed = Number.parseInt(areaText, 10)
+    const clamped = Number.isFinite(parsed) ? Math.max(10, Math.min(1000, parsed)) : data.livingArea
+    setAreaText(String(clamped))
+    onChange({ livingArea: clamped })
+  }
+
   return (
     <div className="space-y-6">
-      <div className="pt-1">
-        <AvatarPicker
-          value={data.profileImage}
-          name={data.profileName}
-          onChange={(profileImage) => onChange({ profileImage })}
-        />
-      </div>
+      {detailed && (
+        <div className="pt-1">
+          <AvatarPicker
+            value={data.profileImage}
+            name={data.profileName}
+            onChange={(profileImage) => onChange({ profileImage })}
+          />
+        </div>
+      )}
 
       <div className="space-y-2">
         <Field title={t('onboarding.step1.profileName')} hint={t('onboarding.step1.profileNameHint')}>
@@ -72,6 +96,46 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
           </div>
         </Field>
       </div>
+
+      <Field title={t('onboarding.step2.buildingType')}>
+        <div className="flex gap-2">
+          {BUILDING_TYPES.map((type) => (
+            <OptionChip
+              key={type}
+              icon={BUILDING_ICONS[type]}
+              label={t(`onboarding.step2.${type}`)}
+              selected={data.buildingType === type}
+              onClick={() => onChange({ buildingType: type })}
+            />
+          ))}
+        </div>
+      </Field>
+
+      <Field
+        title={t('onboarding.step2.livingArea')}
+        info={t('info.livingArea')}
+        hint={t('onboarding.step2.livingAreaHint')}
+      >
+        <div className="relative">
+          <input
+            type="number"
+            inputMode="numeric"
+            min={10}
+            max={1000}
+            value={areaText}
+            onChange={(e) => {
+              setAreaText(e.target.value)
+              const parsed = Number.parseInt(e.target.value, 10)
+              if (Number.isFinite(parsed)) onChange({ livingArea: parsed })
+            }}
+            onBlur={handleAreaBlur}
+            className="focus-ring w-full rounded-2xl glass px-4 py-3 pr-12 text-foreground tabular-nums"
+          />
+          <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm text-muted">
+            m²
+          </span>
+        </div>
+      </Field>
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between gap-4">
@@ -89,7 +153,11 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
         <p className="text-xs text-muted">{t('onboarding.step1.personsHint')}</p>
       </div>
 
-      {!detailed && (
+      {/* Solange keine Räume angelegt sind, ist die Zimmerzahl die einzige
+          Größenangabe neben der Fläche – und die Grundlage der
+          Plausibilitätsprüfung. Sobald die Raumliste steht, ist sie die
+          genauere Wahrheit und die Zeile verschwindet. */}
+      {data.rooms.length === 0 ? (
         <div className="flex items-center justify-between gap-4">
           <label className="text-sm font-semibold text-foreground">
             {t('onboarding.step1.rooms')}
@@ -101,10 +169,39 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
             onChange={(v) => onChange({ roomsCount: v })}
           />
         </div>
+      ) : (
+        <p className="text-xs text-muted">
+          {t('onboarding.step1.roomsFromList', {
+            count: data.rooms.reduce((sum, r) => sum + Math.max(1, r.count ?? 1), 0),
+          })}
+        </p>
       )}
+
+      <Field
+        title={t('onboarding.step2.buildingYear')}
+        info={t('info.buildingYear')}
+        hint={t('onboarding.step2.buildingYearHint')}
+      >
+        <Slider
+          value={data.buildingYear}
+          min={1850}
+          max={2025}
+          onChange={(v) => onChange({ buildingYear: v })}
+        />
+      </Field>
+
+      {/* Der Abgleich steht unter den Werten, die er prüft. */}
+      <PlausibilityNote data={data} />
 
       {detailed && (
         <>
+          <div className="flex items-center justify-between gap-4">
+            <label className="text-sm font-semibold text-foreground">
+              {t('onboarding.step2.floors')}
+            </label>
+            <Stepper value={data.floors} min={1} max={6} onChange={(v) => onChange({ floors: v })} />
+          </div>
+
           <Field
             title={t('onboarding.step1.goals')}
             info={t('info.goals')}
@@ -118,24 +215,6 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
                   label={t(`onboarding.step1.goalOptions.${goal}`)}
                   selected={data.goals.includes(goal)}
                   onClick={() => toggleGoal(goal)}
-                />
-              ))}
-            </div>
-          </Field>
-
-          <Field
-            title={t('onboarding.step1.occupancyStatus')}
-            info={t('info.occupancy')}
-            hint={t('onboarding.step1.statusHint')}
-          >
-            <div className="flex gap-2">
-              {OCCUPANCY_STATUSES.map((status) => (
-                <OptionChip
-                  key={status}
-                  icon={OCCUPANCY_ICONS[status]}
-                  label={t(`onboarding.step1.occupancyOptions.${status}`)}
-                  selected={data.occupancyStatus === status}
-                  onClick={() => onChange({ occupancyStatus: status })}
                 />
               ))}
             </div>

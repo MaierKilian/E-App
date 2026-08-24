@@ -44,6 +44,15 @@ interface SettingsState {
    */
   pvPromptDismissed: boolean
   dismissPvPrompt: () => void
+  /**
+   * Mit „Passt so" bestätigte Wertekombination der Plausibilitätsprüfung
+   * (siehe `onboarding/plausibility.ts`).
+   *
+   * Bewusst der Fingerabdruck der Werte und kein blankes „nie wieder": Wer
+   * später 700 statt 70 eintippt, soll den Hinweis erneut sehen.
+   */
+  plausibilityAccepted: string | null
+  acceptPlausibility: (key: string) => void
 }
 
 /**
@@ -65,6 +74,8 @@ export const useSettingsStore = create<SettingsState>()(
       setAnalyticsEnabled: (analyticsEnabled) => set({ analyticsEnabled }),
       pvPromptDismissed: false,
       dismissPvPrompt: () => set({ pvPromptDismissed: true }),
+      plausibilityAccepted: null,
+      acceptPlausibility: (key) => set({ plausibilityAccepted: key }),
     }),
     {
       name: 'eapp-settings',

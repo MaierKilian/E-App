@@ -1135,7 +1135,8 @@
       "profileNameHint": "Free to choose – handy when comparing several homes.",
       "personsHint": "Affects hot water and electricity use.",
       "goalsHint": "We prioritise the right measurements and tips. Multiple choice.",
-      "statusHint": "Affects which measures are realistic for you."
+      "statusHint": "Affects which measures are realistic for you.",
+      "roomsFromList": "Rooms from your room list: {{count}}"
     },
     "step2": {
       "title": "Basic Data",
@@ -1403,7 +1404,13 @@
         "postalCode": "Postal code",
         "goals": "Goals",
         "occupancyStatus": "Status"
-      }
+      },
+      "unlockTitle": "What you can do now",
+      "unlockProgress": "Profile {{pct}} % complete – that is enough to start.",
+      "unlockReady": "Ready now: {{count}} of 9 checks, every meter, euro figures.",
+      "unlockOpenRooms": "Not yet: room climate, furniture spacing and the LED check. You add rooms when you first run one of them – or here in two minutes.",
+      "unlockComplete": "Profile complete – all nine checks are ready.",
+      "unlockNext": "Worth doing next: {{section}}"
     },
     "hub": {
       "title": "Profile overview",
@@ -1427,7 +1434,34 @@
         "oil": "On your delivery/tank invoice – price per litre (€/l).",
         "pellets": "On your delivery/annual statement – price per kilogram (€/kg).",
         "heat_pump": "If your heat pump has its own electricity tariff – otherwise like household power (ct/kWh)."
-      }
+      },
+      "basePrice": "Standing charge"
+    },
+    "sectionTitles": {
+      "home": "Your home",
+      "rooms": "Rooms",
+      "heating": "Heating & hot water",
+      "prices": "Prices & costs",
+      "building": "Building envelope & retrofits",
+      "equipment": "Equipment",
+      "location": "Location & tenancy",
+      "review": "Review & save"
+    },
+    "plausibility": {
+      "area_per_person_low": "{{area}} m² for {{persons}} people – only {{perPerson}} m² each. Is that right?",
+      "area_per_person_high": "{{area}} m² for {{persons}} people – that is {{perPerson}} m² each. Typo?",
+      "area_per_room_low": "{{area}} m² across {{rooms}} rooms – only {{perRoom}} m² per room. Is that right?",
+      "area_per_room_high": "{{area}} m² across {{rooms}} rooms – that is {{perRoom}} m² per room. Typo?",
+      "accept": "That is correct"
+    },
+    "benefits": {
+      "home": "a sharper consumption estimate",
+      "rooms": "three more checks",
+      "heating": "the hot-water maths and matching meters",
+      "prices": "euro figures instead of bare quantities",
+      "building": "the efficiency rating of your building",
+      "equipment": "distance measuring in the furniture check",
+      "location": "measures that fit how you live"
     }
   },
   "monitoring": {
@@ -1980,7 +2014,8 @@
       "doneLine": "{{done}} of {{total}} done",
       "emptyTitle": "No measurement yet",
       "emptyHint": "Start with an easy one – ten minutes will do."
-    }
+    },
+    "profileNext": "Add {{section}} → {{benefit}}"
   },
   "settings": {
     "open": "Open settings",

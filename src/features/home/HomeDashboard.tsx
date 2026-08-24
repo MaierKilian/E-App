@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next'
 import { ChevronRight, Lightbulb, CheckCircle2, Home } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { useMeasurementsStore } from '@/store/measurementsStore'
+import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTipsStore } from '@/store/tipsStore'
 import { buildTips } from '@/features/tips/buildTips'
 import type { OnboardingData } from '@/types'
 import { ProgressRing } from './ProgressRing'
 import { EnergySummaryCard } from './EnergySummaryCard'
 import { MeasurementSummaryCard } from './MeasurementSummaryCard'
-import { profileCompleteness, profileMissingCount } from '@/features/onboarding/sections'
+import { nextSection, profileCompleteness } from '@/features/onboarding/sections'
 import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
 import { useTipContext } from '@/features/tips/useTipContext'
 
@@ -33,17 +34,20 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const results = useMeasurementsStore((s) => s.results)
+  const visitedSections = useOnboardingStore((s) => s.visitedSections)
   const doneIds = useTipsStore((s) => s.doneIds)
   const dismissedIds = useTipsStore((s) => s.dismissedIds)
   const tipContext = useTipContext()
 
   const completeness = profileCompleteness(data)
   const isComplete = completeness >= 100
-  const missing = profileMissingCount(data)
+  // Was die naechste Angabe bringt, statt wie viel noch fehlt: derselbe
+  // Zahlenwert, aber eine Aussage ueber Gewinn statt ueber Verwaltungsarbeit.
+  const next = nextSection(data, visitedSections)
   // Bei nur noch einer offenen Angabe ist ein grüner Aufruf-Knopf
   // unverhältnismäßig: die auffälligste Handlung des Startbildschirms wäre
   // dann Verwaltungsarbeit statt Nutzen. Ab hier nur noch ein leiser Hinweis.
-  const almostComplete = !isComplete && missing <= 1
+  const almostComplete = !isComplete && completeness >= 90
   // Auf dem Zuhause-Einstieg nur offene Empfehlungen zählen (erledigte/
   // ausgeblendete sind für den Nutzer bereits abgehakt).
   const tips = buildTips(data, results, tipContext).filter(
@@ -85,7 +89,12 @@ export function HomeDashboard({ data, onEdit }: HomeDashboardProps) {
               </p>
             ) : (
               <p className="mt-0.5 truncate text-xs text-muted">
-                {t('home.profileMissing', { count: missing })}
+                {next
+                  ? t('home.profileNext', {
+                      section: t(next.titleKey),
+                      benefit: t(`onboarding.benefits.${next.id}`),
+                    })
+                  : t('home.profileComplete')}
               </p>
             )}
           </div>
