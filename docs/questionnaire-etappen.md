@@ -28,7 +28,7 @@ selbst (siehe `deployment.md`).
 |---|---|---|---|---|
 | 0 | Vorarbeit: Fortschrittszahlen aus einer Quelle | ✅ fertig | 2026-08-24 | `d403a63` |
 | 1 | Räume robust machen | ✅ fertig | 2026-08-24 | `4a1629a` |
-| 2 | Zähler entsperren | ⬜ offen | – | – |
+| 2 | Zähler entsperren | ✅ fertig | 2026-08-24 | `581b390` |
 | 3 | Registry und Schrittzustände | ⬜ offen | – | – |
 | 4 | Neue Schrittfolge und kurzer Schnellstart | ⬜ offen | – | – |
 | 5 | Modernisierung und Erzeuger-Alter | ⬜ offen | – | – |
@@ -190,14 +190,33 @@ src/i18n/locales/de.json, en.json
 
 ### Fertig, wenn
 
-- [ ] Ein Profil ohne PV kann einen PV-Zähler anlegen und Ablesungen erfassen.
-- [ ] Ein Profil ohne Gasheizung wird **nicht** an Gas-Ablesungen erinnert.
-- [ ] Ein Profil **mit** Gas-Ablesungen wird erinnert, auch wenn im Fragebogen
+- [x] Ein Profil ohne PV kann einen PV-Zähler anlegen und Ablesungen erfassen.
+- [x] Ein Profil ohne Gasheizung wird **nicht** an Gas-Ablesungen erinnert.
+- [x] Ein Profil **mit** Gas-Ablesungen wird erinnert, auch wenn im Fragebogen
       keine Gasheizung steht.
-- [ ] Die PV-Erinnerung erscheint bei `hasPV: 'yes'` ohne Ablesungen und
+- [x] Die PV-Erinnerung erscheint bei `hasPV: 'yes'` ohne Ablesungen und
       verschwindet nach der ersten.
-- [ ] Berichte enthalten die tatsächlich erfassten Träger.
-- [ ] Typecheck, ESLint und Tests grün.
+- [x] Berichte enthalten die tatsächlich erfassten Träger.
+- [x] Typecheck, ESLint und Tests grün.
+
+Abnahme gefahren mit `tests/unit/energyTypes.test.ts` (Rechenebene) und einem
+Playwright-Durchlauf gegen die laufende App (Bedienebene).
+
+### Unterwegs entschieden
+
+- **Drei Rollen statt einer Funktion.** `ALL_ENERGY_TYPES` (erfassbar) ·
+  `suggestedEnergyTypes` (Vorbelegung und Erinnerungen) · `boardEnergyTypes`
+  (Vorgeschlagenes ∪ mit Ablesungen). Die dritte war nicht geplant, ist aber
+  nötig: Ohne sie verschwände ein selbst angelegter Zähler nach dem ersten
+  Eintrag wieder vom Board.
+- **Ein Zähler „existiert“, sobald er eine Ablesung hat.** Kein zusätzliches
+  Feld für „vom Nutzer hinzugefügt“ – der Picker öffnet direkt die Erfassung.
+- **`pvPromptDismissed`** im `settingsStore`: Ein Hinweis, den man nicht
+  loswird, ist eine Mahnung.
+- **`EnergySummaryCard` verliert ihre `data`-Prop** – sie hängt nicht mehr am
+  Profil, sondern nur noch an den Ablesungen.
+- Auch `ReportsPage` zog mit (Träger-Auswahl im Bericht), das stand nicht in der
+  Dateiliste dieser Etappe.
 
 ---
 
