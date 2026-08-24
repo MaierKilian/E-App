@@ -1,6 +1,7 @@
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
-import { anyResultFor } from '@/features/measurements/rooms'
+import { catalogProgress } from '@/features/measurements/progress'
 import type { MeasurementResult } from '@/features/measurements/types'
+import type { RoomEntry } from '@/types'
 
 type Results = Partial<Record<string, MeasurementResult>>
 
@@ -13,19 +14,20 @@ type Results = Partial<Record<string, MeasurementResult>>
  */
 
 /**
- * Fortschritt über den Katalog.
+ * Fortschritt über den Katalog – dieselbe Rechnung wie der Ring im Messungen-
+ * Kopf und die Gewerke-Kacheln (siehe `measurements/progress.ts`).
  *
- * Zählt nur verfügbare Messungen: „Bald"-Einträge ließen den Fortschritt
- * dauerhaft unerreichbar aussehen. Eine Pro-Raum-Messung gilt als erledigt,
- * sobald ein Raum gemessen wurde – sonst hinge der Ring an Räumen, die der
- * Nutzer bewusst ausgelassen hat.
+ * Früher zählte diese Karte eigenständig und großzügiger: Ein Pro-Raum-Check
+ * galt hier schon mit dem ersten Raum als erledigt, im Messungen-Bereich erst
+ * mit dem letzten. Beide Ringe standen damit regelmäßig auf verschiedenen
+ * Zahlen, obwohl sie dasselbe beschriften.
  */
-export function measurementProgress(results: Results): { done: number; total: number } {
-  const available = MEASUREMENT_CATALOG.filter((m) => m.available)
-  return {
-    done: available.filter((m) => anyResultFor(results, m.id)).length,
-    total: available.length,
-  }
+export function measurementProgress(
+  results: Results,
+  rooms: RoomEntry[] = [],
+  skippedRooms: readonly string[] = [],
+): { done: number; total: number } {
+  return catalogProgress(results, rooms, skippedRooms)
 }
 
 /**

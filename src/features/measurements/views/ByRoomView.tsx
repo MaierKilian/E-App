@@ -5,7 +5,7 @@ import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { MEASUREMENT_CATALOG, appliesToRoom } from '../catalog'
 import type { MeasurementResult } from '../types'
-import { roomInstances, roomLabel } from '../rooms'
+import { roomInstances, roomLabel, instanceKey, anyResultFor } from '../rooms'
 import { GroupTileGrid, type TileGroup, type TileItem } from './GroupTileGrid'
 
 interface ViewProps {
@@ -51,6 +51,20 @@ export function ByRoomView({ results }: ViewProps) {
     '#a855f7', '#ec4899', '#f59e0b', '#06b6d4',
   ]
 
+  /**
+   * Kachel einer Messung in dieser Ansicht.
+   *
+   * Pro-Raum-Checks hängen am konkreten Raum. Alles andere hat ein Ergebnis
+   * fürs ganze Zuhause – auch wenn es unter einem eigenen Schlüssel liegt
+   * (Warmwasser-Wartezeit speichert die Entnahmestelle als `roomKey`). Deshalb
+   * `anyResultFor` statt eines stumpfen `results[id]`, das solche Ergebnisse
+   * nie fand und die Kachel dauerhaft auf „offen" stehen ließ.
+   */
+  function tileItem(meta: (typeof MEASUREMENT_CATALOG)[number], roomKey?: string): TileItem {
+    const result = roomKey ? results[instanceKey(meta.id, roomKey)] : anyResultFor(results, meta.id)
+    return { meta, roomKey, result, done: Boolean(result) }
+  }
+
   // Eine Gruppe je Raum-Instanz; Pro-Raum-Messungen mit raumspezifischem Schlüssel.
   const roomGroups: TileGroup[] = roomInstances(rooms)
     .map((inst, idx) => ({
@@ -58,15 +72,16 @@ export function ByRoomView({ results }: ViewProps) {
       label: roomLabel(t, inst),
       icon: DoorOpen,
       color: ROOM_PALETTE[idx % ROOM_PALETTE.length],
-      items: MEASUREMENT_CATALOG.filter((m) => appliesToRoom(m, inst.type)).map<TileItem>((meta) => ({
-        meta,
-        roomKey: meta.perRoom ? inst.key : undefined,
-      })),
+      items: MEASUREMENT_CATALOG.filter((m) => appliesToRoom(m, inst.type)).map<TileItem>((meta) =>
+        tileItem(meta, meta.perRoom ? inst.key : undefined),
+      ),
     }))
     .filter((g) => g.items.length > 0)
 
   // Ganz-Haus-Messungen als eigene Gruppe.
-  const homeItems = MEASUREMENT_CATALOG.filter((m) => m.wholeHome).map<TileItem>((meta) => ({ meta }))
+  const homeItems = MEASUREMENT_CATALOG.filter((m) => m.wholeHome).map<TileItem>((meta) =>
+    tileItem(meta),
+  )
   const homeGroup: TileGroup[] =
     homeItems.length > 0
       ? [{ key: '__home__', label: t('measurements.byRoom.wholeHome'), icon: Home, color: '#64748b', items: homeItems }]
@@ -79,5 +94,5 @@ export function ByRoomView({ results }: ViewProps) {
     onToggle: (key: string) => toggleSkippedRoom(key),
   }
 
-  return <GroupTileGrid groups={groups} results={results} skip={skip} />
+  return <GroupTileGrid groups={groups} skip={skip} />
 }

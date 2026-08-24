@@ -1,8 +1,9 @@
 import type { TFunction } from 'i18next'
 import type { RoomEntry } from '@/types'
 import type { MeasurementResult } from './types'
-import { MEASUREMENT_CATALOG, type MeasurementMeta } from './catalog'
-import { roomInstances, roomLabel, instanceKey, anyResultFor } from './rooms'
+import { type MeasurementMeta } from './catalog'
+import { roomLabel, instanceKey } from './rooms'
+import { countableMeasurements, countingRooms, measurementProgress } from './progress'
 
 /** Ein gruppierter Schritt (eine Messung; bei Pro-Raum mit Raum-Fortschritt). */
 export interface MeasurementStep {
@@ -20,38 +21,35 @@ export interface MeasurementStep {
 }
 
 /**
- * Baut die gruppierte Schrittliste: ein Schritt je verfügbarer Messung.
+ * Baut die gruppierte Schrittliste: ein Schritt je zählender Messung.
  * Pro-Raum-Messungen werden NICHT expandiert, sondern als ein Schritt mit
  * Raum-Fortschritt geführt (z. B. „Raumklima 2/4 Räume").
+ *
+ * Zählen und „erledigt?" kommen aus `progress.ts` – derselben Quelle, aus der
+ * auch die Zuhause-Karte und die Gewerke-/Raum-Kacheln rechnen.
  */
 export function buildSteps(
   rooms: RoomEntry[],
   results: Partial<Record<string, MeasurementResult>>,
   t: TFunction,
+  skippedRooms: readonly string[] = [],
 ): MeasurementStep[] {
-  const instances = roomInstances(rooms)
+  const instances = countingRooms(rooms, skippedRooms)
   const steps: MeasurementStep[] = []
-  for (const meta of MEASUREMENT_CATALOG) {
-    if (!meta.available) continue
-    if (meta.perRoom) {
-      if (instances.length === 0) continue // ohne Räume nicht messbar
-      const open = instances.filter((inst) => !results[instanceKey(meta.id, inst.key)])
-      const next = open[0]
-      steps.push({
-        meta,
-        perRoom: true,
-        roomsTotal: instances.length,
-        roomsDone: instances.length - open.length,
-        done: open.length === 0,
-        nextRoomKey: next?.key,
-        nextRoomName: next ? roomLabel(t, next) : undefined,
-      })
-    } else {
-      // Erledigt, sobald ein Ergebnis vorliegt – auch bei mehreren Entnahme-
-      // stellen (z. B. Warmwasser-Wartezeit, je Stelle ein Ergebnis).
-      const done = Boolean(anyResultFor(results, meta.id))
-      steps.push({ meta, perRoom: false, roomsTotal: 1, roomsDone: done ? 1 : 0, done })
-    }
+  for (const meta of countableMeasurements(instances)) {
+    const { done, total } = measurementProgress(results, meta, instances)
+    const next = meta.perRoom
+      ? instances.find((inst) => !results[instanceKey(meta.id, inst.key)])
+      : undefined
+    steps.push({
+      meta,
+      perRoom: Boolean(meta.perRoom),
+      roomsTotal: total,
+      roomsDone: done,
+      done: done === total,
+      nextRoomKey: next?.key,
+      nextRoomName: next ? roomLabel(t, next) : undefined,
+    })
   }
   return steps
 }

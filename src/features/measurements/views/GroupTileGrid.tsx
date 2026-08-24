@@ -9,11 +9,24 @@ import { RatingBadge } from '../RatingBadge'
 import { instanceKey } from '../rooms'
 import { resultValueText } from '../resultValue'
 
-/** Eine Messung innerhalb einer Gruppe, optional an einen konkreten Raum gebunden. */
+/**
+ * Eine Messung innerhalb einer Gruppe, optional an einen konkreten Raum gebunden.
+ *
+ * Ergebnis und Erledigt-Status löst die jeweilige Ansicht auf (über
+ * `progress.ts`), nicht das Grid: In der Gewerke-Ansicht steht eine Kachel für
+ * die Messung im Ganzen (Pro-Raum-Check erst mit allen Räumen erledigt), in der
+ * Raum-Ansicht nur für diesen einen Raum.
+ */
 export interface TileItem {
   meta: MeasurementMeta
   /** Raum-Schlüssel bei Pro-Raum-Messungen (sonst undefined). */
   roomKey?: string
+  /** Vorliegendes Ergebnis dieser Kachel. */
+  result?: MeasurementResult
+  /** Zählt diese Kachel als erledigt? */
+  done: boolean
+  /** Raum-Fortschritt eines Pro-Raum-Checks (nur Gewerke-Ansicht). */
+  rooms?: { done: number; total: number }
 }
 
 export interface TileGroup {
@@ -35,7 +48,6 @@ export interface SkipConfig {
 
 interface Props {
   groups: TileGroup[]
-  results: Partial<Record<string, MeasurementResult>>
   /** Wenn gesetzt, erhalten Gruppen eine dezente „Nicht berücksichtigen"-Option. */
   skip?: SkipConfig
 }
@@ -45,11 +57,13 @@ function MiniCard({
   meta,
   roomKey,
   result,
+  rooms,
   color,
 }: {
   meta: MeasurementMeta
   roomKey?: string
   result?: MeasurementResult
+  rooms?: { done: number; total: number }
   color?: string
 }) {
   const { t, i18n } = useTranslation()
@@ -86,6 +100,12 @@ function MiniCard({
       </p>
       <p className="mt-0.5 text-[11px] text-muted">
         {meta.estimatedMinutes} {t('measurements.minutesUnit')}
+        {/* Gewerke-Ansicht: Ein Pro-Raum-Check ist erst mit allen Räumen
+            erledigt – dann muss die Kachel auch zeigen, wie weit er ist,
+            sonst wirkt „offen" bei 3 von 4 gemessenen Räumen willkürlich. */}
+        {rooms && rooms.total > 1 && (
+          <> · {t('measurements.flow.rooms', { done: rooms.done, total: rooms.total })}</>
+        )}
       </p>
 
       <div className="mt-1.5">
@@ -127,7 +147,7 @@ function MiniCard({
  * Zeilen gerendert. Klappt eine Gruppe auf, erscheint die Mess-Kachel-Reihe unterhalb
  * der gesamten Zeile – die Nachbar-Kachel bleibt an ihrer Position.
  */
-export function GroupTileGrid({ groups, results, skip }: Props) {
+export function GroupTileGrid({ groups, skip }: Props) {
   const { t } = useTranslation()
   const [active, setActive] = useState<string | null>(null)
 
@@ -150,9 +170,10 @@ export function GroupTileGrid({ groups, results, skip }: Props) {
           <Fragment key={row[0].key}>
             <div className="grid grid-cols-2 gap-3">
               {row.map((group) => {
-                const done = group.items.filter(
-                  (it) => results[instanceKey(it.meta.id, it.roomKey)],
-                ).length
+                // Nenner nur über zählbare Messungen: „Bald"-Einträge stehen
+                // zwar in der Reihe, wären im Zähler aber nie erreichbar.
+                const countable = group.items.filter((it) => it.meta.available)
+                const done = countable.filter((it) => it.done).length
                 const isSkipped = skip?.skipped.has(group.key) ?? false
                 const isActive = active === group.key && !isSkipped
                 const Icon = group.icon
@@ -198,7 +219,7 @@ export function GroupTileGrid({ groups, results, skip }: Props) {
                         <p className="mt-0.5 text-sm tabular-nums text-muted">
                           {isSkipped
                             ? t('measurements.byRoom.nothingToMeasure')
-                            : `${done}/${group.items.length}`}
+                            : `${done}/${countable.length}`}
                         </p>
                       </div>
                     </button>
@@ -237,7 +258,8 @@ export function GroupTileGrid({ groups, results, skip }: Props) {
                     key={instanceKey(it.meta.id, it.roomKey)}
                     meta={it.meta}
                     roomKey={it.roomKey}
-                    result={results[instanceKey(it.meta.id, it.roomKey)]}
+                    result={it.result}
+                    rooms={it.rooms}
                     color={activeGroup.color}
                   />
                 ))}

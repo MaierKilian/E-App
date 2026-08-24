@@ -9,6 +9,7 @@ import { InfoButton } from '@/components/ui/InfoButton'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { ProgressRing } from '@/components/ui/ProgressRing'
 import { buildSteps } from './tasks'
+import { catalogProgress } from './progress'
 import { impactSummary } from './impact'
 import { remeasurePrompt, type RemeasurePrompt } from './base_load/remeasure'
 import { pendingFollowUpKeys } from './followUps'
@@ -80,12 +81,14 @@ export function MeasurementsPage() {
   const results = useMeasurementsStore((s) => s.results)
   const view = useMeasurementsStore((s) => s.measurementsView)
   const setView = useMeasurementsStore((s) => s.setMeasurementsView)
+  const skippedRooms = useMeasurementsStore((s) => s.skippedRooms)
   const rooms = useOnboardingStore((s) => s.data.rooms)
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
 
-  const steps = buildSteps(rooms, results, t)
-  const done = steps.filter((s) => s.done).length
-  const total = steps.length
+  // Ring und Schrittliste kommen aus derselben Rechnung wie die Zuhause-Karte
+  // und die Gewerke-Kacheln (siehe `progress.ts`).
+  const steps = buildSteps(rooms, results, t, skippedRooms)
+  const { done, total } = catalogProgress(results, rooms, skippedRooms)
 
   const { savingsEur, co2Kg } = impactSummary(results, workPriceCt)
   // Anstoß, die Grundlast nach einer Maßnahme erneut zu messen – der einzige

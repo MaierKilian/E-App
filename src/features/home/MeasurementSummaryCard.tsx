@@ -75,9 +75,10 @@ export function MeasurementSummaryCard() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const results = useMeasurementsStore((s) => s.results)
+  const skippedRooms = useMeasurementsStore((s) => s.skippedRooms)
   const rooms = useOnboardingStore((s) => s.data.rooms)
 
-  const { done, total } = measurementProgress(results)
+  const { done, total } = measurementProgress(results, rooms, skippedRooms)
   const recentAvailable = recentResults(results, MAX_RECENT)
   const visibleCount = useFitRecentCount(recentAvailable.length)
   const recent = recentAvailable.slice(0, visibleCount)

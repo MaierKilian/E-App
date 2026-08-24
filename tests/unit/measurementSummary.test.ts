@@ -8,28 +8,54 @@ import { describe, expect, it } from 'vitest'
 import { measurementProgress, recentResults } from '@/features/home/measurementSummary'
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import type { MeasurementResult } from '@/features/measurements/types'
+import type { RoomEntry } from '@/types'
 
 function result(id: string, completedAt: string, roomKey?: string): MeasurementResult {
   return { id, rating: 'good', primaryValue: 1, unit: '°C', completedAt, roomKey }
 }
 
 const AVAILABLE = MEASUREMENT_CATALOG.filter((m) => m.available)
+const PER_ROOM = MEASUREMENT_CATALOG.find((m) => m.available && m.perRoom)!
+const ROOMS: RoomEntry[] = [
+  { type: 'living_room', count: 1, heatTransfer: 'radiator' },
+  { type: 'bedroom', count: 1, heatTransfer: 'radiator' },
+]
 
 describe('Fortschritt', () => {
   it('zählt nur verfügbare Messungen', () => {
-    expect(measurementProgress({}).total).toBe(AVAILABLE.length)
-    expect(measurementProgress({}).total).toBeLessThanOrEqual(MEASUREMENT_CATALOG.length)
+    expect(measurementProgress({}, ROOMS).total).toBe(AVAILABLE.length)
+    expect(measurementProgress({}, ROOMS).total).toBeLessThanOrEqual(MEASUREMENT_CATALOG.length)
   })
 
-  it('zählt eine Pro-Raum-Messung ab dem ersten Raum als erledigt', () => {
-    const id = AVAILABLE[0].id
-    const one = measurementProgress({ [`${id}@living_room#0`]: result(id, '2026-08-01') })
-    const two = measurementProgress({
-      [`${id}@living_room#0`]: result(id, '2026-08-01'),
-      [`${id}@bedroom#0`]: result(id, '2026-08-02'),
-    })
-    expect(one.done).toBe(1)
+  it('lässt Pro-Raum-Messungen ohne Räume aus dem Nenner', () => {
+    // Ohne Räume ist ein Pro-Raum-Check nicht messbar – im Nenner wäre er ein
+    // dauerhaft unerreichbarer Rest.
+    const perRoomCount = AVAILABLE.filter((m) => m.perRoom).length
+    expect(measurementProgress({}, []).total).toBe(AVAILABLE.length - perRoomCount)
+  })
+
+  it('zählt eine Pro-Raum-Messung erst mit dem letzten Raum als erledigt', () => {
+    const id = PER_ROOM.id
+    const one = measurementProgress({ [`${id}@living_room#0`]: result(id, '2026-08-01') }, ROOMS)
+    const two = measurementProgress(
+      {
+        [`${id}@living_room#0`]: result(id, '2026-08-01'),
+        [`${id}@bedroom#0`]: result(id, '2026-08-02'),
+      },
+      ROOMS,
+    )
+    expect(one.done).toBe(0)
     expect(two.done).toBe(1)
+  })
+
+  it('lässt als „nichts zu messen" markierte Räume den Fortschritt nicht blockieren', () => {
+    const id = PER_ROOM.id
+    const progress = measurementProgress(
+      { [`${id}@living_room#0`]: result(id, '2026-08-01') },
+      ROOMS,
+      ['bedroom#0'],
+    )
+    expect(progress.done).toBe(1)
   })
 })
 
@@ -64,6 +90,6 @@ describe('Zuletzt gemessen', () => {
 
   it('kommt ohne Ergebnisse ohne Fehler aus', () => {
     expect(recentResults({}, 3)).toEqual([])
-    expect(measurementProgress({}).done).toBe(0)
+    expect(measurementProgress({}, ROOMS).done).toBe(0)
   })
 })

@@ -217,7 +217,7 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
 function ScrollCue() {
   return (
     <div className="flex justify-center py-1" aria-hidden="true">
-      <ChevronDown className="scroll-cue h-6 w-6 text-muted/60" />
+      <ChevronDown className="scroll-cue h-9 w-9 text-muted/60" />
     </div>
   )
 }
