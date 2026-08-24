@@ -8,6 +8,18 @@
    - Commits die im aktuellen Branch sind, aber nicht in `main` (eigene Arbeit)
 3. Kurze Zusammenfassung der Änderungen ausgeben (was wurde geändert, welche Dateien betroffen)
 4. Falls `main` neue Commits hat: `git merge origin/main` anbieten oder automatisch ausführen
+5. `docs/questionnaire-etappen.md` überfliegen und den Arbeitsstand des
+   Fragebogen-Umbaus mit einer Zeile nennen (welche Etappe ist als Nächstes dran)
+
+## Laufendes Vorhaben: Fragebogen-Umbau
+
+- **Konzept (Was und Warum):** `docs/questionnaire-concept.md`
+- **Arbeitsstand (Wie weit):** `docs/questionnaire-etappen.md` – sechs Etappen,
+  jede einzeln lauffähig und deploybar
+- **Bearbeiten mit:** `/etappe` (nächste offene), `/etappe 3` (gezielt),
+  `/etappe status` (nur berichten)
+- Eine Etappe pro Session. Nach jeder Etappe: Tracker aktualisieren (Status,
+  Datum, Commit), nach `main` mergen und pushen.
 
 ## Branches
 
