@@ -29,7 +29,7 @@ selbst (siehe `deployment.md`).
 | 0 | Vorarbeit: Fortschrittszahlen aus einer Quelle | ✅ fertig | 2026-08-24 | `d403a63` |
 | 1 | Räume robust machen | ✅ fertig | 2026-08-24 | `4a1629a` |
 | 2 | Zähler entsperren | ✅ fertig | 2026-08-24 | `581b390` |
-| 3 | Registry und Schrittzustände | ⬜ offen | – | – |
+| 3 | Registry und Schrittzustände | ✅ fertig | 2026-08-24 | `ead8b8f` |
 | 4 | Neue Schrittfolge und kurzer Schnellstart | ⬜ offen | – | – |
 | 5 | Modernisierung und Erzeuger-Alter | ⬜ offen | – | – |
 | 6 | Gerätebestand, Keller, Ziele | ⬜ offen | – | – |
@@ -268,16 +268,39 @@ neu     tests/unit/sections.test.ts
 
 ### Fertig, wenn
 
-- [ ] Prozentbalken und Abschnitts-Kacheln im Profil-Hub widersprechen sich in
+- [x] Prozentbalken und Abschnitts-Kacheln im Profil-Hub widersprechen sich in
       keiner Datenlage – ein Test hält das fest.
-- [ ] Ein durchgeklickter, aber unvollständiger Schritt ist im `StepIndicator`
+- [x] Ein durchgeklickter, aber unvollständiger Schritt ist im `StepIndicator`
       **und** im Hub als „angefangen“ erkennbar, unterscheidbar von „nie besucht“.
-- [ ] Der Hub zeigt jeden Abschnitt der Registry, auch die, die der Schnellstart
+- [x] Der Hub zeigt jeden Abschnitt der Registry, auch die, die der Schnellstart
       nie gezeigt hat.
-- [ ] Optionale Felder (PLZ, Profilbild, Preise, Raumflächen) zählen nicht in
+- [x] Optionale Felder (PLZ, Profilbild, Preise, Raumflächen) zählen nicht in
       den Nenner; 100 % ist ohne sie erreichbar.
-- [ ] Die Schrittreihenfolge existiert nur noch **einmal** im Code.
-- [ ] Typecheck, ESLint und Tests grün.
+- [x] Die Schrittreihenfolge existiert nur noch **einmal** im Code.
+- [x] Typecheck, ESLint und Tests grün.
+
+Abnahme gefahren mit `tests/unit/sections.test.ts` (16 Tests) und einem
+Playwright-Durchlauf: Hub-Zustände, Schrittzahl beider Wege unverändert (6 bzw.
+10), Besuche werden vermerkt.
+
+### Unterwegs entschieden
+
+- **`SectionId` als Union statt `string`.** Damit erzwingt der Compiler, dass
+  jeder Abschnitt einen Inhalt hat (`SECTION_BODIES`); ein Test könnte das auch,
+  aber erst zur Laufzeit – und ein vergessener Abschnitt wäre bis dahin eine
+  leere Seite.
+- **Feld-Ebene ohne `quick`-Markierung.** Auf Abschnitts-Ebene wird sie
+  gebraucht, auf Feld-Ebene entscheidet weiter die `detailed`-Prop der Schritte.
+  Ein Feld-Flag wäre heute reine Dokumentation; es kommt in Etappe 4, wenn der
+  Schnellstart tatsächlich anders zugeschnitten wird.
+- **Abschnitte ohne Pflichtangabe gelten erst nach dem Besuch als fertig.** Beim
+  Testen fiel auf, dass Preise und Übersicht sonst im Schrittbalken von Anfang
+  an voll stehen. Im Hub tragen sie gar keinen Status, sondern die
+  „Optional“-Beschriftung.
+- **`heatTransfer` liegt im Hüllen-Abschnitt**, wo es heute gefragt wird – nicht
+  im Raum-Abschnitt, wo es fachlich hingehört. Der Umzug gehört zu Etappe 4,
+  zusammen mit der UI. Zählbar ist es überhaupt erst, seit es in Etappe 1
+  optional wurde.
 
 ---
 
