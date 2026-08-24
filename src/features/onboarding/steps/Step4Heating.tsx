@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { OptionChip } from '@/components/ui/OptionChip'
+import { Slider } from '@/components/ui/Slider'
 import { Field } from '@/components/ui/Field'
 // OptionChip wird nur noch für die PV/Kamin-Felder verwendet
 import type { OnboardingData, HeatGeneratorType, HotWaterType } from '@/types'
@@ -67,14 +68,31 @@ const PV_ICONS: Record<PVOption, LucideIcon> = {
 
 export function Step4Heating({ data, onChange, detailed = false }: Props) {
   const { t } = useTranslation()
+  const currentYear = new Date().getFullYear()
+  const yearMin = data.buildingYear > 0 ? data.buildingYear : 1850
+  // Vorbelegung in der Mitte zwischen Baujahr und heute: naeher an der Realitaet
+  // als beides zu unterstellen, und der Slider laesst sich von dort schnell
+  // in beide Richtungen ziehen.
+  const defaultGeneratorYear = Math.round((yearMin + currentYear) / 2)
 
   function toggleGenerator(type: HeatGeneratorType) {
     const current = data.heatGenerators
+    const isRemoving = current.includes(type)
+    const years = { ...(data.heatGeneratorYears ?? {}) }
+    // Wird der Erzeuger abgewaehlt, verschwindet sein Baujahr mit ihm – sonst
+    // bliebe eine Angabe zu einer Heizung stehen, die es nicht mehr gibt.
+    if (isRemoving) delete years[type]
     onChange({
-      heatGenerators: current.includes(type)
-        ? current.filter((g) => g !== type)
-        : [...current, type],
+      heatGenerators: isRemoving ? current.filter((g) => g !== type) : [...current, type],
+      heatGeneratorYears: years,
     })
+  }
+
+  function setGeneratorYear(type: HeatGeneratorType, year: number | undefined) {
+    const years = { ...(data.heatGeneratorYears ?? {}) }
+    if (year === undefined) delete years[type]
+    else years[type] = year
+    onChange({ heatGeneratorYears: years })
   }
 
   return (
@@ -89,21 +107,65 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
             const selected = data.heatGenerators.includes(type)
             const Icon = GENERATOR_ICONS[type]
             const isLonely = HEAT_GENERATORS.length % 2 === 1 && i === HEAT_GENERATORS.length - 1
+            const year = data.heatGeneratorYears?.[type]
             return (
-              <button
-                key={type}
-                type="button"
-                onClick={() => toggleGenerator(type)}
-                aria-pressed={selected}
-                className={`${isLonely ? 'col-span-2' : ''} flex w-full items-center gap-2 rounded-2xl px-3.5 py-2.5 text-left text-sm font-medium transition-[transform,background-color,box-shadow] active:scale-[0.97] ${
-                  selected
-                    ? 'border border-primary bg-primary text-primary-foreground shadow-[0_4px_14px_color-mix(in_srgb,var(--primary)_30%,transparent)]'
-                    : 'glass text-foreground'
-                }`}
-              >
-                <Icon className={`h-4 w-4 shrink-0 ${selected ? '' : 'text-muted'}`} />
-                <span>{t(`onboarding.step4.generators.${type}`)}</span>
-              </button>
+              <div key={type} className={isLonely ? 'col-span-2' : undefined}>
+                <button
+                  type="button"
+                  onClick={() => toggleGenerator(type)}
+                  aria-pressed={selected}
+                  className={`flex w-full items-center gap-2 rounded-2xl px-3.5 py-2.5 text-left text-sm font-medium transition-[transform,background-color,box-shadow] active:scale-[0.97] ${
+                    selected
+                      ? 'border border-primary bg-primary text-primary-foreground shadow-[0_4px_14px_color-mix(in_srgb,var(--primary)_30%,transparent)]'
+                      : 'glass text-foreground'
+                  }`}
+                >
+                  <Icon className={`h-4 w-4 shrink-0 ${selected ? '' : 'text-muted'}`} />
+                  <span>{t(`onboarding.step4.generators.${type}`)}</span>
+                </button>
+
+                {/* Baujahr klappt unter dem gewaehlten Erzeuger auf – dasselbe
+                    Muster wie die Modelltypen bei den Messgeraeten. Bei
+                    mehreren Erzeugern waere ein einzelnes Jahr schlicht falsch.
+                    „Weiss nicht" ist der Normalfall und deshalb der
+                    Ausgangszustand, kein extra Knopf. */}
+                {selected && type !== 'unknown' && (
+                  <div className="animate-panel-in mt-1.5 rounded-2xl bg-surface-2/50 px-3 py-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-medium text-muted">
+                        {t('onboarding.step4.generatorYear')}
+                      </span>
+                      {year === undefined ? (
+                        <button
+                          type="button"
+                          onClick={() => setGeneratorYear(type, defaultGeneratorYear)}
+                          className="focus-ring rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-primary"
+                        >
+                          {t('onboarding.step4.generatorYearAdd')}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setGeneratorYear(type, undefined)}
+                          className="focus-ring rounded-full px-2 py-1 text-[11px] font-medium text-muted transition-colors hover:text-foreground"
+                        >
+                          {t('onboarding.step4.generatorYearUnknown')}
+                        </button>
+                      )}
+                    </div>
+                    {year !== undefined && (
+                      <div className="mt-2">
+                        <Slider
+                          value={year}
+                          min={yearMin}
+                          max={currentYear}
+                          onChange={(v) => setGeneratorYear(type, v)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             )
           })}
         </div>

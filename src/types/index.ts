@@ -52,6 +52,24 @@ export type RenovationYear =
   | 'after_2020'
   | 'unknown'
 
+/**
+ * Eine Sanierung in einem bestimmten Jahr.
+ *
+ * Ersetzt das frühere Modell aus **einem** globalen Jahr plus flacher
+ * Häkchenliste: Real werden Fenster (z. B. 2005) und Heizung (z. B. 2021)
+ * getrennt saniert, und ein Jahr für alles kann das nicht abbilden.
+ */
+export interface RenovationEvent {
+  /** Stabile id für Bearbeitung und Löschen. */
+  id: string
+  /** Jahr der Maßnahme (vierstellig). */
+  year: number
+  /** In diesem Jahr durchgeführte Maßnahmen. */
+  items: RenovationItem[]
+  /** true = aus einem Altprofil abgeleitet, das Jahr ist nur geschätzt. */
+  estimated?: boolean
+}
+
 export type RenovationItem =
   | 'roof_insulation'
   | 'windows'
@@ -154,6 +172,21 @@ export interface OnboardingData {
   insulationState: InsulationState
   smartHomeDevices: SmartHomeDevice[]
   energyCostRange: EnergyCostRange
+  /**
+   * Sanierungen als Ereignis-Log, chronologisch aufsteigend.
+   *
+   * `null` = noch nichts eingetragen, `[]` = ausdrücklich „nie saniert". Der
+   * Unterschied zählt: Ohne ihn ließe sich eine unbeantwortete Frage nicht von
+   * einem unsanierten Haus unterscheiden.
+   */
+  renovations: RenovationEvent[] | null
+  /** Baujahr je gewähltem Wärmeerzeuger (optional, „weiß nicht" = fehlt). */
+  heatGeneratorYears: Partial<Record<HeatGeneratorType, number>>
+  /**
+   * Abgeleitet aus {@link OnboardingData.renovations} – bleibt für Demo-Profil,
+   * Firestore-Sync und die Übersichtsseite erhalten. Nicht direkt bearbeiten.
+   */
   lastRenovationYear: RenovationYear
+  /** Abgeleitet aus {@link OnboardingData.renovations}. Nicht direkt bearbeiten. */
   renovationItems: RenovationItem[]
 }

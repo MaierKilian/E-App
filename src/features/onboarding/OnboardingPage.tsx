@@ -20,7 +20,7 @@ import { Step3Rooms } from './steps/Step3Rooms'
 import { Step4Heating } from './steps/Step4Heating'
 import { Step6Instruments } from './steps/Step6Instruments'
 import { Step7Location } from './steps/Step7Location'
-import { Step7Renovation } from './steps/Step7Renovation'
+import { StepRenovationLog } from './steps/StepRenovationLog'
 import { StepPrices } from './steps/StepPrices'
 import { Step8Review } from './steps/Step8Review'
 import { Card } from '@/components/ui/Card'
@@ -61,7 +61,7 @@ const SECTION_BODIES: Record<SectionId, (p: StepContentProps) => ReactNode> = {
     <>
       <Step2Building data={data} onChange={onChange} />
       <div className="mt-6 border-t border-border pt-6">
-        <Step7Renovation data={data} onChange={onChange} />
+        <StepRenovationLog data={data} />
       </div>
     </>
   ),

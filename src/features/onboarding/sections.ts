@@ -150,7 +150,9 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
       field('windowAge', (d) => d.windowAge !== 'unknown'),
       field('insulationState', (d) => d.insulationState !== 'unknown'),
       field('ventilationType', (d) => d.ventilationType !== 'unknown'),
-      field('lastRenovationYear', (d) => d.lastRenovationYear !== 'unknown'),
+      // Beantwortet ist die Frage, sobald ein Ereignis erfasst ist ODER der
+      // Nutzer ausdrücklich „nie saniert“ gewählt hat (leere Liste).
+      field('renovations', (d) => d.renovations !== null),
     ],
   },
   {

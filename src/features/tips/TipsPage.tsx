@@ -73,12 +73,22 @@ function localizeParams(
  * sich einlässt, bevor man tippt.
  */
 function useEffortLabel(tip: Tip): string {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  // Vierstellige Beträge brauchen den Tausenderpunkt, sonst liest sich der
+  // Heizungstausch als „ab 8000 €".
+  const cost = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 }).format(
+    tip.costEur,
+  )
   if (tip.effortMinutes >= 60) {
-    return t('tips.effortHours', { hours: Math.round(tip.effortMinutes / 60) })
+    const hours = Math.round(tip.effortMinutes / 60)
+    // Die Stunden-Variante hieß bisher immer „kostenlos" – bis zum
+    // Heizungstausch gab es keinen langen Tipp, der etwas kostet.
+    return tip.costEur > 0
+      ? t('tips.effortHoursCost', { hours, cost })
+      : t('tips.effortHours', { hours })
   }
   return tip.costEur > 0
-    ? t('tips.effortCost', { minutes: tip.effortMinutes, cost: tip.costEur })
+    ? t('tips.effortCost', { minutes: tip.effortMinutes, cost })
     : t('tips.effortFree', { minutes: tip.effortMinutes })
 }
 

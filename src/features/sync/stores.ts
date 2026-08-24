@@ -1,4 +1,4 @@
-import { useOnboardingStore } from '@/store/onboardingStore'
+import { migrateOnboardingData, useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore } from '@/store/tariffStore'
@@ -51,6 +51,9 @@ export function hydrate(remote: Record<string, unknown>) {
     const part = remote[key]
     if (part && typeof part === 'object') store.setState(part as object)
   }
+  // `setState` geht am `persist`-Merge vorbei: Ein Profil aus der Cloud käme
+  // sonst ohne die Feld-Migrationen an, die ein lokal geladenes durchläuft.
+  useOnboardingStore.setState((s) => ({ data: migrateOnboardingData(s.data) }))
 }
 
 /**

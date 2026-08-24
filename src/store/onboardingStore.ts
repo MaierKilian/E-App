@@ -1,6 +1,16 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { HeatTransferType, OnboardingData, RoomEntry, RoomType } from '@/types'
+import type {
+  HeatTransferType,
+  OnboardingData,
+  RenovationEvent,
+  RoomEntry,
+  RoomType,
+} from '@/types'
+import {
+  derivedLegacyFields,
+  migrateLegacyRenovations,
+} from '@/features/onboarding/renovationProjection'
 
 /**
  * Migriert zusammengeführte Raumtypen aus älteren Profilen:
@@ -55,8 +65,35 @@ const defaultData: OnboardingData = {
   insulationState: 'unknown',
   smartHomeDevices: [],
   energyCostRange: 'unknown',
+  renovations: null,
+  heatGeneratorYears: {},
   lastRenovationYear: 'unknown',
   renovationItems: [],
+}
+
+/**
+ * Bringt ein gespeichertes Profil auf den aktuellen Stand.
+ *
+ * Zwei Wege führen hier vorbei: der `persist`-Merge beim Start und der
+ * Cloud-Sync, der einen Profilzustand direkt in den Store schreibt. Der zweite
+ * geht am `merge` vorbei – stünde die Migration nur dort, käme ein Profil aus
+ * der Cloud ohne sie an, und ein Altprofil hätte plötzlich weder Ereignis-Log
+ * noch beantwortete Sanierungsfrage.
+ */
+export function migrateOnboardingData(stored: Partial<OnboardingData> | undefined): OnboardingData {
+  const data = { ...defaultData, ...(stored ?? {}) }
+  const migratedRooms = migrateRooms(data.rooms)
+  if (migratedRooms) data.rooms = migratedRooms
+  // Altprofile kannten nur ein globales Sanierungsjahr plus Häkchenliste.
+  // Daraus entsteht ein Ereignis mit dem mittleren Jahr der Spanne, als
+  // geschätzt gekennzeichnet – verlustfrei und zur Präzisierung einladend.
+  if (data.renovations === undefined || data.renovations === null) {
+    const migrated = migrateLegacyRenovations(data.lastRenovationYear, data.renovationItems)
+    data.renovations = migrated
+    if (migrated !== null) Object.assign(data, derivedLegacyFields(migrated))
+  }
+  if (!data.heatGeneratorYears) data.heatGeneratorYears = {}
+  return data
 }
 
 /**
@@ -85,6 +122,7 @@ interface OnboardingState {
   updateData: (partial: Partial<OnboardingData>) => void
   addRoom: (type: RoomType) => string
   setRoomHeatTransfer: (type: RoomType, transfer: HeatTransferType) => void
+  setRenovations: (events: RenovationEvent[] | null) => void
   complete: () => void
   editProfile: () => void
   editSection: (step: number, returnTo?: string) => void
@@ -133,6 +171,17 @@ export const useOnboardingStore = create<OnboardingState>()(
         }))
         return `${type}#${index}`
       },
+      // Sanierungen setzen und die Altfelder mitziehen. `lastRenovationYear`
+      // und `renovationItems` bleiben im Typ (Demo-Profil, Firestore-Sync,
+      // Übersichtsseite) – sie werden nur nicht mehr direkt bearbeitet.
+      setRenovations: (events) =>
+        set((state) => ({
+          data: {
+            ...state.data,
+            renovations: events,
+            ...derivedLegacyFields(events),
+          },
+        })),
       // Wärmeübergabe eines Raumtyps setzen. Kommt aus dem Möbelabstand-Check,
       // wenn das Profil sie noch nicht kennt (Schnellstart-Raum): Der Check
       // erhebt die Angabe selbst, statt stillschweigend Heizkörper anzunehmen.
@@ -176,13 +225,10 @@ export const useOnboardingStore = create<OnboardingState>()(
       // einem Update neu hinzugekommene Felder nie fehlen (sonst Laufzeitfehler).
       merge: (persisted, current) => {
         const p = (persisted ?? {}) as Partial<OnboardingState>
-        const mergedData = { ...current.data, ...(p.data ?? {}) }
-        const migratedRooms = migrateRooms(mergedData.rooms)
-        if (migratedRooms) mergedData.rooms = migratedRooms
         return {
           ...current,
           ...p,
-          data: mergedData,
+          data: migrateOnboardingData(p.data),
           visitedSections: p.visitedSections ?? current.visitedSections,
           editReturnTo: null, // Navigationszustand nicht sitzungsübergreifend speichern
         }

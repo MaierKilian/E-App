@@ -125,9 +125,21 @@ export function Step8Review({ data }: Props) {
     .map((d) => t(`onboarding.step6.smartHomeOptions.${d}`))
     .join(', ')
 
-  const renovationItemsSummary = data.renovationItems
-    .map((i) => t(`onboarding.step7renovation.renovationItemOptions.${i}`))
-    .join(', ')
+  // Die Übersicht zeigt, was eingetragen wurde: jedes Jahr mit seinen
+  // Maßnahmen. Vorher stand hier die abgeleitete Spanne – wer 2005 eingetragen
+  // hatte, las „2000–2010" und hielt seine Angabe für verlorengegangen.
+  const renovationRows = (data.renovations ?? []).map((event) => ({
+    id: event.id,
+    label: event.estimated
+      ? t('onboarding.renovationLog.aboutYear', { year: event.year })
+      : String(event.year),
+    value:
+      event.items.length > 0
+        ? event.items
+            .map((i) => t(`onboarding.step7renovation.renovationItemOptions.${i}`))
+            .join(', ')
+        : t('onboarding.renovationLog.noItems'),
+  }))
 
   const isDetailed = data.mode === 'detailed'
 
@@ -253,14 +265,16 @@ export function Step8Review({ data }: Props) {
 
       {isDetailed && (
         <ReviewSection title={t('onboarding.step8.sections.renovation')}>
-          <ReviewRow
-            label={t('onboarding.step8.labels.lastRenovationYear')}
-            value={t(`onboarding.step7renovation.renovationYearOptions.${data.lastRenovationYear}`)}
-          />
-          {renovationItemsSummary && (
+          {renovationRows.length > 0 ? (
+            renovationRows.map((row) => (
+              <ReviewRow key={row.id} label={row.label} value={row.value} />
+            ))
+          ) : (
             <ReviewRow
-              label={t('onboarding.step8.labels.renovationItems')}
-              value={renovationItemsSummary}
+              label={t('onboarding.step8.labels.lastRenovationYear')}
+              value={t(
+                `onboarding.step7renovation.renovationYearOptions.${data.lastRenovationYear}`,
+              )}
             />
           )}
         </ReviewSection>

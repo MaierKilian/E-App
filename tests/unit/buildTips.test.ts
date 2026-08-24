@@ -20,11 +20,45 @@ const PROFILE = {
   ],
   smartHomeDevices: [],
   occupancyStatus: 'tenant',
+  heatGenerators: [],
+  heatGeneratorYears: {},
 } as unknown as OnboardingData
 
 function result(partial: Partial<MeasurementResult> & { id: string }): MeasurementResult {
   return { rating: 'elevated', primaryValue: 0, unit: '', completedAt: NOW, ...partial }
 }
+
+describe('Alter des Wärmeerzeugers', () => {
+  const withBoiler = (year: number) =>
+    ({
+      ...PROFILE,
+      heatGenerators: ['gas_boiler'],
+      heatGeneratorYears: { gas_boiler: year },
+    }) as unknown as OnboardingData
+
+  it('empfiehlt den Heizungstausch ab 20 Jahren – ohne jede Messung', () => {
+    const tips = buildTips(withBoiler(new Date().getFullYear() - 24), {})
+    const boiler = tips.find((t) => t.id === 'old_boiler')
+    expect(boiler?.params?.years).toBe(24)
+  })
+
+  it('steht hinter den Sofortmaßnahmen', () => {
+    // Der größte Hebel ist nicht der erste Schritt: Wer die Liste aufschlägt,
+    // soll oben etwas finden, das er heute ohne Einkauf und Termin abhaken
+    // kann – der Heizungstausch kostet Geld und einen Handwerkertermin.
+    const tips = buildTips(withBoiler(new Date().getFullYear() - 24), {
+      furniture_spacing: result({ id: 'furniture_spacing' }),
+    })
+    const ids = tips.map((t) => t.id)
+    expect(ids).toContain('old_boiler')
+    expect(ids.indexOf('old_boiler')).toBeGreaterThan(ids.indexOf('furniture_spacing'))
+  })
+
+  it('schweigt bei einer jungen Heizung', () => {
+    const tips = buildTips(withBoiler(new Date().getFullYear() - 5), {})
+    expect(tips.some((t) => t.id === 'old_boiler')).toBe(false)
+  })
+})
 
 describe('buildTips – Herkunft', () => {
   it('liefert ohne Messergebnisse keine Tipps', () => {

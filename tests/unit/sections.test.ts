@@ -40,6 +40,8 @@ const EMPTY = {
   insulationState: 'unknown',
   energyCostRange: 'unknown',
   lastRenovationYear: 'unknown',
+  renovations: null,
+  heatGeneratorYears: {},
 } as unknown as OnboardingData
 
 /** Profil, in dem jede Pflichtangabe beantwortet ist. */
@@ -62,6 +64,7 @@ const FULL = {
   instruments: [{ type: 'none' }],
   energyCostRange: '100_200',
   lastRenovationYear: 'never',
+  renovations: [],
 } as unknown as OnboardingData
 
 describe('Registry ist widerspruchsfrei', () => {
@@ -184,7 +187,7 @@ describe('Kein Feld ist verlorengegangen', () => {
     'heatGenerators', 'hotWaterType',
     'ventilationType', 'insulationState',
     'instruments', 'energyCostRange',
-    'lastRenovationYear', 'postalCode',
+    'renovations', 'postalCode',
   ]
 
   it('führt jede vorher erhobene Angabe weiter', () => {

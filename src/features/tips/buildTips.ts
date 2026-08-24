@@ -11,6 +11,7 @@ import {
   Gauge,
   TrendingUp,
   Wind,
+  Flame,
 } from 'lucide-react'
 import type { OnboardingData, RoomType } from '@/types'
 import type { MeasurementResult, MeasurementRating } from '@/features/measurements/types'
@@ -25,6 +26,13 @@ import {
   rankOpenRooms,
 } from '@/features/measurements/lighting/lighting'
 import { ENERGY_META } from '@/features/monitoring/energyConfig'
+import { boilerAgeYears } from '@/features/onboarding/renovationProjection'
+
+/**
+ * Ab diesem Alter lohnt sich beim Gas-/Oelkessel die Frage nach dem Austausch.
+ * Uebliche Nutzungsdauer liegt bei 20–25 Jahren; ab 20 ist das Thema real.
+ */
+const BOILER_OLD_YEARS = 20
 import { sortByDate, yearOverYearTrend } from '@/features/monitoring/readings'
 
 export type TipCategory = 'heating' | 'electricity' | 'water'
@@ -586,6 +594,24 @@ export function buildTips(
         unit: ENERGY_META[type].unit,
       },
       linkTo: `/monitoring/${type}`,
+    })
+  }
+
+  // --- Heizung ---------------------------------------------------------------
+  // Ein alter Gas- oder Oelkessel ist der groesste Einzelhebel eines Hauses –
+  // und der einzige Tipp hier, der ohne Messung auskommt: Das Alter allein
+  // genuegt. Bewusst mit hohem Aufwand und hohen Kosten hinterlegt, damit er in
+  // der Gruppe „Braucht etwas Vorbereitung" landet und keine Sofortmassnahme
+  // verdraengt.
+  const boilerAge = boilerAgeYears(data)
+  if (boilerAge !== undefined && boilerAge >= BOILER_OLD_YEARS) {
+    tips.push({
+      id: 'old_boiler',
+      icon: Flame,
+      category: 'heating',
+      effortMinutes: 240,
+      costEur: 8000,
+      params: { years: boilerAge },
     })
   }
 

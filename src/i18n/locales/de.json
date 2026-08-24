@@ -1376,7 +1376,10 @@
       "yes": "Ja",
       "no": "Nein",
       "generatorsHint": "Womit wird geheizt? Mehrfachauswahl möglich.",
-      "hotWaterHint": "Warmwasser ist oft ein großer Kostenposten."
+      "hotWaterHint": "Warmwasser ist oft ein großer Kostenposten.",
+      "generatorYear": "Baujahr",
+      "generatorYearAdd": "Jahr angeben",
+      "generatorYearUnknown": "weiß nicht"
     },
     "step5": {
       "title": "Gebäudehülle & Heizung",
@@ -1611,6 +1614,17 @@
       "building": "die Effizienz-Einordnung deines Gebäudes",
       "equipment": "die Abstandsmessung im Möbel-Check",
       "location": "Maßnahmen, die zu deiner Wohnsituation passen"
+    },
+    "renovationLog": {
+      "subtitle": "Trag ein, was wann gemacht wurde. Jede Karte ist ein Jahr – so entsteht ein Zeitstrahl statt einer groben Spanne.",
+      "add": "Weiteres Sanierungsjahr hinzufügen",
+      "never": "Nie saniert",
+      "remove": "Sanierungsjahr entfernen",
+      "noItems": "Noch keine Maßnahme gewählt",
+      "aboutYear": "ungefähr {{year}}",
+      "beforeBuildingYear": "Liegt vor dem Baujahr {{year}} – Tippfehler?",
+      "generatorAge": "Deine Heizung ist rund {{years}} Jahre alt.",
+      "toHeating": "Im Heizungs-Schritt ändern"
     }
   },
   "pages": {
@@ -2236,6 +2250,10 @@
         "title": "Mehr $t(monitoring.energyTypes.{{carrier}}) als im Vorjahr",
         "reason": "Deine Zählerstände zeigen {{percent}} % mehr Verbrauch als im Vorjahreszeitraum – rund {{amount}} {{unit}} zusätzlich. Das ist gemessen, nicht geschätzt. Geh der Ursache nach, bevor sie sich über ein weiteres Jahr summiert.",
         "action": "Verlauf ansehen"
+      },
+      "old_boiler": {
+        "title": "Heizungstausch prüfen",
+        "reason": "Deine Heizung ist rund {{years}} Jahre alt. Beim Austausch liegt der größte Einzelhebel deines Hauses – für solche Maßnahmen gibt es in der Regel staatliche Förderung, das ist prüfenswert."
       }
     },
     "potentialLabel": "Deine Empfehlungen",
@@ -2252,6 +2270,7 @@
     "effortFree": "{{minutes}} Min · kostenlos",
     "effortCost": "{{minutes}} Min · ab {{cost}} €",
     "effortHours": "{{hours}} Std · kostenlos",
+    "effortHoursCost": "{{hours}} Std · ab {{cost}} €",
     "quickWinSection": "Sofort erledigt",
     "plannedSection": "Braucht etwas Vorbereitung",
     "quantity": {

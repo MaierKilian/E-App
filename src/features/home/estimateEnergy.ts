@@ -3,6 +3,7 @@ import type { OnboardingData, RenovationItem } from '@/types'
 // spezifische Kennwert im Monitoring als Vergleichswert an. Zwei Kopien wären
 // zwei Wahrheiten, sobald jemand eine davon anpasst.
 import { heatDemandBenchmark } from '@/features/monitoring/specificValues'
+import { renovatedItems } from '@/features/onboarding/renovationProjection'
 
 /**
  * Grobe Energie-Schätzungen für das Zuhause-Dashboard.
@@ -85,7 +86,10 @@ export interface EnvelopeEstimate {
  * Modelländerung).
  */
 export function estimateEnvelope(data: OnboardingData): EnvelopeEstimate {
-  const items = data.renovationItems ?? []
+  // Die Menge der sanierten Bauteile kommt jetzt aus dem Ereignis-Log. Die
+  // Rechnung selbst ist unverändert – sie braucht nur „welche Bauteile", nicht
+  // „in welchem Jahr".
+  const items = renovatedItems(data.renovations)
 
   // Produkt der Abschläge über die sanierten Hüllen-Bauteile (Heizung zählt nicht).
   const appliedFactor = ENVELOPE_BY_EFFECT.reduce(

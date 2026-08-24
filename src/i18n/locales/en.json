@@ -1227,7 +1227,10 @@
       "yes": "Yes",
       "no": "No",
       "generatorsHint": "How is your home heated? Multiple choice.",
-      "hotWaterHint": "Hot water is often a major cost factor."
+      "hotWaterHint": "Hot water is often a major cost factor.",
+      "generatorYear": "Year installed",
+      "generatorYearAdd": "Add year",
+      "generatorYearUnknown": "not sure"
     },
     "step5": {
       "title": "Building Envelope & Heating",
@@ -1462,6 +1465,17 @@
       "building": "the efficiency rating of your building",
       "equipment": "distance measuring in the furniture check",
       "location": "measures that fit how you live"
+    },
+    "renovationLog": {
+      "subtitle": "Note what was done and when. Each card is one year – a timeline instead of a rough range.",
+      "add": "Add another renovation year",
+      "never": "Never renovated",
+      "remove": "Remove this year",
+      "noItems": "No measure picked yet",
+      "aboutYear": "around {{year}}",
+      "beforeBuildingYear": "Earlier than the build year {{year}} – typo?",
+      "generatorAge": "Your boiler is about {{years}} years old.",
+      "toHeating": "Change in the heating step"
     }
   },
   "monitoring": {
@@ -2236,6 +2250,10 @@
         "title": "More $t(monitoring.energyTypes.{{carrier}}) than last year",
         "reason": "Your meter readings show {{percent}} % more consumption than the same period last year – about {{amount}} {{unit}} extra. That is measured, not estimated. Find the cause before it adds up over another year.",
         "action": "View history"
+      },
+      "old_boiler": {
+        "title": "Consider replacing the boiler",
+        "reason": "Your boiler is about {{years}} years old. Replacing it is the single biggest lever in your home – such measures usually qualify for public funding, which is worth checking."
       }
     },
     "potentialLabel": "Your recommendations",
@@ -2252,6 +2270,7 @@
     "effortFree": "{{minutes}} min · free",
     "effortCost": "{{minutes}} min · from €{{cost}}",
     "effortHours": "{{hours}} h · free",
+    "effortHoursCost": "{{hours}} h · from €{{cost}}",
     "quickWinSection": "Done right away",
     "plannedSection": "Needs a little preparation",
     "quantity": {
