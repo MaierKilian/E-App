@@ -32,7 +32,7 @@ selbst (siehe `deployment.md`).
 | 3 | Registry und Schrittzustände | ✅ fertig | 2026-08-24 | `ead8b8f` |
 | 4 | Neue Schrittfolge und kurzer Schnellstart | ✅ fertig | 2026-08-24 | `165cc6b` |
 | 5 | Modernisierung und Erzeuger-Alter | ✅ fertig | 2026-08-24 | `b1f675c` |
-| 6 | Gerätebestand, Keller, Ziele | ⬜ offen | – | – |
+| 6 | Gerätebestand, Keller, Ziele | ✅ fertig | 2026-08-24 | `c6099d5` |
 
 **Abhängigkeiten:** 4 braucht 1 und 3 · 5 braucht 3 · 6 braucht 4.
 1, 2 und 3 sind untereinander unabhängig und in beliebiger Reihenfolge machbar.
@@ -511,14 +511,29 @@ wurden – alle mitbehoben:
 
 ### Fertig, wenn
 
-- [ ] „Wir haben kein Gefriergerät“ nimmt den Check aus Zähler **und** Nenner,
+- [x] „Wir haben kein Gefriergerät“ nimmt den Check aus Zähler **und** Nenner,
       und die Angabe ist im Profil-Hub sichtbar und zurücknehmbar.
-- [ ] Der Gefrier-Check erscheint in der Raum-Ansicht unter „Keller“.
-- [ ] Ohne Ziel ist die Tipp-Reihenfolge unverändert – ein Test hält das fest.
-- [ ] Mit `improve_comfort` steht ein Komfort-Tipp ohne €-Betrag vor einem
-      €-starken Strom-Tipp.
-- [ ] Die Tipps-Seite benennt, wonach sortiert wurde.
-- [ ] Typecheck, ESLint und Tests grün.
+- [x] Der Gefrier-Check erscheint in der Raum-Ansicht unter „Keller“.
+- [x] Ohne Ziel ist die Tipp-Reihenfolge unverändert – ein Test hält das fest.
+- [x] Mit `improve_comfort` steht ein Komfort-Tipp ohne €-Betrag vor einem
+      €-starken Strom-Tipp. **Mit einer Korrektur am Beispiel:** Gegen einen
+      *teuren* Strom-Tipp gewinnt der Komfort-Tipp schon heute, weil er eine
+      Sofortmaßnahme ist – das hätte die Ziel-Stufe gar nicht geprüft. Belegt
+      ist der Punkt deshalb an zwei Sofortmaßnahmen: Kühlschrank-Tipp mit
+      gemessenem €-Betrag gegen „Raum kühlt aus“ ohne. Ohne Ziel steht der Euro
+      vorn, mit `improve_comfort` der Komfort.
+- [x] Die Tipps-Seite benennt, wonach sortiert wurde.
+- [x] Typecheck, ESLint und Tests grün (Firestore-Rules-Test braucht den
+      Emulator, wie immer).
+
+### Abweichung vom Konzept
+
+Das Konzept sah die Gerätefrage „im Einstieg“ des Checks vor, also auf der
+Erklärseite. Sie sitzt stattdessen **vor** dem Mess-Schirm, als Hülle um die
+Run-Komponente: Die Erklärseite lässt sich überspringen – durch `begin=1` beim
+Weiterspringen von Raum zu Raum und durch einen gespeicherten Entwurf. Eine
+Frage, deren Antwort der Check braucht, darf nicht an einem Schirm hängen, den
+der Ablauf regelmäßig auslässt.
 
 ---
 
@@ -532,3 +547,25 @@ wurden – alle mitbehoben:
   Kellerdämmung sind für Mieter in einer Wohnung nicht umsetzbar.
 - **Duschverhalten** – die größte Einzel-Unsicherheit hinter den €-Beträgen der
   Warmwasser-Checks (heute aus der Personenzahl hochgerechnet).
+
+---
+
+## Alle sechs Etappen sind abgearbeitet
+
+Der Umbau ist damit vollständig: Räume entstehen dort, wo sie gebraucht werden;
+kein Zähler und kein Check hängt mehr hinter einer Fragebogen-Antwort; es gibt
+eine Schritt-Registry statt fünf paralleler Listen; der Schnellstart ist auf
+drei Schritte gekürzt; Sanierungen sind ein Zeitstrahl; und die zuletzt
+folgenlosen Angaben – Erzeuger-Alter, Gerätebestand, Ziele – wirken.
+
+**Was für später notiert bleibt:**
+
+- Neue Feld-Migrationen gehören in `migrateOnboardingData`, nicht in den
+  `merge`-Block: Der Cloud-Sync schreibt Profile per `setState` direkt in den
+  Store und liefe sonst daran vorbei.
+- Ein kellertypischer Feuchte-/Schimmel-Check wäre die naheliegende Ergänzung
+  (Konzept 6.2). Der Raumklima-Check erfasst die Luftfeuchte bereits, bewertet
+  sie aber am Wohnraum-Maßstab.
+- `appliances` trägt einen optionalen Standort, den heute nur die Vorauswahl im
+  Check nutzt. Sobald Kühl- und Gefrier-Check je Gerät ein eigenes Ergebnis
+  führen sollen, ist das der Anknüpfungspunkt.
