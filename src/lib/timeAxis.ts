@@ -62,3 +62,17 @@ export function timeAxisPositions(times: number[], width: number, minGap: number
 export function isoToTime(iso: string): number {
   return new Date(`${iso}T00:00:00`).getTime()
 }
+
+/**
+ * Heutiges Datum als ISO `yyyy-mm-dd` in **lokaler** Zeitzone.
+ *
+ * Bewusst nicht `toISOString().slice(0, 10)`: Das liefert UTC. Östlich von
+ * Greenwich ist dort abends bereits der Vortag zu Ende – als `max` eines
+ * Datumsfelds ließe sich „heute" dann nicht auswählen.
+ */
+export function todayIso(): string {
+  const now = new Date()
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10)
+}

@@ -1191,7 +1191,8 @@
       "range": {
         "d7": "7 Tage",
         "d30": "30 Tage",
-        "all": "Alle"
+        "all": "Alle",
+        "custom": "Zeitraum"
       },
       "bonusTitle": "Verbrauch & Kosten",
       "historyTitle": "Zählerhistorie",
@@ -1210,7 +1211,11 @@
       "deleteConfirm": "Diese Ablesung wirklich löschen?",
       "chartTitle": "Verbrauch je Intervall",
       "consumptionUnit": "kWh",
-      "scrubLabel": "Verlauf abtasten"
+      "scrubLabel": "Verlauf abtasten",
+      "rangeFrom": "von",
+      "rangeTo": "bis",
+      "rangeReset": "Zurücksetzen",
+      "rangeEmpty": "In diesem Zeitraum liegen keine Ablesungen."
     },
     "reminder": {
       "title": "Ablese-Erinnerung",

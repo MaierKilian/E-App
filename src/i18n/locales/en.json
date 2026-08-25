@@ -1618,7 +1618,8 @@
       "range": {
         "d7": "7 days",
         "d30": "30 days",
-        "all": "All"
+        "all": "All",
+        "custom": "Custom"
       },
       "bonusTitle": "Consumption & cost",
       "historyTitle": "Reading history",
@@ -1637,7 +1638,11 @@
       "deleteConfirm": "Really delete this reading?",
       "chartTitle": "Consumption per interval",
       "consumptionUnit": "kWh",
-      "scrubLabel": "Scrub the trend"
+      "scrubLabel": "Scrub the trend",
+      "rangeFrom": "from",
+      "rangeTo": "to",
+      "rangeReset": "Reset",
+      "rangeEmpty": "No readings in this period."
     },
     "reminder": {
       "title": "Reading reminder",

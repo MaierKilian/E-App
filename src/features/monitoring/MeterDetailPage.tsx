@@ -15,10 +15,9 @@ import { TariffModal } from './TariffModal'
 import { sortByDate, stats, consumptionTrend, daysSinceLastReading } from './readings'
 import { TrendBadge } from './MeterTrend'
 import { specificValue } from './specificValues'
+import { filterByRange, RANGE_KEYS, type RangeKey } from './rangeFilter'
+import { todayIso } from '@/lib/timeAxis'
 
-/** Auswählbare Zeiträume für das Verlaufs-Diagramm. */
-type RangeKey = 'd7' | 'd30' | 'all'
-const RANGE_DAYS: Record<RangeKey, number | null> = { d7: 7, d30: 30, all: null }
 
 /**
  * Detailseite eines Energieträgers (`/monitoring/:type`).
@@ -45,6 +44,9 @@ export function MeterDetailPage() {
   const [tariffOpen, setTariffOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const [range, setRange] = useState<RangeKey>('all')
+  // Grenzen des freien Zeitraums, leer bis der Nutzer sie setzt.
+  const [customFrom, setCustomFrom] = useState('')
+  const [customTo, setCustomTo] = useState('')
   const [now] = useState(() => Date.now())
 
   const type = rawType as EnergyType
@@ -116,13 +118,7 @@ export function MeterDetailPage() {
 
   // Diagramm-Punkte nach Zeitraum filtern.
   const allPoints: LinePoint[] = readings.map((r) => ({ date: r.date, value: r.value }))
-  const days = RANGE_DAYS[range]
-  const points =
-    days === null
-      ? allPoints
-      : allPoints.filter(
-          (p) => new Date(`${p.date}T00:00:00`).getTime() >= now - days * 86400000,
-        )
+  const points = filterByRange(allPoints, range, now, customFrom, customTo)
 
   return (
     <div className="space-y-4">
@@ -273,7 +269,7 @@ export function MeterDetailPage() {
       {readings.length > 0 && (
         <section className="glass space-y-3 rounded-3xl p-4">
           <div className="flex flex-wrap gap-2">
-            {(Object.keys(RANGE_DAYS) as RangeKey[]).map((key) => (
+            {RANGE_KEYS.map((key) => (
               <SelectChip
                 key={key}
                 label={t(`monitoring.readings.range.${key}`)}
@@ -282,7 +278,61 @@ export function MeterDetailPage() {
               />
             ))}
           </div>
-          <AbsoluteLineChart points={points} unit={unit} accent={meta.accent} />
+
+          {/* Freier Zeitraum: erst nach der Wahl sichtbar, damit die schlichte
+              Stufen-Auswahl nicht dauerhaft zwei Datumsfelder mitträgt. */}
+          {range === 'custom' && (
+            <div className="flex flex-wrap items-end gap-3 rounded-2xl bg-surface-2/50 p-3">
+              <label className="flex min-w-32 flex-1 flex-col gap-1">
+                <span className="text-[11px] font-medium uppercase tracking-wide text-muted">
+                  {t('monitoring.readings.rangeFrom')}
+                </span>
+                <input
+                  type="date"
+                  value={customFrom}
+                  max={todayIso()}
+                  onChange={(e) => setCustomFrom(e.target.value)}
+                  className="focus-ring w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground"
+                />
+              </label>
+              <label className="flex min-w-32 flex-1 flex-col gap-1">
+                <span className="text-[11px] font-medium uppercase tracking-wide text-muted">
+                  {t('monitoring.readings.rangeTo')}
+                </span>
+                <input
+                  type="date"
+                  value={customTo}
+                  max={todayIso()}
+                  onChange={(e) => setCustomTo(e.target.value)}
+                  className="focus-ring w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground"
+                />
+              </label>
+              {(customFrom || customTo) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCustomFrom('')
+                    setCustomTo('')
+                  }}
+                  className="focus-ring rounded-xl px-2 py-2 text-xs font-medium text-muted transition-colors hover:text-foreground"
+                >
+                  {t('monitoring.readings.rangeReset')}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Liegen im gewählten Zeitraum keine Ablesungen, tritt dieser Hinweis
+              an die Stelle des Diagramms. Dessen eigener Leertext fordert zum
+              Eintragen des ersten Zählerstands auf – hier wäre das falsch:
+              Ablesungen gibt es, nur nicht in diesem Zeitraum. */}
+          {points.length === 0 && readings.length > 0 ? (
+            <p className="px-1 py-6 text-center text-sm text-muted">
+              {t('monitoring.readings.rangeEmpty')}
+            </p>
+          ) : (
+            <AbsoluteLineChart points={points} unit={unit} accent={meta.accent} />
+          )}
         </section>
       )}
 

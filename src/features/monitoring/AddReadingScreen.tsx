@@ -6,6 +6,7 @@ import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/re
 import { OdometerInput } from './OdometerInput'
 import { clampInt } from './odometer'
 import { parseDecimalInput } from '@/lib/decimalInput'
+import { todayIso } from '@/lib/timeAxis'
 
 // Der Scanner zieht Tesseract.js (WASM) nach – nur bei Bedarf laden.
 const MeterScanner = lazy(() =>
@@ -31,12 +32,6 @@ interface AddReadingScreenProps {
 /** Anzahl Ganzzahl-Stellen des Zählwerks. */
 const DIGITS = 6
 
-/** Heutiges Datum als ISO yyyy-mm-dd in lokaler Zeitzone. */
-function todayIso(): string {
-  const now = new Date()
-  const offset = now.getTimezoneOffset() * 60000
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10)
-}
 
 /**
  * Vollflächiger, ruhiger Eingabe-Screen für eine neue Ablesung.
