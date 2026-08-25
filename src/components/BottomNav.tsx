@@ -5,6 +5,7 @@ import { NAV_ITEMS } from '@/app/navigation'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useReadingsStore } from '@/store/readingsStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
+import { useTipsStore } from '@/store/tipsStore'
 import { dueTypes } from '@/features/monitoring/due'
 import { pendingFollowUps } from '@/features/measurements/followUps'
 
@@ -19,14 +20,16 @@ export function BottomNav() {
   const readings = useReadingsStore((s) => s.readings)
   const frequency = useReadingsStore((s) => s.reminderFrequency)
   const measurementResults = useMeasurementsStore((s) => s.results)
+  const defrostDoneAt = useTipsStore((s) => s.doneAt.freezer)
   const [now] = useState(() => Date.now())
 
   // Fällige Ablesungen → kleiner Hinweispunkt am Monitoring-Tab (In-App-Reminder).
   const monitoringDue = dueTypes(data, readings, frequency, now).length > 0
   // Anstehende Folgemessungen (Grundlast nach einer Maßnahme, Kühlschrank
-  // nach einer noch nicht guten Messung) → derselbe Hinweispunkt am
-  // Messungen-Tab.
-  const measurementsDue = pendingFollowUps(measurementResults, now).length > 0
+  // nach einer noch nicht guten Messung, Gefriertruhe ein halbes Jahr nach dem
+  // Abtauen) → derselbe Hinweispunkt am Messungen-Tab.
+  const measurementsDue =
+    pendingFollowUps(measurementResults, now, defrostDoneAt).length > 0
   // Im Edit-Modus mit geöffnetem Abschnitt: "Zuhause" kehrt zum Profil-Hub zurück.
   const isEditingSection = flowMode === 'edit' && currentStep >= 0
 

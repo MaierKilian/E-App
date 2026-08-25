@@ -83,7 +83,12 @@ const RESULTS: MeasurementResult[] = [
   result('base_load', 'elevated', 132, 'W', 20, { details: { watts: 132 } }),
   result('standby', 'high', 31, 'W', 19, { details: { watts: 31 } }),
   result('fridge', 'good', 0.82, 'kWh/Tag', 27, { details: { kwhPerDay: 0.82, watts: 34 } }),
-  result('freezer', 'medium', 1.35, 'kWh/Tag', 26, { details: { kwhPerDay: 1.35, watts: 56 } }),
+  // Gefrier-Check: flächig dünn vereist. Hauptwert ist der Anteil am
+  // Verbrauch – der frühere kWh/Tag-Wert stammte noch aus einer Zeit, in der
+  // der Check etwas anderes gemessen hat als heute.
+  result('freezer', 'elevated', 12, '%', 26, {
+    details: { iced: 1, frostStage: 2, extraPercent: 12, method: 1, savingEstimated: 1 },
+  }),
   result('room_temperature', 'good', 21.5, '°C', 12, { roomKey: 'living_room#0', details: { celsius: 21.5 } }),
   result('room_temperature', 'good', 18.5, '°C', 12, { roomKey: 'bedroom#0', details: { celsius: 18.5 } }),
   result('room_temperature', 'medium', 22.5, '°C', 11, { roomKey: 'children_room#0', details: { celsius: 22.5 } }),

@@ -5,11 +5,9 @@ import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftSto
 import { SelectChip } from '@/components/ui/SelectChip'
 import { instanceKey } from '../rooms'
 import { DecimalField } from '@/components/ui/DecimalField'
-import { calcFreezerSaving } from './freezer'
-import type { FrostLevel } from './freezer'
+import { calcFreezerSaving, stageCode, readFrostStage, FROST_STAGES } from './freezer'
+import type { FrostStage } from './freezer'
 import type { RunProps } from '../runnerTypes'
-
-const FROST_LEVELS: FrostLevel[] = ['none', 'light', 'heavy']
 
 /** Kompaktes Zahlen-Eingabefeld mit Einheit. */
 function NumField({
@@ -37,12 +35,19 @@ function NumField({
 }
 
 /**
- * Geführter Gefriertruhen-Check: vereist? → falls ja, optional echte
- * Strommessung vor/nach dem Abtauen, sonst Schätzung über den Vereisungsgrad.
+ * Geführter Gefriertruhen-Check: vereist? → falls ja, wie stark → optional eine
+ * echte Strommessung vor/nach dem Abtauen.
+ *
+ * Der Vereisungsgrad wird in drei Stufen erhoben statt in zwei: „leicht oder
+ * stark" ließ zwischen ein paar Millimetern und einer flächigen Eisschicht
+ * keinen Unterschied zu, obwohl das den halben Effekt ausmacht.
+ *
+ * Die frühere Eingabe „Jahresverbrauch laut Label" ist entfallen – sie floss
+ * nur in den geschätzten Euro-Betrag ein, den es nicht mehr gibt.
  * Eingaben werden zwischengespeichert (App schließen & später weitermachen).
  */
 export function FreezerRun({ onEvaluate, roomKey }: RunProps) {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
   const setDraft = useMeasurementDraftStore((s) => s.setDraft)
   const key = instanceKey('freezer', roomKey)
@@ -51,58 +56,54 @@ export function FreezerRun({ onEvaluate, roomKey }: RunProps) {
   const [iced, setIced] = useState<boolean | undefined>(
     d.iced === 1 ? true : d.iced === 0 ? false : undefined,
   )
-  const [frost, setFrost] = useState<Exclude<FrostLevel, 'none'>>(d.frost === 2 ? 'heavy' : 'light')
+  // Entwurf im aktuellen wie im alten Format lesen (siehe readFrostStage).
+  const [stage, setStage] = useState<Exclude<FrostStage, 'none'>>(() => {
+    const stored = readFrostStage(d)
+    return stored === 'none' ? 'thin' : stored
+  })
   const [energyOn, setEnergyOn] = useState((d.energyOn ?? 0) === 1)
   const [beforeKwh, setBeforeKwh] = useState<number | undefined>(d.beforeKwh)
   const [beforeHours, setBeforeHours] = useState<number | undefined>(d.beforeHours)
   const [afterKwh, setAfterKwh] = useState<number | undefined>(d.afterKwh)
   const [afterHours, setAfterHours] = useState<number | undefined>(d.afterHours)
-  const [labelKwh, setLabelKwh] = useState<number | undefined>(d.labelKwh)
 
   useEffect(() => {
     setDraft(key, {
       ...(iced !== undefined ? { iced: iced ? 1 : 0 } : {}),
-      frost: frost === 'heavy' ? 2 : 1,
+      frostStage: stageCode(stage),
       energyOn: energyOn ? 1 : 0,
       ...(beforeKwh !== undefined ? { beforeKwh } : {}),
       ...(beforeHours !== undefined ? { beforeHours } : {}),
       ...(afterKwh !== undefined ? { afterKwh } : {}),
       ...(afterHours !== undefined ? { afterHours } : {}),
-      ...(labelKwh !== undefined ? { labelKwh } : {}),
     })
-  }, [key, setDraft, iced, frost, energyOn, beforeKwh, beforeHours, afterKwh, afterHours, labelKwh])
+  }, [key, setDraft, iced, stage, energyOn, beforeKwh, beforeHours, afterKwh, afterHours])
 
+  const effectiveStage: FrostStage = iced === true ? stage : 'none'
   const energy = energyOn ? { beforeKwh, beforeHours, afterKwh, afterHours } : undefined
-  const calc = calcFreezerSaving({
-    iced: iced === true,
-    frost,
-    labelKwh,
-    energy,
-    workPriceCt,
-  })
-
-  const eurFmt = new Intl.NumberFormat(i18n.language, {
-    style: 'currency',
-    currency: 'EUR',
-    maximumFractionDigits: 0,
-  })
+  const calc = calcFreezerSaving({ stage: effectiveStage, energy, workPriceCt })
 
   function handleEvaluate() {
-    const frostIndex = iced ? FROST_LEVELS.indexOf(frost) : 0
     const details: Record<string, number> = {
       iced: iced ? 1 : 0,
-      frost: frostIndex,
-      avoidableCost: calc.avoidableCost,
-      yearlySaving: calc.avoidableCost,
+      frostStage: stageCode(effectiveStage),
+      extraPercent: calc.extraPercent,
       method: calc.method === 'measured' ? 2 : calc.method === 'estimate' ? 1 : 0,
-      savingEstimated: calc.estimated ? 1 : 0,
+      // Nur eine echte Messung liefert einen Euro-Betrag; die Empfehlungsliste
+      // zeigt ihn ausschließlich dann (siehe buildTips).
+      savingEstimated: calc.method === 'measured' ? 0 : 1,
+      ...(calc.avoidableCost !== undefined
+        ? { avoidableCost: calc.avoidableCost, yearlySaving: calc.avoidableCost }
+        : {}),
     }
     onEvaluate({
       result: {
         id: 'freezer',
         rating: calc.rating,
-        primaryValue: calc.avoidableCost,
-        unit: '€/Jahr',
+        // Hauptwert ist der Anteil am Verbrauch, nicht mehr ein geschätzter
+        // Euro-Betrag: Er braucht weder Jahresverbrauch noch Strompreis.
+        primaryValue: calc.extraPercent,
+        unit: '%',
         completedAt: new Date().toISOString(),
         details,
       },
@@ -127,12 +128,36 @@ export function FreezerRun({ onEvaluate, roomKey }: RunProps) {
 
       {iced === true && (
         <>
-          {/* 2 · Vereisungsgrad (für die Schätzung) */}
+          {/* 2 · Vereisungsgrad in Stufen – untereinander, weil die
+                 Beschreibungen zu lang für nebeneinander liegende Chips sind. */}
           <div className="glass rounded-3xl p-5">
-            <span className="font-medium text-foreground">{t('measurements.freezer.run.severityLabel')}</span>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <SelectChip label={t('measurements.freezer.run.frostOptions.light')} selected={frost === 'light'} onClick={() => setFrost('light')} />
-              <SelectChip label={t('measurements.freezer.run.frostOptions.heavy')} selected={frost === 'heavy'} onClick={() => setFrost('heavy')} />
+            <span className="font-medium text-foreground">
+              {t('measurements.freezer.run.severityLabel')}
+            </span>
+            <div className="mt-3 space-y-2">
+              {FROST_STAGES.map((s) => {
+                const selected = stage === s
+                return (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setStage(s)}
+                    aria-pressed={selected}
+                    className={`focus-ring block w-full rounded-2xl border px-4 py-3 text-left transition-colors ${
+                      selected
+                        ? 'border-primary bg-primary/10'
+                        : 'border-border bg-surface/70 hover:bg-surface-2'
+                    }`}
+                  >
+                    <span className="block text-sm font-semibold text-foreground">
+                      {t(`measurements.freezer.run.frostOptions.${s}.title`)}
+                    </span>
+                    <span className="mt-0.5 block text-xs leading-relaxed text-muted">
+                      {t(`measurements.freezer.run.frostOptions.${s}.hint`)}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -171,20 +196,6 @@ export function FreezerRun({ onEvaluate, roomKey }: RunProps) {
               </div>
             )}
           </div>
-
-          {/* 4 · Label-Verbrauch (optional) */}
-          <div className="glass rounded-3xl p-5">
-            <div className="flex items-center justify-between gap-3">
-              <span className="font-medium text-foreground">{t('measurements.freezer.run.labelLabel')}</span>
-              <NumField value={labelKwh} onChange={setLabelKwh} unit="kWh" placeholder="200" />
-            </div>
-          </div>
-
-          {calc.avoidableCost > 0 && (
-            <p className="text-center text-sm text-muted">
-              {t('measurements.freezer.run.preview', { value: eurFmt.format(calc.avoidableCost) })}
-            </p>
-          )}
         </>
       )}
 

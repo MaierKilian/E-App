@@ -19,7 +19,11 @@ const UNIT_FALLBACK: Partial<Record<MeasurementId, string>> = {
   base_load: 'W',
   lighting: 'Räume',
   fridge: '°C',
-  freezer: '€/Jahr',
+  // Der Gefrier-Check liefert seit August 2026 den Anteil am Verbrauch statt
+  // eines geschätzten Euro-Betrags. Ältere Ergebnisse tragen ihre Einheit
+  // ('€/Jahr') selbst im Ergebnis – diese Rückfalleinheit greift nur, wenn gar
+  // keine gespeichert ist.
+  freezer: '%',
   // Ohne Abstandsmessung ist der Hauptwert die Zahl der Befunde (siehe
   // FurnitureSpacingRun.tsx), kein physikalischer Messwert – ohne Einheit stand
   // im Bericht eine nackte Zahl wie „3" ohne jeden Bezug. Wurde gemessen, trägt

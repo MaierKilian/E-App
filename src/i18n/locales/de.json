@@ -578,11 +578,19 @@
         "start": "Check starten"
       },
       "run": {
-        "frostLabel": "Vereisung",
         "frostOptions": {
-          "none": "eisfrei",
-          "light": "leichte Vereisung",
-          "heavy": "starke Vereisung"
+          "spots": {
+            "title": "Nur ein paar Stellen",
+            "hint": "Wenige Millimeter Eis an einzelnen Stellen, der Rest ist frei."
+          },
+          "thin": {
+            "title": "Flächendeckend dünn",
+            "hint": "Eine dünne Eisschicht überall an den Wänden."
+          },
+          "thick": {
+            "title": "Vollständig durchvereist",
+            "hint": "Dicke Eisschicht, Fächer oder Schubladen klemmen bereits."
+          }
         },
         "icedLabel": "Ist die Gefriertruhe vereist?",
         "iced": {
@@ -590,34 +598,21 @@
           "no": "Nein, eisfrei"
         },
         "noFrostHint": "Top – eisfrei läuft die Truhe effizient, nichts weiter zu tun.",
-        "severityLabel": "Wie stark ist die Vereisung? (für die Schätzung)",
+        "severityLabel": "Wie stark ist die Vereisung?",
         "energyToggle": "Mit Strommessgerät gemessen",
         "energyHint": "Energiekostenmessgerät vor dem Abtauen einige Stunden laufen lassen (kWh + Stunden ablesen), abtauen, danach erneut messen.",
         "before": "Vor dem Abtauen",
         "after": "Nach dem Abtauen",
         "hoursUnit": "Std.",
-        "labelLabel": "Jahresverbrauch lt. Label",
-        "preview": "Mögliche Ersparnis: ≈ {{value}}/Jahr",
         "tempToggle": "Temperatur gemessen",
         "tempUnit": "°C"
       },
       "result": {
-        "costPerYear": "vermeidbar/Jahr",
-        "allGood": "Alles gut",
-        "estimated": "geschätzt",
-        "method": {
-          "measured": "Aus deiner Strommessung vor/nach dem Abtauen.",
-          "estimate": "Geschätzt über den Vereisungsgrad."
-        },
-        "summary": {
-          "good": "Eisfrei – dein Gefrierschrank läuft effizient.",
-          "medium": "Leichte Vereisung – Abtauen senkt den Verbrauch.",
-          "high": "Starke Vereisung – jetzt abtauen spart spürbar Strom."
-        },
         "frostChips": {
           "none": "Eisfrei",
-          "light": "Leichte Vereisung",
-          "heavy": "Starke Vereisung"
+          "spots": "Ein paar Stellen",
+          "thin": "Dünn vereist",
+          "thick": "Durchvereist"
         },
         "chips": {
           "defrost": "Abtauen"
@@ -627,6 +622,20 @@
           "optimal": "optimal eingestellt",
           "tooWarm": "zu warm – kälter stellen",
           "tooCold": "zu kalt – wärmer stellen spart Strom"
+        },
+        "advice": {
+          "notNeeded": "Kein Abtauen nötig – so läuft die Truhe sparsam.",
+          "canWait": "Abtauen kann warten. Nimm es beim nächsten Mal mit, wenn die Truhe ohnehin leer ist.",
+          "worthwhile": "Abtauen lohnt sich – die Eisschicht kostet spürbar Strom.",
+          "now": "Jetzt abtauen. So dick vereist braucht die Truhe deutlich mehr Strom als nötig."
+        },
+        "effectEstimated": "Erfahrungswerte für diese Eisschicht: rund {{percent}} % Mehrverbrauch.",
+        "effectMeasured": "Deine Messung vor und nach dem Abtauen: {{percent}} % weniger Verbrauch.",
+        "summary": {
+          "good": "Eisfrei – so läuft die Truhe sparsam.",
+          "medium": "Ein paar vereiste Stellen. Abtauen kann bis zum nächsten Mal warten, wenn die Truhe ohnehin leer ist.",
+          "elevated": "Flächendeckend dünn vereist – Abtauen lohnt sich, die Eisschicht kostet spürbar Strom.",
+          "high": "Vollständig durchvereist – jetzt abtauen. So braucht die Truhe deutlich mehr Strom als nötig."
         }
       },
       "gate": {

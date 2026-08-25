@@ -578,11 +578,19 @@
         "start": "Start check"
       },
       "run": {
-        "frostLabel": "Ice build-up",
         "frostOptions": {
-          "none": "ice-free",
-          "light": "light frost",
-          "heavy": "heavy frost"
+          "spots": {
+            "title": "Just a few spots",
+            "hint": "A few millimetres of ice in places, the rest is clear."
+          },
+          "thin": {
+            "title": "Thin, all over",
+            "hint": "A thin layer of ice across the walls."
+          },
+          "thick": {
+            "title": "Iced solid",
+            "hint": "Thick ice; drawers or compartments already stick."
+          }
         },
         "icedLabel": "Is the freezer iced up?",
         "iced": {
@@ -590,34 +598,21 @@
           "no": "No, ice-free"
         },
         "noFrostHint": "Great – ice-free means it runs efficiently, nothing to do.",
-        "severityLabel": "How heavy is the ice? (for the estimate)",
+        "severityLabel": "How heavy is the ice?",
         "energyToggle": "Measured with a power meter",
         "energyHint": "Run an energy-cost meter for a few hours before defrosting (read kWh + hours), defrost, then measure again.",
         "before": "Before defrosting",
         "after": "After defrosting",
         "hoursUnit": "h",
-        "labelLabel": "Annual use per label",
-        "preview": "Potential saving: ≈ {{value}}/year",
         "tempToggle": "Temperature measured",
         "tempUnit": "°C"
       },
       "result": {
-        "costPerYear": "avoidable/year",
-        "allGood": "All good",
-        "estimated": "estimated",
-        "method": {
-          "measured": "From your before/after defrost measurement.",
-          "estimate": "Estimated from the ice build-up level."
-        },
-        "summary": {
-          "good": "Ice-free – your freezer runs efficiently.",
-          "medium": "Light frost – defrosting lowers consumption.",
-          "high": "Heavy frost – defrosting now saves noticeable power."
-        },
         "frostChips": {
           "none": "Ice-free",
-          "light": "Light frost",
-          "heavy": "Heavy frost"
+          "spots": "A few spots",
+          "thin": "Thin ice",
+          "thick": "Iced solid"
         },
         "chips": {
           "defrost": "Defrost"
@@ -627,6 +622,20 @@
           "optimal": "optimally set",
           "tooWarm": "too warm – set colder",
           "tooCold": "too cold – setting warmer saves power"
+        },
+        "advice": {
+          "notNeeded": "No defrosting needed – it is running efficiently.",
+          "canWait": "Defrosting can wait. Do it next time the freezer is empty anyway.",
+          "worthwhile": "Defrosting pays off – this layer of ice costs noticeable power.",
+          "now": "Defrost now. Iced up this badly, it uses far more power than needed."
+        },
+        "effectEstimated": "Typical for this much ice: around {{percent}} % extra consumption.",
+        "effectMeasured": "Your before/after measurement: {{percent}} % less consumption.",
+        "summary": {
+          "good": "Ice-free – running efficiently.",
+          "medium": "A few icy spots. Defrosting can wait until the freezer is empty anyway.",
+          "elevated": "A thin layer of ice all over – defrosting pays off, it costs noticeable power.",
+          "high": "Iced solid – defrost now. Like this it uses far more power than needed."
         }
       },
       "gate": {

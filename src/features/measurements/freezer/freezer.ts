@@ -4,33 +4,125 @@ import { annualKwhFromPeriod } from '../energyMeter'
 /**
  * Reine Berechnungslogik für den Gefriertruhen-Check.
  *
- * Ablauf: Zuerst wird gefragt, ob die Truhe vereist ist. Falls nein, ist nichts
- * zu tun. Falls ja, kann der Nutzer den Stromverbrauch mit einem Energiekosten-
- * messgerät vor dem Abtauen und danach messen → daraus ergibt sich die echte
- * Ersparnis. Ohne Messung wird über den Vereisungsgrad geschätzt.
+ * Ablauf: Zuerst wird gefragt, ob die Truhe vereist ist. Falls ja, wie stark.
+ * Wer ein Energiekostenmessgerät hat, kann zusätzlich vor und nach dem Abtauen
+ * messen – daraus ergibt sich die tatsächlich erreichte Einsparung statt einer
+ * Schätzung.
+ *
+ * **Die Antwort des Checks ist eine Empfehlung, keine Zahl.** Bis August 2026
+ * war der Hauptwert ein geschätzter Euro-Betrag, der auf zwei Annahmen beruhte:
+ * einem Fallback-Jahresverbrauch von 200 kWh, den niemand eingetragen hatte,
+ * und einem Standard-Strompreis. Beim Standardpreis kamen dabei immer dieselben
+ * zwei Zahlen heraus (8 € bzw. 21 €) – im Ergebnis-Schirm ohne Währungszeichen
+ * dargestellt und damit vollends unverständlich. Jetzt sagt der Check, was zu
+ * tun ist (siehe {@link DefrostAdvice}), und beziffert die Wirkung als Anteil
+ * am Verbrauch. Ein Euro-Betrag entsteht nur noch aus einer echten Messung.
  *
  * Quellen zur Vereisung: ~1 cm Eis → +10–15 %, dick/lange nicht abgetaut bis
- * +50 % Mehrverbrauch (Verivox, BUND Hessen, klimaaktiv). Fallback-Jahres-
- * verbrauch ~200 kWh; reale Werte je Bauart/Klasse abweichend → Label optional.
+ * +50 % Mehrverbrauch (Verivox, BUND Hessen, klimaaktiv).
  */
 
-export type FrostLevel = 'none' | 'light' | 'heavy'
+/**
+ * Vereisungsgrad in Stufen.
+ *
+ * „Leicht oder stark?" war zu grob: Zwischen ein paar Millimetern an einzelnen
+ * Stellen und einer flächendeckenden Eisschicht liegt der halbe Effekt, und
+ * beide hätte man vorher „leicht" genannt.
+ */
+export type FrostStage =
+  /** Eisfrei. */
+  | 'none'
+  /** Nur wenige Millimeter an ein paar Stellen. */
+  | 'spots'
+  /** Flächendeckend dünn vereist. */
+  | 'thin'
+  /** Vollständig durchvereist. */
+  | 'thick'
 
-// Mehrverbrauch je Vereisungsgrad (Anteil des Jahresverbrauchs), an Quellen
-// angelehnt: leicht (~bis 1 cm) ~12 %, stark (dick) ~30 %.
-const EXTRA_SHARE: Record<FrostLevel, number> = {
+/** Stufen in der Reihenfolge, in der sie abgefragt werden (ohne „eisfrei"). */
+export const FROST_STAGES: Exclude<FrostStage, 'none'>[] = ['spots', 'thin', 'thick']
+
+/** Mehrverbrauch je Stufe als Anteil des Jahresverbrauchs. */
+const EXTRA_SHARE: Record<FrostStage, number> = {
   none: 0,
-  light: 0.12,
-  heavy: 0.3,
+  spots: 0.05,
+  thin: 0.12,
+  thick: 0.3,
 }
 
-const RATING_BY_FROST: Record<FrostLevel, MeasurementRating> = {
+const RATING_BY_STAGE: Record<FrostStage, MeasurementRating> = {
   none: 'good',
-  light: 'medium',
-  heavy: 'high',
+  spots: 'medium',
+  thin: 'elevated',
+  thick: 'high',
 }
 
-const YEARLY_KWH = 200 // Fallback-Jahresverbrauch
+/**
+ * Was der Nutzer tun soll – die eigentliche Antwort des Checks.
+ * Steht im Ergebnis an der Stelle, an der vorher eine nackte Zahl stand.
+ */
+export type DefrostAdvice =
+  /** Eisfrei – nichts zu tun. */
+  | 'notNeeded'
+  /** Ein wenig Eis; beim nächsten Großeinkauf mitnehmen. */
+  | 'canWait'
+  /** Abtauen lohnt sich spürbar. */
+  | 'worthwhile'
+  /** Deutlicher Mehrverbrauch – jetzt abtauen. */
+  | 'now'
+
+const ADVICE_BY_STAGE: Record<FrostStage, DefrostAdvice> = {
+  none: 'notNeeded',
+  spots: 'canWait',
+  thin: 'worthwhile',
+  thick: 'now',
+}
+
+/**
+ * Stabile Zahlencodes für die Persistenz.
+ *
+ * `details` nimmt nur Zahlen auf. Ein Index in ein Array wäre hier die falsche
+ * Wahl: Sobald eine Stufe dazukommt, bedeuten alle gespeicherten Zahlen etwas
+ * anderes. Diese Codes bleiben, was sie sind.
+ */
+const STAGE_CODE: Record<FrostStage, number> = { none: 0, spots: 1, thin: 2, thick: 3 }
+const STAGE_BY_CODE: Record<number, FrostStage> = { 0: 'none', 1: 'spots', 2: 'thin', 3: 'thick' }
+
+/**
+ * Vereisungsgrad älterer Ergebnisse: `frost` war ein Index in
+ * ['none', 'light', 'heavy']. „Leicht" entspricht der heutigen flächigen
+ * dünnen Schicht, „stark" dem Durchvereisten.
+ */
+const LEGACY_STAGE_BY_CODE: Record<number, FrostStage> = { 0: 'none', 1: 'thin', 2: 'thick' }
+
+export function stageCode(stage: FrostStage): number {
+  return STAGE_CODE[stage]
+}
+
+/**
+ * Liest den Vereisungsgrad aus einem gespeicherten Ergebnis – neues Format
+ * (`frostStage`) bevorzugt, sonst das alte (`frost`).
+ */
+export function readFrostStage(details: Record<string, number> | undefined): FrostStage {
+  if (!details) return 'none'
+  const current = details.frostStage
+  if (Number.isFinite(current) && STAGE_BY_CODE[current] !== undefined) {
+    return STAGE_BY_CODE[current]
+  }
+  const legacy = details.frost
+  if (Number.isFinite(legacy) && LEGACY_STAGE_BY_CODE[legacy] !== undefined) {
+    return LEGACY_STAGE_BY_CODE[legacy]
+  }
+  return 'none'
+}
+
+export function rateFrost(stage: FrostStage): MeasurementRating {
+  return RATING_BY_STAGE[stage]
+}
+
+export function defrostAdvice(stage: FrostStage): DefrostAdvice {
+  return ADVICE_BY_STAGE[stage]
+}
 
 // Schwellenwerte Temperatur (°C). Optimal ~ -18 °C.
 const TEMP_OPTIMAL = -18
@@ -39,17 +131,13 @@ const TEMP_TOO_COLD = -20 // kälter als -20 °C = zu kalt
 
 export type FreezerTempStatus = 'optimal' | 'tooWarm' | 'tooCold'
 
-export function rateFrost(frost: FrostLevel): MeasurementRating {
-  return RATING_BY_FROST[frost]
-}
-
 export function freezerTempStatus(temp: number): FreezerTempStatus {
   if (temp > TEMP_TOO_WARM) return 'tooWarm'
   if (temp < TEMP_TOO_COLD) return 'tooCold'
   return 'optimal'
 }
 
-/** Wie die Ersparnis ermittelt wurde. */
+/** Wie die Wirkung ermittelt wurde. */
 export type FreezerMethod = 'measured' | 'estimate' | 'none'
 
 /** Vorher/Nachher-Energie aus dem Energiekostenmessgerät (kWh über Stunden). */
@@ -61,27 +149,33 @@ export interface FreezerEnergy {
 }
 
 export interface FreezerSavingInput {
-  /** Ist die Truhe vereist? */
-  iced: boolean
-  /** Vereisungsgrad für die Schätzung (nur relevant, wenn vereist). */
-  frost?: FrostLevel
-  /** Jahresverbrauch laut Energielabel in kWh (optional, sonst Fallback). */
-  labelKwh?: number
+  /** Vereisungsgrad; 'none' = nicht vereist. */
+  stage: FrostStage
   /** Optionale echte Strommessung vor/nach dem Abtauen. */
   energy?: Partial<FreezerEnergy>
   /** Innentemperatur in °C (nur wenn erfasst). */
   temperature?: number
-  /** Arbeitspreis Strom in ct/kWh. */
+  /** Arbeitspreis Strom in ct/kWh – nur für die gemessene Variante nötig. */
   workPriceCt: number
 }
 
 export interface FreezerSaving {
   rating: MeasurementRating
   method: FreezerMethod
-  /** Vermeidbare Jahreskosten in € durch Abtauen (gerundet). */
-  avoidableCost: number
-  /** true, wenn geschätzt (keine Messung). */
-  estimated: boolean
+  advice: DefrostAdvice
+  /**
+   * Wirkung des Abtauens als Anteil des Verbrauchs in Prozent – geschätzt aus
+   * der Stufe oder aus der Messung errechnet. Tritt an die Stelle des früheren
+   * Euro-Betrags: ein Anteil braucht weder Jahresverbrauch noch Strompreis und
+   * behauptet damit nur, was der Check wirklich weiß.
+   */
+  extraPercent: number
+  /**
+   * Vermeidbare Jahreskosten in €. **Nur bei echter Messung gesetzt** – eine
+   * Schätzung über einen angenommenen Jahresverbrauch mal einem angenommenen
+   * Preis ist keine Zahl, die man jemandem hinstellt.
+   */
+  avoidableCost?: number
   temperatureStatus?: FreezerTempStatus
 }
 
@@ -95,35 +189,43 @@ function energyComplete(e?: Partial<FreezerEnergy>): e is FreezerEnergy {
 }
 
 /**
- * Ermittelt die vermeidbaren Jahreskosten durch Abtauen.
- * Nicht vereist → 0. Vereist: echte Messung > Schätzung über Vereisungsgrad.
+ * Wertet den Check aus: Empfehlung, Bewertung und die Wirkung des Abtauens.
+ * Echte Messung schlägt Schätzung.
  */
 export function calcFreezerSaving(input: FreezerSavingInput): FreezerSaving {
-  const price = Number.isFinite(input.workPriceCt) ? Math.max(0, input.workPriceCt) : 0
+  const stage = input.stage
   const hasTemp = Number.isFinite(input.temperature)
   const temperatureStatus = hasTemp ? freezerTempStatus(input.temperature as number) : undefined
+  const rating = RATING_BY_STAGE[stage]
+  const advice = ADVICE_BY_STAGE[stage]
 
-  if (!input.iced) {
-    return { rating: 'good', method: 'none', avoidableCost: 0, estimated: false, temperatureStatus }
+  if (stage === 'none') {
+    return { rating, method: 'none', advice, extraPercent: 0, temperatureStatus }
   }
-
-  const frost: FrostLevel = input.frost && input.frost !== 'none' ? input.frost : 'light'
-  const rating = RATING_BY_FROST[frost]
-  const labelKwh =
-    Number.isFinite(input.labelKwh) && (input.labelKwh as number) > 0 ? input.labelKwh : undefined
-  const annualBaseKwh = labelKwh ?? YEARLY_KWH
 
   if (energyComplete(input.energy)) {
     const e = input.energy
-    const saved =
-      annualKwhFromPeriod(e.beforeKwh, e.beforeHours) - annualKwhFromPeriod(e.afterKwh, e.afterHours)
-    const avoidableCost = Math.max(0, Math.round((saved * price) / 100))
-    return { rating, method: 'measured', avoidableCost, estimated: false, temperatureStatus }
+    const before = annualKwhFromPeriod(e.beforeKwh, e.beforeHours)
+    const after = annualKwhFromPeriod(e.afterKwh, e.afterHours)
+    const savedKwh = Math.max(0, before - after)
+    const price = Number.isFinite(input.workPriceCt) ? Math.max(0, input.workPriceCt) : 0
+    return {
+      rating,
+      method: 'measured',
+      advice,
+      extraPercent: before > 0 ? Math.round((savedKwh / before) * 100) : 0,
+      avoidableCost: Math.round((savedKwh * price) / 100),
+      temperatureStatus,
+    }
   }
 
-  const extraKwh = annualBaseKwh * EXTRA_SHARE[frost]
-  const avoidableCost = Math.max(0, Math.round((extraKwh * price) / 100))
-  return { rating, method: 'estimate', avoidableCost, estimated: true, temperatureStatus }
+  return {
+    rating,
+    method: 'estimate',
+    advice,
+    extraPercent: Math.round(EXTRA_SHARE[stage] * 100),
+    temperatureStatus,
+  }
 }
 
 export { TEMP_OPTIMAL }
