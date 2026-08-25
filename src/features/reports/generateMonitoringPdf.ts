@@ -307,12 +307,6 @@ function meterCards(
     cards.push({
       value: `${num.format(Math.round(e.specific))} ${unit}`,
       label: t('report.kpi.specific'),
-      sub:
-        e.specificBenchmark !== undefined
-          ? t('monitoring.detail.benchmarkTypical', {
-              value: num.format(Math.round(e.specificBenchmark)),
-            })
-          : t('monitoring.detail.benchmarkNone'),
     })
   }
   return cards

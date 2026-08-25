@@ -78,8 +78,6 @@ export interface MonitoringEntry {
   specific?: number
   /** Bezugsgröße von `specific` (bestimmt die Anzeige-Einheit). */
   specificBasis?: SpecificBasis
-  /** Üblicher Wert für diesen Haushalt, gleiche Einheit wie `specific`. */
-  specificBenchmark?: number
   /** Arbeitspreis, aus dem `costYear` hergeleitet wurde (Anzeige-Einheit). */
   priceWork?: number
   /** Anzeige-Einheit des Arbeitspreises, z. B. 'ct/kWh'. */
@@ -273,7 +271,6 @@ function buildEntry(
         if (spec) {
           entry.specific = spec.value
           entry.specificBasis = spec.basis
-          entry.specificBenchmark = spec.benchmark
         }
       }
     }

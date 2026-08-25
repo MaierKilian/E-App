@@ -236,13 +236,6 @@ export function MeterDetailPage() {
                       {t(SPECIFIC_UNIT_KEY[specific.basis])}
                     </span>
                   </p>
-                  <p className="mt-0.5 text-[11px] leading-tight text-muted tabular-nums">
-                    {specific.benchmark !== undefined
-                      ? t('monitoring.detail.benchmarkTypical', {
-                          value: specificFmt.format(specific.benchmark),
-                        })
-                      : t('monitoring.detail.benchmarkNone')}
-                  </p>
                 </div>
               )}
             </div>

@@ -95,15 +95,13 @@ describe('buildMonitoringReportData', () => {
     expect(gas?.priceUnit).toBe('€/m³')
   })
 
-  it('liefert den spezifischen Kennwert samt Vergleichswert', () => {
-    // 100 m², Baujahr 1985, Warmwasser über die Heizung.
+  it('liefert den spezifischen Kennwert', () => {
+    // 100 m², 2 Personen.
     const profile = {
       heatGenerators: ['gas_boiler'],
       hasPV: 'no',
       livingArea: 100,
       personsCount: 2,
-      buildingYear: 1985,
-      hotWaterType: 'same_as_heating',
     } as unknown as OnboardingData
 
     const data = buildMonitoringReportData({
@@ -118,8 +116,6 @@ describe('buildMonitoringReportData', () => {
     expect(gas?.specificBasis).toBe('perAreaKwh')
     // Jahresmenge × 10 kWh/m³ / 100 m²  ==  projectedYear / 10
     expect(gas?.specific).toBeCloseTo((gas!.projectedYear! * 10) / 100, 6)
-    // Baujahr 1985 (150) + Warmwasser-Aufschlag (20)
-    expect(gas?.specificBenchmark).toBe(170)
   })
 
   it('lässt den spezifischen Kennwert ohne Wohnfläche weg', () => {

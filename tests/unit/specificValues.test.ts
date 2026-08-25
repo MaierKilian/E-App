@@ -6,7 +6,6 @@ import {
   heatDemandBenchmark,
   hasEnergyContent,
   DEFAULT_KWH_PER_UNIT,
-  HOT_WATER_SURCHARGE_KWH_PER_SQM,
 } from '@/features/monitoring/specificValues'
 import type { OnboardingData } from '@/types'
 
@@ -47,21 +46,6 @@ describe('specificValue – Wärme', () => {
     expect(s?.value).toBeCloseTo(156.8, 6)
   })
 
-  it('schlägt Warmwasser auf den Vergleichswert auf, wenn es mitläuft', () => {
-    const s = specificValue('gas', 1400, PROFILE)
-    expect(s?.benchmark).toBe(150 + HOT_WATER_SURCHARGE_KWH_PER_SQM)
-  })
-
-  it('lässt den Aufschlag bei eigenem Warmwassersystem weg', () => {
-    const profile = { ...PROFILE, hotWaterType: 'separate_system' } as OnboardingData
-    expect(specificValue('gas', 1400, profile)?.benchmark).toBe(150)
-  })
-
-  it('schlägt bei teilweise kombiniertem Warmwasser die Hälfte auf', () => {
-    const profile = { ...PROFILE, hotWaterType: 'partially_combined' } as OnboardingData
-    expect(specificValue('gas', 1400, profile)?.benchmark).toBe(150 + 10)
-  })
-
   it('rechnet Pellets über ihren eigenen Energieinhalt', () => {
     // 3000 kg × 4,8 kWh/kg = 14 400 kWh auf 100 m²
     const s = specificValue('pellets', 3000, PROFILE)
@@ -82,11 +66,6 @@ describe('specificValue – Strom und Wasser', () => {
     expect(s?.value).toBeCloseTo(30, 6)
   })
 
-  it('vergleicht Strom mit dem Flächen-Richtwert, nicht mit dem Wärmebedarf', () => {
-    // Der Baujahrs-Richtwert (150 + 20) gilt für Wärme, nicht für Haushaltsstrom.
-    expect(specificValue('electricity', 3000, PROFILE)?.benchmark).toBe(32)
-  })
-
   it('liefert Strom ohne Wohnfläche nichts', () => {
     const profile = { ...PROFILE, livingArea: 0 } as OnboardingData
     expect(specificValue('electricity', 3000, profile)).toBeUndefined()
@@ -97,7 +76,6 @@ describe('specificValue – Strom und Wasser', () => {
     const s = specificValue('water', 91.25, PROFILE)
     expect(s?.basis).toBe('perPersonLiterDay')
     expect(s?.value).toBeCloseTo(125, 6)
-    expect(s?.benchmark).toBe(125)
   })
 
   it('liefert Wasser ohne Personenzahl nichts', () => {

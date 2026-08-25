@@ -62,10 +62,9 @@ export function hasEnergyContent(type: EnergyType): boolean {
 /**
  * Spezifischer Heizwärmebedarf eines unsanierten Baus je Baujahr (kWh/m²·a).
  *
- * Dieselbe Staffel, die `estimateEnergy.ts` intern für die Hüllen-Einordnung
- * nutzt – hier als sichtbarer Vergleichswert. Grobe Richtwerte, die sich an den
- * Bauvorschriften der jeweiligen Epoche orientieren (WSchV 1977/1984/1995,
- * EnEV, GEG).
+ * Dieselbe Staffel, die `estimateEnergy.ts` für die Hüllen-Einordnung nutzt.
+ * Grobe Richtwerte, die sich an den Bauvorschriften der jeweiligen Epoche
+ * orientieren (WSchV 1977/1984/1995, EnEV, GEG).
  */
 export function heatDemandBenchmark(buildingYear: number): number | undefined {
   if (!Number.isFinite(buildingYear) || buildingYear <= 0) return undefined
@@ -76,53 +75,26 @@ export function heatDemandBenchmark(buildingYear: number): number | undefined {
   return 50
 }
 
-/**
- * Aufschlag für Warmwasser, wenn es über dieselbe Anlage läuft (kWh/m²·a).
- *
- * Der Gaszähler misst Heizung UND Warmwasser; die Baujahrs-Richtwerte meinen
- * nur die Heizung. Ohne diesen Aufschlag sähe jedes Haus schlechter aus als es
- * ist. 20 kWh/m²·a entspricht grob 12 kWh je m² und Jahr Nutzwärme plus
- * Verlusten – die übliche Größenordnung für einen Mehrpersonenhaushalt.
- */
-export const HOT_WATER_SURCHARGE_KWH_PER_SQM = 20
-
 export interface SpecificValue {
   /** Bezugsgröße, nach der gerechnet wurde. */
   basis: SpecificBasis
   /** Der spezifische Wert in der Einheit der Bezugsgröße. */
   value: number
-  /**
-   * Vergleichswert für diesen Haushalt (gleiche Einheit), falls ableitbar.
-   * Bei Wärme aus dem Baujahr (inkl. Warmwasser-Aufschlag, wenn zutreffend),
-   * bei Strom/Wasser ein Durchschnitts-Richtwert.
-   */
-  benchmark?: number
 }
-
-/**
- * Durchschnittlicher Haushaltsstrom je m² Wohnfläche und Jahr (kWh).
- *
- * Hergeleitet aus den beiden gängigen Durchschnitten: rund 1.500 kWh je Person
- * und Jahr bei etwa 47 m² Wohnfläche je Person ergibt ~32 kWh/m²·a. Wie alle
- * Werte hier ein grober Richtwert zum Einordnen, keine Norm.
- */
-const ELECTRICITY_BENCHMARK_PER_SQM = 32
-/** Durchschnittlicher Trinkwasserverbrauch je Person und Tag (Liter). */
-const WATER_BENCHMARK_LITER_PER_PERSON_DAY = 125
 
 /**
  * Rechnet einen Jahresverbrauch in die spezifische Kennzahl seines Trägers um.
  *
  * @param type        Energieträger.
  * @param yearlyUnits Jahresverbrauch in Zähler-Einheiten (m³, l, kg, kWh).
- * @param profile     Wohnprofil – liefert Fläche, Personen und Baujahr.
+ * @param profile     Wohnprofil – liefert Fläche und Personen.
  * @param kwhPerUnit  Energieinhalt je Zähler-Einheit; ohne Angabe der Standard.
  * @returns undefined, wenn die Bezugsgröße fehlt oder null ist.
  */
 export function specificValue(
   type: EnergyType,
   yearlyUnits: number | undefined,
-  profile: Pick<OnboardingData, 'livingArea' | 'personsCount' | 'buildingYear' | 'hotWaterType'>,
+  profile: Pick<OnboardingData, 'livingArea' | 'personsCount'>,
   kwhPerUnit?: number,
 ): SpecificValue | undefined {
   const basis = SPECIFIC_BASIS[type]
@@ -134,11 +106,7 @@ export function specificValue(
     const persons = positive(profile.personsCount)
     if (!persons) return undefined
     // Wasserzähler laufen in m³ – 1 m³ = 1000 Liter.
-    return {
-      basis,
-      value: (yearlyUnits * 1000) / persons / 365,
-      benchmark: WATER_BENCHMARK_LITER_PER_PERSON_DAY,
-    }
+    return { basis, value: (yearlyUnits * 1000) / persons / 365 }
   }
 
   const factor = kwhPerUnit ?? DEFAULT_KWH_PER_UNIT[type] ?? 1
@@ -147,44 +115,7 @@ export function specificValue(
 
   const area = positive(profile.livingArea)
   if (!area) return undefined
-  return { basis, value: yearlyKwh / area, benchmark: areaBenchmark(type, profile) }
-}
-
-/**
- * Vergleichswert je m² und Jahr.
- *
- * Strom und Wärme teilen sich zwar die Bezugsgröße, aber nicht den Richtwert:
- * Haushaltsstrom hängt an Geräten und Personen, der Wärmebedarf am Baujahr der
- * Gebäudehülle. Ein gemeinsamer Wert wäre für beide falsch.
- */
-function areaBenchmark(
-  type: EnergyType,
-  profile: Pick<OnboardingData, 'buildingYear' | 'hotWaterType'>,
-): number | undefined {
-  if (type === 'electricity') return ELECTRICITY_BENCHMARK_PER_SQM
-  const base = heatDemandBenchmark(profile.buildingYear)
-  if (base === undefined) return undefined
-  return base + HOT_WATER_SURCHARGE_KWH_PER_SQM * hotWaterShare(profile.hotWaterType)
-}
-
-/**
- * Wie viel vom Warmwasser über denselben Zähler läuft (0..1).
- *
- * Bei einem eigenen System (z. B. elektrischer Durchlauferhitzer) taucht das
- * Warmwasser im Gaszähler gar nicht auf – dann darf der Aufschlag nicht in den
- * Vergleichswert. Bei `unknown` wird der volle Aufschlag angesetzt: die weit
- * überwiegende Mehrheit der Gashaushalte erwärmt zentral, und die Zahl zu
- * niedrig anzusetzen ließe den Haushalt schlechter dastehen als er ist.
- */
-function hotWaterShare(type: OnboardingData['hotWaterType']): number {
-  switch (type) {
-    case 'separate_system':
-      return 0
-    case 'partially_combined':
-      return 0.5
-    default:
-      return 1
-  }
+  return { basis, value: yearlyKwh / area }
 }
 
 function positive(n: number | undefined): number | undefined {

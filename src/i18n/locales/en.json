@@ -436,8 +436,7 @@
           "For this check you need a simple plug-in power meter (energy cost meter).",
           "Plug it between the socket and the device, put the device into standby and read the watts.",
           "Many devices draw power around the clock even though they seem \"off\" – it adds up over the year.",
-          "A switchable power strip fully disconnects several devices at once.",
-          "Connecting a smart meter directly is planned for a future version."
+          "A switchable power strip fully disconnects several devices at once."
         ],
         "start": "Start test",
         "smartTeaser": "Connect smart meter",
@@ -696,8 +695,7 @@
           "Until hot water arrives, cold water often runs off unused – this check measures that wait.",
           "Turn the tap fully to hot and start the stopwatch at the same moment.",
           "Stop as soon as the water feels clearly warm.",
-          "Measure at the tap you use most often (e.g. shower or kitchen).",
-          "Long waits point to long pipe runs – a circulation line or pipe insulation can help."
+          "Measure at the tap you use most often (e.g. shower or kitchen)."
         ],
         "start": "Start check"
       },
@@ -1022,15 +1020,14 @@
       "unit_other": "rooms",
       "run": {
         "leadTitle": "Why the swap pays off",
-        "lead": "An old incandescent or halogen bulb uses about six times the power of an LED at the same brightness. A replacement LED costs around 3 € and has usually paid for itself within the first year – even if the old bulb still works.",
+        "lead": "An old incandescent or halogen bulb uses about six times the power of an LED at the same brightness. Switching usually pays off quickly – even if the old bulb still works.",
         "helpButton": "How do I spot an LED?",
         "helpTitle": "LED or not?",
         "helpItems": [
           "If the bulb gets hot after a minute, it is not an LED.",
           "If it is at full brightness instantly, it is an LED.",
           "If it takes a few seconds to brighten, it is an old energy-saving lamp – worth replacing too.",
-          "A visible filament means incandescent or halogen.",
-          "When in doubt, answer “still old”. You will see it when you swap it."
+          "A visible filament means incandescent or halogen."
         ],
         "roomsTitle": "Walk through your home",
         "roomsHint": "Is there at least one bulb in this room that is not an LED?",
@@ -1572,8 +1569,6 @@
       "specific": "Specific",
       "specificPerArea": "kWh/m²·yr",
       "specificPerPersonDay": "l/person·day",
-      "benchmarkTypical": "typical {{value}}",
-      "benchmarkNone": "no reference value",
       "specificMissingArea": "Add living area to your profile",
       "specificMissingPersons": "Add number of people to your profile",
       "energyContent": "Energy content",

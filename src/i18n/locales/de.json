@@ -436,8 +436,7 @@
           "Für diesen Check brauchst du ein einfaches Strommessgerät (Energiekosten-Messgerät) zum Zwischenstecken.",
           "Stecke es zwischen Steckdose und Gerät, schalte das Gerät in den Standby und lies die Watt ab.",
           "Viele Geräte ziehen rund um die Uhr Strom, obwohl sie „aus“ wirken – das summiert sich übers Jahr.",
-          "Eine schaltbare Steckdosenleiste trennt mehrere Geräte auf einmal komplett vom Netz.",
-          "Smartes Messgerät direkt verbinden: in einer kommenden Version geplant."
+          "Eine schaltbare Steckdosenleiste trennt mehrere Geräte auf einmal komplett vom Netz."
         ],
         "start": "Test starten",
         "smartTeaser": "Smartes Messgerät verbinden",
@@ -696,8 +695,7 @@
           "Bis warmes Wasser ankommt, fließt oft kaltes Wasser ungenutzt ab – diese Wartezeit misst der Check.",
           "Stelle den Hahn voll auf warm und starte die Stoppuhr im selben Moment.",
           "Stoppe, sobald das Wasser spürbar warm ist.",
-          "Miss an der Stelle, die du am häufigsten nutzt (z. B. Dusche oder Küche).",
-          "Lange Wartezeiten deuten auf weite Leitungswege hin – eine Zirkulationsleitung oder Dämmung kann helfen."
+          "Miss an der Stelle, die du am häufigsten nutzt (z. B. Dusche oder Küche)."
         ],
         "start": "Check starten"
       },
@@ -1022,15 +1020,14 @@
       "unit_other": "Räume",
       "run": {
         "leadTitle": "Warum sich der Tausch lohnt",
-        "lead": "Eine alte Glüh- oder Halogenlampe verbraucht rund sechsmal so viel Strom wie eine LED bei gleicher Helligkeit. Eine Ersatz-LED kostet etwa 3 € und hat sich meist im ersten Jahr bezahlt gemacht – auch dann, wenn die alte Lampe noch funktioniert.",
+        "lead": "Eine alte Glüh- oder Halogenlampe verbraucht rund sechsmal so viel Strom wie eine LED bei gleicher Helligkeit. Der Tausch lohnt sich meist schnell – auch dann, wenn die alte Lampe noch funktioniert.",
         "helpButton": "Woran erkenne ich eine LED?",
         "helpTitle": "LED oder nicht?",
         "helpItems": [
           "Wird die Lampe nach einer Minute heiß, ist es keine LED.",
           "Leuchtet sie sofort voll hell, ist es eine LED.",
           "Braucht sie ein paar Sekunden, bis sie hell wird, ist es eine alte Energiesparlampe – die lohnt sich auch zu tauschen.",
-          "Ein sichtbarer Glühdraht heißt: Glühbirne oder Halogen.",
-          "Im Zweifel: „noch alte“ antworten. Beim Tausch siehst du es ohnehin."
+          "Ein sichtbarer Glühdraht heißt: Glühbirne oder Halogen."
         ],
         "roomsTitle": "Geh einmal durch die Wohnung",
         "roomsHint": "Hängt in diesem Raum noch mindestens eine Lampe, die keine LED ist?",
@@ -1145,8 +1142,6 @@
       "specific": "Spezifisch",
       "specificPerArea": "kWh/m²·a",
       "specificPerPersonDay": "l/Person·Tag",
-      "benchmarkTypical": "typisch {{value}}",
-      "benchmarkNone": "kein Vergleichswert",
       "specificMissingArea": "Wohnfläche im Profil ergänzen",
       "specificMissingPersons": "Personenzahl im Profil ergänzen",
       "energyContent": "Energieinhalt",
