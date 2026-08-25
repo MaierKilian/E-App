@@ -21,7 +21,7 @@ import { useTipsStore } from '@/store/tipsStore'
 import { useTipContext } from './useTipContext'
 import { roomLabel } from '@/features/measurements/rooms'
 import { displaySavingEur, savingRange } from '@/features/measurements/savingsDisplay'
-import { buildTips, sortingGoals, type Tip, type TipCategory } from './buildTips'
+import { buildTips, isQuickWin, sortingGoals, type Tip, type TipCategory } from './buildTips'
 
 /** Farbcodierung der Icon-Kachel je Gewerk (Structured-Stil, ruhige Akzente). */
 const ACCENT: Record<TipCategory, string> = {
@@ -269,6 +269,41 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
   )
 }
 
+/** Eine Aufwandsgruppe der offenen Empfehlungen samt Überschrift und Anzahl. */
+function TipGroup({
+  title,
+  tips,
+  maxSaving,
+  topId,
+  onToggleDone,
+  onDismiss,
+}: {
+  title: string
+  tips: Tip[]
+  maxSaving: number
+  topId?: string
+  onToggleDone: (id: string) => void
+  onDismiss: (id: string) => void
+}) {
+  return (
+    <div className="space-y-3">
+      <p className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+        {title} · {tips.length}
+      </p>
+      {tips.map((tip) => (
+        <TipCard
+          key={tip.id}
+          tip={tip}
+          maxSaving={maxSaving}
+          top={tip.id === topId}
+          onToggleDone={onToggleDone}
+          onDismiss={onDismiss}
+        />
+      ))}
+    </div>
+  )
+}
+
 /** Ein-/ausklappbarer Abschnitt (für Erledigt / Ausgeblendet). */
 function CollapsibleSection({
   title,
@@ -312,6 +347,10 @@ export function TipsPage() {
 
   const allTips = buildTips(data, results, useTipContext())
   const active = allTips.filter((tip) => !doneIds.includes(tip.id) && !dismissedIds.includes(tip.id))
+  // Dieselbe Grenze, nach der auch sortiert wird (siehe `compareTips`) – die
+  // Gruppen bilden die bestehende Reihenfolge ab, sie ordnen nicht um.
+  const quickWins = active.filter(isQuickWin)
+  const prepared = active.filter((tip) => !isQuickWin(tip))
   const done = allTips.filter((tip) => doneIds.includes(tip.id))
   const dismissed = allTips.filter((tip) => dismissedIds.includes(tip.id))
 
@@ -436,22 +475,50 @@ export function TipsPage() {
             </p>
           )}
 
-          {/* Offene Maßnahmen */}
+          {/* Offene Maßnahmen – nach Aufwand gruppiert, sobald es beide Sorten
+              gibt. Die Sortierung stellt Sofortmaßnahmen ohnehin nach vorn;
+              erst die Überschriften machen sichtbar, warum ein 8.000-€-Tipp
+              hinter „Sofa wegrücken" steht. Gibt es nur eine Sorte, bliebe eine
+              einzelne Gruppenüberschrift ohne Gegenstück – dann die schlichte
+              Liste wie bisher. */}
           {active.length > 0 ? (
             <div className="space-y-3">
-              <p className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
-                {t('tips.openSection')} · {active.length}
-              </p>
-              {active.map((tip) => (
-                <TipCard
-                  key={tip.id}
-                  tip={tip}
-                  maxSaving={maxSaving}
-                  top={tip.id === topId}
-                  onToggleDone={toggleDone}
-                  onDismiss={dismiss}
-                />
-              ))}
+              {quickWins.length > 0 && prepared.length > 0 ? (
+                <>
+                  <TipGroup
+                    title={t('tips.groupQuick')}
+                    tips={quickWins}
+                    maxSaving={maxSaving}
+                    topId={topId}
+                    onToggleDone={toggleDone}
+                    onDismiss={dismiss}
+                  />
+                  <TipGroup
+                    title={t('tips.groupPrepared')}
+                    tips={prepared}
+                    maxSaving={maxSaving}
+                    topId={topId}
+                    onToggleDone={toggleDone}
+                    onDismiss={dismiss}
+                  />
+                </>
+              ) : (
+                <>
+                  <p className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+                    {t('tips.openSection')} · {active.length}
+                  </p>
+                  {active.map((tip) => (
+                    <TipCard
+                      key={tip.id}
+                      tip={tip}
+                      maxSaving={maxSaving}
+                      top={tip.id === topId}
+                      onToggleDone={toggleDone}
+                      onDismiss={dismiss}
+                    />
+                  ))}
+                </>
+              )}
             </div>
           ) : (
             <div className="glass flex flex-col items-center gap-2 rounded-3xl p-8 text-center">

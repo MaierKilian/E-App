@@ -242,8 +242,13 @@ function roomOf(
  * heute zu erledigen. Sie stehen vor allem anderen, auch vor größeren
  * Ersparnissen: Wer eine Liste aufschlägt, soll zuerst etwas finden, das er
  * ohne Einkauf und ohne Termin abhaken kann.
+ *
+ * Exportiert, weil die Empfehlungsseite dieselbe Grenze zieht: Sie trennt die
+ * offene Liste sichtbar in „sofort machbar" und „braucht etwas Vorbereitung".
+ * Sonst gäbe es die Unterscheidung zwar in der Sortierung, aber nirgends zu
+ * sehen – die Reihenfolge wirkte willkürlich.
  */
-function isQuickWin(tip: Tip): boolean {
+export function isQuickWin(tip: Tip): boolean {
   return tip.costEur === 0 && tip.effortMinutes <= 15
 }
 

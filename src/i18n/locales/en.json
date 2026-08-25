@@ -2316,7 +2316,9 @@
     "sourceDaysAgo_other": "measured {{count}} days ago",
     "sourceToday": "measured today",
     "sortedByGoal": "Sorted by your goal: {{goals}}",
-    "changeGoal": "change"
+    "changeGoal": "change",
+    "groupQuick": "Do it today",
+    "groupPrepared": "Needs a bit of prep"
   },
   "scan": {
     "button": "Scan",
