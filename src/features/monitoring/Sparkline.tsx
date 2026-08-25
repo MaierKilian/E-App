@@ -12,13 +12,22 @@ interface SparklineProps {
  * Minimalistische Verlaufskurve (SVG) mit weicher Flächenfüllung.
  * Skaliert responsiv über `preserveAspectRatio="none"`, ist also unabhängig
  * von der konkreten Pixelbreite. Robust bei 0/1 Punkten oder konstanten Werten.
+ *
+ * **Ein einzelner Messwert ergibt noch keinen Verlauf.** Bis August 2026 wurde
+ * er zu zwei Punkten verdoppelt und damit als durchgezogene, waagerechte Linie
+ * über die volle Breite gezeichnet – nicht von einem tatsächlich gemessenen
+ * flachen Verlauf zu unterscheiden. Jetzt erscheint er wie der Leerzustand
+ * gestrichelt, nur etwas kräftiger: eine Ablesung ist mehr als keine, aber noch
+ * kein Trend.
  */
 export function Sparkline({ values, color, className, height = 36 }: SparklineProps) {
   const W = 100
   const H = 36
   const pad = 3
 
-  const pts = values.length === 1 ? [values[0], values[0]] : values
+  // Erst ab zwei Ablesungen gibt es eine Kurve zu zeichnen.
+  const pts = values.length >= 2 ? values : []
+  const singleReading = values.length === 1
   const id = `spark-${color.replace('#', '')}`
 
   let path = ''
@@ -74,7 +83,7 @@ export function Sparkline({ values, color, className, height = 36 }: SparklinePr
           strokeWidth="2"
           strokeLinecap="round"
           strokeDasharray="2 4"
-          opacity="0.4"
+          opacity={singleReading ? 0.55 : 0.4}
           vectorEffect="non-scaling-stroke"
         />
       )}
