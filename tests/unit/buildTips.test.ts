@@ -256,6 +256,30 @@ describe('buildTips – Euro nur, wo die Rechnung ihn hergibt', () => {
     })
     expect(tips.find((t) => t.id === 'standby')?.savingEur).toBe(42)
   })
+
+  it('benennt den größten Standby-Posten mit der eingegebenen Bezeichnung', () => {
+    const tips = buildTips(PROFILE, {
+      standby: result({
+        id: 'standby',
+        details: { avoidableCost: 42, dev0: 3, dev1: 12 },
+        labels: { dev0: 'Router', dev1: 'Fernseher Wohnzimmer' },
+      }),
+    })
+    const tip = tips.find((t) => t.id === 'standby')
+    // Eigener Textschlüssel, weil der Standardtext den Gerätetyp übersetzt –
+    // ein freier Name ist kein i18n-Schlüssel.
+    expect(tip?.textId).toBe('standby_named')
+    expect(tip?.params).toMatchObject({ deviceName: 'Fernseher Wohnzimmer', watts: 12 })
+  })
+
+  it('bleibt bei Altergebnissen ohne Bezeichnung beim Gerätetyp', () => {
+    const tips = buildTips(PROFILE, {
+      standby: result({ id: 'standby', details: { avoidableCost: 42, dev0_tv: 12 } }),
+    })
+    const tip = tips.find((t) => t.id === 'standby')
+    expect(tip?.textId).toBeUndefined()
+    expect(tip?.params).toMatchObject({ deviceType: 'tv', watts: 12 })
+  })
 })
 
 describe('buildTips – Zählerstände', () => {
@@ -414,6 +438,35 @@ describe('Ziele bestimmen die Reihenfolge – innerhalb der Gruppen', () => {
     // Komforts geöffnet hat.
     const ids = buildTips(withGoals(['improve_comfort']), MIXED).map((t) => t.id)
     expect(ids.indexOf('room_cold')).toBeLessThan(ids.indexOf('fridge'))
+  })
+
+  it('entscheidet zwischen zwei aufwendigen Tipps allein über das Ziel', () => {
+    // Der bisherige Beleg vergleicht zwei Sofortmaßnahmen. Dort greift die
+    // Ziel-Stufe zwar, aber nur innerhalb der vordersten Gruppe – ob sie auch
+    // *hinter* den Sofortmaßnahmen wirkt, war unbelegt.
+    //
+    // Hier liegen beide Tipps in derselben Aufwandsklasse (keine
+    // Sofortmaßnahme: Standby kostet 15 €, der Kessel 8.000 €), und der
+    // Euro-Betrag spricht für Standby. Nur das CO₂-Ziel dreht die Reihenfolge,
+    // weil Wärme dort schwerer wiegt (2) als Strom (1).
+    const profile = {
+      heatGenerators: ['gas_boiler'],
+      heatGeneratorYears: { gas_boiler: new Date().getFullYear() - 30 },
+    }
+    const results: Record<string, MeasurementResult> = {
+      standby: result({ id: 'standby', details: { avoidableCost: 90, dev0_tv: 12 } }),
+    }
+
+    const ohne = buildTips({ ...PROFILE, ...profile } as unknown as OnboardingData, results).map(
+      (t) => t.id,
+    )
+    expect(ohne.indexOf('standby')).toBeLessThan(ohne.indexOf('old_boiler'))
+
+    const mitZiel = buildTips(
+      { ...withGoals(['reduce_co2']), ...profile } as unknown as OnboardingData,
+      results,
+    ).map((t) => t.id)
+    expect(mitZiel.indexOf('old_boiler')).toBeLessThan(mitZiel.indexOf('standby'))
   })
 
   it('lässt Sofortmaßnahmen auch bei einem Ziel vorn', () => {

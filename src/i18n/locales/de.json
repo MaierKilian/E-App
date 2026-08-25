@@ -444,8 +444,10 @@
       },
       "run": {
         "deviceLabel": "Gerät {{index}}",
-        "deviceName": "Bezeichnung (optional)",
+        "deviceName": "Bezeichnung",
         "deviceNamePlaceholder": "z. B. Fernseher Schlafzimmer",
+        "duplicateHint": "Dieses Gerät steht oben schon in der Liste.",
+        "previouslyMeasured": "Zuletzt gemessen: {{value}} {{unit}}",
         "remove": "Entfernen",
         "addDevice": "Gerät hinzufügen",
         "wattsLabel": "Standby-Leistung",
@@ -2200,6 +2202,10 @@
       "standby": {
         "title": "Standby abschalten",
         "reason": "Größter Standby-Posten: $t(measurements.standby.deviceTypes.{{deviceType}}) mit {{watts}} W. Häng die Geräte an eine Steckdosenleiste mit Schalter und mach sie abends mit einem Griff aus."
+      },
+      "standby_named": {
+        "title": "Standby abschalten",
+        "reason": "Größter Standby-Posten: {{deviceName}} mit {{watts}} W. Häng die Geräte an eine Steckdosenleiste mit Schalter und mach sie abends mit einem Griff aus."
       },
       "showerhead": {
         "title": "Sparduschkopf aufschrauben",

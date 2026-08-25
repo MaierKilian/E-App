@@ -42,6 +42,29 @@
   GitHub Pages (`/E-App/` base path)
 - Sprachen: Deutsch (primär) + Englisch
 
+## Konventionen
+
+### Feld-Migrationen gehören in `migrateOnboardingData`
+
+Neue oder umbenannte Felder in `OnboardingData` werden **in
+`migrateOnboardingData` (`src/store/onboardingStore.ts`)** migriert, nicht im
+`merge`-Block des `persist`-Middleware-Aufrufs.
+
+Grund: Zwei Wege laden ein Profil in den Store – der `persist`-Merge beim Start
+**und** der Cloud-Sync, der den Profilzustand per `setState` direkt schreibt.
+Der zweite geht am `merge` vorbei. Stünde die Migration nur dort, käme ein
+Altprofil aus der Cloud unmigriert an. Beide Wege rufen `migrateOnboardingData`
+auf – dort greift die Migration also in jedem Fall.
+
+### Gespeicherte Messergebnisse bleiben lesbar
+
+`MeasurementResult.details` nimmt nur Zahlen auf (`Record<string, number>`),
+freie Bezeichnungen stehen unter demselben Schlüssel in `labels`. Ändert sich
+das Kodier-Format einer Messung, muss die Ergebnis-Ansicht **beide** Formate
+lesen: Ergebnisse sind bereits gespeichert und werden nicht migriert. Beispiel:
+Standby-Geräte, `dev{i}` + `labels` heute, `dev{i}_{type}` in Altergebnissen
+(siehe `StandbyResult.decodeDevices`).
+
 ## Deployment & Infrastruktur
 
 Vollständige Übersicht: **`docs/deployment.md`**. Das Wichtigste in Kürze:

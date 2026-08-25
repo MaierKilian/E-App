@@ -444,8 +444,10 @@
       },
       "run": {
         "deviceLabel": "Device {{index}}",
-        "deviceName": "Label (optional)",
+        "deviceName": "Label",
         "deviceNamePlaceholder": "e.g. TV bedroom",
+        "duplicateHint": "This device is already in the list above.",
+        "previouslyMeasured": "Last measured: {{value}} {{unit}}",
         "remove": "Remove",
         "addDevice": "Add device",
         "wattsLabel": "Standby power",
@@ -2200,6 +2202,10 @@
       "standby": {
         "title": "Switch off standby",
         "reason": "Biggest standby item: $t(measurements.standby.deviceTypes.{{deviceType}}) at {{watts}} W. Plug those devices into a switched power strip and turn them all off with one flick."
+      },
+      "standby_named": {
+        "title": "Switch off standby",
+        "reason": "Biggest standby item: {{deviceName}} at {{watts}} W. Plug those devices into a switched power strip and turn them all off with one flick."
       },
       "showerhead": {
         "title": "Fit a low-flow showerhead",

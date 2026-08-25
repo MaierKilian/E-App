@@ -29,12 +29,30 @@ import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest'
  *
  * Ausführung: `npm run test:rules` – startet den Firestore-Emulator (Java nötig)
  * und lässt Vitest gegen die Rules laufen.
+ *
+ * Ohne laufenden Emulator wird die Suite **übersprungen**, nicht als Fehlschlag
+ * gemeldet: Ein dauerhaft roter Testlauf wird im Alltag ignoriert – und dann
+ * fällt auch ein echter Fehlschlag nicht mehr auf.
  */
 
 const PROJECT_ID = 'eapp-rules-tests'
 const HOST = '127.0.0.1'
 const PORT = 8080
 const RULES = readFileSync(resolve(__dirname, '..', 'firestore.rules'), 'utf8')
+
+/** Antwortet der Firestore-Emulator auf seinem Port? */
+async function emulatorReachable(): Promise<boolean> {
+  try {
+    await fetch(`http://${HOST}:${PORT}/`, { signal: AbortSignal.timeout(2000) })
+    return true
+  } catch {
+    return false
+  }
+}
+
+const hasEmulator = await emulatorReachable()
+/** Suiten laufen nur mit Emulator; sonst erscheinen sie als übersprungen. */
+const suite = describe.skipIf(!hasEmulator)
 
 const OWNER = 'owner-uid'
 const EDITOR = 'editor-uid'
@@ -48,6 +66,7 @@ const INVITE_INACTIVE = 'invite-revoked'
 let env: RulesTestEnvironment
 
 beforeAll(async () => {
+  if (!hasEmulator) return
   env = await initializeTestEnvironment({
     projectId: PROJECT_ID,
     firestore: { host: HOST, port: PORT, rules: RULES },
@@ -59,6 +78,7 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
+  if (!hasEmulator) return
   await env.clearFirestore()
   // Ausgangszustand: eine Wohnung mit Besitzer + Editor, zwei Einladungen.
   await env.withSecurityRulesDisabled(async (ctx) => {
@@ -103,7 +123,7 @@ function anon(): RulesTestContext {
   return env.unauthenticatedContext()
 }
 
-describe('profiles: read', () => {
+suite('profiles: read', () => {
   it('Owner darf lesen', async () => {
     await assertSucceeds(getDoc(doc(asOwner().firestore(), 'profiles', PID)))
   })
@@ -118,7 +138,7 @@ describe('profiles: read', () => {
   })
 })
 
-describe('profiles: create', () => {
+suite('profiles: create', () => {
   it('Neuer Nutzer legt eine eigene Wohnung an', async () => {
     await assertSucceeds(
       setDoc(doc(asStranger().firestore(), 'profiles', 'new-profile'), {
@@ -147,7 +167,7 @@ describe('profiles: create', () => {
   })
 })
 
-describe('profiles: update – Editor darf App-Daten schreiben', () => {
+suite('profiles: update – Editor darf App-Daten schreiben', () => {
   it('Editor darf state ändern (Mitgliedschaft unverändert)', async () => {
     await assertSucceeds(
       updateDoc(doc(asEditor().firestore(), 'profiles', PID), {
@@ -197,7 +217,7 @@ describe('profiles: update – Editor darf App-Daten schreiben', () => {
   })
 })
 
-describe('profiles: update – Besitzer verwaltet Mitgliedschaft', () => {
+suite('profiles: update – Besitzer verwaltet Mitgliedschaft', () => {
   it('Besitzer entfernt einen Editor', async () => {
     await assertSucceeds(
       updateDoc(doc(asOwner().firestore(), 'profiles', PID), {
@@ -219,7 +239,7 @@ describe('profiles: update – Besitzer verwaltet Mitgliedschaft', () => {
   })
 })
 
-describe('profiles: update – Beitritt per Einladung', () => {
+suite('profiles: update – Beitritt per Einladung', () => {
   it('Nicht-Mitglied tritt mit aktiver Einladung bei', async () => {
     await assertSucceeds(
       updateDoc(doc(asNewMember().firestore(), 'profiles', PID), {
@@ -276,7 +296,7 @@ describe('profiles: update – Beitritt per Einladung', () => {
   })
 })
 
-describe('profiles: update – Eigentumsübertragung', () => {
+suite('profiles: update – Eigentumsübertragung', () => {
   it('Besitzer übergibt an bestehendes Mitglied', async () => {
     await assertSucceeds(
       updateDoc(doc(asOwner().firestore(), 'profiles', PID), {
@@ -319,7 +339,7 @@ describe('profiles: update – Eigentumsübertragung', () => {
   })
 })
 
-describe('profiles: delete', () => {
+suite('profiles: delete', () => {
   it('Besitzer darf löschen', async () => {
     await assertSucceeds(deleteDoc(doc(asOwner().firestore(), 'profiles', PID)))
   })
@@ -331,7 +351,7 @@ describe('profiles: delete', () => {
   })
 })
 
-describe('invites: subcollection', () => {
+suite('invites: subcollection', () => {
   it('Angemeldeter (auch fremder) darf eine Einladung per ID abrufen', async () => {
     await assertSucceeds(
       getDoc(doc(asStranger().firestore(), 'profiles', PID, 'invites', INVITE_ACTIVE)),
@@ -369,7 +389,7 @@ describe('invites: subcollection', () => {
   })
 })
 
-describe('users: Alt-Daten', () => {
+suite('users: Alt-Daten', () => {
   it('Nutzer darf sein eigenes Alt-Dokument lesen/schreiben', async () => {
     await assertSucceeds(
       setDoc(doc(asOwner().firestore(), 'users', OWNER), { state: { legacy: true } }),
@@ -383,7 +403,7 @@ describe('users: Alt-Daten', () => {
   })
 })
 
-describe('feedback: anlegen', () => {
+suite('feedback: anlegen', () => {
   /** Gültiges Feedback-Dokument, wie es `submitFeedback.ts` schreibt. */
   function validFeedback(uid: string) {
     return {
@@ -453,7 +473,7 @@ describe('feedback: anlegen', () => {
   })
 })
 
-describe('feedback: lesen und ändern', () => {
+suite('feedback: lesen und ändern', () => {
   beforeEach(async () => {
     await env.withSecurityRulesDisabled(async (ctx) => {
       await setDoc(doc(ctx.firestore(), 'feedback', 'fb-existing'), {
@@ -479,7 +499,7 @@ describe('feedback: lesen und ändern', () => {
   })
 })
 
-describe('feedback: Austritt', () => {
+suite('feedback: Austritt', () => {
   /** Austritts-Feedback, wie es `submitExitFeedback()` schreibt. */
   function exitFeedback(uid: string) {
     return {

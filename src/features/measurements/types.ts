@@ -25,4 +25,14 @@ export interface MeasurementResult {
   roomKey?: string
   /** Optionale Roh-/Zusatzwerte der Messung (z. B. Liter, Sekunden). */
   details?: Record<string, number>
+  /**
+   * Frei eingegebene Bezeichnungen zu Einträgen aus `details`, gleicher
+   * Schlüssel (z. B. `dev0` → „Fernseher Schlafzimmer").
+   *
+   * `details` nimmt nur Zahlen auf. Solange es keinen Platz für Text gab,
+   * brauchte der Standby-Check eine Typ-Auswahl, nur damit die Ergebnis-Ansicht
+   * die Balken überhaupt beschriften konnte – obwohl der Nutzer daneben schon
+   * einen Namen eingetragen hatte.
+   */
+  labels?: Record<string, string>
 }

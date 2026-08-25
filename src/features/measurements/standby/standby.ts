@@ -12,7 +12,16 @@ import type { MeasurementRating } from '../types'
  * sind bewusste Näherungen zur Veranschaulichung, keine exakte Abrechnung.
  */
 
-export type StandbyDeviceType =
+/**
+ * Gerätetypen älterer Ergebnisse.
+ *
+ * Bis August 2026 wählte der Nutzer je Gerät einen Typ aus – nicht weil die
+ * Rechnung ihn brauchte, sondern weil `details` nur Zahlen aufnimmt und die
+ * Ergebnis-Ansicht sonst keine Beschriftung gehabt hätte. Seit die Bezeichnung
+ * in `labels` mitwandert, entfällt die Auswahl; für bereits gespeicherte
+ * Ergebnisse bleibt der Typ als Beschriftung erhalten.
+ */
+export type LegacyStandbyDeviceType =
   | 'tv'
   | 'console'
   | 'pc'
@@ -22,7 +31,8 @@ export type StandbyDeviceType =
   | 'other'
 
 export interface StandbyDevice {
-  type: StandbyDeviceType
+  /** Frei gewählte Bezeichnung, z. B. „Fernseher Schlafzimmer". */
+  name: string
   /** Gemessene Standby-Leistung in Watt. */
   watts: number
 }

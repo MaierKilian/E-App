@@ -1,7 +1,9 @@
 import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import { ResultHero } from '../ResultHero'
 import type { ResultProps } from '../runnerTypes'
-import type { StandbyDeviceType } from './standby'
+import type { MeasurementResult } from '../types'
+import type { LegacyStandbyDeviceType } from './standby'
 
 /** Formatiert eine Zahl in der aktuellen Sprache. */
 function useNumberFormat() {
@@ -50,7 +52,7 @@ export function StandbyResult({ result }: ResultProps) {
   const isEstimated = (result.details?.tariffCustom ?? 0) === 0
   const isGood = result.rating === 'good'
 
-  const devices = decodeDevices(result.details).sort((a, b) => b.watts - a.watts)
+  const devices = decodeDevices(result, t).sort((a, b) => b.watts - a.watts)
   const maxWatts = devices[0]?.watts ?? 0
 
   return (
@@ -94,8 +96,8 @@ export function StandbyResult({ result }: ResultProps) {
               const pct = maxWatts > 0 ? Math.max(6, (d.watts / maxWatts) * 100) : 0
               return (
                 <li key={i} className="flex items-center gap-3">
-                  <span className="w-24 shrink-0 truncate text-sm text-foreground">
-                    {t(`measurements.standby.deviceTypes.${d.type}`)}
+                  <span className="w-24 shrink-0 truncate text-sm text-foreground" title={d.label}>
+                    {d.label}
                   </span>
                   <span className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
                     <span
@@ -140,7 +142,7 @@ export function StandbyResult({ result }: ResultProps) {
   )
 }
 
-const KNOWN_TYPES: StandbyDeviceType[] = [
+const LEGACY_TYPES: LegacyStandbyDeviceType[] = [
   'tv',
   'console',
   'pc',
@@ -151,24 +153,44 @@ const KNOWN_TYPES: StandbyDeviceType[] = [
 ]
 
 interface DecodedDevice {
-  type: StandbyDeviceType
+  /** Fertige Beschriftung: Name, Alt-Gerätetyp oder „Gerät N". */
+  label: string
   watts: number
 }
 
 /**
- * Rekonstruiert die Geräteliste aus den persistierten `details`. Da `details`
- * nur Zahlen aufnimmt, werden Geräte als Schlüssel `dev{index}_{type}` mit dem
- * Watt-Wert gespeichert (siehe encodeDevices). Robust gegen fehlende Werte.
+ * Rekonstruiert die Geräteliste aus einem gespeicherten Ergebnis.
+ *
+ * Zwei Formate, weil `details` nur Zahlen aufnimmt:
+ * - **aktuell** `dev{index}` → Watt, Beschriftung in `labels` unter demselben
+ *   Schlüssel. Ohne Namen wird durchnummeriert.
+ * - **alt** `dev{index}_{type}` → Watt. Dort war der Gerätetyp die einzige
+ *   Beschriftung, die es gab; er bleibt für bereits gespeicherte Ergebnisse
+ *   erhalten.
  */
-function decodeDevices(details?: Record<string, number>): DecodedDevice[] {
+function decodeDevices(result: MeasurementResult, t: TFunction): DecodedDevice[] {
+  const details = result.details
   if (!details) return []
   const out: DecodedDevice[] = []
+
   for (const [key, value] of Object.entries(details)) {
-    const match = /^dev\d+_(\w+)$/.exec(key)
-    if (!match) continue
-    const type = match[1] as StandbyDeviceType
-    if (KNOWN_TYPES.includes(type) && Number.isFinite(value) && value > 0) {
-      out.push({ type, watts: value })
+    if (!Number.isFinite(value) || value <= 0) continue
+
+    const current = /^dev(\d+)$/.exec(key)
+    if (current) {
+      const name = result.labels?.[key]?.trim()
+      out.push({
+        label:
+          name ||
+          t('measurements.standby.run.deviceLabel', { index: Number(current[1]) + 1 }),
+        watts: value,
+      })
+      continue
+    }
+
+    const legacy = /^dev\d+_(\w+)$/.exec(key)
+    if (legacy && LEGACY_TYPES.includes(legacy[1] as LegacyStandbyDeviceType)) {
+      out.push({ label: t(`measurements.standby.deviceTypes.${legacy[1]}`), watts: value })
     }
   }
   return out

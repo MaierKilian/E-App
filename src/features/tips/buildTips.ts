@@ -194,15 +194,29 @@ function bandOf(r: MeasurementResult): { min: number; max: number } {
   }
 }
 
-/** Größter Standby-Verbraucher aus der `dev{index}_{type}`-Aufschlüsselung. */
-function biggestStandbyDevice(r: MeasurementResult | undefined): { type: string; watts: number } | null {
+/**
+ * Größter Standby-Verbraucher aus der Geräte-Aufschlüsselung.
+ *
+ * Zwei Formate (siehe StandbyResult.decodeDevices): aktuell `dev{index}` mit
+ * der Bezeichnung in `labels`, alt `dev{index}_{type}` mit dem Gerätetyp als
+ * einziger Beschriftung. Der Tipp benennt das Gerät, also muss er beide lesen –
+ * sonst hieße der größte Posten nach dem Umstieg auf Namen immer „Sonstiges".
+ */
+function biggestStandbyDevice(
+  r: MeasurementResult | undefined,
+): { name?: string; type?: string; watts: number } | null {
   if (!r?.details) return null
-  let best: { type: string; watts: number } | null = null
+  let best: { name?: string; type?: string; watts: number } | null = null
   for (const [key, watts] of Object.entries(r.details)) {
-    const match = /^dev\d+_(.+)$/.exec(key)
-    if (match && Number.isFinite(watts) && watts > (best?.watts ?? -1)) {
-      best = { type: match[1], watts }
+    if (!Number.isFinite(watts) || watts <= (best?.watts ?? -1)) continue
+
+    const current = /^dev\d+$/.exec(key)
+    if (current) {
+      best = { name: r.labels?.[key]?.trim() || undefined, watts }
+      continue
     }
+    const legacy = /^dev\d+_(.+)$/.exec(key)
+    if (legacy) best = { type: legacy[1], watts }
   }
   return best
 }
@@ -318,13 +332,18 @@ export function buildTips(
     const big = biggestStandbyDevice(results['standby'])
     tips.push({
       id: 'standby',
+      // Mit Bezeichnung nennt der Tipp das Gerät beim Namen; ohne (Altergebnis
+      // oder namenlos erfasst) bleibt es beim Gerätetyp-Text.
+      ...(big?.name ? { textId: 'standby_named' } : {}),
       source: sourceFor(results, 'standby'),
       icon: Plug,
       category: 'electricity',
       savingEur: standby,
       effortMinutes: 15,
       costEur: 15,
-      params: { deviceType: big?.type ?? 'other', watts: Math.round(big?.watts ?? 0) },
+      params: big?.name
+        ? { deviceName: big.name, watts: Math.round(big.watts) }
+        : { deviceType: big?.type ?? 'other', watts: Math.round(big?.watts ?? 0) },
     })
   }
 
