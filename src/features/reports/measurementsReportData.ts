@@ -20,6 +20,11 @@ const UNIT_FALLBACK: Partial<Record<MeasurementId, string>> = {
   lighting: 'Räume',
   fridge: '°C',
   freezer: '€/Jahr',
+  // Ohne Abstandsmessung ist der Hauptwert die Zahl der Befunde (siehe
+  // FurnitureSpacingRun.tsx), kein physikalischer Messwert – ohne Einheit stand
+  // im Bericht eine nackte Zahl wie „3" ohne jeden Bezug. Wurde gemessen, trägt
+  // das Ergebnis bereits die Einheit „cm" und diese Rückfalleinheit greift nicht.
+  furniture_spacing: 'Befunde',
 }
 
 /**
