@@ -19,19 +19,34 @@
 - **Bearbeiten mit:** `/etappe` (nächste offene), `/etappe 3` (gezielt),
   `/etappe status` (nur berichten)
 - Eine Etappe pro Session. Nach jeder Etappe: Tracker aktualisieren (Status,
-  Datum, Commit), nach `main` mergen und pushen.
+  Datum, Commit) und den Arbeits-Branch pushen – den Merge nach `main` macht
+  Kilian (siehe „Branches").
 
 ## Branches
 
 - `main` – Hauptbranch, stabiler Code, wird bei Push automatisch nach Firebase
   Hosting **und** GitHub Pages deployt (siehe „Deployment & Infrastruktur")
-- Nach jeder abgeschlossenen Änderung: Feature-Branch in `main` mergen und pushen
-  1. `git status` prüfen – Working Tree muss sauber sein (keine uncommitteten Änderungen)
-  2. `git checkout main`
-  3. `git merge <feature-branch> --no-edit`
-  4. `git push origin main`
-  5. `git checkout <feature-branch>` (zurück zum Arbeits-Branch)
-  6. `git push -u origin <feature-branch>` – Feature-Branch ebenfalls pushen
+
+### Der Merge nach `main` gehört dem Menschen
+
+**Claude mergt nicht nach `main` und pusht nicht nach `main`** – auch dann
+nicht, wenn alle Prüfungen grün sind. Nach jeder abgeschlossenen Änderung:
+
+1. `git status` prüfen – Working Tree muss sauber sein
+2. Commit auf dem Arbeits-Branch, Nachricht auf Deutsch mit Begründung im Rumpf
+3. `git push -u origin <feature-branch>` – **nur** den Feature-Branch
+4. Berichten, was fertig ist und was die Abnahme ergab
+
+Den Merge nach `main` macht Kilian selbst, wenn es ihm passt.
+
+Grund: Ein Push auf `main` löst den Auto-Deploy nach Firebase Hosting und
+GitHub Pages aus – die Änderung ist damit sofort live, ohne dass jemand sie
+gesehen hat. Bis 25.08.2026 wurde direkt nach `main` gemergt (immer als
+Fast-Forward, also faktisch direkt auf `main` entwickelt). Seither liegt der
+Zeitpunkt des Deployens beim Menschen, nicht beim Agenten.
+
+Ausnahme: Nur wenn Kilian in der laufenden Sitzung ausdrücklich sagt, dass
+gemergt werden soll.
 
 ## Projekt-Kontext
 

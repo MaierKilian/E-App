@@ -46,8 +46,9 @@ Argument: `$ARGUMENTS` (leer = nächste offene Etappe, Zahl = diese Etappe,
    - `docs/questionnaire-etappen.md` aktualisieren: Status, Datum, Commit-Hash
      in der Stand-Tabelle. Ergaben sich unterwegs neue Erkenntnisse, die
      spätere Etappen betreffen, im Tracker (und ggf. im Konzept) nachziehen.
-   - Nach `main` mergen und pushen, wie in `CLAUDE.md` beschrieben – danach
-     läuft der Auto-Deploy von selbst.
+   - **Nur den Arbeits-Branch pushen** (`git push -u origin <branch>`), nicht
+     nach `main` mergen – siehe „Der Merge nach `main` gehört dem Menschen" in
+     `CLAUDE.md`. Der Auto-Deploy läuft erst, wenn Kilian gemergt hat.
 
 8. **Berichten:** Was umgesetzt wurde, was die Abnahme ergab, was als Nächstes
    dran ist. Nicht die Dateiliste vorlesen.
