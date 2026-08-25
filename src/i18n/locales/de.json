@@ -823,7 +823,10 @@
         "distanceUnit": "cm",
         "distanceHint": "Abstand zwischen Möbelvorderkante und Heizkörper, auf Höhe der Luftöffnung unten. Empfohlen sind mindestens {{target}} cm freier Raum.",
         "transferQuestion": "Wie wird dieser Raum warm?",
-        "transferHint": "Danach richten sich die Fragen. Die Angabe gilt für alle Räume vom Typ „{{room}}\" und lässt sich im Profil ändern."
+        "transferHint": "Danach richten sich die Fragen. Die Angabe gilt für alle Räume vom Typ „{{room}}\" und lässt sich im Profil ändern.",
+        "coverToggle": "Zugestellte Fläche abschätzen",
+        "coverUnit": "%",
+        "coverHint": "Grob geschätzt: Wie viel der beheizten Bodenfläche steht unter Möbeln ohne Luftspalt? Ab etwa {{target}} % fällt spürbar Heizfläche aus."
       },
       "result": {
         "ratings": {
@@ -911,7 +914,10 @@
         "notes": {
           "sensorAndCold": "Im Raumklima-Check war dieser Raum unterhalb seines Komfortbands – zusammen mit dem eingeschlossenen Fühler ergibt das ein bekanntes Muster: Der Fühler misst Stauwärme, regelt zu früh ab, der Raum bleibt kühl und wird von Hand höher gedreht. Den Fühler freizustellen wirkt hier mehr als jede Änderung am Thermostat.",
           "heatPump": "Dein Profil enthält eine Wärmepumpe. Jede blockierte Heizfläche muss über eine höhere Vorlauftemperatur ausgeglichen werden – und die kostet bei einer Wärmepumpe unmittelbar Arbeitszahl. Die Blockade zu beheben wirkt hier stärker als bei einem Brennwertkessel."
-        }
+        },
+        "coverTitle": "Zugestellte Fläche",
+        "coverContext": "Die Anlage ist auf die ganze Fläche ausgelegt. Was zugestellt ist, muss der Rest mit höherer Vorlauftemperatur ausgleichen – ab etwa {{target}} % wird das spürbar.",
+        "mechanismUnderfloor": "Die Wärme geht nicht verloren – die Heizfläche liegt innerhalb der Gebäudehülle. Verbrauch kostet es auf zwei Wegen: Die Anlage ist auf die ganze Bodenfläche ausgelegt; fällt ein Teil davon aus, muss der Rest dieselbe Leistung mit höherer Vorlauftemperatur liefern – und jedes Grad Vorlauftemperatur kostet, bei einer Wärmepumpe besonders. Dazu misst ein verdeckter Raumthermostat den Stau statt des Raums und regelt daneben."
       }
     },
     "base_load": {

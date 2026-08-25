@@ -7,11 +7,18 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  answerFromCoverage,
   answerFromDistance,
   questionKeys,
   rateFurniture,
+  supportsCoverage,
   supportsDistance,
   ALL_FINDING_KEYS,
+  COVER_BLOCKED_PCT,
+  COVER_DEFAULT_PCT,
+  COVER_MAX_PCT,
+  COVER_MIN_PCT,
+  COVER_PARTLY_PCT,
   DISTANCE_BLOCKED_CM,
   DISTANCE_DEFAULT_CM,
   DISTANCE_MAX_CM,
@@ -277,4 +284,58 @@ describe('Möbel-Abstand – gemessener Abstand', () => {
     )
   })
 
+})
+
+describe('Fußbodenheizung – zugestellte Fläche', () => {
+  it('bewertet die Fläche, nicht den Abstand', () => {
+    // Ein Abstand zum Heizkörper ist bei Fußbodenheizung gegenstandslos –
+    // dort gibt es keinen. Bezifferbar ist stattdessen die Fläche.
+    expect(UNDERFLOOR_KEYS.some(supportsDistance)).toBe(false)
+    expect(UNDERFLOOR_KEYS.filter(supportsCoverage)).toEqual(['footless'])
+  })
+
+  it('bietet die Flächen-Schätzung nur bei Fußbodenheizung an', () => {
+    for (const key of questionKeys(false)) {
+      expect(supportsCoverage(key), key).toBe(false)
+    }
+  })
+
+  it('liefert in jedem Fragensatz höchstens eine bezifferbare Frage', () => {
+    expect(UNDERFLOOR_KEYS.filter(supportsCoverage).length).toBeLessThanOrEqual(1)
+  })
+
+  it('staffelt nach zugestelltem Anteil', () => {
+    expect(answerFromCoverage(0)).toBe(0)
+    expect(answerFromCoverage(COVER_PARTLY_PCT - 1)).toBe(0)
+    expect(answerFromCoverage(COVER_PARTLY_PCT)).toBe(1)
+    expect(answerFromCoverage(COVER_BLOCKED_PCT - 1)).toBe(1)
+    expect(answerFromCoverage(COVER_BLOCKED_PCT)).toBe(2)
+    expect(answerFromCoverage(COVER_MAX_PCT)).toBe(2)
+  })
+
+  it('wird mit mehr zugestellter Fläche nie milder', () => {
+    let previous = answerFromCoverage(COVER_MIN_PCT)
+    for (let pct = COVER_MIN_PCT; pct <= COVER_MAX_PCT; pct += 5) {
+      const current = answerFromCoverage(pct)
+      expect(current, `${pct} %`).toBeGreaterThanOrEqual(previous)
+      previous = current
+    }
+  })
+
+  it('ist NaN-sicher und hat einen Default in den Grenzen', () => {
+    expect(answerFromCoverage(Number.NaN)).toBe(0)
+    expect(COVER_DEFAULT_PCT).toBeGreaterThanOrEqual(COVER_MIN_PCT)
+    expect(COVER_DEFAULT_PCT).toBeLessThanOrEqual(COVER_MAX_PCT)
+    expect(COVER_PARTLY_PCT).toBeLessThan(COVER_BLOCKED_PCT)
+  })
+
+  it('ergibt dasselbe wie die gleichbedeutende Antwort per Button', () => {
+    const base = allAnswers(UNDERFLOOR_KEYS, 0)
+    expect(rateFurniture({ ...base, footless: answerFromCoverage(COVER_BLOCKED_PCT) })).toEqual(
+      rateFurniture({ ...base, footless: 2 }),
+    )
+    expect(rateFurniture({ ...base, footless: answerFromCoverage(COVER_PARTLY_PCT) })).toEqual(
+      rateFurniture({ ...base, footless: 1 }),
+    )
+  })
 })

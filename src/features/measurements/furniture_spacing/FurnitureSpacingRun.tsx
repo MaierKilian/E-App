@@ -5,10 +5,16 @@ import { useOnboardingStore } from '@/store/onboardingStore'
 import { Stepper } from '@/components/ui/Stepper'
 import { parseRoomKey } from '../rooms'
 import {
+  answerFromCoverage,
   answerFromDistance,
   questionKeys,
   rateFurniture,
+  supportsCoverage,
   supportsDistance,
+  COVER_DEFAULT_PCT,
+  COVER_MAX_PCT,
+  COVER_MIN_PCT,
+  COVER_PARTLY_PCT,
   DISTANCE_DEFAULT_CM,
   DISTANCE_MAX_CM,
   DISTANCE_MIN_CM,
@@ -47,18 +53,29 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
 
   const [answers, setAnswers] = useState<FurnitureAnswers>({})
   // Abstandsmessung ist optional; vorbelegt, wenn im Profil ein Messgerät steht.
+  // Die Flächen-Schätzung braucht kein Gerät, ist aber ein zusätzlicher Schritt
+  // und deshalb nicht vorbelegt.
   const hasMeter = useOnboardingStore((s) =>
     s.data.instruments.some((i) => i.type === 'distance_meter'),
   )
-  const [measureOn, setMeasureOn] = useState(hasMeter)
+  const [measureOn, setMeasureOn] = useState(hasMeter && !underfloor)
   const [distanceCm, setDistanceCm] = useState(DISTANCE_DEFAULT_CM)
+  const [coverPct, setCoverPct] = useState(COVER_DEFAULT_PCT)
 
-  const distanceKey = keys.find(supportsDistance)
-  const measuring = measureOn && distanceKey !== undefined
+  // Welche Frage sich beziffern lässt, hängt an der Wärmeübergabe: beim
+  // Heizkörper der freie Abstand davor, bei der Fußbodenheizung der Anteil der
+  // zugestellten Fläche. Ein Abstand zum Heizkörper wäre dort gegenstandslos.
+  const measurableKey = keys.find(underfloor ? supportsCoverage : supportsDistance)
+  const measuring = measureOn && measurableKey !== undefined
 
-  /** Antworten inkl. der aus dem Abstand abgeleiteten Stufe. */
+  /** Antworten inkl. der aus der Messung/Schätzung abgeleiteten Stufe. */
   const effectiveAnswers: FurnitureAnswers = measuring
-    ? { ...answers, [distanceKey]: answerFromDistance(distanceCm) }
+    ? {
+        ...answers,
+        [measurableKey]: underfloor
+          ? answerFromCoverage(coverPct)
+          : answerFromDistance(distanceCm),
+      }
     : answers
 
   const canEvaluate = keys.every((k) => effectiveAnswers[k] !== undefined)
@@ -74,15 +91,19 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
       underfloor: underfloor ? 1 : 0,
     }
     for (const k of keys) details[`ans_${k}`] = effectiveAnswers[k] as FurnitureAnswer
-    if (measuring) details.distanceCm = distanceCm
+    if (measuring) {
+      if (underfloor) details.coverPct = coverPct
+      else details.distanceCm = distanceCm
+    }
     onEvaluate({
       result: {
         id: 'furniture_spacing',
         rating: calc.rating,
-        // Mit Messung hat der Check endlich eine echte Messgröße; ohne bleibt
-        // die Zahl der Befunde der Hauptwert.
-        primaryValue: measuring ? distanceCm : calc.issues,
-        unit: measuring ? 'cm' : '',
+        // Mit Messung hat der Check eine echte Messgröße – je nach
+        // Wärmeübergabe der Abstand in cm oder die zugestellte Fläche in
+        // Prozent. Ohne bleibt die Zahl der Befunde der Hauptwert.
+        primaryValue: measuring ? (underfloor ? coverPct : distanceCm) : calc.issues,
+        unit: measuring ? (underfloor ? '%' : 'cm') : '',
         completedAt: new Date().toISOString(),
         details,
       },
@@ -141,11 +162,15 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
             ])}
           </p>
 
-          {supportsDistance(key) && (
+          {key === measurableKey && (
             <label className="mt-3 flex cursor-pointer items-center justify-between gap-3 border-t border-[color-mix(in_srgb,var(--foreground)_10%,transparent)] pt-3">
               <span className="flex items-center gap-2 text-sm text-muted">
                 <Ruler className="h-4 w-4 text-primary" />
-                {t('measurements.furniture_spacing.run.measureToggle')}
+                {t(
+                  underfloor
+                    ? 'measurements.furniture_spacing.run.coverToggle'
+                    : 'measurements.furniture_spacing.run.measureToggle',
+                )}
               </span>
               <input
                 type="checkbox"
@@ -156,29 +181,37 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
             </label>
           )}
 
-          {measuring && key === distanceKey ? (
+          {measuring && key === measurableKey ? (
             <div className="mt-4">
               <div className="flex items-center justify-center gap-3">
                 <Stepper
-                  value={distanceCm}
-                  min={DISTANCE_MIN_CM}
-                  max={DISTANCE_MAX_CM}
-                  step={1}
-                  onChange={setDistanceCm}
+                  value={underfloor ? coverPct : distanceCm}
+                  min={underfloor ? COVER_MIN_PCT : DISTANCE_MIN_CM}
+                  max={underfloor ? COVER_MAX_PCT : DISTANCE_MAX_CM}
+                  step={underfloor ? 5 : 1}
+                  onChange={underfloor ? setCoverPct : setDistanceCm}
                 />
                 <div className="flex min-w-20 items-baseline justify-center gap-1">
                   <span className="text-3xl font-bold tabular-nums text-foreground">
-                    {distanceCm}
+                    {underfloor ? coverPct : distanceCm}
                   </span>
                   <span className="text-sm text-muted">
-                    {t('measurements.furniture_spacing.run.distanceUnit')}
+                    {t(
+                      underfloor
+                        ? 'measurements.furniture_spacing.run.coverUnit'
+                        : 'measurements.furniture_spacing.run.distanceUnit',
+                    )}
                   </span>
                 </div>
               </div>
               <p className="mt-3 text-xs leading-relaxed text-muted">
-                {t('measurements.furniture_spacing.run.distanceHint', {
-                  target: DISTANCE_TARGET_CM,
-                })}
+                {underfloor
+                  ? t('measurements.furniture_spacing.run.coverHint', {
+                      target: COVER_PARTLY_PCT,
+                    })
+                  : t('measurements.furniture_spacing.run.distanceHint', {
+                      target: DISTANCE_TARGET_CM,
+                    })}
               </p>
             </div>
           ) : (

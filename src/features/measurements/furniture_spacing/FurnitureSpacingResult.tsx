@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Sofa, Check, Info, Ruler, Link2 } from 'lucide-react'
+import { Sofa, Check, Info, Ruler, Grip, Link2 } from 'lucide-react'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { DEFAULT_COMFORT_BAND } from '../room_temperature/roomClimate'
@@ -10,6 +10,7 @@ import { contextNotes } from './context'
 import {
   ALL_FINDING_KEYS,
   rateFurniture,
+  COVER_PARTLY_PCT,
   DISTANCE_TARGET_CM,
   type FindingKey,
   type FurnitureAnswer,
@@ -49,6 +50,8 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
 
   const allClear = hasAnswers && findings.length === 0
   const distanceCm = result.details?.distanceCm
+  // Gegenstück zum Abstand bei Fußbodenheizung: der zugestellte Flächenanteil.
+  const coverPct = result.details?.coverPct
 
   // Raumklima-Ergebnis desselben Raums und Wärmeerzeuger aus dem Profil: Erst
   // daraus entstehen Aussagen, die diese Messung allein nicht hergibt.
@@ -92,6 +95,32 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
           <p className="mt-2 text-xs leading-relaxed text-muted">
             {t('measurements.furniture_spacing.result.distanceContext', {
               target: DISTANCE_TARGET_CM,
+            })}
+          </p>
+        </div>
+      )}
+
+      {coverPct !== undefined && (
+        <div className="glass rounded-3xl p-5">
+          <div className="flex items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <Grip className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs uppercase tracking-wide text-muted">
+                {t('measurements.furniture_spacing.result.coverTitle')}
+              </p>
+              <p className="text-2xl font-bold tabular-nums leading-tight text-foreground">
+                {coverPct}
+                <span className="ml-1 text-sm font-medium text-muted">
+                  {t('measurements.furniture_spacing.run.coverUnit')}
+                </span>
+              </p>
+            </div>
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted">
+            {t('measurements.furniture_spacing.result.coverContext', {
+              target: COVER_PARTLY_PCT,
             })}
           </p>
         </div>
@@ -170,8 +199,15 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
             <Info className="h-4 w-4" />
             {t('measurements.furniture_spacing.result.mechanismTitle')}
           </h3>
+          {/* Der Heizkörper-Text spricht vom Wärmestau davor und von der
+              Außenwand dahinter – bei einer Fußbodenheizung gibt es beides
+              nicht. Sie braucht eine eigene Begründung. */}
           <p className="text-xs leading-relaxed text-muted">
-            {t('measurements.furniture_spacing.result.mechanism')}
+            {t(
+              underfloor
+                ? 'measurements.furniture_spacing.result.mechanismUnderfloor'
+                : 'measurements.furniture_spacing.result.mechanism',
+            )}
           </p>
         </div>
       )}

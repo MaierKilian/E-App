@@ -823,7 +823,10 @@
         "distanceUnit": "cm",
         "distanceHint": "Distance between the front edge of the furniture and the radiator, level with the air inlet at the bottom. At least {{target}} cm of clear space is recommended.",
         "transferQuestion": "How is this room heated?",
-        "transferHint": "The questions depend on it. This applies to every “{{room}}” and can be changed in your profile."
+        "transferHint": "The questions depend on it. This applies to every “{{room}}” and can be changed in your profile.",
+        "coverToggle": "Estimate the covered area",
+        "coverUnit": "%",
+        "coverHint": "A rough estimate: how much of the heated floor sits under furniture with no air gap? From about {{target}} % onwards you lose noticeable heating surface."
       },
       "result": {
         "ratings": {
@@ -911,7 +914,10 @@
         "notes": {
           "sensorAndCold": "The room climate check measured this room below its comfort range – together with the enclosed sensor that forms a familiar pattern: the sensor reads trapped heat, shuts off too early, the room stays cool and gets turned up by hand. Freeing the sensor helps more here than any change at the thermostat.",
           "heatPump": "Your profile includes a heat pump. Every blocked heat surface has to be compensated by a higher flow temperature – and with a heat pump that immediately costs efficiency. Clearing the obstruction is worth more here than with a condensing boiler."
-        }
+        },
+        "coverTitle": "Covered area",
+        "coverContext": "The system is sized for the whole floor. Whatever is covered has to be made up by the rest at a higher flow temperature – noticeable from about {{target}} % onwards.",
+        "mechanismUnderfloor": "The heat is not lost – the heating surface sits inside the building envelope. It costs you in two ways: the system is sized for the whole floor, so if part of it drops out, the rest has to deliver the same output at a higher flow temperature – and every degree of flow temperature costs, especially with a heat pump. On top of that, a covered room thermostat measures the trapped heat instead of the room and controls to the wrong value."
       }
     },
     "base_load": {

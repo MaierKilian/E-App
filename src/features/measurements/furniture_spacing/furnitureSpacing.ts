@@ -143,6 +143,45 @@ export function supportsDistance(key: FindingKey): boolean {
   return key === 'furniture'
 }
 
+// --- Verstellte Bodenfläche (optional, Fußbodenheizung) ----------------------
+//
+// Der Abstand zum Heizkörper ist bei einer Fußbodenheizung gegenstandslos –
+// dort gibt es keinen Heizkörper, vor dem etwas frei bleiben müsste. Die
+// entsprechende Größe ist der Anteil der beheizten Fläche, der zugestellt ist:
+// Die Anlage ist auf die ganze Fläche ausgelegt, jede ausgefallene Teilfläche
+// muss der Rest mit höherer Vorlauftemperatur ausgleichen.
+//
+// Geschätzt statt gemessen: Anders als der Abstand braucht das keinen
+// Zollstock, sondern einen Blick durch den Raum.
+
+/** Ab diesem Anteil fällt spürbar Fläche aus (%). */
+export const COVER_PARTLY_PCT = 15
+/** Ab hier fehlt so viel Fläche, dass die Vorlauftemperatur steigen muss (%). */
+export const COVER_BLOCKED_PCT = 30
+
+export const COVER_MIN_PCT = 0
+export const COVER_MAX_PCT = 80
+export const COVER_DEFAULT_PCT = 15
+
+/**
+ * Übersetzt den geschätzten Flächenanteil in die Antwortstufe.
+ *
+ * Dieselbe grobe Dreiteilung wie beim Abstand: Die Schwellen sind gerundete
+ * Erfahrungswerte, keine Norm – eine feinere Kurve würde eine Genauigkeit
+ * vortäuschen, die eine Schätzung nach Augenmaß nicht hergibt.
+ */
+export function answerFromCoverage(pct: number): FurnitureAnswer {
+  if (!Number.isFinite(pct)) return 0
+  if (pct >= COVER_BLOCKED_PCT) return 2
+  if (pct >= COVER_PARTLY_PCT) return 1
+  return 0
+}
+
+/** Befunde, für die eine Flächen-Schätzung sinnvoll ist (Fußbodenheizung). */
+export function supportsCoverage(key: FindingKey): boolean {
+  return key === 'footless'
+}
+
 // Schwellen der 4-stufigen Ampel – als Anteil der erreichbaren Punkte, nicht
 // als absolute Summe. Sonst wäre dieselbe Antwort je nach Fragensatz
 // unterschiedlich streng bewertet, sobald ein Raumtyp anders gewichtete Fragen
