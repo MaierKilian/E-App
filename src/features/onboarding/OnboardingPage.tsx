@@ -130,9 +130,22 @@ export function OnboardingPage() {
   const flowSections = sectionsFor(mode)
   const totalSteps = flowSections.length
   const isLastStep = !isOnModeSelection && currentStep === totalSteps - 1
-  const activeSection = flowSections[currentStep]
+  // Ein gespeicherter Schritt kann nach einem App-Update aus dem gültigen
+  // Bereich fallen – Etappe 4 kürzte den Schnellstart z. B. von 6 auf 3
+  // Schritte. Unkorrigiert blieb der Inhaltsbereich dauerhaft leer (Kopf- und
+  // Navigationsleiste standen weiter, `activeSection` war undefined und die
+  // Seite gab `null` zurück) – ein Sackgassen-Zustand, aus dem nur Browserdaten
+  // löschen herausführte.
+  const safeStep = totalSteps > 0 ? Math.min(Math.max(currentStep, 0), totalSteps - 1) : 0
+  const activeSection = flowSections[safeStep]
   // Der Review-Schritt bringt eigene Karten mit – kein zusätzlicher Card-Rahmen.
   const isReviewStep = Boolean(activeSection?.review)
+
+  useEffect(() => {
+    if (!isOnModeSelection && flowMode === 'linear' && currentStep !== safeStep) {
+      setStep(safeStep)
+    }
+  }, [isOnModeSelection, flowMode, currentStep, safeStep, setStep])
 
   if (data.completed) {
     return <HomeDashboard data={data} onEdit={editProfile} />
@@ -260,12 +273,12 @@ export function OnboardingPage() {
   return (
     <div className="pb-24">
       <StepIndicator
-        currentStep={currentStep}
+        currentStep={safeStep}
         title={t(activeSection.titleKey)}
         states={flowSections.map((s) => stateOf(s, data, visitedSections))}
       />
 
-      <div key={`${mode}-${currentStep}`} className="animate-step-in mt-5">
+      <div key={`${mode}-${safeStep}`} className="animate-step-in mt-5">
         {isReviewStep ? body : <Card>{body}</Card>}
       </div>
 
