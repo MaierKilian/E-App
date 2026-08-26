@@ -165,27 +165,71 @@ describe('yearOverYearTrend', () => {
 })
 
 describe('consumptionTrend', () => {
-  it('vergleicht mit dem Vorjahreszeitraum statt mit dem Vormonat', () => {
-    // Zwei identische Jahre: der Verbrauch hat sich nicht geändert.
-    const s = consumptionTrend(gasYearReadings(2000, 2024))
-    expect(s?.baseline).toBe('lastYear')
-    expect(s?.direction).toBe('flat')
-  })
-
-  it('erkennt echten Mehrverbrauch gegenüber dem Vorjahr', () => {
-    const base = gasYearReadings(2000, 2024)
-    // Letzten Zählerstand anheben -> letzter Abschnitt verbraucht mehr.
-    const bumped = base.map((r, i) => (i === base.length - 1 ? { ...r, value: r.value + 200 } : r))
-    const s = consumptionTrend(bumped)
-    expect(s?.baseline).toBe('lastYear')
-    expect(s?.direction).toBe('up')
-  })
-
-  it('fällt ohne Vorjahresdaten auf den vorherigen Abschnitt zurück', () => {
+  it('vergleicht immer mit dem vorherigen Abschnitt', () => {
     const s = consumptionTrend(
       readings(['2026-01-01', 0], ['2026-02-01', 100], ['2026-03-01', 300]),
     )
     expect(s?.baseline).toBe('previousPeriod')
     expect(s?.direction).toBe('up')
+  })
+
+  it('rechnet ungleich lange Ableseabstände auf den Tag herunter', () => {
+    // 1.1. -> 1.2. sind 31 Tage, 1.2. -> 15.2. nur 14. Beide Male 10 kWh/Tag,
+    // also hat sich nichts geändert – der kürzere Abstand darf den Prozentwert
+    // nicht bewegen.
+    const s = consumptionTrend(
+      readings(['2026-01-01', 0], ['2026-02-01', 310], ['2026-02-15', 450]),
+    )
+    expect(s?.changePct).toBeCloseTo(0, 10)
+    expect(s?.direction).toBe('flat')
+  })
+
+  it('meldet den doppelten Tagesverbrauch als +100 %', () => {
+    // Wieder 31 gegen 14 Tage, diesmal 10 gegen 20 kWh/Tag.
+    const s = consumptionTrend(
+      readings(['2026-01-01', 0], ['2026-02-01', 310], ['2026-02-15', 590]),
+    )
+    expect(s?.changePct).toBeCloseTo(1, 10)
+    expect(s?.direction).toBe('up')
+  })
+
+  it('lässt sich von einer langen Lücke in der Historie nicht beeinflussen', () => {
+    // Der gemeldete Fehler: Zwischen der ersten und der zweiten Ablesung lagen
+    // 385 Tage. Der frühere Vorjahres-Vergleich schnitt aus diesem einen
+    // Abschnitt 31 interpolierte Tage heraus und meldete +52 %, obwohl der
+    // Verbrauch gegenüber dem echten Vorzeitraum kaum gestiegen war.
+    const recent: [string, number][] = [
+      ['2026-06-05', 4980],
+      ['2026-07-18', 5319],
+      ['2026-08-18', 5606],
+    ]
+    const withGap = consumptionTrend(readings(['2024-12-15', 1231], ['2026-01-04', 3576], ...recent))
+    const withoutGap = consumptionTrend(readings(...recent))
+
+    expect(withGap?.baseline).toBe('previousPeriod')
+    expect(withGap?.changePct).toBeCloseTo(withoutGap?.changePct ?? NaN, 10)
+    // 287 kWh in 31 Tagen gegen 339 kWh in 43 Tagen: 9,26 gegen 7,88 kWh/Tag.
+    expect(withGap?.changePct).toBeCloseTo(0.174, 3)
+  })
+
+  it('vergleicht auch bei Heizenergie mit dem Vorzeitraum', () => {
+    // Bewusste Abwägung: Der Vorjahres-Vergleich hätte die Jahreszeit
+    // herausgerechnet, beruhte aber zu oft auf interpolierten Lücken. Bei Gas
+    // misst der Vorzeitraum-Vergleich damit den Übergang November -> Dezember
+    // mit – ehrlich verzerrt statt erfunden.
+    const s = consumptionTrend(gasYearReadings(2000, 2024))
+    expect(s?.baseline).toBe('previousPeriod')
+  })
+
+  it('nennt ohne Vorgänger-Abschnitt keinen Prozentwert', () => {
+    const s = consumptionTrend(readings(['2026-01-01', 0], ['2026-02-01', 310]))
+    expect(s?.perDay).toBeCloseTo(10, 10)
+    expect(s?.changePct).toBeUndefined()
+    expect(s?.baseline).toBeUndefined()
+  })
+
+  it('schweigt ohne verwertbare Ablesungen', () => {
+    expect(consumptionTrend([])).toBeUndefined()
+    expect(consumptionTrend(readings(['2026-01-01', 100]))).toBeUndefined()
   })
 })

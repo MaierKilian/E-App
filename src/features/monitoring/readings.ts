@@ -62,7 +62,10 @@ const DAYS_PER_YEAR = 365
 
 /** Womit der aktuelle Tagesverbrauch verglichen wurde. */
 export type TrendBaseline =
-  /** Derselbe Zeitraum ein Jahr zuvor – jahreszeitlich sauber. */
+  /**
+   * Derselbe Zeitraum ein Jahr zuvor – jahreszeitlich sauber. Kommt nur noch
+   * aus {@link yearOverYearTrend}; {@link consumptionTrend} liefert das nicht.
+   */
   | 'lastYear'
   /** Der vorherige Ableseabstand – bei Heizenergie jahreszeitlich verzerrt. */
   | 'previousPeriod'
@@ -80,16 +83,28 @@ export interface ConsumptionTrend {
 }
 
 /**
- * Vergleicht den Tagesverbrauch des letzten Abschnitts mit einer Basis.
+ * Vergleicht den Tagesverbrauch des letzten Abschnitts mit dem des
+ * **vorhergehenden Abschnitts**.
  *
- * Bevorzugt **denselben Zeitraum ein Jahr zuvor**: der Vergleich mit dem
- * vorherigen Ableseabstand maß bei Heizenergie vor allem die Jahreszeit – im
- * August gegen den Frühsommer ergab das zuverlässig ein dickes Minus, ohne
- * dass sich am Verhalten etwas geändert hätte. Reicht die Historie dafür
- * nicht, wird wie bisher mit dem vorherigen Abschnitt verglichen; `baseline`
- * sagt, was von beidem gilt.
+ * Verglichen wird ausschließlich kWh **pro Tag**: Ableseabstände sind
+ * unterschiedlich lang, und ein längerer Abstand darf den Prozentwert nicht
+ * bewegen. Wer am 1.1., 1.2. und 15.2. abliest, misst 31 und 14 Tage – bei
+ * gleichem Tagesverbrauch kommt trotzdem 0 % heraus.
  *
- * Liefert undefined, wenn zu wenige (verwertbare) Ablesungen vorliegen.
+ * Bis August 2026 wurde bevorzugt mit **demselben Zeitraum ein Jahr zuvor**
+ * verglichen, um bei Heizenergie die Jahreszeit herauszurechnen. Das ging nach
+ * hinten los: Deckt die Historie den Vorjahres-Zeitraum nur formal ab – etwa
+ * weil zwischen zwei Ablesungen ein Jahr Abstand liegt –, verteilt
+ * `consumptionInWindow` diesen einen Abschnitt gleichmäßig über alle Tage.
+ * Verglichen wurde dann eine echte Messung gegen eine lineare Interpolation:
+ * ein Nutzer sah „+52 %", obwohl sein Verbrauch praktisch unverändert war, und
+ * die Bildunterschrift sprach dabei vom Vorzeitraum. Ein ehrlicher, saisonal
+ * verzerrter Vergleich ist besser als ein erfundener; die Jahreszeit lässt
+ * sich später über `seasonality.ts` sauber herausrechnen.
+ *
+ * Liefert undefined, wenn zu wenige (verwertbare) Ablesungen vorliegen, und
+ * `changePct`/`baseline` ohne Wert, solange es keinen Vorgänger-Abschnitt
+ * gibt – dann steht nur der Tagesverbrauch fest.
  */
 export function consumptionTrend(readings: MeterReading[]): ConsumptionTrend | undefined {
   const segments = consumptionSegments(readings)
@@ -97,26 +112,6 @@ export function consumptionTrend(readings: MeterReading[]): ConsumptionTrend | u
   const last = segments[segments.length - 1]
   const perDay = last.days > 0 ? last.kwh / last.days : 0
 
-  const lastFrom = parseIso(last.from)
-  const lastTo = parseIso(last.to)
-  const firstFrom = parseIso(segments[0].from)
-
-  // 1. Wahl: gleicher Zeitraum im Vorjahr – nur wenn die Historie ihn deckt.
-  if (lastFrom && lastTo && firstFrom) {
-    const yearAgoFrom = new Date(lastFrom.getTime() - DAYS_PER_YEAR * MS_PER_DAY)
-    const yearAgoTo = new Date(lastTo.getTime() - DAYS_PER_YEAR * MS_PER_DAY)
-    if (yearAgoFrom >= firstFrom) {
-      const days = (yearAgoTo.getTime() - yearAgoFrom.getTime()) / MS_PER_DAY
-      const kwh = consumptionInWindow(segments, yearAgoFrom, yearAgoTo)
-      const basePerDay = days > 0 ? kwh / days : 0
-      if (basePerDay > 0) {
-        const changePct = (perDay - basePerDay) / basePerDay
-        return { perDay, direction: directionOf(changePct), changePct, baseline: 'lastYear' }
-      }
-    }
-  }
-
-  // 2. Wahl: vorheriger Abschnitt.
   if (segments.length < 2) return { perDay, direction: 'flat' }
   const prev = segments[segments.length - 2]
   const prevPerDay = prev.days > 0 ? prev.kwh / prev.days : 0
