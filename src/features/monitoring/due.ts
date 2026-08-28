@@ -39,16 +39,18 @@ export function isTypeDue(
  * angelegter Zähler soll genauso erinnern wie ein vom Fragebogen
  * vorgeschlagener. Umgekehrt bleibt es dabei, dass ohne eine einzige Ablesung
  * nie erinnert wird (siehe {@link isTypeDue}) – sonst mahnte die App jeden
- * Haushalt zu Pellets, nur weil der Träger existiert.
+ * Haushalt zu Pellets, nur weil der Träger existiert. Entfernte Zähler
+ * (`hidden`) erinnern ebenfalls nicht mehr.
  */
 export function dueTypes(
   data: OnboardingData,
   readingsByType: Partial<Record<EnergyType, MeterReading[]>>,
   freq: ReminderFrequency,
   now: number,
+  hidden: readonly EnergyType[] = [],
 ): EnergyType[] {
   if (freq === 'off') return []
-  return boardEnergyTypes(data, readingsByType).filter((type) =>
+  return boardEnergyTypes(data, readingsByType, hidden).filter((type) =>
     isTypeDue(sortByDate(readingsByType[type] ?? []), freq, now),
   )
 }

@@ -113,6 +113,8 @@ export interface BuildMonitoringArgs {
   tariff?: TariffLike
   /** Optional: nur diese Energieträger (default: alle aktiven). */
   types?: EnergyType[]
+  /** Vom Nutzer entfernte Zähler – gehören in keinen Bericht. */
+  hidden?: readonly EnergyType[]
 }
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24
@@ -320,10 +322,11 @@ export function buildMonitoringReportData({
   rangeDays,
   tariff,
   types,
+  hidden,
 }: BuildMonitoringArgs): MonitoringReportData {
   // Über die Träger des Boards statt über die des Profils: Ein selbst
   // angelegter Zähler gehört genauso in den Bericht wie ein vorgeschlagener.
-  const available = boardEnergyTypes(profile, readingsByType)
+  const available = boardEnergyTypes(profile, readingsByType, hidden)
   const filter = types && types.length > 0 ? new Set(types) : undefined
   const selected = filter ? available.filter((t) => filter.has(t)) : available
   const entries = selected.map((type) =>

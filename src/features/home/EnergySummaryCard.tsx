@@ -5,6 +5,7 @@ import { useReadingsStore } from '@/store/readingsStore'
 import { ALL_ENERGY_TYPES, ENERGY_META } from '@/features/monitoring/energyConfig'
 import { sortByDate, consumptionTrend, daysSinceLastReading } from '@/features/monitoring/readings'
 import { TrendBadge } from '@/features/monitoring/MeterTrend'
+import { valueSizeClass } from './meterValueSize'
 
 /**
  * Kompakte Energie-Status-Karte für die Startseite.
@@ -76,6 +77,7 @@ export function EnergySummaryCard() {
       <div className="relative mt-3 flex gap-2 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {carriers.map((c) => {
           const Icon = c.meta.icon
+          const formattedValue = numFmt.format(c.lastValue ?? 0)
           const lastReadText =
             c.sinceDays === undefined
               ? null
@@ -87,8 +89,13 @@ export function EnergySummaryCard() {
               key={c.type}
               type="button"
               onClick={() => navigate(`/monitoring/${c.type}`)}
-              className="focus-ring flex min-w-[9.5rem] flex-1 flex-col gap-1.5 rounded-2xl border border-border/60 bg-surface-2/40 p-3 text-left transition-transform active:scale-[0.98]"
+              className="focus-ring flex min-w-[11rem] flex-1 flex-col gap-1.5 rounded-2xl border border-border/60 bg-surface-2/40 p-3 text-left transition-transform active:scale-[0.98]"
             >
+              {/* Träger-Zeile: Icon, Name – und rechts der Trend. Der Badge
+                  stand früher neben dem Zählerstand und nahm ihm dort den
+                  Platz weg. Hier oben ist Luft: Der Trägername darf notfalls
+                  kürzen (das Icon sagt ohnehin, worum es geht), der
+                  Zählerstand darf das nicht. */}
               <span className="flex items-center gap-1.5">
                 <span
                   className="grid h-6 w-6 shrink-0 place-items-center rounded-lg"
@@ -96,22 +103,20 @@ export function EnergySummaryCard() {
                 >
                   <Icon className="h-3.5 w-3.5" style={{ color: c.meta.accent }} />
                 </span>
-                <span className="truncate text-[11px] font-medium uppercase tracking-wide text-muted">
+                <span className="min-w-0 flex-1 truncate text-[11px] font-medium uppercase tracking-wide text-muted">
                   {t(`monitoring.energyTypes.${c.type}`)}
                 </span>
-              </span>
-              {/* Zählerstand links, Trend rechtsbündig in derselben Zeile – der
-                  Trend bewertet die Verbrauchsrichtung, nicht den Stand selbst,
-                  und steht deshalb klar abgesetzt am Kachelrand. Die Einheit
-                  steht bewusst unten bei „zuletzt abgelesen" statt direkt hinterm
-                  Wert: Zählerstände können sechsstellig werden, dann bräuchten
-                  Zahl, Einheit UND Badge nebeneinander mehr Platz, als eine
-                  schmale Kachel hat – abgeschnitten wäre die Zahl unbrauchbar. */}
-              <span className="flex items-baseline justify-between gap-1.5">
-                <span className="truncate text-xl font-bold leading-none tabular-nums text-foreground">
-                  {numFmt.format(c.lastValue ?? 0)}
-                </span>
                 {c.trend && <TrendBadge trend={c.trend} compact />}
+              </span>
+              {/* Der Zählerstand hat die Zeile für sich und wird nie gekürzt –
+                  bei langen Werten schrumpft stattdessen die Schrift. Die
+                  Einheit steht unten bei „zuletzt abgelesen": Zahl UND Einheit
+                  nebeneinander bräuchten in einer schmalen Kachel mehr Platz,
+                  als sie hat. */}
+              <span
+                className={`block whitespace-nowrap font-bold leading-none tabular-nums text-foreground ${valueSizeClass(formattedValue)}`}
+              >
+                {formattedValue}
               </span>
               {lastReadText && (
                 <span className="text-[10px] leading-snug text-muted">

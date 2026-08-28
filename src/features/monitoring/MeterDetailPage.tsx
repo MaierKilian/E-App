@@ -5,6 +5,7 @@ import { ChevronLeft, Plus, Trash2, ChevronDown, Pencil } from 'lucide-react'
 import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/readingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore, resolvePrice, resolveEnergyContent } from '@/store/tariffStore'
+import { useWidgetOrderStore } from '@/store/widgetOrderStore'
 import { SelectChip } from '@/components/ui/SelectChip'
 import { ENERGY_META, isSeasonal } from './energyConfig'
 import { PRICE_META } from './priceConfig'
@@ -38,6 +39,8 @@ export function MeterDetailPage() {
   const data = useOnboardingStore((s) => s.data)
   const readingsByType = useReadingsStore((s) => s.readings)
   const deleteReading = useReadingsStore((s) => s.deleteReading)
+  const removeType = useReadingsStore((s) => s.removeType)
+  const hideType = useWidgetOrderStore((s) => s.hideType)
 
   const [addOpen, setAddOpen] = useState(false)
   const [editing, setEditing] = useState<MeterReading | null>(null)
@@ -94,6 +97,28 @@ export function MeterDetailPage() {
     if (window.confirm(t('monitoring.readings.deleteConfirm'))) {
       deleteReading(type, id)
     }
+  }
+
+  /**
+   * Entfernt den Zähler ganz: Ablesungen löschen **und** den Träger ausblenden.
+   *
+   * Beides ist nötig. Nur löschen genügt nicht, weil das Profil Strom, Wasser
+   * und den eigenen Wärmeerzeuger weiter vorschlägt – der Zähler stünde sofort
+   * wieder auf dem Board. Nur ausblenden genügt ebenso wenig: Die Ablesungen
+   * flössen weiter in Berichte und Empfehlungen ein, die den Zähler gar nicht
+   * mehr anzeigen. Die Rückfrage nennt deshalb die Zahl der Ablesungen, die
+   * dabei verloren geht.
+   */
+  function handleRemoveMeter() {
+    const confirmed = window.confirm(
+      readings.length > 0
+        ? t('monitoring.detail.removeMeterConfirm', { name, count: readings.length })
+        : t('monitoring.detail.removeMeterConfirmEmpty', { name }),
+    )
+    if (!confirmed) return
+    removeType(type)
+    hideType(type)
+    navigate('/monitoring')
   }
 
   const priceMeta = PRICE_META[type]
@@ -392,6 +417,17 @@ export function MeterDetailPage() {
 
       {/* Erinnerung (kompakt) */}
       <ReadingReminder readings={readings} />
+
+      {/* Zähler entfernen – bewusst ganz unten, hinter allem Nützlichen, und
+          ohne Signalfarbe: Es ist kein Weg, den man versehentlich geht. */}
+      <button
+        type="button"
+        onClick={handleRemoveMeter}
+        className="focus-ring flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border px-5 py-3 text-sm font-medium text-muted transition-colors hover:border-rose-500/40 hover:text-rose-600 dark:hover:text-rose-400"
+      >
+        <Trash2 className="h-4 w-4" />
+        {t('monitoring.detail.removeMeter')}
+      </button>
 
       {addOpen && (
         <AddReadingScreen

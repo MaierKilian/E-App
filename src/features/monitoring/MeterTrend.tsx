@@ -32,7 +32,7 @@ export function TrendBadge({ trend, compact }: { trend: ConsumptionTrend; compac
   return (
     <span
       aria-label={baselineLabel ? `${label} ${baselineLabel}` : label}
-      className={`inline-flex items-center gap-1 rounded-full font-semibold ${tone} ${
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full font-semibold ${tone} ${
         compact ? 'px-1.5 py-0.5 text-[11px]' : 'px-2.5 py-1 text-xs'
       }`}
     >

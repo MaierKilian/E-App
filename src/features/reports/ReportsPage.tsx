@@ -10,6 +10,7 @@ import { useReadingsStore } from '@/store/readingsStore'
 import { useTariffStore } from '@/store/tariffStore'
 import { useReportSettingsStore } from '@/store/reportSettingsStore'
 import { boardEnergyTypes } from '@/features/monitoring/energyConfig'
+import { useWidgetOrderStore } from '@/store/widgetOrderStore'
 import { fmtPeriod } from './pdf/format'
 import { canSharePdf, deliverReport } from './pdf/deliver'
 import { buildTips } from '@/features/tips/buildTips'
@@ -34,12 +35,13 @@ export function ReportsPage() {
   // hinterlegtem Preis, nicht nur für Strom.
   const tariff = useTariffStore()
   const settings = useReportSettingsStore()
+  const hidden = useWidgetOrderStore((s) => s.hidden)
 
   // Auch selbst angelegte Zähler stehen im Bericht zur Wahl, nicht nur die vom
   // Profil vorgeschlagenen.
   const meterTypes = useMemo(
-    () => boardEnergyTypes(profile, readingsByType),
-    [profile, readingsByType],
+    () => boardEnergyTypes(profile, readingsByType, hidden),
+    [profile, readingsByType, hidden],
   )
 
   // Zeitraum: selbst gewählter Wert gilt, sonst passend zu den vorhandenen
@@ -54,8 +56,8 @@ export function ReportsPage() {
   // die Fakten und den Export, sodass die Vorschau dieselben Zahlen zeigt wie
   // das PDF.
   const monitoringData = useMemo(
-    () => buildMonitoringReportData({ profile, readingsByType, rangeDays, tariff }),
-    [profile, readingsByType, rangeDays, tariff],
+    () => buildMonitoringReportData({ profile, readingsByType, rangeDays, tariff, hidden }),
+    [profile, readingsByType, rangeDays, tariff, hidden],
   )
   const measurementsData = useMemo(
     // `rooms` benennt die Einzelergebnisse raumbezogener Messungen im Bericht.

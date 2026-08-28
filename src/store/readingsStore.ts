@@ -35,6 +35,8 @@ interface ReadingsState {
     patch: { date?: string; value?: number },
   ) => void
   deleteReading: (type: EnergyType, id: string) => void
+  /** Entfernt einen Zähler samt aller seiner Ablesungen. */
+  removeType: (type: EnergyType) => void
   setReminderFrequency: (freq: ReminderFrequency) => void
   resetReadings: () => void
 }
@@ -112,6 +114,12 @@ export const useReadingsStore = create<ReadingsState>()(
               [type]: existing.filter((r) => r.id !== id),
             },
           }
+        }),
+      removeType: (type) =>
+        set((state) => {
+          const next = { ...state.readings }
+          delete next[type]
+          return { readings: next }
         }),
       setReminderFrequency: (freq) => set({ reminderFrequency: freq }),
       resetReadings: () => set({ readings: {}, reminderFrequency: 'off' }),

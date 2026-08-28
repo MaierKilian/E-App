@@ -102,19 +102,25 @@ export function suggestedEnergyTypes(data: OnboardingData): EnergyType[] {
 
 /**
  * Träger, die auf dem Board stehen: was das Profil nahelegt **plus** alles,
- * wofür schon abgelesen wurde.
+ * wofür schon abgelesen wurde, **minus** was der Nutzer entfernt hat.
  *
- * Die zweite Hälfte ist der Punkt. Ein selbst angelegter Zähler muss auch dann
+ * Der mittlere Teil ist der Punkt. Ein selbst angelegter Zähler muss auch dann
  * sichtbar bleiben, wenn das Profil ihn nicht nahelegt – sonst wäre er nach dem
  * ersten Eintrag wieder verschwunden.
+ *
+ * `hidden` schlägt beides. Entfernen löscht zwar die Ablesungen, doch bei einem
+ * Träger aus dem Profil (Strom, Wasser, Wärmeerzeuger) genügt das nicht: der
+ * Vorschlag stünde sofort wieder auf dem Board. Siehe `widgetOrderStore`.
  */
 export function boardEnergyTypes(
   data: OnboardingData,
   readingsByType: Partial<Record<EnergyType, MeterReading[]>>,
+  hidden: readonly EnergyType[] = [],
 ): EnergyType[] {
   const set = new Set<EnergyType>(suggestedEnergyTypes(data))
   for (const type of ORDER) {
     if ((readingsByType[type]?.length ?? 0) > 0) set.add(type)
   }
+  for (const type of hidden) set.delete(type)
   return ORDER.filter((type) => set.has(type))
 }

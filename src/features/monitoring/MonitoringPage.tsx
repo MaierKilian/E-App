@@ -40,6 +40,8 @@ export function MonitoringPage() {
   const frequency = useReadingsStore((s) => s.reminderFrequency)
   const savedOrder = useWidgetOrderStore((s) => s.order)
   const setOrder = useWidgetOrderStore((s) => s.setOrder)
+  const hidden = useWidgetOrderStore((s) => s.hidden)
+  const showType = useWidgetOrderStore((s) => s.showType)
   const pvPromptDismissed = useSettingsStore((s) => s.pvPromptDismissed)
   const dismissPvPrompt = useSettingsStore((s) => s.dismissPvPrompt)
   const navigate = useNavigate()
@@ -50,11 +52,14 @@ export function MonitoringPage() {
 
   // Auf dem Board stehen die vorgeschlagenen Träger und alles, wofür schon
   // abgelesen wurde – ein selbst angelegter Zähler verschwindet nicht wieder.
-  const types = useMemo(() => boardEnergyTypes(data, readingsByType), [data, readingsByType])
+  const types = useMemo(
+    () => boardEnergyTypes(data, readingsByType, hidden),
+    [data, readingsByType, hidden],
+  )
   const order = useMemo(() => mergeOrder(savedOrder, types), [savedOrder, types])
   const due = useMemo(
-    () => new Set(dueTypes(data, readingsByType, frequency, now)),
-    [data, readingsByType, frequency, now],
+    () => new Set(dueTypes(data, readingsByType, frequency, now, hidden)),
+    [data, readingsByType, frequency, now, hidden],
   )
 
   const addMeta = addType ? ENERGY_META[addType] : null
@@ -146,6 +151,9 @@ export function MonitoringPage() {
                 type="button"
                 onClick={() => {
                   setPickerOpen(false)
+                  // Wer einen entfernten Zähler erneut wählt, will ihn zurück –
+                  // ohne das hier bliebe er trotz neuer Ablesung unsichtbar.
+                  showType(type)
                   if (known) navigate(`/monitoring/${type}`)
                   else setAddType(type)
                 }}

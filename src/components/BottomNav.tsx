@@ -6,6 +6,7 @@ import { useOnboardingStore } from '@/store/onboardingStore'
 import { useReadingsStore } from '@/store/readingsStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useTipsStore } from '@/store/tipsStore'
+import { useWidgetOrderStore } from '@/store/widgetOrderStore'
 import { dueTypes } from '@/features/monitoring/due'
 import { pendingFollowUps } from '@/features/measurements/followUps'
 
@@ -21,10 +22,11 @@ export function BottomNav() {
   const frequency = useReadingsStore((s) => s.reminderFrequency)
   const measurementResults = useMeasurementsStore((s) => s.results)
   const defrostDoneAt = useTipsStore((s) => s.doneAt.freezer)
+  const hiddenMeters = useWidgetOrderStore((s) => s.hidden)
   const [now] = useState(() => Date.now())
 
   // Fällige Ablesungen → kleiner Hinweispunkt am Monitoring-Tab (In-App-Reminder).
-  const monitoringDue = dueTypes(data, readings, frequency, now).length > 0
+  const monitoringDue = dueTypes(data, readings, frequency, now, hiddenMeters).length > 0
   // Anstehende Folgemessungen (Grundlast nach einer Maßnahme, Kühlschrank
   // nach einer noch nicht guten Messung, Gefriertruhe ein halbes Jahr nach dem
   // Abtauen) → derselbe Hinweispunkt am Messungen-Tab.

@@ -74,4 +74,31 @@ describe('Erinnerungen', () => {
   it('schweigt bei abgeschalteter Erinnerung', () => {
     expect(dueTypes(PROFILE, { gas: LONG_AGO }, 'off', NOW)).toEqual([])
   })
+
+  it('erinnert nicht mehr an einen entfernten Zähler', () => {
+    expect(dueTypes(PROFILE, { gas: LONG_AGO }, 'monthly', NOW, ['gas'])).toEqual([])
+  })
+})
+
+describe('Zähler entfernen', () => {
+  it('nimmt einen entfernten Träger vom Board', () => {
+    expect(boardEnergyTypes(PROFILE, {}, ['gas'])).toEqual(['electricity', 'water'])
+  })
+
+  it('hält ihn auch dann fern, wenn das Profil ihn vorschlägt', () => {
+    // Der eigentliche Grund für die Ausblend-Liste: Ablesungen löschen genügt
+    // nicht, weil `suggestedEnergyTypes` die Gasheizung des Profils weiter
+    // nahelegt – ohne `hidden` stünde der Zähler sofort wieder da.
+    expect(suggestedEnergyTypes(PROFILE)).toContain('gas')
+    expect(boardEnergyTypes(PROFILE, {}, ['gas'])).not.toContain('gas')
+  })
+
+  it('lässt einen wieder aufgenommenen Träger zurückkommen', () => {
+    expect(boardEnergyTypes(PROFILE, {}, [])).toContain('gas')
+  })
+
+  it('rührt die übrigen Träger nicht an', () => {
+    const board = boardEnergyTypes(PROFILE, { pv: [reading('2026-08-01', 500)] }, ['water'])
+    expect(board).toEqual(['electricity', 'gas', 'pv'])
+  })
 })
