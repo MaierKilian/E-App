@@ -207,7 +207,8 @@
     },
     "overview": {
       "measEmpty": "No checks yet",
-      "monEmpty": "No readings yet"
+      "monEmpty": "No readings yet",
+      "monEmptyRange": "No readings in the selected period"
     },
     "facts": {
       "meters_one": "{{count}} meter",

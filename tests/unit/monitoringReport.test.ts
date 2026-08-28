@@ -334,3 +334,62 @@ describe('suggestRangeDays', () => {
     ).toBe(30)
   })
 })
+
+describe('Ablesungen ausserhalb des gewählten Zeitraums', () => {
+  /**
+   * Der gemeldete Fehler: Die Berichte-Seite meldete „Noch keine Ablesungen",
+   * obwohl acht gespeichert waren – der gemerkte Zeitraum stand auf 7 Tage und
+   * die letzte Ablesung lag 10 Tage zurück. Weil die Zeile damit als leer galt,
+   * verschwand mit ihr auch der Zeitraum-Wähler: eine Sackgasse.
+   *
+   * Die Seite unterscheidet jetzt zwei Signale. Diese Tests halten fest, dass
+   * beide aus denselben Daten ablesbar bleiben.
+   */
+  const READINGS = { electricity: [reading(40, 4980), reading(10, 5606)] }
+
+  it('meldet für den engen Zeitraum keine Ablesung', () => {
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: READINGS,
+      rangeDays: 7,
+    })
+    const strom = data.entries.find((e) => e.type === 'electricity')
+    expect(strom?.readingCount).toBe(0)
+  })
+
+  it('kennt den Zähler trotzdem als abgelesen', () => {
+    // `currentValue` stammt aus der ungefilterten Liste – daran erkennt die
+    // Oberfläche, dass es Daten gibt, auch wenn das Fenster leer ist.
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: READINGS,
+      rangeDays: 7,
+    })
+    const strom = data.entries.find((e) => e.type === 'electricity')
+    expect(strom?.currentValue).toBe(5606)
+    expect(strom?.currentDate).toBeDefined()
+  })
+
+  it('findet die Ablesungen wieder, sobald der Zeitraum weit genug ist', () => {
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: READINGS,
+      rangeDays: null,
+    })
+    const strom = data.entries.find((e) => e.type === 'electricity')
+    expect(strom?.readingCount).toBe(2)
+  })
+
+  it('lässt einen nie abgelesenen Zähler ohne aktuellen Wert', () => {
+    // Die Gegenprobe: Ohne sie würde `currentValue` als Signal jeden Zähler
+    // des Profils als abgelesen ausweisen.
+    const data = buildMonitoringReportData({
+      profile: PROFILE,
+      readingsByType: READINGS,
+      rangeDays: null,
+    })
+    const wasser = data.entries.find((e) => e.type === 'water')
+    expect(wasser).toBeDefined()
+    expect(wasser?.currentValue).toBeUndefined()
+  })
+})

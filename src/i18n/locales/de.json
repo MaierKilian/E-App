@@ -207,7 +207,8 @@
     },
     "overview": {
       "measEmpty": "Noch keine Checks",
-      "monEmpty": "Noch keine Ablesungen"
+      "monEmpty": "Noch keine Ablesungen",
+      "monEmptyRange": "Keine Ablesungen im gewählten Zeitraum"
     },
     "facts": {
       "meters_one": "{{count}} Zähler",

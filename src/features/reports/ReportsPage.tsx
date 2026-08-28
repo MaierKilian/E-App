@@ -65,10 +65,24 @@ export function ReportsPage() {
     [results, profile.rooms],
   )
 
+  // Zwei verschiedene Fragen, die vorher eine waren:
+  // `metersWithData` zählt die Zähler mit Ablesungen **im gewählten Zeitraum**
+  // – das beschreibt den Bericht. `metersWithAnyReading` zählt die Zähler mit
+  // überhaupt einer Ablesung – das entscheidet, ob es den Abschnitt gibt.
+  //
+  // Vorher hing die Verfügbarkeit am Zeitraum, und das war eine Sackgasse: Wer
+  // einmal „7 Tage" gewählt hatte und danach zwei Wochen nicht ablas, bekam
+  // „Noch keine Ablesungen" zu sehen – obwohl Dutzende gespeichert waren – und
+  // mit der abgewählten Zeile verschwand auch der Zeitraum-Wähler, mit dem er
+  // es hätte richtigstellen können. `currentValue` stammt aus der ungefilterten
+  // Liste und ist deshalb der richtige Anhaltspunkt.
   const metersWithData = monitoringData.entries.filter((e) => e.readingCount > 0).length
+  const metersWithAnyReading = monitoringData.entries.filter(
+    (e) => e.currentValue !== undefined,
+  ).length
   const available = {
     measurements: measurementsData.doneCount > 0,
-    monitoring: metersWithData > 0,
+    monitoring: metersWithAnyReading > 0,
   }
 
   // Ein Abschnitt ohne Daten wird nie exportiert, auch wenn er gespeichert ist.
@@ -117,9 +131,14 @@ export function ReportsPage() {
         <SectionRow
           label={t('report.pdf.section.monitoring')}
           detail={
-            available.monitoring
+            metersWithData > 0
               ? t('report.facts.meters', { count: metersWithData })
-              : t('report.overview.monEmpty')
+              : available.monitoring
+                ? // Ablesungen gibt es, nur nicht im gewählten Zeitraum. Der
+                  // Wähler steht direkt darunter – der Hinweis sagt deshalb,
+                  // woran es liegt, statt Daten zu leugnen.
+                  t('report.overview.monEmptyRange')
+                : t('report.overview.monEmpty')
           }
           checked={sections.monitoring}
           disabled={!available.monitoring || (sections.monitoring && activeCount <= 1)}
