@@ -91,7 +91,6 @@
     "fireplace": "Ein zusätzlicher Kamin/Ofen trägt zur Raumwärme bei und sollte erfasst werden.",
     "instruments": "Wähle vorhandene Geräte – pro Gerät kannst du Typ und passende Empfehlungen sehen.",
     "smartHome": "Smarte Geräte können Verbrauchsdaten liefern und die Auswertung verbessern.",
-    "energyCost": "Eine grobe Schätzung genügt, um Einsparpotenziale in Euro abzubilden.",
     "renovation": "Renovierungen verbessern den Dämmstandard und senken den Energiebedarf.",
     "location": "Mit der Postleitzahl können später regionale Klima- und Wetterdaten einfließen.",
     "appliances": "Der Kühlschrank- und der Gefriergerät-Check messen jeweils ein reales Gerät. Ohne diese Angabe schlägt die App Checks vor, die es bei dir nicht zu messen gibt – und der Fortschritt käme nie bei 100 % an. „Haben wir nicht\" nimmt den passenden Check heraus; du kannst das hier jederzeit zurücknehmen."
@@ -1493,14 +1492,6 @@
         "smart_meter": "Smarter Stromzähler",
         "smart_plugs": "Smarte Steckdosen",
         "none": "Keine"
-      },
-      "energyCostRange": "Geschätzte monatliche Energiekosten (€)",
-      "energyCostOptions": {
-        "under_100": "Unter 100€",
-        "100_200": "100–200€",
-        "200_350": "200–350€",
-        "over_350": "Über 350€",
-        "unknown": "Unbekannt"
       }
     },
     "step7renovation": {
@@ -1579,7 +1570,6 @@
         "ventilationType": "Lüftung",
         "insulationState": "Dämmzustand",
         "smartHomeDevices": "Smart-Home",
-        "energyCostRange": "Energiekosten/Monat",
         "lastRenovationYear": "Letzte Renovierung",
         "renovationItems": "Renoviert",
         "postalCode": "Postleitzahl",

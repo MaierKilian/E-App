@@ -137,9 +137,9 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
     icon: Wallet,
     quick: true,
     // Preise liegen im `tariffStore`, nicht in `OnboardingData`; leere Felder
-    // behalten sinnvolle Standardwerte. Die Kostenspanne zählt dagegen mit –
-    // sie steht hier, weil sie von Euro handelt, nicht von Messgeräten.
-    fields: [field('energyCostRange', (d) => d.energyCostRange !== 'unknown')],
+    // behalten sinnvolle Standardwerte. Damit hat dieser Abschnitt keine
+    // Pflichtangabe – `stateOf` zählt ihn als erledigt, sobald er besucht wurde.
+    fields: [],
   },
   {
     id: 'building',

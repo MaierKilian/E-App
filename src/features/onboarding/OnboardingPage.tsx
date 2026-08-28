@@ -52,9 +52,7 @@ const SECTION_BODIES: Record<SectionId, (p: StepContentProps) => ReactNode> = {
   heating: ({ data, onChange, detailed }) => (
     <Step4Heating data={data} onChange={onChange} detailed={detailed} />
   ),
-  prices: ({ data, onChange, detailed }) => (
-    <StepPrices data={data} onChange={onChange} detailed={detailed} />
-  ),
+  prices: ({ data }) => <StepPrices data={data} />,
   // Hülle und Modernisierung in einem Schritt: Das Fensteralter und „Fenster
   // saniert" sind dieselbe Frage und standen vorher in zwei Schritten.
   building: ({ data, onChange }) => (

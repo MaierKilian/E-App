@@ -91,7 +91,6 @@
     "fireplace": "An additional fireplace/stove adds room heat and should be recorded.",
     "instruments": "Select the devices you own – per device you can pick a type and see recommendations.",
     "smartHome": "Smart devices can provide consumption data and improve the analysis.",
-    "energyCost": "A rough estimate is enough to express savings potential in euros.",
     "renovation": "Renovations improve the insulation standard and reduce the energy demand.",
     "location": "Your postal code lets regional climate and weather data flow in later.",
     "appliances": "The fridge and freezer checks each measure a real appliance. Without this answer the app suggests checks you have nothing to measure for – and your progress would never reach 100 %. “We have none” takes the matching check out; you can undo that here at any time."
@@ -1337,14 +1336,6 @@
         "smart_meter": "Smart electricity meter",
         "smart_plugs": "Smart plugs",
         "none": "None"
-      },
-      "energyCostRange": "Estimated monthly energy costs (€)",
-      "energyCostOptions": {
-        "under_100": "Under €100",
-        "100_200": "€100–200",
-        "200_350": "€200–350",
-        "over_350": "Over €350",
-        "unknown": "Unknown"
       }
     },
     "step7renovation": {
@@ -1423,7 +1414,6 @@
         "ventilationType": "Ventilation",
         "insulationState": "Insulation",
         "smartHomeDevices": "Smart home",
-        "energyCostRange": "Energy costs/month",
         "lastRenovationYear": "Last renovation",
         "renovationItems": "Renovated",
         "postalCode": "Postal code",

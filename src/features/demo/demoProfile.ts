@@ -149,7 +149,6 @@ const onboardingData: OnboardingData = {
   ventilationType: 'natural',
   insulationState: 'medium',
   smartHomeDevices: ['smart_meter'],
-  energyCostRange: '200_350',
   // Ereignis-Log ist die Eingabe; die Altfelder darunter sind die Ableitung.
   renovations: [{ id: 'demo-2006', year: 2006, items: ['windows'] }],
   heatGeneratorYears: { gas_boiler: 2004 },

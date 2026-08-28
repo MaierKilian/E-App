@@ -38,7 +38,6 @@ const EMPTY = {
   windowAge: 'unknown',
   ventilationType: 'unknown',
   insulationState: 'unknown',
-  energyCostRange: 'unknown',
   lastRenovationYear: 'unknown',
   renovations: null,
   heatGeneratorYears: {},
@@ -62,7 +61,6 @@ const FULL = {
   ventilationType: 'natural',
   insulationState: 'good',
   instruments: [{ type: 'none' }],
-  energyCostRange: '100_200',
   lastRenovationYear: 'never',
   renovations: [],
   // „Wir haben keines" ist eine vollwertige Antwort – ein Haushalt ohne
@@ -184,13 +182,17 @@ describe('Kein Feld ist verlorengegangen', () => {
    * Angabe, die die App vor dem Umbau erhoben hat, muss im vollständigen
    * Fragebogen weiterhin zählbar sein.
    */
+  // `energyCostRange` (geschätzte monatliche Energiekosten) steht bewusst nicht
+  // mehr in dieser Liste: Die Angabe ist im August 2026 entfallen, weil sie
+  // erhoben, aber nie verrechnet wurde. Sie ist nicht verlorengegangen,
+  // sondern abgeschafft.
   const ERHOBEN = [
     'profileName', 'profileImage', 'personsCount', 'goals', 'occupancyStatus',
     'buildingYear', 'buildingType', 'livingArea', 'floors', 'windowAge',
     'rooms', 'heatTransfer', 'roomAreas',
     'heatGenerators', 'hotWaterType',
     'ventilationType', 'insulationState',
-    'instruments', 'energyCostRange',
+    'instruments',
     'renovations', 'postalCode',
   ]
 

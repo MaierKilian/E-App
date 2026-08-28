@@ -37,13 +37,6 @@ export type SmartHomeDevice =
   | 'smart_plugs'
   | 'none'
 
-export type EnergyCostRange =
-  | 'under_100'
-  | '100_200'
-  | '200_350'
-  | 'over_350'
-  | 'unknown'
-
 export type RenovationYear =
   | 'never'
   | 'before_2000'
@@ -185,7 +178,6 @@ export interface OnboardingData {
   ventilationType: VentilationType
   insulationState: InsulationState
   smartHomeDevices: SmartHomeDevice[]
-  energyCostRange: EnergyCostRange
   /**
    * Sanierungen als Ereignis-Log, chronologisch aufsteigend.
    *

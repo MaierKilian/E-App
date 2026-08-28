@@ -254,10 +254,6 @@ export function Step8Review({ data }: Props) {
                   value={smartHomeDevicesSummary}
                 />
               )}
-              <ReviewRow
-                label={t('onboarding.step8.labels.energyCostRange')}
-                value={t(`onboarding.step6.energyCostOptions.${data.energyCostRange}`)}
-              />
             </>
           )}
         </ReviewSection>

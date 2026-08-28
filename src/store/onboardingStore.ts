@@ -65,7 +65,6 @@ const defaultData: OnboardingData = {
   ventilationType: 'unknown',
   insulationState: 'unknown',
   smartHomeDevices: [],
-  energyCostRange: 'unknown',
   renovations: null,
   heatGeneratorYears: {},
   appliances: [],

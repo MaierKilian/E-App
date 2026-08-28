@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { parseDecimalInput } from '@/lib/decimalInput'
 import { Wallet } from 'lucide-react'
-import type { OnboardingData, EnergyCostRange } from '@/types'
-import { OptionChip } from '@/components/ui/OptionChip'
-import { Field } from '@/components/ui/Field'
+import type { OnboardingData } from '@/types'
 import type { EnergyType } from '@/store/readingsStore'
 import { useTariffStore, resolvePrice } from '@/store/tariffStore'
 import { PRICE_META } from '@/features/monitoring/priceConfig'
@@ -28,25 +26,14 @@ function relevantTypes(data: OnboardingData): EnergyType[] {
 
 interface StepPricesProps {
   data: OnboardingData
-  onChange: (partial: Partial<OnboardingData>) => void
-  /** Vollständiger Fragebogen – dann kommt die Kostenspanne dazu. */
-  detailed?: boolean
 }
-
-const ENERGY_COST_RANGES: EnergyCostRange[] = [
-  'under_100',
-  '100_200',
-  '200_350',
-  'over_350',
-  'unknown',
-]
 
 /**
  * Optionaler Onboarding-Schritt: individuelle Verbrauchspreise. Schreibt zentral
  * in den `tariffStore`; leere Felder behalten die Standardwerte. Nutzerwerte
  * überschreiben die Defaults und werden von allen Berechnungen genutzt.
  */
-export function StepPrices({ data, onChange, detailed = false }: StepPricesProps) {
+export function StepPrices({ data }: StepPricesProps) {
   const { t, i18n } = useTranslation()
   const setTypePrice = useTariffStore((s) => s.setTypePrice)
   const clearTypePrice = useTariffStore((s) => s.clearTypePrice)
@@ -181,24 +168,6 @@ export function StepPrices({ data, onChange, detailed = false }: StepPricesProps
           )
         })}
       </div>
-
-      {/* Die Kostenspanne stand vorher bei den Messgeraeten. Sie handelt von
-          Euro, nicht von Messtechnik – und ist fuer Haushalte ohne
-          Zaehlerstaende der einzige Realitaetsanker neben der Schaetzung. */}
-      {detailed && (
-        <Field title={t('onboarding.step6.energyCostRange')} info={t('info.energyCost')}>
-          <div className="flex flex-wrap gap-2">
-            {ENERGY_COST_RANGES.map((range) => (
-              <OptionChip
-                key={range}
-                label={t(`onboarding.step6.energyCostOptions.${range}`)}
-                selected={data.energyCostRange === range}
-                onClick={() => onChange({ energyCostRange: range })}
-              />
-            ))}
-          </div>
-        </Field>
-      )}
 
       <p className="px-1 text-xs text-muted">{t('onboarding.prices.laterNote')}</p>
     </div>
