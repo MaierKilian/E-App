@@ -102,7 +102,13 @@ export function Step3Rooms({ data, onChange }: Props) {
                 beschreibt – und der Möbelabstand-Check braucht sie ohnehin
                 raumweise. Keine Vorauswahl: „noch nicht beantwortet" ist ein
                 eigener Zustand, sonst behauptete die App Heizkörper. */}
-            <div className="flex w-full gap-1">
+            {/* Untereinander, nicht nebeneinander: Die Kachel ist eine von zwei
+                Spalten und innen nur rund 127 px breit – „Heizkörper" und
+                „Fußboden" brauchen nebeneinander gut 170 px. Zwei flex-1-Knöpfe
+                schrumpfen nicht unter ihre Mindestbreite, also stand der zweite
+                über den Kachelrand hinaus. Gestapelt hat jeder die volle Breite,
+                unabhängig davon, wie lang die Beschriftung übersetzt ist. */}
+            <div className="flex w-full flex-col gap-1">
               {TRANSFERS.map(({ value, icon: Icon }) => {
                 const active = getTransfer(type) === value
                 return (
@@ -111,14 +117,14 @@ export function Step3Rooms({ data, onChange }: Props) {
                     type="button"
                     onClick={() => setTransfer(type, value)}
                     aria-pressed={active}
-                    className={`focus-ring flex flex-1 items-center justify-center gap-1 rounded-lg px-1.5 py-1 text-[11px] font-medium transition-[background-color,color] ${
+                    className={`focus-ring flex w-full min-w-0 items-center justify-center gap-1 rounded-lg px-1.5 py-1 text-[11px] font-medium transition-[background-color,color] ${
                       active
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-surface-2/70 text-muted hover:text-foreground'
                     }`}
                   >
                     <Icon className="h-3 w-3 shrink-0" />
-                    {t(`onboarding.step5.${value}Short`)}
+                    <span className="truncate">{t(`onboarding.step5.${value}Short`)}</span>
                   </button>
                 )
               })}
