@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, Plus, Trash2, ChevronDown, Pencil } from 'lucide-react'
+import { ChevronLeft, Plus, Trash2, ChevronDown, Pencil, RotateCcw } from 'lucide-react'
 import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/readingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore, resolvePrice, resolveEnergyContent } from '@/store/tariffStore'
@@ -16,7 +16,7 @@ import { TariffModal } from './TariffModal'
 import { sortByDate, stats, consumptionTrend, daysSinceLastReading } from './readings'
 import { TrendBadge } from './MeterTrend'
 import { specificValue } from './specificValues'
-import { filterByRange, RANGE_KEYS, type RangeKey } from './rangeFilter'
+import { filterByRange, fullSpan, RANGE_KEYS, type RangeKey } from './rangeFilter'
 import { todayIso } from '@/lib/timeAxis'
 
 
@@ -144,6 +144,20 @@ export function MeterDetailPage() {
   // Diagramm-Punkte nach Zeitraum filtern.
   const allPoints: LinePoint[] = readings.map((r) => ({ date: r.date, value: r.value }))
   const points = filterByRange(allPoints, range, now, customFrom, customTo)
+
+  // Volle Messspanne – Vorbelegung und Ziel des Zurücksetzens für den freien
+  // Zeitraum (Begründung siehe `fullSpan`).
+  const { from: spanFrom, to: spanTo } = fullSpan(allPoints)
+  const rangeIsFullSpan = customFrom === spanFrom && customTo === spanTo
+
+  /** Zeitraum wechseln; der freie Zeitraum startet auf der vollen Messspanne. */
+  function handleRangeChange(key: RangeKey) {
+    setRange(key)
+    if (key === 'custom' && !customFrom && !customTo) {
+      setCustomFrom(spanFrom)
+      setCustomTo(spanTo)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -299,7 +313,7 @@ export function MeterDetailPage() {
                 key={key}
                 label={t(`monitoring.readings.range.${key}`)}
                 selected={range === key}
-                onClick={() => setRange(key)}
+                onClick={() => handleRangeChange(key)}
               />
             ))}
           </div>
@@ -307,40 +321,54 @@ export function MeterDetailPage() {
           {/* Freier Zeitraum: erst nach der Wahl sichtbar, damit die schlichte
               Stufen-Auswahl nicht dauerhaft zwei Datumsfelder mitträgt. */}
           {range === 'custom' && (
-            <div className="flex flex-wrap items-end gap-3 rounded-2xl bg-surface-2/50 p-3">
-              <label className="flex min-w-32 flex-1 flex-col gap-1">
-                <span className="text-[11px] font-medium uppercase tracking-wide text-muted">
-                  {t('monitoring.readings.rangeFrom')}
-                </span>
-                <input
-                  type="date"
-                  value={customFrom}
-                  max={todayIso()}
-                  onChange={(e) => setCustomFrom(e.target.value)}
-                  className="focus-ring w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground"
-                />
-              </label>
-              <label className="flex min-w-32 flex-1 flex-col gap-1">
-                <span className="text-[11px] font-medium uppercase tracking-wide text-muted">
-                  {t('monitoring.readings.rangeTo')}
-                </span>
-                <input
-                  type="date"
-                  value={customTo}
-                  max={todayIso()}
-                  onChange={(e) => setCustomTo(e.target.value)}
-                  className="focus-ring w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm text-foreground"
-                />
-              </label>
-              {(customFrom || customTo) && (
+            <div className="rounded-2xl bg-surface-2/50 p-3">
+              {/* Zwei feste Spalten statt umbrechendem Flex: Die Felder sind
+                  gleich breit und stehen auch auf schmalen Geräten nebeneinander
+                  – „von" über „bis" gestapelt las sich wie zwei getrennte
+                  Eingaben statt wie ein Zeitraum. */}
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex min-w-0 flex-col gap-1">
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-muted">
+                    {t('monitoring.readings.rangeFrom')}
+                  </span>
+                  {/* `appearance-none` und die feste Höhe zähmen das native
+                      Feld: iOS gibt ihm sonst eine eigene, deutlich größere
+                      Grundhöhe und setzt den Text nicht mittig. */}
+                  <input
+                    type="date"
+                    value={customFrom}
+                    max={customTo || todayIso()}
+                    onChange={(e) => setCustomFrom(e.target.value)}
+                    className="focus-ring h-10 w-full appearance-none rounded-xl border border-border bg-surface px-3 text-sm leading-none text-foreground tabular-nums"
+                  />
+                </label>
+                <label className="flex min-w-0 flex-col gap-1">
+                  <span className="text-[11px] font-medium uppercase tracking-wide text-muted">
+                    {t('monitoring.readings.rangeTo')}
+                  </span>
+                  <input
+                    type="date"
+                    value={customTo}
+                    min={customFrom || undefined}
+                    max={todayIso()}
+                    onChange={(e) => setCustomTo(e.target.value)}
+                    className="focus-ring h-10 w-full appearance-none rounded-xl border border-border bg-surface px-3 text-sm leading-none text-foreground tabular-nums"
+                  />
+                </label>
+              </div>
+              {/* Zurücksetzen führt auf die volle Messspanne zurück, nicht auf
+                  zwei leere Felder – sonst stünde man wieder vor blanken Kästen.
+                  Deshalb erscheint es auch nur, solange etwas eingegrenzt ist. */}
+              {!rangeIsFullSpan && (
                 <button
                   type="button"
                   onClick={() => {
-                    setCustomFrom('')
-                    setCustomTo('')
+                    setCustomFrom(spanFrom)
+                    setCustomTo(spanTo)
                   }}
-                  className="focus-ring rounded-xl px-2 py-2 text-xs font-medium text-muted transition-colors hover:text-foreground"
+                  className="focus-ring mt-2 inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-2.5 py-1.5 text-xs font-medium text-muted transition-colors hover:text-foreground"
                 >
+                  <RotateCcw className="h-3 w-3" />
                   {t('monitoring.readings.rangeReset')}
                 </button>
               )}

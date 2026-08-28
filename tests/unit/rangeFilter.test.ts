@@ -2,7 +2,7 @@
 // Zeitraums von Datum bis Datum.
 
 import { describe, expect, it } from 'vitest'
-import { filterByRange, RANGE_DAYS, RANGE_KEYS } from '@/features/monitoring/rangeFilter'
+import { filterByRange, fullSpan, RANGE_DAYS, RANGE_KEYS } from '@/features/monitoring/rangeFilter'
 import { todayIso } from '@/lib/timeAxis'
 
 const NOW = Date.parse('2026-08-25T12:00:00.000Z')
@@ -108,5 +108,34 @@ describe('todayIso', () => {
       now.getDate(),
     ).padStart(2, '0')}`
     expect(todayIso()).toBe(local)
+  })
+})
+
+describe('fullSpan', () => {
+  it('nennt früheste und späteste Ablesung', () => {
+    expect(fullSpan(POINTS)).toEqual({ from: POINTS[0].date, to: POINTS[POINTS.length - 1].date })
+  })
+
+  it('zeigt vorbelegt dieselben Punkte wie zwei leere Felder', () => {
+    // Der Grund, warum die Vorbelegung nichts kaputt macht: Sie grenzt nichts
+    // ein, sie schreibt nur hin, was ohnehin gilt.
+    const { from, to } = fullSpan(POINTS)
+    expect(filterByRange(POINTS, 'custom', NOW, from, to)).toEqual(
+      filterByRange(POINTS, 'custom', NOW, undefined, undefined),
+    )
+  })
+
+  it('verlässt sich nicht auf eine sortierte Liste', () => {
+    const shuffled = [P('2026-07-04'), P('2026-01-09'), P('2026-03-22')]
+    expect(fullSpan(shuffled)).toEqual({ from: '2026-01-09', to: '2026-07-04' })
+  })
+
+  it('kommt mit einer einzigen Ablesung zurecht', () => {
+    expect(fullSpan([P('2026-04-01')])).toEqual({ from: '2026-04-01', to: '2026-04-01' })
+  })
+
+  it('lässt beide Grenzen leer, wenn es nichts vorzubelegen gibt', () => {
+    expect(fullSpan([])).toEqual({ from: '', to: '' })
+    expect(fullSpan([{ date: 'kaputt' }])).toEqual({ from: '', to: '' })
   })
 })

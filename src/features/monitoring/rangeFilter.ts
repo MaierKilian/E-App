@@ -32,6 +32,29 @@ function isoOrUndefined(value: string | undefined): string | undefined {
 }
 
 /**
+ * Früheste und späteste Ablesung – die Vorbelegung des freien Zeitraums.
+ *
+ * Zwei leere Datumsfelder zeigen zwar dieselben Punkte wie die volle Spanne
+ * (siehe {@link filterByRange}), sehen aber nach nichts aus: Ein leeres
+ * `input[type=date]` rendert auf iOS als blanker Kasten, ohne Platzhalter und
+ * ohne Symbol. Mit den Spanngrenzen steht von Anfang an ein Datum im Feld.
+ *
+ * Vergleicht die ISO-Daten als Zeichenketten und verlässt sich damit nicht auf
+ * eine bereits sortierte Liste. Ohne Punkte bleiben beide Grenzen leer – dann
+ * gibt es schlicht nichts vorzubelegen.
+ */
+export function fullSpan(points: readonly { date: string }[]): { from: string; to: string } {
+  let from = ''
+  let to = ''
+  for (const p of points) {
+    if (!isoOrUndefined(p.date)) continue
+    if (!from || p.date < from) from = p.date
+    if (!to || p.date > to) to = p.date
+  }
+  return { from, to }
+}
+
+/**
  * Filtert Diagramm-Punkte auf den gewählten Zeitraum.
  *
  * ISO-Daten (`yyyy-mm-dd`) lassen sich als Zeichenketten vergleichen – das
