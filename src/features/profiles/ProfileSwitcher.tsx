@@ -57,6 +57,12 @@ function shortenPlaceName(name: string): string {
  * beim Laden sähe es aus, als stimme etwas mit den Daten nicht. Scheitert das
  * Laden, erscheint statt eines stummen Nichts eine Zeile mit „Erneut versuchen".
  *
+ * Der Aufklapper „Verwalten" ist davon ausgenommen und immer bedienbar: hinter
+ * ihm liegt der einzige Weg zum Teilen. Gesperrt sind die Aktionen darin, nicht
+ * der Zugang zu ihnen. Zuvor hing der Knopf selbst am Ladezustand – blieb der
+ * hängen, war das Teilen dauerhaft unerreichbar, ohne dass die Oberfläche einen
+ * Hinweis darauf gab (die Kacheln sehen im Ladezustand ja normal aus).
+ *
  * In der Regel ist davon nichts zu sehen: der Startbildschirm bleibt stehen,
  * bis der Anmeldestatus geklärt ist (siehe `SplashScreen`).
  */
@@ -194,7 +200,7 @@ export function ProfileSwitcher() {
             <button
               type="button"
               onClick={handleDelete}
-              disabled={busy}
+              disabled={locked}
               className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
             >
               {t('profiles.deleteYes')}
@@ -205,7 +211,7 @@ export function ProfileSwitcher() {
             <button
               type="button"
               onClick={() => setShareOpen(true)}
-              disabled={busy}
+              disabled={locked}
               className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-surface-2 disabled:opacity-60"
             >
               <Share2 className="h-4 w-4" />
@@ -214,7 +220,7 @@ export function ProfileSwitcher() {
             <button
               type="button"
               onClick={() => setConfirmDelete(true)}
-              disabled={busy}
+              disabled={locked}
               className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
             >
               <Trash2 className="h-4 w-4" />
@@ -235,7 +241,7 @@ export function ProfileSwitcher() {
           <button
             type="button"
             onClick={handleLeave}
-            disabled={busy}
+            disabled={locked}
             className="rounded-lg bg-rose-600 px-3 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
           >
             {t('profiles.leaveYes')}
@@ -245,7 +251,7 @@ export function ProfileSwitcher() {
         <button
           type="button"
           onClick={() => setConfirmLeave(true)}
-          disabled={busy}
+          disabled={locked}
           className="focus-ring inline-flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-medium text-rose-600 transition-colors hover:bg-rose-500/10 disabled:opacity-60"
         >
           <LogOut className="h-4 w-4" />
@@ -259,7 +265,11 @@ export function ProfileSwitcher() {
     // Waehrend des Ladens nur gesperrt, nicht abgeblendet: die Kacheln zeigen
     // echte, zwischengespeicherte Daten – blass gezeichnet lasen sie sich wie
     // ein Defekt, obwohl sie stimmen.
-    <div aria-busy={loading} className={loading ? 'pointer-events-none' : undefined}>
+    //
+    // Gesperrt wird an den Knoepfen selbst (`locked`), nicht am Container: ein
+    // `pointer-events-none` ueber allem nahm auch dem reinen Aufklapper
+    // „Verwalten" die Funktion, obwohl der nichts aendert.
+    <div aria-busy={loading}>
       {/* Kopfzeile mit „Verwalten" – immer sichtbar, sobald es eine aktive
           Wohnung gibt. So ist Teilen/Löschen auch bei nur einer Wohnung
           erreichbar (vorher erst ab zwei). */}
@@ -268,22 +278,23 @@ export function ProfileSwitcher() {
           <p className="text-xs font-semibold uppercase tracking-wide text-muted">
             {t('profiles.sectionTitle')}
           </p>
-          {/* „Verwalten" erst, wenn der Stand bestätigt ist – dahinter liegt
-              das Löschen. */}
-          {!loading && (
-            <button
-              type="button"
-              onClick={() => {
-                setManageOpen((open) => !open)
-                resetConfirms()
-              }}
-              aria-expanded={manageOpen}
-              className="focus-ring inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
-            >
-              <SlidersHorizontal className="h-3.5 w-3.5" />
-              {t('profiles.manage')}
-            </button>
-          )}
+          {/* „Verwalten" ist immer da, auch waehrend des Ladens: dahinter liegt
+              der einzige Weg zum Teilen. Was daran gefaehrlich ist – Loeschen,
+              Verlassen –, sperrt sich weiter unten selbst, bis der Stand
+              bestaetigt ist. Frueher hing der Knopf an `!loading`; blieb das
+              Laden haengen, verschwand der Zugang zum Teilen dauerhaft. */}
+          <button
+            type="button"
+            onClick={() => {
+              setManageOpen((open) => !open)
+              resetConfirms()
+            }}
+            aria-expanded={manageOpen}
+            className="focus-ring inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs font-medium text-muted transition-colors hover:text-foreground"
+          >
+            <SlidersHorizontal className="h-3.5 w-3.5" />
+            {t('profiles.manage')}
+          </button>
         </div>
       )}
 
@@ -377,8 +388,10 @@ export function ProfileSwitcher() {
         </>
       )}
 
-      {/* Aktionen der aktiven Wohnung – hinter „Verwalten", in beiden Fällen. */}
-      {manageOpen && !loading && manageActions}
+      {/* Aktionen der aktiven Wohnung – hinter „Verwalten", in beiden Fällen.
+          Waehrend des Ladens sichtbar, aber abgeblendet: so ist erkennbar, dass
+          es sie gibt und dass sie gleich wieder greifen. */}
+      {manageOpen && manageActions}
 
       {active && active.role === 'owner' && (
         <ShareProfileDialog

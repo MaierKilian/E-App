@@ -16,6 +16,7 @@ import {
   writeProfileState,
 } from '@/features/profiles/profiles'
 import { getEntitlements } from '@/features/billing/entitlements'
+import { withTimeout } from '@/lib/withTimeout'
 
 /**
  * Ob der Nutzer laut Tarif noch eine weitere Wohnung anlegen darf.
@@ -141,7 +142,7 @@ async function activateProfile(pid: string) {
 
   // 1. Profildaten laden und in die Stores einspielen.
   try {
-    const profile = await getProfile(pid)
+    const profile = await limited(getProfile(pid), 'Profil laden')
     if (profile?.state) applyRemote(profile.state)
   } catch (e) {
     console.warn('[cloudSync] Profil laden fehlgeschlagen:', e)
@@ -187,6 +188,28 @@ async function activateProfile(pid: string) {
 const RETRY_DELAYS_MS = [2000, 5000, 15000]
 let retryTimer: ReturnType<typeof setTimeout> | null = null
 let retryAttempt = 0
+
+/**
+ * Geduld für eine einzelne Firestore-Leseanfrage beim Start.
+ *
+ * Großzügig bemessen: über Mobilfunk darf ein Lesevorgang ein paar Sekunden
+ * dauern, ohne dass daraus ein Fehler wird.
+ */
+const READ_TIMEOUT_MS = 10_000
+
+/**
+ * Kurzform für die Lesevorgänge hier – siehe `withTimeout`.
+ *
+ * Ohne Grenze bliebe `loadProfilesFor` für immer vor seinem `setStatus('ready')`
+ * stehen: Der Wohnungs-Wechsler zeigte dann dauerhaft den Ladezustand, die
+ * Kacheln kämen aus dem Cache und sähen völlig normal aus, wären aber gesperrt –
+ * und die Wiederhol-Staffel griffe nie, weil sie an `status === 'error'` hängt.
+ * Ein Zeitlimit macht aus dem stillen Hänger einen sichtbaren Fehler, der sich
+ * von selbst wiederholt.
+ */
+function limited<T>(promise: Promise<T>, label: string): Promise<T> {
+  return withTimeout(promise, READ_TIMEOUT_MS, label)
+}
 
 /** Bricht eine geplante Wiederholung ab (z. B. bei Kontowechsel oder Erfolg). */
 function cancelRetry() {
@@ -264,7 +287,7 @@ async function loadProfilesFor(uid: string) {
   profilesStore.setStatus('loading')
 
   try {
-    let metas = await listProfiles(uid)
+    let metas = await limited(listProfiles(uid), 'Profile laden')
 
     // Erststart: aus Alt-Daten oder den aktuellen lokalen Stores das erste Profil erzeugen.
     if (metas.length === 0) {
