@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next'
-import { PdfKit, ratingColor, type HeroStat } from './pdf/pdfKit'
-import { currencyFmt, fmtCur, fmtDate, reportFileName } from './pdf/format'
+import { PdfKit, ratingColor, type HeroStat, type TocRow, type CostRow } from './pdf/pdfKit'
+import { currencyFmt, fmtCur, fmtCurRange, fmtDate, fmtDateShort, numberFmt, reportFileName } from './pdf/format'
 import type { ReportDocument } from './pdf/deliver'
 import type { ReportSections } from './reportTypes'
 import { fillMeasurements } from './generateMeasurementsPdf'
@@ -43,7 +43,8 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
   const kit = new PdfKit()
   const objectName = args.objectName?.trim() || undefined
 
-  kit.masthead({
+  // --- Deckseite: Titel, die Zahlen, und was im Bericht steht.
+  kit.coverHead({
     title: t('report.pdf.title'),
     subtitle: objectName,
     meta: sectionLine(t, sections),
@@ -52,20 +53,32 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
 
   const summarized = writeSummary(kit, t, language, sections, measurements, monitoring)
 
-  // Nur bei mehreren Abschnitten braucht es Überschriften – bei einem einzelnen
-  // Abschnitt wäre der Titel eine Wiederholung der Kopfzeile. Den Kopfbalken
-  // zeichnen die Bausteine nie selbst, er steht bereits oben.
+  // Wohin die Jahreskosten gehen. Die Summe steht als Kennzahl darüber, ihre
+  // Aufteilung stand bisher nirgends auf einen Blick – man musste sie sich aus
+  // den Träger-Kapiteln zusammensuchen.
+  if (sections.monitoring) {
+    kit.gap(26)
+    kit.costBars(t('report.pdf.cover.costs'), costRows(t, language, monitoring))
+  }
+
+  kit.gap(30)
   const total = countSections(sections)
-  const multi = total > 1
+  const tocRows = buildToc(t, language, sections, measurements, monitoring)
+  const tocSlots = kit.coverToc(t('report.pdf.cover.contents'), tocRows)
+  kit.coverFoot(t('report.pdf.cover.basis'), basisLines(t, language, sections, measurements, monitoring))
+
   // Nummerierte Abschnitte machen die Gliederung im Kopf schon vor dem Lesen
-  // sichtbar – und verraten, wie viel noch kommt.
+  // sichtbar – und verraten, wie viel noch kommt. Jeder Abschnitt beginnt jetzt
+  // auf einer eigenen Seite, auch wenn es nur einer ist: Die Deckseite ist eine
+  // Deckseite, kein Anfang, dem der erste Befund hinterherrutscht.
   let index = 0
-  /** Kapitel-Überschrift auf einer frischen Seite. */
+  const startPages: number[] = []
+  /** Kapitel-Überschrift auf einer frischen Seite; merkt sich die Seitenzahl. */
   const chapter = (titleKey: string) => {
-    if (!multi) return
     kit.newPage()
+    startPages.push(kit.pageNumber)
     kit.sectionHeader(t(titleKey), {
-      eyebrow: t('report.pdf.sectionCount', { n: ++index, total }),
+      eyebrow: total > 1 ? t('report.pdf.sectionCount', { n: ++index, total }) : undefined,
       keepWith: 70,
     })
   }
@@ -83,6 +96,12 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
     chapter('report.pdf.section.monitoring')
     fillMonitoring(kit, { t, language, data: monitoring, objectName }, false)
   }
+
+  // Erst jetzt stehen die Seitenzahlen fest – sie wandern zurück auf Seite 1.
+  kit.fillTocPages(
+    tocSlots,
+    startPages.map((n) => t('report.pdf.cover.pageNo', { n })),
+  )
 
   kit.finalizeFooters(
     (n, total) => t('report.pdf.page', { n, total }),
@@ -103,6 +122,127 @@ function sectionLine(t: TFunction, s: ReportSections): string {
   if (s.measurements) parts.push(t('report.pdf.section.measurements'))
   if (s.monitoring) parts.push(t('report.pdf.section.monitoring'))
   return parts.join(' · ')
+}
+
+/**
+ * Die Jahreskosten je Energieträger für den Balkenvergleich der Deckseite.
+ * Träger ohne hinterlegten Preis liefern keinen Betrag und bleiben draußen –
+ * ein Balken der Länge null behauptet, dort falle nichts an.
+ */
+function costRows(
+  t: TFunction,
+  language: string,
+  monitoring: MonitoringReportData,
+): CostRow[] {
+  const cur = currencyFmt(language)
+  const num = numberFmt(language)
+  const withCost = monitoring.entries.filter(
+    (e): e is typeof e & { costYear: number } =>
+      typeof e.costYear === 'number' && Number.isFinite(e.costYear) && e.costYear > 0,
+  )
+  const sum = withCost.reduce((a, e) => a + e.costYear, 0)
+  if (sum <= 0) return []
+
+  return withCost.map((e) => ({
+    label: t(`monitoring.energyTypes.${e.type}`),
+    value: e.costYear,
+    valueLabel: fmtCur(e.costYear, cur),
+    shareLabel: `${num.format(Math.round((e.costYear / sum) * 100))} %`,
+  }))
+}
+
+/**
+ * Die Inhaltsübersicht der Deckseite: je Abschnitt eine Zeile mit dem, was ihn
+ * ausmacht. Sie beantwortet die Frage, die vor dem Umblättern kommt – „was
+ * erwartet mich, und wo steht es?" – und füllt die Deckseite mit Orientierung
+ * statt mit Weißraum.
+ */
+function buildToc(
+  t: TFunction,
+  language: string,
+  sections: ReportSections,
+  measurements: MeasurementsReportData,
+  monitoring: MonitoringReportData,
+): TocRow[] {
+  const rows: TocRow[] = []
+
+  if (sections.measurements) {
+    const parts = [
+      t('report.pdf.cover.metaChecks', {
+        done: measurements.doneCount,
+        total: measurements.totalCount,
+      }),
+    ]
+    const action = measurements.entries.filter(
+      (e) => e.rating === 'elevated' || e.rating === 'high',
+    ).length
+    // Nur nennen, was etwas verlangt. „0 Befunde mit Handlungsbedarf" ist keine
+    // Information, sondern eine Verneinung – die steht schon in der Kennzahl.
+    if (action > 0) parts.push(t('report.pdf.cover.metaAction', { count: action }))
+    rows.push({ n: rows.length + 1, title: t('report.pdf.section.measurements'), meta: parts.join(' · ') })
+  }
+
+  if (sections.monitoring) {
+    const parts = [t('report.pdf.cover.metaCarriers', { count: monitoring.entries.length })]
+    if (monitoring.readingCount > 0) {
+      parts.push(t('report.pdf.cover.metaReadings', { count: monitoring.readingCount }))
+    }
+    const period = periodLabel(language, monitoring.from, monitoring.to)
+    if (period) parts.push(period)
+    rows.push({ n: rows.length + 1, title: t('report.pdf.section.monitoring'), meta: parts.join(' · ') })
+  }
+
+  return rows
+}
+
+/** Zeitraum als „01.09.2025 – 25.08.2026"; leer, wenn kein Rand bekannt ist. */
+function periodLabel(language: string, from?: string, to?: string): string | undefined {
+  if (!from || !to) return undefined
+  return `${fmtDateShort(from, language)} – ${fmtDateShort(to, language)}`
+}
+
+/**
+ * Der Fußblock der Deckseite: worauf die Zahlen beruhen.
+ *
+ * Die zweite Zeile ist die wichtigere. Ein Bericht, den jemand einem Dritten
+ * vorlegt, muss selbst sagen, welche seiner Zahlen gemessen und welche
+ * hochgerechnet sind – sonst tut es der Leser, und zwar im Zweifel falsch.
+ */
+function basisLines(
+  t: TFunction,
+  language: string,
+  sections: ReportSections,
+  measurements: MeasurementsReportData,
+  monitoring: MonitoringReportData,
+): string[] {
+  const parts: string[] = []
+
+  if (sections.measurements) {
+    const dates = measurements.entries
+      .map((e) => e.measuredAt)
+      .filter((d): d is string => Boolean(d))
+      .sort()
+    if (dates.length > 0) {
+      parts.push(
+        t('report.pdf.cover.basisMeasurements', {
+          period: periodLabel(language, dates[0], dates[dates.length - 1]) ?? '',
+        }),
+      )
+    }
+  }
+
+  if (sections.monitoring && monitoring.readingCount > 0) {
+    parts.push(
+      t('report.pdf.cover.basisReadings', {
+        period: periodLabel(language, monitoring.from, monitoring.to) ?? '',
+      }),
+    )
+  }
+
+  const lines: string[] = []
+  if (parts.length > 0) lines.push(parts.join(' · '))
+  lines.push(t('report.pdf.cover.basisNote'))
+  return lines
 }
 
 /**
@@ -136,9 +276,14 @@ function writeSummary(
     })
   }
 
+  // Als Spanne, wie in den Karten und der Tabelle des Messungs-Kapitels. Eine
+  // punktgenaue Kopfzahl auf der Deckseite würde dem widersprechen, was zwei
+  // Seiten später steht.
   if (sections.measurements && measurements.savingsTotal > 0) {
     stats.push({
-      value: fmtCur(measurements.savingsTotal, cur),
+      value: t('report.pdf.measurements.savingsApprox', {
+        value: fmtCurRange(measurements.savingsRange, cur, numberFmt(language)),
+      }),
       label: t('report.pdf.summary.savings'),
       sub: t('report.pdf.summary.savingsSub'),
       color: ratingColor('good'),
@@ -162,7 +307,7 @@ function writeSummary(
   }
 
   if (stats.length === 0) return false
-  kit.summaryPanel(t('report.pdf.summary.title'), stats)
+  kit.summaryPanel(t('report.pdf.summary.title'), stats, undefined, true)
   kit.gap(4)
   return coversMeasurements
 }

@@ -204,6 +204,22 @@
         "savingsSub": "aus den Messergebnissen",
         "actionNeeded": "Befunde mit Handlungsbedarf",
         "actionSub": "{{done}} von {{total}} Messungen erledigt"
+      },
+      "cover": {
+        "contents": "Was in diesem Bericht steht",
+        "pageNo": "Seite {{n}}",
+        "basis": "Grundlage",
+        "costs": "Wohin die Energiekosten gehen",
+        "metaChecks": "{{done}} von {{total}} Messungen erledigt",
+        "metaAction_one": "{{count}} Befund mit Handlungsbedarf",
+        "metaAction_other": "{{count}} Befunde mit Handlungsbedarf",
+        "metaCarriers_one": "{{count}} Energieträger",
+        "metaCarriers_other": "{{count}} Energieträger",
+        "metaReadings_one": "{{count}} Ablesung",
+        "metaReadings_other": "{{count}} Ablesungen",
+        "basisMeasurements": "Messungen {{period}}",
+        "basisReadings": "Ablesungen {{period}}",
+        "basisNote": "Euro-Beträge sind Hochrechnungen und stehen als Spanne. Gemessene Größen – Temperaturen, Watt, Liter, Zählerstände – stehen ohne Spanne."
       }
     },
     "overview": {

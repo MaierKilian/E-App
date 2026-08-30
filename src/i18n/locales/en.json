@@ -204,6 +204,22 @@
         "savingsSub": "based on the measurements",
         "actionNeeded": "Findings needing action",
         "actionSub": "{{done}} of {{total}} measurements done"
+      },
+      "cover": {
+        "contents": "What's in this report",
+        "pageNo": "Page {{n}}",
+        "basis": "Basis",
+        "costs": "Where the energy costs go",
+        "metaChecks": "{{done}} of {{total}} measurements done",
+        "metaAction_one": "{{count}} finding needs action",
+        "metaAction_other": "{{count}} findings need action",
+        "metaCarriers_one": "{{count}} energy source",
+        "metaCarriers_other": "{{count}} energy sources",
+        "metaReadings_one": "{{count}} reading",
+        "metaReadings_other": "{{count}} readings",
+        "basisMeasurements": "Measured {{period}}",
+        "basisReadings": "Readings {{period}}",
+        "basisNote": "Euro amounts are projections and shown as a range. Measured quantities - temperatures, watts, litres, meter readings - are shown without one."
       }
     },
     "overview": {

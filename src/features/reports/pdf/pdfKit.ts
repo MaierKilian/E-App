@@ -203,6 +203,35 @@ export interface HeroStat {
   color?: RGB
 }
 
+/** Eine Zeile des Kostenvergleichs auf der Deckseite. */
+export interface CostRow {
+  label: string
+  /** Betrag in € – bestimmt die Balkenlänge. */
+  value: number
+  /** Fertig formatierter Betrag, z. B. „1.098 €". */
+  valueLabel: string
+  /** Anteil an der Summe, fertig formatiert, z. B. „56 %". */
+  shareLabel: string
+}
+
+/** Eine Zeile der Inhaltsübersicht auf der Deckseite. */
+export interface TocRow {
+  /** Laufende Nummer, wie sie auch über dem Kapitel steht. */
+  n: number
+  title: string
+  /** Was der Abschnitt enthält – eine Zeile, sonst wird die Übersicht zur Liste. */
+  meta?: string
+}
+
+/**
+ * Platzhalter für eine Seitenzahl, die beim Zeichnen der Deckseite noch nicht
+ * feststeht. {@link PdfKit.coverToc} gibt sie zurück, {@link
+ * PdfKit.fillTocPages} trägt sie nach.
+ */
+export interface TocSlot {
+  y: number
+}
+
 /** Eine offene Messung in der Checkliste. */
 export interface ChecklistItem {
   title: string
@@ -237,6 +266,11 @@ export class PdfKit {
   /** Aktuelle Y-Position des Cursors. */
   get cursorY(): number {
     return this.y
+  }
+
+  /** Nummer der Seite, auf die gerade gezeichnet wird (1-basiert). */
+  get pageNumber(): number {
+    return this.doc.getCurrentPageInfo().pageNumber
   }
 
   /** Rückt den Cursor um `dy` pt vor. */
@@ -372,31 +406,235 @@ export class PdfKit {
     this.y = base + 14
   }
 
-  /** Zeichnet das E-App-Logo: drei versetzte, schräge Balken (Parallelogramme). */
+  /**
+   * Zeichnet das E-App-Logo: drei versetzte, schräge Balken im Treppen-Muster.
+   *
+   * Die Koordinaten sind **die des Originals** aus `public/favicon.svg`, nur auf
+   * die Höhe der Marke normiert. Vorher standen hier aus dem Logo abgeschätzte
+   * Proportionen ("bx/by/bw/bh"), und das Ergebnis war erkennbar ein anderes
+   * Zeichen: zu steil, zu eng, die Treppe kaum zu sehen. Bei einer Wortmarke,
+   * die auf jeder Seite des Berichts steht, ist das der falsche Ort zum Schätzen.
+   *
+   * Als Vektor gezeichnet, nicht als Bild – so bleibt die Marke bei jeder Größe
+   * scharf und lässt sich einfärben (`color`), auch im Footer als graues Signet.
+   */
   private drawLogo(x: number, y: number, size: number, color: RGB = PALETTE.white): void {
-    // Balken als Parallelogramm-Form (Anteile der Balkenbox), aus dem Original abgeleitet.
-    const SHAPE: Array<[number, number]> = [
-      [0, 0.7],
-      [0.87, 0],
-      [1, 0.08],
-      [0.13, 0.78],
+    // Die drei Parallelogramme aus favicon.svg (viewBox 0 0 100 100).
+    const BARS: Array<Array<[number, number]>> = [
+      [[26.44, 39.36], [62.81, 18.08], [68.24, 20.51], [31.87, 41.79]],
+      [[14.28, 63.38], [49.32, 43.16], [54.56, 45.47], [19.52, 65.69]],
+      [[43.16, 69.53], [79.53, 47.72], [84.96, 50.21], [48.59, 72.02]],
     ]
-    // Position und Größe je Balken in Anteilen der Logo-Box (Treppen-Muster).
-    const bars = [
-      { bx: 0.19, by: 0.08, bw: 0.55, bh: 0.4 },
-      { bx: 0.03, by: 0.41, bw: 0.53, bh: 0.38 },
-      { bx: 0.41, by: 0.47, bw: 0.55, bh: 0.41 },
-    ]
+    // Gemeinsame Bounding-Box der drei Balken – daran wird normiert, damit
+    // `size` die tatsächliche Höhe der Marke meint und nicht die des SVG-Rahmens.
+    const MIN_X = 14.28
+    const MIN_Y = 18.08
+    const BOX_H = 72.02 - MIN_Y
+    const k = size / BOX_H
+
     this.setFill(color)
-    for (const b of bars) {
-      const p = SHAPE.map(
-        ([fx, fy]) =>
-          [x + (b.bx + fx * b.bw) * size, y + (b.by + fy * b.bh) * size] as [number, number],
+    for (const bar of BARS) {
+      const p = bar.map(
+        ([px, py]) => [x + (px - MIN_X) * k, y + (py - MIN_Y) * k] as [number, number],
       )
-      // Parallelogramm aus zwei Dreiecken füllen.
+      // Parallelogramm aus zwei Dreiecken füllen (jsPDF kennt kein Polygon).
       this.doc.triangle(p[0][0], p[0][1], p[1][0], p[1][1], p[2][0], p[2][1], 'F')
       this.doc.triangle(p[0][0], p[0][1], p[2][0], p[2][1], p[3][0], p[3][1], 'F')
     }
+  }
+
+  /**
+   * Titelblock der Deckseite: Marke, Titel, Objekt und Umfang.
+   *
+   * Anders als {@link masthead} ist das hier eine **Deckseite** – sie trägt den
+   * Titel deutlich größer und lässt darunter Platz für die Kennzahlen und die
+   * Inhaltsübersicht. Bis dahin war Seite 1 ein Kopf mit einem Kennzahlenband
+   * und zwei Dritteln Weißraum: kein Deckblatt, sondern eine Seite, der der
+   * Inhalt ausgegangen ist.
+   */
+  coverHead({ title, subtitle, meta, date }: MastheadOptions): void {
+    const top = MARGIN_TOP
+    const brandBase = top + 9
+    const markH = 13
+
+    this.drawLogo(MARGIN_X, brandBase - 10, markH, PALETTE.strong)
+    this.eyebrow('E-App', MARGIN_X + PdfKit.logoWidth(markH) + 7, brandBase, PALETTE.strong, 8.5)
+    if (date) {
+      this.put(date, PAGE_W - MARGIN_X, brandBase, { size: 8, color: PALETTE.muted, align: 'right' })
+    }
+
+    const ruleY = top + 19
+    this.setDraw(PALETTE.hair)
+    this.doc.setLineWidth(0.8)
+    this.doc.line(MARGIN_X, ruleY, PAGE_W - MARGIN_X, ruleY)
+
+    // Der Titel steht tief genug, dass die Marke oben für sich steht – und hoch
+    // genug, dass darunter Kennzahlen und Inhalt ohne Gedränge Platz haben.
+    let base = ruleY + 62
+    if (meta) {
+      // 32 pt über der Grundlinie: Ein 33-pt-Titel ragt rund 24 pt nach oben,
+      // bei 20 pt Abstand lief die Versalzeile mitten durch die Versalien.
+      this.eyebrow(meta, MARGIN_X, base - 32, PALETTE.muted)
+    }
+    this.put(title, MARGIN_X, base, { size: 33, bold: true, color: PALETTE.ink })
+    if (subtitle) {
+      base += 21
+      this.put(subtitle, MARGIN_X, base, { size: 13, color: PALETTE.body, maxWidth: CONTENT_W })
+    }
+
+    this.y = base + 44
+  }
+
+  /**
+   * „Wohin die Energiekosten gehen": je Energieträger ein Balken.
+   *
+   * Bewusst **ein Balken pro Träger** und kein gestapelter Balken. Der Bericht
+   * ist monochrom; ein Stapel müsste die Träger über Grautöne auseinanderhalten,
+   * und schon bei drei Segmenten muss der Leser dann Farbe zu Legende zuordnen –
+   * bei vier wird es Raten. Hier steht jeder Name neben seinem eigenen Balken,
+   * die Länge trägt allein den Vergleich, und es braucht weder Legende noch
+   * Farbkodierung.
+   *
+   * Absteigend sortiert: Die Frage lautet „wo geht das meiste hin?", und die
+   * Antwort soll oben stehen, nicht gesucht werden.
+   */
+  costBars(title: string, rows: CostRow[]): void {
+    const usable = rows.filter((r) => Number.isFinite(r.value) && r.value > 0)
+    // Ein einzelner Balken vergleicht nichts – dann sagt die Kennzahl oben alles.
+    if (usable.length < 2) return
+
+    const sorted = [...usable].sort((a, b) => b.value - a.value)
+    const max = sorted[0].value
+    const rowH = 27
+    const barH = 11
+    const LABEL_W = 92
+    const VALUE_W = 62
+    const SHARE_W = 34
+    const barX = MARGIN_X + LABEL_W
+    const barMaxW = CONTENT_W - LABEL_W - VALUE_W - SHARE_W - 14
+
+    this.ensure(20 + sorted.length * rowH + 6)
+    this.eyebrow(title, MARGIN_X, this.y, PALETTE.muted)
+    let y = this.y + 18
+
+    for (const row of sorted) {
+      const base = y + barH
+      this.put(row.label, MARGIN_X, base - 1, { size: 9, color: PALETTE.body, maxWidth: LABEL_W - 8 })
+
+      const w = Math.max(2, (row.value / max) * barMaxW)
+      this.setFill(PALETTE.strong)
+      // Abgerundetes Balkenende, am Nullpunkt bündig: Der Balken wächst aus
+      // einer gemeinsamen Grundlinie, deshalb ist links keine Rundung.
+      this.doc.roundedRect(barX, y, w, barH, 3, 3, 'F')
+      this.doc.rect(barX, y, Math.min(w, 4), barH, 'F')
+
+      this.put(row.valueLabel, barX + barMaxW + VALUE_W, base - 1, {
+        size: 9,
+        bold: true,
+        color: PALETTE.ink,
+        align: 'right',
+      })
+      this.put(row.shareLabel, PAGE_W - MARGIN_X, base - 1, {
+        size: 8.5,
+        color: PALETTE.muted,
+        align: 'right',
+      })
+      y += rowH
+    }
+
+    this.y = y + 2
+  }
+
+  /**
+   * Inhaltsübersicht der Deckseite: je Abschnitt Nummer, Titel, eine Zeile
+   * darüber, was drinsteht – und rechts die Seitenzahl.
+   *
+   * Die Seitenzahl steht beim Zeichnen noch nicht fest (die Kapitel entstehen
+   * erst danach), deshalb liefert die Methode je Zeile einen {@link TocSlot}
+   * zurück; {@link fillTocPages} schreibt die Zahlen am Ende nach.
+   */
+  coverToc(title: string, rows: TocRow[]): TocSlot[] {
+    if (rows.length === 0) return []
+    const rowH = 42
+
+    this.eyebrow(title, MARGIN_X, this.y, PALETTE.muted)
+    let y = this.y + 14
+
+    const slots: TocSlot[] = []
+    rows.forEach((row) => {
+      this.setDraw(PALETTE.hair)
+      this.doc.setLineWidth(0.6)
+      this.doc.line(MARGIN_X, y, PAGE_W - MARGIN_X, y)
+
+      const base = y + 20
+      // Die Nummer in Grau: sie ordnet, sie ist nicht die Aussage.
+      this.put(String(row.n).padStart(2, '0'), MARGIN_X, base, {
+        size: 11,
+        bold: true,
+        color: PALETTE.faint,
+      })
+      this.put(row.title, MARGIN_X + 26, base, { size: 12, bold: true, color: PALETTE.ink })
+      if (row.meta) {
+        this.put(row.meta, MARGIN_X + 26, base + 12, {
+          size: 8.5,
+          color: PALETTE.muted,
+          maxWidth: CONTENT_W - 26 - 60,
+        })
+      }
+      slots.push({ y: base })
+      y += rowH
+    })
+
+    this.setDraw(PALETTE.hair)
+    this.doc.setLineWidth(0.6)
+    this.doc.line(MARGIN_X, y, PAGE_W - MARGIN_X, y)
+    this.y = y + 4
+    return slots
+  }
+
+  /**
+   * Trägt die Seitenzahlen in eine zuvor gezeichnete Inhaltsübersicht nach.
+   * Läuft immer auf Seite 1 und stellt die zuletzt aktive Seite wieder her,
+   * damit ein Aufruf mitten im Dokument nichts durcheinanderbringt.
+   */
+  fillTocPages(slots: TocSlot[], labels: string[]): void {
+    if (slots.length === 0) return
+    const current = this.doc.getCurrentPageInfo().pageNumber
+    this.doc.setPage(1)
+    slots.forEach((slot, i) => {
+      const label = labels[i]
+      if (!label) return
+      this.put(label, PAGE_W - MARGIN_X, slot.y, { size: 9, color: PALETTE.muted, align: 'right' })
+    })
+    this.doc.setPage(current)
+  }
+
+  /**
+   * Fußblock der Deckseite: eine Haarlinie und darunter der Hinweis, worauf die
+   * Zahlen beruhen. Er steht am unteren Rand statt im Fluss, weil er die Seite
+   * abschließt – und weil eine Deckseite unten nicht ausfransen soll.
+   */
+  coverFoot(label: string, lines: string[]): void {
+    const bottom = FOOTER_BASELINE - 34
+    // Der Text beginnt hinter dem Label, nicht am Rand – sonst bricht er zu spät
+    // und läuft rechts aus der Seite.
+    const TEXT_X = 62
+    const wrapped = lines.flatMap((l) => this.wrap(l, CONTENT_W - TEXT_X, { size: 8.5 }))
+    const top = bottom - wrapped.length * 12 - 14
+
+    this.setDraw(PALETTE.hair)
+    this.doc.setLineWidth(0.6)
+    this.doc.line(MARGIN_X, top, PAGE_W - MARGIN_X, top)
+    this.eyebrow(label, MARGIN_X, top + 14, PALETTE.faint, 7)
+
+    wrapped.forEach((line, i) => {
+      this.put(line, MARGIN_X + TEXT_X, top + 14 + i * 12, { size: 8.5, color: PALETTE.muted })
+    })
+  }
+
+  /** Breite der Logo-Marke bei gegebener Höhe (Seitenverhältnis des Originals). */
+  static logoWidth(size: number): number {
+    return size * ((84.96 - 14.28) / (72.02 - 18.08))
   }
 
   /**
@@ -408,16 +646,19 @@ export class PdfKit {
    * Uninteressantesten, das er zu bieten hat (Baujahr, Wohnfläche), und die
    * Zahlen, um die es geht, muss man sich aus drei Abschnitten zusammensuchen.
    */
-  summaryPanel(title: string, stats: HeroStat[], note?: string): void {
+  summaryPanel(title: string, stats: HeroStat[], note?: string, large = false): void {
     const list = stats.filter(Boolean)
     if (list.length === 0) return
 
-    const pad = 16
+    // Auf der Deckseite trägt der Block die Zahlen, wegen derer der Bericht
+    // geöffnet wird – dort darf er atmen. In den Kapiteln ist er eine Kopfzeile
+    // unter vielen und bleibt kompakt.
+    const pad = large ? 20 : 16
     const cols = Math.min(list.length, 3)
     const rows = Math.ceil(list.length / cols)
     const colW = (CONTENT_W - pad * 2) / cols
     const hasSub = list.some((s) => s.sub)
-    const rowH = hasSub ? 54 : 42
+    const rowH = large ? (hasSub ? 66 : 52) : hasSub ? 54 : 42
     const noteLines = note ? this.wrap(note, CONTENT_W - pad * 2, { size: 8.5 }) : []
 
     let panelH = pad + 14 + rows * rowH + pad - 6
@@ -445,12 +686,21 @@ export class PdfKit {
       }
 
       const innerW = colW - 16
-      let size = 19
+      let size = large ? 23 : 19
       while (size > 11 && this.measure(stat.value, { size, bold: true }) > innerW) size -= 0.5
-      this.put(stat.value, x, base + 22, { size, bold: true, color: stat.color ?? PALETTE.ink })
-      this.put(stat.label, x, base + 34, { size: 8, color: PALETTE.muted, maxWidth: innerW })
+      const vBase = base + (large ? 26 : 22)
+      this.put(stat.value, x, vBase, { size, bold: true, color: stat.color ?? PALETTE.ink })
+      this.put(stat.label, x, vBase + (large ? 15 : 12), {
+        size: large ? 8.5 : 8,
+        color: PALETTE.muted,
+        maxWidth: innerW,
+      })
       if (stat.sub) {
-        this.put(stat.sub, x, base + 45, { size: 7.5, color: PALETTE.faint, maxWidth: innerW })
+        this.put(stat.sub, x, vBase + (large ? 27 : 23), {
+          size: large ? 8 : 7.5,
+          color: PALETTE.faint,
+          maxWidth: innerW,
+        })
       }
     })
 
