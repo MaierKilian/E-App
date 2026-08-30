@@ -379,17 +379,17 @@ export function buildTips(
   const fridgeRs = resultsForId(results, 'fridge')
   const fridgeCold = fridgeRs.filter((r) => tempOf(r) < FRIDGE_COLD_C)
   if (fridgeCold.length) {
-    // Euro nur, wenn die Messung ihre eigene Ersparnis nicht als Schaetzung
-    // markiert hat – sonst steckt darin der pauschale Jahresverbrauch von
-    // 150 kWh statt eines gemessenen Werts.
-    const measured = fridgeCold.every((r) => isMeasuredSaving(r.details))
-    const saving = Math.round(fridgeCold.reduce((s, r) => s + (r.details?.yearlySaving ?? 0), 0))
     tips.push({
       id: 'fridge',
       source: sourceFor(results, 'fridge'),
       icon: Snowflake,
       category: 'electricity',
-      savingEur: measured && saving > 0 ? saving : undefined,
+      // Kein Euro-Betrag. Der Kühlschrank-Check rechnet keinen: Er misst die
+      // Temperatur und leitet daraus einen Prozentwert ab (`savingPct`). Der
+      // frühere Euro-Betrag steckte einen pauschalen Jahresverbrauch von
+      // 150 kWh in die Rechnung – eine Konstante, die nichts über dieses Gerät
+      // aussagt. Hier stand bis zuletzt Code, der `yearlySaving` aus den
+      // Details addierte; erreichbar war er nur noch über Altergebnisse.
       effortMinutes: 2,
       costEur: 0,
       params: { temp: Math.round(tempOf(fridgeCold[0])) },

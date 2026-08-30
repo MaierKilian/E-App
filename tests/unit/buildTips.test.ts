@@ -148,12 +148,20 @@ describe('buildTips – Reihenfolge', () => {
     expect(ids.indexOf('hot_water_wait')).toBeLessThan(ids.indexOf('freezer'))
   })
 
-  it('sortiert innerhalb der Sofortmaßnahmen nach Ersparnis', () => {
+  it('sortiert bei gleichem Aufwand nach Ersparnis', () => {
+    // Standby (42 €) und Abtauen (40 €) sind beide keine Sofortmaßnahmen –
+    // Standby kostet 15 €, Abtauen dauert eine Stunde. Innerhalb dieser Gruppe
+    // entscheidet der Betrag.
+    //
+    // Vorher stand hier Kühlschrank gegen Warmwasser-Wartezeit. Beide führen
+    // heute gar keinen Euro-Betrag mehr (der Kühlschrank rechnet keinen, die
+    // Wartezeit markiert ihren als geschätzt), womit der Test die
+    // €-Sortierung nicht mehr prüfte, sondern nur noch Kosten und Aufwand.
     const ids = buildTips(PROFILE, {
-      hot_water_wait: RESULTS.hot_water_wait,
-      fridge: result({ id: 'fridge', details: { temperature: 3, yearlySaving: 40 } }),
+      standby: result({ id: 'standby', details: { avoidableCost: 42, dev0_tv: 12 } }),
+      freezer: result({ id: 'freezer', details: { iced: 1, avoidableCost: 40 } }),
     }).map((t) => t.id)
-    expect(ids).toEqual(['fridge', 'hot_water_wait'])
+    expect(ids.indexOf('standby')).toBeLessThan(ids.indexOf('freezer'))
   })
 
   it('nimmt Wartezeit und Menge des Warmwasser-Tipps aus derselben Entnahmestelle', () => {
@@ -236,17 +244,19 @@ describe('buildTips – Euro nur, wo die Rechnung ihn hergibt', () => {
     expect(warm?.quantity?.params.percent).toBe(12)
   })
 
-  it('zeigt den Kühlschrank-Betrag nur bei einer echten Strommessung', () => {
-    const estimated = buildTips(PROFILE, {
-      fridge: result({ id: 'fridge', details: { temperature: 3, yearlySaving: 40, savingEstimated: 1 } }),
-    })
-    expect(estimated.find((t) => t.id === 'fridge')?.savingEur).toBeUndefined()
-
-    const measured = buildTips(PROFILE, {
+  it('nennt beim Kühlschrank keinen Euro-Betrag – auch nicht aus einem Altergebnis', () => {
+    // Der Check rechnet keinen Euro-Betrag (nur `savingPct`). Ein Ergebnis aus
+    // einer früheren Version trägt aber noch `yearlySaving`, und Ergebnisse
+    // werden nie migriert. Ohne den Katalog-Riegel stand der Betrag wieder im
+    // Tipp – auch dann, wenn er als „gemessen" markiert war.
+    const tips = buildTips(PROFILE, {
       fridge: result({ id: 'fridge', details: { temperature: 3, yearlySaving: 40, savingEstimated: 0 } }),
     })
-    expect(measured.find((t) => t.id === 'fridge')?.savingEur).toBe(40)
+    const fridge = tips.find((t) => t.id === 'fridge')
+    expect(fridge).toBeDefined()
+    expect(fridge?.savingEur).toBeUndefined()
   })
+
 
   it('behält den Euro-Betrag bei gemessener Dauerleistung', () => {
     // Standby und Beleuchtung rechnen Watt mal Zeit mal Preis – ohne

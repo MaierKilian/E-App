@@ -11,6 +11,7 @@ import {
   isMeasuredSaving,
   savingRange,
 } from '@/features/measurements/savingsDisplay'
+import { resultSavingsEur } from '@/features/measurements/impact'
 import { hasWordUnit } from '@/features/measurements/resultValue'
 import type { RoomEntry } from '@/types'
 
@@ -118,23 +119,21 @@ export interface MeasurementsReportData {
 }
 
 /**
- * Liest das Sparpotenzial aus den Result-Details (mehrere Konventionen).
+ * Liest das Sparpotenzial eines Ergebnisses für den Bericht.
  *
- * Beträge, deren größte Unsicherheit in einer Modellannahme steckt, fallen
- * hier heraus (`isMeasuredSaving`) – dieselbe Regel, nach der Tipps und
- * Impact schon arbeiten. Der Bericht ist das Dokument, das jemand einem
- * Dritten vorlegt; eine Zahl, die in der App als „geschätzt" markiert ist,
- * darf dort nicht ohne diesen Vorbehalt auftauchen. Statt ihrer steht dann
+ * Der Rohwert kommt aus {@link resultSavingsEur} – derselben Funktion, aus der
+ * auch Wirkungs-Summe und Empfehlungen ihre Beträge holen. Dort sitzt der
+ * Katalog-Riegel gegen Beträge aus Altergebnissen; hier kommt nur die zweite
+ * Regel dazu: Beträge, deren größte Unsicherheit in einer Modellannahme steckt,
+ * fallen heraus (`isMeasuredSaving`). Der Bericht ist das Dokument, das jemand
+ * einem Dritten vorlegt; eine Zahl, die in der App als „geschätzt" markiert
+ * ist, darf dort nicht ohne diesen Vorbehalt auftauchen. Statt ihrer steht dann
  * die gemessene Größe (°C, L, W), die niemand nachrechnen muss.
  */
-function readSaving(details: MeasurementResult['details']): number | undefined {
-  if (!details) return undefined
-  if (!isMeasuredSaving(details)) return undefined
-  const candidate = details.yearlySaving ?? details.avoidableCost
-  if (typeof candidate === 'number' && Number.isFinite(candidate) && candidate > 0) {
-    return candidate
-  }
-  return undefined
+function readSaving(result: MeasurementResult): number | undefined {
+  if (!isMeasuredSaving(result.details)) return undefined
+  const value = resultSavingsEur(result)
+  return value > 0 ? value : undefined
 }
 
 /**
@@ -150,7 +149,7 @@ function sumSavingsForMeasurement(
   const prefix = `${id}@`
   for (const [key, value] of Object.entries(results)) {
     if (!value) continue
-    if (key === id || key.startsWith(prefix)) total += readSaving(value.details) ?? 0
+    if (key === id || key.startsWith(prefix)) total += readSaving(value) ?? 0
   }
   return total
 }
@@ -186,19 +185,13 @@ export function buildMeasurementsReportData({
     // Repräsentatives Ergebnis (direkt oder erstes Raum-Ergebnis bei Pro-Raum-Messungen).
     const r = anyResultFor(results, meta.id)
     if (r && Number.isFinite(r.primaryValue)) {
-      // Sparpotenzial über alle Räume summieren (relevant bei Pro-Raum mit Sparwert).
-      //
-      // Maßgeblich ist `meta.yieldsSaving`, nicht der Inhalt der Details: Ein
-      // Check, der seine Euro-Rechnung abgeschafft hat (LED-Check), darf sie
-      // nicht über ein altes, nie migriertes Ergebnis zurückbekommen. Sonst
-      // stünde auf einer Karte „0 Räume · Sehr gut · Sparpotenzial 45 €".
-      //
-      // Danach gilt dieselbe Anzeigeschwelle wie in der App: Beträge unterhalb
-      // von `MIN_DISPLAY_EUR` liegen in der Modellunsicherheit und erscheinen
-      // weder als Einzelwert noch in der Summe.
-      const saving = meta.yieldsSaving
-        ? displaySavingEur(sumSavingsForMeasurement(results, meta.id))
-        : undefined
+      // Sparpotenzial über alle Räume summieren (relevant bei Pro-Raum mit
+      // Sparwert). Ob die Messung überhaupt einen Euro-Betrag führt, entscheidet
+      // `resultSavingsEur` anhand des Katalogs – hier gilt danach nur noch
+      // dieselbe Anzeigeschwelle wie in der App: Beträge unterhalb von
+      // `MIN_DISPLAY_EUR` liegen in der Modellunsicherheit und erscheinen weder
+      // als Einzelwert noch in der Summe.
+      const saving = displaySavingEur(sumSavingsForMeasurement(results, meta.id))
       if (saving) savingsTotal += saving
       const roomResults = meta.perRoom ? collectRoomResults(results, meta.id, roomByKey) : []
       entries.push({

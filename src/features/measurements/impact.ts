@@ -1,4 +1,5 @@
 import type { MeasurementResult } from './types'
+import { getMeasurementMeta } from './catalog'
 import { displaySavingEur, isMeasuredSaving } from './savingsDisplay'
 
 /**
@@ -10,13 +11,22 @@ export const CO2_PER_KWH = 0.38
 /**
  * Identifiziertes jährliches Einsparpotenzial einer Messung in Euro – roh.
  * Liest die je Messung unterschiedlich benannten Spar-Kennzahlen aus `details`.
- * Messungen ohne Sparwert (z. B. Raumklima) liefern 0.
+ * Messungen ohne Sparwert liefern 0.
+ *
+ * **Der Riegel gegen Geister-Beträge sitzt hier**, an der einen Stelle, an der
+ * Wirkungs-Summe, Empfehlungen und Bericht den Betrag aus den Details holen.
+ * Maßgeblich ist `yieldsSaving` im Katalog, nicht der Inhalt der Details:
+ * Gespeicherte Ergebnisse werden nie migriert (siehe CLAUDE.md), und ein Check,
+ * der seine Euro-Rechnung abgeschafft hat – der LED-Check – bekäme sie sonst
+ * über ein Altergebnis zurück. Genau so stand auf einer Berichtskarte einmal
+ * „0 Räume · Sehr gut · Sparpotenzial 45 €".
  *
  * **Nicht direkt anzeigen.** Der Rohwert enthält auch Beträge, die auf
  * geschätzten Nutzungshäufigkeiten beruhen, und Kleinbeträge unterhalb der
  * Anzeigeschwelle. Für die Anzeige ist {@link displayableSavingEur} zuständig.
  */
 export function resultSavingsEur(result: MeasurementResult): number {
+  if (!getMeasurementMeta(result.id)?.yieldsSaving) return 0
   const d = result.details ?? {}
   const value = d.avoidableCost ?? d.yearlySaving ?? 0
   return Number.isFinite(value) && value > 0 ? value : 0

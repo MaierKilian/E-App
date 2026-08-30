@@ -30,12 +30,38 @@ describe('Einzelwert', () => {
 })
 
 describe('Summe über alle Messungen', () => {
+  it('zählt keinen Betrag aus einer Messung, die keinen mehr rechnet', () => {
+    // Der LED-Check hat seine Euro-Rechnung abgeschafft, ein Ergebnis aus einer
+    // früheren Version trägt sie aber weiter – Ergebnisse werden nie migriert.
+    // Ohne den Katalog-Riegel erschien der Betrag in der Wirkungs-Summe auf der
+    // Messungs-Übersicht, während der Bericht daneben schon schwieg.
+    const { savingsEur, contributing } = impactSummary(
+      { lighting: result('lighting', { openRooms: 0, yearlySaving: 45 }) },
+      35,
+    )
+    expect(savingsEur).toBe(0)
+    expect(contributing).toBe(0)
+  })
+
+  it('zählt ebenso nichts aus der Grundlast – sie ist Diagnose', () => {
+    const { savingsEur } = impactSummary(
+      { base_load: result('base_load', { avoidableCost: 60 }) },
+      35,
+    )
+    expect(savingsEur).toBe(0)
+  })
+
   it('wendet die Schwelle auf die Messung an, nicht auf den einzelnen Raum', () => {
     // Fünf Räume à 8 € liegen einzeln unter der Schwelle, zusammen deutlich
-    // darüber – die Beleuchtung als Ganzes zählt.
+    // darüber – die Messung als Ganzes zählt.
+    //
+    // Bewusst das Raumklima als Beispiel: Die Beleuchtung stand hier früher,
+    // rechnet aber längst keinen Euro-Betrag mehr, und seit der Katalog das
+    // entscheidet (`yieldsSaving`) liefert sie zu Recht 0 – dann prüfte dieser
+    // Test die Schwelle gar nicht mehr, sondern nur noch den Riegel.
     const results: Record<string, MeasurementResult> = {}
     for (let i = 0; i < 5; i += 1) {
-      results[`lighting@room#${i}`] = result('lighting', { yearlySaving: 8 })
+      results[`room_temperature@room#${i}`] = result('room_temperature', { yearlySaving: 8 })
     }
     const { savingsEur, contributing } = impactSummary(results, 35)
     expect(savingsEur).toBe(40)
