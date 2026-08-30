@@ -26,6 +26,20 @@ export function fmtCur(value: number | undefined, fmt: Intl.NumberFormat): strin
   return fmt.format(value)
 }
 
+/**
+ * Eine Euro-Spanne als „35–55 €". Das Währungszeichen steht nur einmal, am
+ * Ende – die Spanne soll als *ein* Betrag lesbar sein, nicht als zwei.
+ * Leersicher; fehlt die Spanne, steht dort „-".
+ */
+export function fmtCurRange(
+  range: { low: number; high: number } | undefined,
+  cur: Intl.NumberFormat,
+  num: Intl.NumberFormat,
+): string {
+  if (!range || !Number.isFinite(range.low) || !Number.isFinite(range.high)) return '-'
+  return `${num.format(range.low)}\u2013${cur.format(range.high)}`
+}
+
 /** Mittellanges Datum, leersicher. */
 export function fmtDate(iso: string | undefined, language: string): string {
   if (!iso) return '-'

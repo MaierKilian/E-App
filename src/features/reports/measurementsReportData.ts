@@ -6,7 +6,11 @@ import type {
 import type { MeasurementCategory } from '@/features/measurements/catalog'
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import { anyResultFor, roomInstances, type RoomInstance } from '@/features/measurements/rooms'
-import { displaySavingEur } from '@/features/measurements/savingsDisplay'
+import {
+  displaySavingEur,
+  isMeasuredSaving,
+  savingRange,
+} from '@/features/measurements/savingsDisplay'
 import { hasWordUnit } from '@/features/measurements/resultValue'
 import type { RoomEntry } from '@/types'
 
@@ -61,8 +65,15 @@ export interface MeasurementEntry {
   primaryValue: number
   unit: string
   rating: MeasurementRating
-  /** Geschätzte Jahres-Ersparnis in € (falls in den Details vorhanden). */
+  /** Jahres-Ersparnis in €, gerundet (nur belegbare Beträge – siehe `readSaving`). */
   yearlySaving?: number
+  /**
+   * Dieselbe Ersparnis als Spanne. Der Bericht zeigt **sie** statt des
+   * Punktwerts: „ca. 35–55 €" behauptet die Unsicherheit, die in jeder
+   * Hochrechnung steckt, statt sie hinter einer glatten Zahl zu verstecken.
+   * `yearlySaving` bleibt für Sortierung und Summe der Rechenwert.
+   */
+  savingRange?: { low: number; high: number }
   /**
    * Wann gemessen wurde (jüngste Messung, ISO). Ein Bericht ohne Messdatum
    * lässt sich nicht einordnen – und nicht mit einem späteren vergleichen.
@@ -92,17 +103,33 @@ export interface MeasurementsReportData {
   groups: MeasurementGroup[]
   /** Noch offene bzw. „bald" verfügbare Messungen. */
   open: OpenMeasurement[]
-  /** Summe des geschätzten jährlichen Sparpotenzials in €. */
+  /** Summe des jährlichen Sparpotenzials in €, gerundet (Rechenwert). */
   savingsTotal: number
+  /**
+   * Dieselbe Summe als Spanne – die Kachel im Bericht zeigt sie. Eine Summe
+   * aus lauter Spannen darf nicht als punktgenaue Zahl auftreten, sonst
+   * behauptet die Zusammenfassung mehr Genauigkeit als jede Karte darunter.
+   */
+  savingsRange?: { low: number; high: number }
   /** Anzahl erledigter Messungen. */
   doneCount: number
   /** Gesamtzahl der Messungen im Katalog. */
   totalCount: number
 }
 
-/** Liest das geschätzte Sparpotenzial aus den Result-Details (mehrere Konventionen). */
+/**
+ * Liest das Sparpotenzial aus den Result-Details (mehrere Konventionen).
+ *
+ * Beträge, deren größte Unsicherheit in einer Modellannahme steckt, fallen
+ * hier heraus (`isMeasuredSaving`) – dieselbe Regel, nach der Tipps und
+ * Impact schon arbeiten. Der Bericht ist das Dokument, das jemand einem
+ * Dritten vorlegt; eine Zahl, die in der App als „geschätzt" markiert ist,
+ * darf dort nicht ohne diesen Vorbehalt auftauchen. Statt ihrer steht dann
+ * die gemessene Größe (°C, L, W), die niemand nachrechnen muss.
+ */
 function readSaving(details: MeasurementResult['details']): number | undefined {
   if (!details) return undefined
+  if (!isMeasuredSaving(details)) return undefined
   const candidate = details.yearlySaving ?? details.avoidableCost
   if (typeof candidate === 'number' && Number.isFinite(candidate) && candidate > 0) {
     return candidate
@@ -160,29 +187,37 @@ export function buildMeasurementsReportData({
     const r = anyResultFor(results, meta.id)
     if (r && Number.isFinite(r.primaryValue)) {
       // Sparpotenzial über alle Räume summieren (relevant bei Pro-Raum mit Sparwert).
-      // Es gilt dieselbe Anzeigeschwelle wie in der App: Beträge unterhalb von
-      // `MIN_DISPLAY_EUR` liegen in der Modellunsicherheit und erscheinen weder
-      // als Einzelwert noch in der Summe – sonst stünden im Bericht Zahlen, die
-      // die App selbst nicht mehr zeigt.
-      const saving = displaySavingEur(sumSavingsForMeasurement(results, meta.id))
+      //
+      // Maßgeblich ist `meta.yieldsSaving`, nicht der Inhalt der Details: Ein
+      // Check, der seine Euro-Rechnung abgeschafft hat (LED-Check), darf sie
+      // nicht über ein altes, nie migriertes Ergebnis zurückbekommen. Sonst
+      // stünde auf einer Karte „0 Räume · Sehr gut · Sparpotenzial 45 €".
+      //
+      // Danach gilt dieselbe Anzeigeschwelle wie in der App: Beträge unterhalb
+      // von `MIN_DISPLAY_EUR` liegen in der Modellunsicherheit und erscheinen
+      // weder als Einzelwert noch in der Summe.
+      const saving = meta.yieldsSaving
+        ? displaySavingEur(sumSavingsForMeasurement(results, meta.id))
+        : undefined
       if (saving) savingsTotal += saving
-      // Bei Pro-Raum-Messungen mit Sparwert die Räume-Summe als Hauptwert zeigen,
-      // sonst das repräsentative Raum-/Direktergebnis.
-      const showSavingAsValue = Boolean(meta.perRoom) && saving !== undefined
       const roomResults = meta.perRoom ? collectRoomResults(results, meta.id, roomByKey) : []
       entries.push({
         id: r.id,
         category: meta.category,
-        primaryValue: showSavingAsValue ? saving : r.primaryValue,
+        // Der Hauptwert ist immer die **gemessene** Größe – auch dann, wenn
+        // eine Ersparnis vorliegt. Früher ersetzte sie bei Pro-Raum-Messungen
+        // den Messwert, womit ausgerechnet der Raumklima-Check (er misst °C)
+        // mit einer Hochrechnung überschrieb, was er belegen kann. Die
+        // Ersparnis steht jetzt nur noch im Chip daneben.
+        primaryValue: r.primaryValue,
         // Einheit aus dem Ergebnis; Fallback je Messung (robust gegen Altdaten).
         // Wort-Einheiten stehen nicht im Ergebnis (siehe resultValue.ts) und
         // koennen dort bei aelteren Daten unaufgeloest sein – hier zaehlt der
         // Katalogwert. Der Bericht erscheint in der Profilsprache.
-        unit: showSavingAsValue
-          ? '€/Jahr'
-          : (hasWordUnit(r.id) ? undefined : r.unit) || UNIT_FALLBACK[r.id] || '',
+        unit: (hasWordUnit(r.id) ? undefined : r.unit) || UNIT_FALLBACK[r.id] || '',
         rating: r.rating,
         yearlySaving: saving,
+        savingRange: saving !== undefined ? savingRange(saving) : undefined,
         measuredAt: newestDate([r, ...roomResults.map((rr) => rr.measuredAt)]),
         rooms: roomResults,
       })
@@ -191,11 +226,14 @@ export function buildMeasurementsReportData({
     }
   }
 
+  const savingsRounded = Math.round(savingsTotal)
+
   return {
     entries,
     groups: groupByCategory(entries),
     open,
-    savingsTotal: Math.round(savingsTotal),
+    savingsTotal: savingsRounded,
+    savingsRange: savingsRounded > 0 ? savingRange(savingsRounded) : undefined,
     doneCount: entries.length,
     totalCount,
   }

@@ -23,6 +23,21 @@ export interface MeasurementMeta {
   perRoom?: boolean
   /** True = Messung gilt fürs ganze Zuhause (ein Ergebnis, nicht je Raum). */
   wholeHome?: boolean
+  /**
+   * True = diese Messung beziffert eine Jahres-Ersparnis in Euro.
+   *
+   * Der Riegel gegen Geister-Beträge: Gespeicherte Ergebnisse werden nie
+   * migriert (siehe CLAUDE.md), Auswertungen lesen `yearlySaving` /
+   * `avoidableCost` aber aus **jedem** Ergebnis. Schafft ein Check seine
+   * Euro-Rechnung ab – wie der LED-Check es getan hat –, trüge ein Altergebnis
+   * den Betrag sonst weiter durch Bericht und Summe. Maßgeblich ist deshalb
+   * nicht, was in den Details steht, sondern was die Messung **heute** rechnet.
+   *
+   * Bewusst ohne Flag: `lighting` (rechnet absichtlich nicht mehr),
+   * `base_load` (Diagnose – die € beziffern die Folge-Checks),
+   * `furniture_spacing` und `fridge` (qualitativer Befund).
+   */
+  yieldsSaving?: boolean
 }
 
 /**
@@ -39,6 +54,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'hot_water',
     estimatedMinutes: 5,
     rooms: ['bathroom'],
+    yieldsSaving: true,
   },
   {
     id: 'hot_water_wait',
@@ -48,6 +64,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'hot_water',
     estimatedMinutes: 2,
     rooms: ['bathroom', 'kitchen'],
+    yieldsSaving: true,
   },
   {
     id: 'room_temperature',
@@ -57,6 +74,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'heating',
     estimatedMinutes: 5,
     perRoom: true,
+    yieldsSaving: true,
   },
   {
     id: 'furniture_spacing',
@@ -95,6 +113,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'electricity',
     estimatedMinutes: 12,
     wholeHome: true,
+    yieldsSaving: true,
   },
   {
     id: 'fridge',
@@ -118,6 +137,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     // Die Gefriertruhe steht typisch im Keller oder Hauswirtschaftsraum – dort
     // suchte man den Check bisher vergeblich, weil er auf der Küche festhing.
     rooms: ['kitchen', 'basement', 'utility_room'],
+    yieldsSaving: true,
   },
 ]
 

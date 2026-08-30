@@ -6,7 +6,7 @@ import {
   type ChecklistItem,
   type FindingCard,
 } from './pdf/pdfKit'
-import { numberFmt, currencyFmt, fmtVal, fmtCur, fmtDate } from './pdf/format'
+import { numberFmt, currencyFmt, fmtVal, fmtCurRange, fmtDate } from './pdf/format'
 import { roomLabel } from '@/features/measurements/rooms'
 import type { MeasurementRating } from '@/features/measurements/types'
 import type {
@@ -81,7 +81,7 @@ export function fillMeasurements(
     })
   }
 
-  if (!summarized) writeProgressCards(kit, t, cur, data)
+  if (!summarized) writeProgressCards(kit, t, cur, num, data)
 
   if (data.entries.length === 0) {
     kit.subtle(t('report.pdf.empty.measurements'))
@@ -109,6 +109,7 @@ function writeProgressCards(
   kit: PdfKit,
   t: TFunction,
   cur: Intl.NumberFormat,
+  num: Intl.NumberFormat,
   data: MeasurementsReportData,
 ): void {
   const cards: KpiCard[] = [
@@ -117,9 +118,14 @@ function writeProgressCards(
       label: t('report.pdf.measurements.progress'),
     },
   ]
+  // Die Summe erscheint als Spanne: Sie besteht aus lauter Einzelspannen, und
+  // eine punktgenaue Kopfzahl darüber würde mehr behaupten als jede Karte
+  // darunter hergibt.
   if (data.savingsTotal > 0) {
     cards.push({
-      value: fmtCur(data.savingsTotal, cur),
+      value: t('report.pdf.measurements.savingsApprox', {
+        value: fmtCurRange(data.savingsRange, cur, num),
+      }),
       label: t('report.pdf.measurements.savings'),
       color: ratingColor('good'),
     })
@@ -178,7 +184,7 @@ function writeOverviewTable(
       t(`measurements.ratings.${e.rating}`),
       e.measuredAt ? fmtDate(e.measuredAt, language) : '–',
     ]
-    if (anySaving) row.push(e.yearlySaving ? fmtCur(e.yearlySaving, cur) : '–')
+    if (anySaving) row.push(e.savingRange ? fmtCurRange(e.savingRange, cur, num) : '–')
     return row
   })
 
@@ -278,10 +284,11 @@ function buildEntryCard(
   e: MeasurementEntry,
   tipsByMeasurement: Record<string, string[]>,
 ): FindingCard {
-  const saving =
-    e.yearlySaving && e.yearlySaving > 0
-      ? t('report.pdf.measurements.savingsValue', { value: fmtCur(e.yearlySaving, cur) })
-      : undefined
+  const saving = e.savingRange
+    ? t('report.pdf.measurements.savingsValue', {
+        value: fmtCurRange(e.savingRange, cur, num),
+      })
+    : undefined
 
   return {
     color: ratingColor(e.rating),

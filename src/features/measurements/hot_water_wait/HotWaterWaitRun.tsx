@@ -44,6 +44,12 @@ export function HotWaterWaitRun({ onEvaluate }: RunProps) {
           litersPerDraw: calc.litersPerDraw,
           litersPerYear: calc.litersPerYear,
           yearlySaving: calc.yearlySaving,
+          // Die Hochrechnung aufs Jahr multipliziert mit
+          // `drawsPerPersonPerDay` – einer Modellkonstante („0,75 Duschen pro
+          // Tag"), nicht mit etwas Gemessenem. Genau der Fall, für den
+          // `isMeasuredSaving` da ist: Gemessen ist die Wartezeit, belastbar
+          // sind die Liter pro Entnahme; der Jahresbetrag ist geschätzt.
+          savingEstimated: 1,
         },
       },
     })
