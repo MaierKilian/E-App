@@ -27,7 +27,7 @@ nach `main` macht Kilian (siehe „Der Merge nach `main` gehört dem Menschen“
 |---|---|---|---|---|
 | 1 | Modell und virtueller Zähler | ✅ fertig | 2026-08-30 | `c6ca126` |
 | 2 | Eingabe und Anzeige | ✅ fertig | 2026-08-30 | `11f502f` |
-| 3 | Reichweite und Nachbestellen | ⬜ offen | – | – |
+| 3 | Reichweite und Nachbestellen | ✅ fertig | 2026-08-30 | `715d271` |
 | 4 | Preis aus Lieferungen, Bericht | ⬜ offen | – | – |
 
 **Abhängigkeiten:** 2 braucht 1 · 3 braucht 1 und 2 · 4 braucht 1 und 2.
@@ -275,21 +275,59 @@ Bestandszähler; Skripte im Scratchpad der Session).
 ```
 neu     src/features/monitoring/range.ts
 neu     tests/unit/range.test.ts
+        src/features/monitoring/seasonality.ts          (dayShare exportiert)
         src/features/monitoring/due.ts
         src/features/monitoring/WidgetBoard.tsx
         src/features/monitoring/MeterDetailPage.tsx
         src/features/monitoring/ReadingReminder.tsx
+        src/features/monitoring/MonitoringPage.tsx      (meters an dueTypes)
+        src/components/BottomNav.tsx                    (dito)
         src/i18n/locales/de.json, en.json
 ```
 
+### Unterwegs entschieden
+
+- **`seasonal` muss beide Schritte erreichen.** Zuerst ging die Option nur in
+  die Vorwärtsrechnung, während `meterRange` den Jahresverbrauch ohne sie holte
+  – eine linear gestreckte Jahreszahl traf so auf eine saisonal gewichtete
+  Kurve. Bei einem im Sommer gemessenen Tank war der Jahresverbrauch damit um
+  ein Vielfaches zu niedrig und die Reichweite entsprechend zu optimistisch:
+  im Browser-Durchlauf 36 statt 11 Tagen, also genau der Fehler, gegen den das
+  Monatsprofil existiert. Ein Test stellt beide Hochrechnungen jetzt
+  gegeneinander.
+
+- **Die Vorrats-Warnung gilt auch bei Erinnerung „Aus".** Die Frequenz regelt
+  eine Gewohnheit („wie oft ablesen?"). Dass der Tank in sechs Wochen leer ist,
+  ist keine Gewohnheitsfrage. `dueTypes` prüft den Vorrat deshalb vor der
+  Frequenz; die Regel „ohne eine einzige Ablesung nie" bleibt.
+
+- **Der Badge heißt beim Vorrat „Nachbestellen", nicht „fällig".** Abgelesen
+  ist längst – fällig ist die Bestellung. Widget und Kachel entscheiden das
+  selbst anhand der Reichweite, statt dass `dueTypes` einen Anlass mitliefert.
+
+- **Bündelung in `meterRange`.** Widget, Detailseite und Erinnerung brauchen
+  denselben Dreiklang aus virtueller Zählerreihe, Jahres-Hochrechnung und
+  Vorwärtsrechnung. Als drei Abschriften wäre genau der Fehler oben dreimal zu
+  finden gewesen.
+
+- **`dayShare` ist jetzt exportiert.** Die Reichweite summiert von heute an
+  vorwärts und braucht den Tagesanteil, nicht den einer fertigen Spanne.
+
 ### Fertig, wenn
 
-- [ ] Derselbe Restvorrat ergibt im Oktober eine deutlich kürzere Reichweite
-      als im April – als Test gegen das Monatsprofil.
-- [ ] Ohne Jahres-Hochrechnung erscheint keine Reichweite, statt einer Null.
-- [ ] Die Warnung greift genau einmal ab sechs Wochen und verstummt nach einer
-      eingetragenen Lieferung.
-- [ ] Typecheck, ESLint und `npx vitest run` grün.
+- [x] Derselbe Restvorrat ergibt im Oktober eine deutlich kürzere Reichweite
+      als im April – als Test gegen das Monatsprofil (Frühjahr über doppelt so
+      lang).
+- [x] Ohne Jahres-Hochrechnung erscheint keine Reichweite, statt einer Null –
+      ebenso bei leerem Vorrat und jenseits von zwei Jahren.
+- [x] Die Warnung greift ab sechs Wochen Reichweite und verstummt nach einer
+      eingetragenen Lieferung; ein Zählwerk bekommt sie nie.
+- [x] Typecheck, ESLint und `npx vitest run` grün (617 Tests).
+
+Abnahme gefahren mit `tests/unit/range.test.ts` (Rechenebene) und einem
+Playwright-Durchlauf gegen die laufende App (Bedienebene: knapper Vorrat mit
+Reichweiten-Kachel, Board-Badge „Nachbestellen", Verstummen nach der Lieferung,
+Gegenprobe mit einem Gas-Zählwerk).
 
 ---
 
