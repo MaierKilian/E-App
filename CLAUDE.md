@@ -8,19 +8,36 @@
    - Commits die im aktuellen Branch sind, aber nicht in `main` (eigene Arbeit)
 3. Kurze Zusammenfassung der Änderungen ausgeben (was wurde geändert, welche Dateien betroffen)
 4. Falls `main` neue Commits hat: `git merge origin/main` anbieten oder automatisch ausführen
-5. `docs/questionnaire-etappen.md` überfliegen und den Arbeitsstand des
-   Fragebogen-Umbaus mit einer Zeile nennen (welche Etappe ist als Nächstes dran)
+5. `docs/tank-etappen.md` überfliegen und den Arbeitsstand des Tank-Umbaus mit
+   einer Zeile nennen (welche Etappe ist als Nächstes dran)
 
-## Laufendes Vorhaben: Fragebogen-Umbau
+## Laufendes Vorhaben: Tank-Umbau
 
-- **Konzept (Was und Warum):** `docs/questionnaire-concept.md`
-- **Arbeitsstand (Wie weit):** `docs/questionnaire-etappen.md` – sechs Etappen,
-  jede einzeln lauffähig und deploybar
-- **Bearbeiten mit:** `/etappe` (nächste offene), `/etappe 3` (gezielt),
-  `/etappe status` (nur berichten)
-- Eine Etappe pro Session. Nach jeder Etappe: Tracker aktualisieren (Status,
-  Datum, Commit) und den Arbeits-Branch pushen – den Merge nach `main` macht
-  Kilian (siehe „Branches").
+Öl, Pellets und Flüssiggas werden nicht gezählt, sondern bevorratet: Der Stand
+fällt und springt beim Befüllen zurück. Die App modelliert sie heute als
+aufsteigende Zähler – für diese Haushalte rechnet sie damit falsch.
+
+- **Konzept (Was und Warum):** `docs/tank-concept.md`
+- **Arbeitsstand (Wie weit):** `docs/tank-etappen.md` – vier Etappen, jede
+  einzeln lauffähig und deploybar
+- **Bearbeiten mit:** `/tank` (nächste offene), `/tank 2` (gezielt),
+  `/tank status` (nur berichten)
+- Leitgedanke: Ein Tank ist ein Zähler, rückwärts gelesen, plus Lieferungen.
+  Der Füllstand wird in einen virtuellen Zählerstand übersetzt und läuft durch
+  die vorhandene Auswertung – **keine zweite Rechenkette.**
+
+## Abgeschlossenes Vorhaben: Fragebogen-Umbau
+
+- **Konzept:** `docs/questionnaire-concept.md` · **Etappen:**
+  `docs/questionnaire-etappen.md` – alle sechs Etappen fertig (2026-08-24)
+- `/etappe status` berichtet den Stand; was danach offen blieb, steht am Ende
+  des Trackers.
+
+## Arbeitsweise bei Etappen-Vorhaben
+
+Eine Etappe pro Session. Nach jeder Etappe: Tracker aktualisieren (Status,
+Datum, Commit) und den Arbeits-Branch pushen – den Merge nach `main` macht
+Kilian (siehe „Branches").
 
 ## Branches
 
