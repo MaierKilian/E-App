@@ -26,7 +26,7 @@ nach `main` macht Kilian (siehe „Der Merge nach `main` gehört dem Menschen“
 | # | Etappe | Status | Abgeschlossen | Commit |
 |---|---|---|---|---|
 | 1 | Modell und virtueller Zähler | ✅ fertig | 2026-08-30 | `c6ca126` |
-| 2 | Eingabe und Anzeige | ⬜ offen | – | – |
+| 2 | Eingabe und Anzeige | ✅ fertig | 2026-08-30 | `11f502f` |
 | 3 | Reichweite und Nachbestellen | ⬜ offen | – | – |
 | 4 | Preis aus Lieferungen, Bericht | ⬜ offen | – | – |
 
@@ -184,23 +184,65 @@ neu     tests/unit/counterSeries.test.ts
 ### Berührte Dateien
 
 ```
+neu     src/features/monitoring/fillLevel.ts            (Prozent-Umrechnung, Schätzung)
 neu     src/features/monitoring/FillLevelInput.tsx
+neu     src/features/monitoring/MeterSetupScreen.tsx
 neu     src/features/monitoring/AddRefillScreen.tsx
         src/features/monitoring/AddReadingScreen.tsx
         src/features/monitoring/MeterDetailPage.tsx
+        src/features/monitoring/MonitoringPage.tsx
         src/features/monitoring/WidgetBoard.tsx
         src/features/monitoring/AbsoluteLineChart.tsx   (Lieferungs-Marker)
         src/i18n/locales/de.json, en.json
+neu     tests/unit/fillLevel.test.ts
 ```
+
+### Unterwegs entschieden
+
+- **Die Einrichtung erscheint nur für einen wirklich neuen Zähler**
+  (`isTankType && keine Konfiguration && keine Ablesungen`). Zuerst hing sie
+  nur an der fehlenden Konfiguration – dann bekam ein Bestandsnutzer beim
+  nächsten Eintragen die Modus-Wahl vorgesetzt, mit „Vorrat" vorbelegt, und
+  hätte mit einem Tipp auf Speichern seinen ganzen Verlauf umgedeutet. Genau
+  das, was Etappe 1 verhindern sollte. Umstellen führt jetzt ausschließlich
+  über die Zähler-Einstellungen, mit Warnung. Aufgefallen erst im
+  Browser-Durchlauf, nicht im Typecheck.
+
+- **Zweite Sicherung im Setup-Screen:** Liegen Ablesungen vor, ist immer der
+  gegenwärtige Modus vorausgewählt, nie `defaultMeterMode`. Der Wechsel muss
+  angetippt werden.
+
+- **Die Detailseite war eine zweite Tür.** Sie ist über die Board-Kachel direkt
+  erreichbar; ohne eigene Weiche wäre der neue Öltank dort am Einrichten vorbei
+  ins Zählwerk-Modell gelaufen. Beide Einstiege prüfen jetzt dieselbe
+  Bedingung – als Regel in `fillLevel.test.ts` festgehalten, damit sie beim
+  nächsten Umbau nicht auseinanderläuft.
+
+- **`toPercent`/`fromPercent`/`estimateLevelAt` liegen in `fillLevel.ts`,**
+  nicht in der Eingabe-Komponente: Die ESLint-Regel `react-refresh` verbietet
+  gemischte Exporte, und rein gerechnete Funktionen sind so auch testbar.
+
+- **Der Stand nach einer Lieferung wird hochgerechnet, nicht addiert** – wie in
+  Etappe 1 notiert. Beispiel aus dem Durchlauf: letzter Stand 900 l vor 29
+  Tagen, Tagesrate 24,6 l, Lieferung 2.000 l → Vorschlag 2.187 l statt 2.900 l.
+  Die 713 l Verbrauch dazwischen bleiben so in der Rechnung.
 
 ### Fertig, wenn
 
-- [ ] Ein neuer Öl-Zähler startet als Vorrat, ein bestehender bleibt Zähler.
-- [ ] Ein Tank ohne Kapazität ist vollständig bedienbar und zeigt Prozent.
-- [ ] Füllstand und Lieferung sind in der Liste auseinanderzuhalten.
-- [ ] Für `level` erscheint weder Zählwerk noch Scan-Knopf.
-- [ ] Der Umschalter warnt vor der Umdeutung und bietet das Verwerfen an.
-- [ ] Typecheck, ESLint und `npx vitest run` grün.
+- [x] Ein neuer Öl-Zähler startet als Vorrat, ein bestehender bleibt Zähler –
+      und wird beim Eintragen nicht einmal gefragt.
+- [x] Ein Tank ohne Kapazität ist vollständig bedienbar und zeigt Prozent.
+- [x] Füllstand und Lieferung sind in der Liste auseinanderzuhalten
+      (Lieferschein-Marke „+2.000" samt Betrag), im Verlauf als offener Ring.
+- [x] Für `level` erscheint weder Zählwerk noch Scan-Knopf.
+- [x] Der Umschalter warnt vor der Umdeutung, nennt die Zahl der betroffenen
+      Ablesungen und bietet Behalten wie Verwerfen an.
+- [x] Typecheck, ESLint und `npx vitest run` grün (602 Tests).
+
+Abnahme gefahren mit `tests/unit/fillLevel.test.ts` (Rechenebene) und vier
+Playwright-Durchläufen gegen die laufende App (Bedienebene: neuer Tank ohne
+Kapazität, Tank mit Kapazität samt Lieferung, Historie und Umschalter,
+Bestandszähler; Skripte im Scratchpad der Session).
 
 ---
 
