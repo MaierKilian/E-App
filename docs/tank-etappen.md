@@ -25,7 +25,7 @@ nach `main` macht Kilian (siehe „Der Merge nach `main` gehört dem Menschen“
 
 | # | Etappe | Status | Abgeschlossen | Commit |
 |---|---|---|---|---|
-| 1 | Modell und virtueller Zähler | ⬜ offen | – | – |
+| 1 | Modell und virtueller Zähler | ✅ fertig | 2026-08-30 | `c6ca126` |
 | 2 | Eingabe und Anzeige | ⬜ offen | – | – |
 | 3 | Reichweite und Nachbestellen | ⬜ offen | – | – |
 | 4 | Preis aus Lieferungen, Bericht | ⬜ offen | – | – |
@@ -86,28 +86,65 @@ weg, und allein der Auffüll-Sprung zählt als Verbrauch. Die Zweitfassung in
 ```
         src/store/readingsStore.ts                     (Felder, Aktionen, merge)
 neu     src/features/monitoring/counterSeries.ts       (Adapter, Modus-Regel)
-        src/features/monitoring/energyConfig.ts        (isTankType)
         src/features/monitoring/MeterDetailPage.tsx
         src/features/monitoring/WidgetBoard.tsx
         src/features/home/EnergySummaryCard.tsx
-        src/features/reports/monitoringReportData.ts
+        src/features/reports/monitoringReportData.ts   (+ ReportsPage reicht `meters` durch)
 neu     tests/unit/counterSeries.test.ts
+        tests/unit/monitoringReport.test.ts
 ```
+
+### Unterwegs entschieden
+
+- **Der Modus hängt nicht am Zustand der Ablesungsliste.** Geplant war
+  `meterMode(type, config, hasReadings)` – „Öl ohne Ablesungen ist ein Tank".
+  Das ist abgeleiteter Zustand und kippt: Wer alle Ablesungen löscht und neu
+  beginnt, hätte plötzlich einen Tank. Jetzt gilt `meterMode(config)` mit der
+  Regel *ohne Konfiguration immer `counter`*; `level` entsteht ausschließlich
+  durch eine ausdrückliche Entscheidung. `defaultMeterMode(type)` trägt die
+  Neuanlage-Regel (Öl und Pellets → Vorrat) als reine Funktion und wird erst
+  in Etappe 2 gerufen, wenn ein Zähler tatsächlich angelegt wird. Damit ist
+  diese Etappe für jeden bestehenden Nutzer wirklich folgenlos.
+
+- **`isTankType` liegt in `counterSeries.ts`, nicht in `energyConfig.ts`.**
+  Der Store müsste `energyConfig` sonst zur Laufzeit laden und zöge damit
+  lucide-react in die Zustands-Schicht. Modus-Regel und Adapter gehören
+  ohnehin zusammen.
+
+- **Ein Füllstand, der ohne Lieferung steigt, wird zum fallenden virtuellen
+  Zähler** – nicht auf null Verbrauch geklemmt. Nachgelagert greift dann
+  dieselbe Behandlung wie bei einem zurückgesetzten Zählwerk: Der Abschnitt
+  gilt als nicht auswertbar und fällt aus Zähler *und* Nenner. Ein geklemmter
+  Nullwert hätte dagegen behauptet, in diesen Tagen sei nichts verbraucht
+  worden, und den Tagesschnitt gedrückt.
+
+- **Für Etappe 2:** `value` einer Lieferung ist der Stand *danach*, und
+  `value − refill` ist damit der Stand *davor*. Die Eingabe sollte diesen Wert
+  nicht mit „letzter Stand + Menge" vorbelegen – dann wäre der Verbrauch
+  zwischen letzter Ablesung und Lieferung rechnerisch null. Besser aus der
+  bisherigen Tagesrate hochrechnen; die Kette bleibt sonst korrekt, aber der
+  Verbrauch wird unterschätzt.
 
 ### Fertig, wenn
 
-- [ ] Eine Füllstandsreihe mit Lieferung dazwischen ergibt denselben
+- [x] Eine Füllstandsreihe mit Lieferung dazwischen ergibt denselben
       Jahresverbrauch wie die entsprechende Zählerreihe – als Test, der beide
       Modelle gegeneinander stellt.
-- [ ] Bei `counter` gibt `counterSeries` die **identische** Referenz zurück.
-- [ ] Ein Träger mit vorhandenen Ablesungen bleibt `counter`, auch wenn er
-      Öl oder Pellets ist (keine stille Umdeutung).
-- [ ] Zwei Lieferungen zwischen zwei Füllständen werden korrekt aufsummiert.
-- [ ] Unsinnige Eingaben (Füllstand steigt ohne Lieferung, Lieferung größer
-      als die Kapazität, gleiche Daten) erzeugen keine negativen Segmente und
-      keine `NaN`.
-- [ ] PDF-Bericht und App zeigen für denselben Tank denselben Verbrauch.
-- [ ] Typecheck, ESLint und `npx vitest run` grün.
+- [x] Bei `counter` gibt `counterSeries` die **identische** Referenz zurück.
+- [x] Ein Träger mit vorhandenen Ablesungen bleibt `counter`, auch wenn er
+      Öl oder Pellets ist (keine stille Umdeutung). Schärfer als geplant: Ohne
+      ausdrückliche Konfiguration gilt **jeder** Träger als Zählwerk, siehe
+      „Unterwegs entschieden".
+- [x] Zwei Lieferungen zwischen zwei Füllständen werden korrekt aufsummiert.
+- [x] Unsinnige Eingaben (Füllstand steigt ohne Lieferung, `NaN`, Ablesung und
+      Lieferung am selben Tag) erzeugen keine negativen Segmente und keine
+      `NaN`. **Nicht** geprüft: Lieferung größer als die Kapazität – der
+      Adapter kennt die Kapazität nicht, das ist eine Eingabeprüfung und
+      gehört in Etappe 2.
+- [x] PDF-Bericht und App zeigen für denselben Tank denselben Verbrauch
+      (`monitoringReport.test.ts`, stellt beide Module gegeneinander).
+- [x] Typecheck, ESLint und `npx vitest run` grün (587 Tests; der
+      Firestore-Rules-Test bleibt ohne Emulator übersprungen).
 
 ---
 
