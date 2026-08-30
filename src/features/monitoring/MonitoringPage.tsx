@@ -64,8 +64,8 @@ export function MonitoringPage() {
   )
   const order = useMemo(() => mergeOrder(savedOrder, types), [savedOrder, types])
   const due = useMemo(
-    () => new Set(dueTypes(data, readingsByType, frequency, now, hidden)),
-    [data, readingsByType, frequency, now, hidden],
+    () => new Set(dueTypes(data, readingsByType, frequency, now, hidden, meters)),
+    [data, readingsByType, frequency, now, hidden, meters],
   )
 
   const addMeta = addType ? ENERGY_META[addType] : null

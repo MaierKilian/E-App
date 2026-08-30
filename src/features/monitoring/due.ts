@@ -1,7 +1,13 @@
-import type { MeterReading, ReminderFrequency, EnergyType } from '@/store/readingsStore'
+import type {
+  MeterConfig,
+  MeterReading,
+  ReminderFrequency,
+  EnergyType,
+} from '@/store/readingsStore'
 import type { OnboardingData } from '@/types'
-import { boardEnergyTypes } from './energyConfig'
+import { boardEnergyTypes, isSeasonal } from './energyConfig'
 import { sortByDate } from './readings'
+import { isRefillDue, meterRange } from './range'
 
 /**
  * Nächstes Fälligkeitsdatum aus letzter Ablesung + Frequenz.
@@ -48,9 +54,30 @@ export function dueTypes(
   freq: ReminderFrequency,
   now: number,
   hidden: readonly EnergyType[] = [],
+  meters: Partial<Record<EnergyType, MeterConfig>> = {},
 ): EnergyType[] {
-  if (freq === 'off') return []
-  return boardEnergyTypes(data, readingsByType, hidden).filter((type) =>
-    isTypeDue(sortByDate(readingsByType[type] ?? []), freq, now),
+  const today = new Date(now)
+  return boardEnergyTypes(data, readingsByType, hidden).filter((type) => {
+    const readings = sortByDate(readingsByType[type] ?? [])
+    if (readings.length === 0) return false
+    // Ein knapper Vorrat meldet sich unabhängig von der Ablese-Frequenz. Die
+    // Frequenz regelt eine Gewohnheit („wie oft ablesen?"); dass der Tank in
+    // sechs Wochen leer ist, ist keine Gewohnheitsfrage. Wer die Erinnerung
+    // auf „Aus" stellt, will nicht ans Ablesen erinnert werden – nicht, dass
+    // ihm im Januar das Öl ausgeht.
+    if (isTankRefillDue(type, readings, meters[type], today)) return true
+    return isTypeDue(readings, freq, now)
+  })
+}
+
+/** true → dieser Vorrat reicht keine sechs Wochen mehr. */
+export function isTankRefillDue(
+  type: EnergyType,
+  readings: MeterReading[],
+  config: MeterConfig | undefined,
+  today: Date,
+): boolean {
+  return isRefillDue(
+    meterRange(readings, config, { seasonal: isSeasonal(type), today }),
   )
 }

@@ -1691,7 +1691,15 @@
       "refillBadge": "Delivery",
       "addLevel": "Fill level",
       "addRefill": "Delivery",
-      "currentLevel": "Fill level"
+      "currentLevel": "Fill level",
+      "rangeLabel": "Range",
+      "rangeUntil": "lasts until ~{{date}}",
+      "rangeDays": "~{{count}} days left",
+      "rangeBasisSeasonal": "seasonally weighted",
+      "rangeBasisLinear": "evenly spread",
+      "refillDue": "Order more",
+      "reminderLowTitle": "Store is running low",
+      "reminderLowText": "Lasts until about {{date}}. Oil and pellets take time to arrive – order now."
     }
   },
   "pages": {

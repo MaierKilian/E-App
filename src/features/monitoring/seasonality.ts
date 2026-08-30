@@ -38,8 +38,14 @@ function daysInMonth(year: number, monthIndex: number): number {
   return new Date(year, monthIndex + 1, 0).getDate()
 }
 
-/** Anteil eines einzelnen Kalendertags am Jahresverbrauch. */
-function dayShare(date: Date): number {
+/**
+ * Anteil eines einzelnen Kalendertags am Jahresverbrauch.
+ *
+ * Exportiert für die Reichweiten-Rechnung in `range.ts`: Sie summiert von heute
+ * an vorwärts, bis der Vorrat aufgebraucht ist, und braucht dafür den Anteil je
+ * Tag – nicht den einer fertigen Spanne.
+ */
+export function dayShare(date: Date): number {
   const m = date.getMonth()
   return MONTH_SHARE[m] / daysInMonth(date.getFullYear(), m)
 }

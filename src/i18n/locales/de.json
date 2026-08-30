@@ -1273,7 +1273,15 @@
       "refillBadge": "Lieferung",
       "addLevel": "Füllstand",
       "addRefill": "Lieferung",
-      "currentLevel": "Füllstand"
+      "currentLevel": "Füllstand",
+      "rangeLabel": "Reichweite",
+      "rangeUntil": "reicht bis ~{{date}}",
+      "rangeDays": "noch ~{{count}} Tage",
+      "rangeBasisSeasonal": "jahreszeitlich gerechnet",
+      "rangeBasisLinear": "gleichmäßig gerechnet",
+      "refillDue": "Nachbestellen",
+      "reminderLowTitle": "Vorrat wird knapp",
+      "reminderLowText": "Reicht noch bis etwa {{date}}. Öl und Pellets brauchen Vorlauf – jetzt bestellen."
     }
   },
   "onboarding": {

@@ -6,6 +6,8 @@ import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
 import { ENERGY_META } from './energyConfig'
 import { sortByDate, consumptionTrend, daysSinceLastReading } from './readings'
 import { counterSeries, meterMode } from './counterSeries'
+import { isRefillDue, meterRange } from './range'
+import { isSeasonal } from './energyConfig'
 import { toPercent } from './fillLevel'
 import { Sparkline } from './Sparkline'
 import { TrendBadge } from './MeterTrend'
@@ -370,10 +372,19 @@ function HeroMeter({ type, due, now, onAdd }: MeterProps & { onAdd: () => void }
   // rechnet dagegen auf der virtuellen Zählerreihe.
   const series = readings.map((r) => r.value)
   const trend = consumptionTrend(counterSeries(readings, meterConfig))
+  const range = meterRange(readings, meterConfig, { seasonal: isSeasonal(type) })
   const days = daysSinceLastReading(readings, now)
   const lastText = useLastReadingText(days)
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
+  // „reicht bis ~14. Februar" – Tag und Monat genügen; das Jahr wäre bei einer
+  // Schätzung über wenige Monate nur Ballast.
+  const rangeFmt = new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'long' })
+  const rangeText = range
+    ? t('monitoring.tank.rangeUntil', {
+        date: rangeFmt.format(new Date(`${range.emptyDate}T00:00:00`)),
+      })
+    : null
   const go = () => navigate(`/monitoring/${type}`)
 
   return (
@@ -399,12 +410,20 @@ function HeroMeter({ type, due, now, onAdd }: MeterProps & { onAdd: () => void }
                 <p className="text-sm font-semibold text-foreground truncate">
                   {t(`monitoring.energyTypes.${type}`)}
                 </p>
-                {lastText && <p className="text-xs text-muted">{lastText}</p>}
+                {/* Beim Vorrat zählt, wie lange er noch reicht – nicht, wann
+                    zuletzt abgelesen wurde. */}
+                {rangeText ? (
+                  <p className="text-xs text-muted">{rangeText}</p>
+                ) : (
+                  lastText && <p className="text-xs text-muted">{lastText}</p>
+                )}
               </div>
             </div>
             {due ? (
               <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary shrink-0">
-                {t('monitoring.reminder.due')}
+                {/* Bei einem knappen Vorrat ist „fällig" die falsche Ansage:
+                    Abgelesen ist längst, bestellt werden muss. */}
+                {isRefillDue(range) ? t('monitoring.tank.refillDue') : t('monitoring.reminder.due')}
               </span>
             ) : (
               <ChevronRight className="w-4 h-4 text-muted shrink-0" />
@@ -481,6 +500,7 @@ function MeterTile({ type, due }: MeterProps) {
   const latest = readings[readings.length - 1]
   const series = readings.map((r) => r.value)
   const trend = consumptionTrend(counterSeries(readings, meterConfig))
+  const range = meterRange(readings, meterConfig, { seasonal: isSeasonal(type) })
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
 
@@ -499,7 +519,7 @@ function MeterTile({ type, due }: MeterProps) {
         </span>
         {due ? (
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary">
-            {t('monitoring.reminder.due')}
+            {isRefillDue(range) ? t('monitoring.tank.refillDue') : t('monitoring.reminder.due')}
           </span>
         ) : trend ? (
           <TrendBadge trend={trend} compact />

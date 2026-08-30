@@ -20,13 +20,14 @@ export function BottomNav() {
   const setStep = useOnboardingStore((s) => s.setStep)
   const readings = useReadingsStore((s) => s.readings)
   const frequency = useReadingsStore((s) => s.reminderFrequency)
+  const meters = useReadingsStore((s) => s.meters)
   const measurementResults = useMeasurementsStore((s) => s.results)
   const defrostDoneAt = useTipsStore((s) => s.doneAt.freezer)
   const hiddenMeters = useWidgetOrderStore((s) => s.hidden)
   const [now] = useState(() => Date.now())
 
   // Fällige Ablesungen → kleiner Hinweispunkt am Monitoring-Tab (In-App-Reminder).
-  const monitoringDue = dueTypes(data, readings, frequency, now, hiddenMeters).length > 0
+  const monitoringDue = dueTypes(data, readings, frequency, now, hiddenMeters, meters).length > 0
   // Anstehende Folgemessungen (Grundlast nach einer Maßnahme, Kühlschrank
   // nach einer noch nicht guten Messung, Gefriertruhe ein halbes Jahr nach dem
   // Abtauen) → derselbe Hinweispunkt am Messungen-Tab.

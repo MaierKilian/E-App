@@ -18,6 +18,7 @@ import { counterSeries, isTankType, meterMode } from './counterSeries'
 import { AddRefillScreen } from './AddRefillScreen'
 import { MeterSetupScreen } from './MeterSetupScreen'
 import { toPercent } from './fillLevel'
+import { isRefillDue, meterRange } from './range'
 import { TrendBadge } from './MeterTrend'
 import { specificValue } from './specificValues'
 import { filterByRange, fullSpan, RANGE_KEYS, type RangeKey } from './rangeFilter'
@@ -98,6 +99,7 @@ export function MeterDetailPage() {
   // Spezifische Kennwerte sind Orientierungsgrössen – Nachkommastellen
   // taeuschten eine Genauigkeit vor, die die Eingangsdaten nicht hergeben.
   const specificFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
+  const rangeFmt = new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'long' })
   const eurFmt = new Intl.NumberFormat(i18n.language, {
     style: 'currency',
     currency: 'EUR',
@@ -156,6 +158,14 @@ export function MeterDetailPage() {
     kwhPerUnit,
   )
   const trend = consumptionTrend(counted)
+  // Nicht `range` – so heißt hier schon der Zeitraum-Filter des Diagramms.
+  const rangeEstimate = meterRange(readings, meterConfig, {
+    seasonal: isSeasonal(type),
+    today: new Date(now),
+  })
+  const emptyDate = rangeEstimate
+    ? new Date(`${rangeEstimate.emptyDate}T00:00:00`)
+    : undefined
   const sinceDays = daysSinceLastReading(readings, now)
   const lastText =
     sinceDays === undefined
@@ -263,6 +273,35 @@ export function MeterDetailPage() {
               <p className="mt-0.5 text-base text-muted">{t('monitoring.detail.noReadings')}</p>
             )}
           </div>
+
+          {/* Reichweite: beim Vorrat die eigentliche Auskunft – ein Zählwerk
+              kann sie nicht geben. Die Grundlage steht dabei, damit niemand
+              eine Schätzung für eine Messung hält (wie bei ProjectionBasis). */}
+          {rangeEstimate && emptyDate && (
+            <div
+              className="mt-4 rounded-2xl px-3 py-2.5"
+              style={{
+                background: isRefillDue(rangeEstimate)
+                  ? `${meta.accent}1f`
+                  : 'var(--color-surface-2)',
+              }}
+            >
+              <p className="text-[11px] uppercase tracking-wide text-muted">
+                {t('monitoring.tank.rangeLabel')}
+              </p>
+              <p className="mt-0.5 font-semibold text-foreground">
+                {t('monitoring.tank.rangeUntil', { date: rangeFmt.format(emptyDate) })}
+              </p>
+              <p className="mt-0.5 text-[11px] leading-tight text-muted">
+                {t('monitoring.tank.rangeDays', { count: rangeEstimate.days })} ·{' '}
+                {t(
+                  rangeEstimate.basis === 'seasonal'
+                    ? 'monitoring.tank.rangeBasisSeasonal'
+                    : 'monitoring.tank.rangeBasisLinear',
+                )}
+              </p>
+            </div>
+          )}
 
           {/* Kennzahlen: Verbrauch & Jahreskosten als aufgeräumte Mini-Kacheln */}
           {priceMeta && (s.lastConsumptionKwh !== undefined || s.projectedYearCostEur !== undefined) && (
@@ -514,7 +553,7 @@ export function MeterDetailPage() {
       )}
 
       {/* Erinnerung (kompakt) */}
-      <ReadingReminder readings={readings} />
+      <ReadingReminder readings={readings} type={type} config={meterConfig} />
 
       {isTankType(type) && (
         <button
