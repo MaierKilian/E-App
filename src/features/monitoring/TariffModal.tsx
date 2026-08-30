@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { parseDecimalInput } from '@/lib/decimalInput'
+import { parseDecimalInput, formatDecimalInput } from '@/lib/decimalInput'
 import { Modal } from '@/components/ui/Modal'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { useTariffStore, resolvePrice, resolveEnergyContent } from '@/store/tariffStore'
-import type { EnergyType } from '@/store/readingsStore'
-import { PRICE_META } from './priceConfig'
+import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
+import { PRICE_META, priceFromRefills } from './priceConfig'
 import { hasEnergyContent } from './specificValues'
 
 interface TariffModalProps {
@@ -33,9 +33,22 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
   const currentContent = useTariffStore((s) => resolveEnergyContent(s, type))
   // Nur Träger, deren Zähler Volumen/Masse misst, brauchen die Umrechnung.
   const showContent = hasEnergyContent(type)
+  const readings = useReadingsStore((s) => s.readings[type])
 
   const meta = PRICE_META[type]
   const name = t(`monitoring.energyTypes.${type}`)
+  // Preise immer mit zwei Nachkommastellen: „1 €/l" liest sich wie ein
+  // gerundeter Schätzwert, „1,00 €/l" wie der abgelesene Betrag, der er ist.
+  const eurFmt = new Intl.NumberFormat(i18n.language, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+
+  // Der gemessene Preis aus den Lieferscheinen – ein **Vorschlag**, kein
+  // Automatismus. Ein selbst gesetzter Preis ist die Wahrheit des Nutzers und
+  // wird nie überschrieben; deshalb steht hier ein Knopf und kein stiller
+  // Schreibvorgang.
+  const measured = priceFromRefills(readings ?? [])
 
   const [work, setWork] = useState(String(currentWork))
   const [base, setBase] = useState(String(currentBase))
@@ -146,6 +159,32 @@ export function TariffModal({ open, onClose, type = 'electricity' }: TariffModal
                 kWh/{meta.priceUnit.replace('€/', '')}
               </span>
             </div>
+          </div>
+        )}
+
+        {measured && meta && (
+          <div className="rounded-lg border border-border bg-surface-2/60 p-3">
+            <p className="text-sm font-medium text-foreground">
+              {t('monitoring.tank.fromRefills', {
+                count: measured.count,
+                price: `${eurFmt.format(measured.eurPerUnit / meta.priceToEur)} ${meta.priceUnit}`,
+              })}
+            </p>
+            <p className="mt-1 text-xs text-muted">{t('monitoring.tank.fromRefillsHint')}</p>
+            <button
+              type="button"
+              onClick={() =>
+                setWork(
+                  formatDecimalInput(
+                    Math.round((measured.eurPerUnit / meta!.priceToEur) * 100) / 100,
+                    i18n.language,
+                  ),
+                )
+              }
+              className="focus-ring mt-2 rounded text-sm font-semibold text-primary underline-offset-2 hover:underline"
+            >
+              {t('monitoring.tank.fromRefillsApply')}
+            </button>
           </div>
         )}
 

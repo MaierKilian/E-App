@@ -469,3 +469,84 @@ describe('Vorratszähler im Bericht', () => {
     expect(data.entries.find((e) => e.type === 'oil')?.consumption).toBe(400)
   })
 })
+
+describe('Lieferübersicht im Bericht', () => {
+  const OIL_PROFILE = { heatGenerators: ['oil_boiler'], hasPV: 'no' } as unknown as OnboardingData
+
+  /** Lieferung `d` Tage vor „jetzt". */
+  function delivery(daysAgo: number, value: number, amount: number, cost?: number): MeterReading {
+    return {
+      id: `d-${daysAgo}`,
+      date: new Date(NOW - daysAgo * DAY).toISOString().slice(0, 10),
+      value,
+      refill: amount,
+      ...(cost !== undefined ? { refillCostEur: cost } : {}),
+    }
+  }
+  function level(daysAgo: number, value: number): MeterReading {
+    return { id: `l-${daysAgo}`, date: new Date(NOW - daysAgo * DAY).toISOString().slice(0, 10), value }
+  }
+
+  function build(readings: MeterReading[]) {
+    return buildMonitoringReportData({
+      profile: OIL_PROFILE,
+      readingsByType: { oil: readings },
+      rangeDays: null,
+      types: ['oil'],
+      meters: { oil: { mode: 'level', capacity: 3000 } },
+    }).entries.find((e) => e.type === 'oil')
+  }
+
+  it('listet die Lieferungen mit Menge, Betrag und Preis je Einheit', () => {
+    const oel = build([
+      level(120, 2600),
+      delivery(90, 2900, 2000, 1800),
+      level(30, 1400),
+      delivery(10, 3000, 1600, 1600),
+    ])
+
+    expect(oel?.refills.map((r) => r.amount)).toEqual([2000, 1600])
+    expect(oel?.refills[0].eurPerUnit).toBeCloseTo(0.9, 6)
+    expect(oel?.refills[1].eurPerUnit).toBeCloseTo(1.0, 6)
+    // Die Summen, die der Bericht als letzte Zeile zeigt.
+    expect(oel?.refillAmount).toBe(3600)
+    expect(oel?.refillCostEur).toBe(3400)
+  })
+
+  it('trägt eine Lieferung ohne Betrag mit, aber ohne Preis', () => {
+    // Wer den Lieferschein nicht zur Hand hat, soll die Menge trotzdem
+    // eintragen können – der Verbrauch hängt daran.
+    const oel = build([level(60, 2000), delivery(30, 3000, 1500)])
+    expect(oel?.refills).toHaveLength(1)
+    expect(oel?.refills[0].costEur).toBeUndefined()
+    expect(oel?.refills[0].eurPerUnit).toBeUndefined()
+    expect(oel?.refillAmount).toBe(1500)
+    expect(oel?.refillCostEur).toBeUndefined()
+  })
+
+  it('lässt den Abschnitt bei einem Zählwerk leer', () => {
+    const data = buildMonitoringReportData({
+      profile: OIL_PROFILE,
+      readingsByType: { oil: [level(60, 1000), level(30, 1400)] },
+      rangeDays: null,
+      types: ['oil'],
+    })
+    expect(data.entries.find((e) => e.type === 'oil')?.refills).toEqual([])
+  })
+
+  it('zeigt nur die Lieferungen des gewählten Zeitraums', () => {
+    const oel = buildMonitoringReportData({
+      profile: OIL_PROFILE,
+      readingsByType: {
+        oil: [level(120, 2600), delivery(100, 2900, 2000, 1800), level(20, 1200), delivery(5, 3000, 1800, 1710)],
+      },
+      rangeDays: 30,
+      types: ['oil'],
+      meters: { oil: { mode: 'level', capacity: 3000 } },
+    }).entries.find((e) => e.type === 'oil')
+
+    // Die Lieferung von vor 100 Tagen liegt außerhalb der 30 Tage.
+    expect(oel?.refills).toHaveLength(1)
+    expect(oel?.refillAmount).toBe(1800)
+  })
+})

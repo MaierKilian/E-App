@@ -39,6 +39,18 @@ export interface ConsumptionSegment {
   days: number
 }
 
+/** Eine Lieferung im Berichtszeitraum. */
+export interface RefillRow {
+  /** Datum der Lieferung (ISO). */
+  date: string
+  /** Gelieferte Menge in der Einheit des Trägers. */
+  amount: number
+  /** Rechnungsbetrag in €, falls erfasst. */
+  costEur?: number
+  /** € je Einheit – nur wenn ein Betrag vorliegt. */
+  eurPerUnit?: number
+}
+
 /** Auswertung eines Energieträgers für den Bericht. */
 export interface MonitoringEntry {
   type: EnergyType
@@ -94,6 +106,15 @@ export interface MonitoringEntry {
   segments: ConsumptionSegment[]
   /** Alle Ablesungen im Zeitraum (älteste zuerst); Kürzung erfolgt im PDF. */
   history: MeterReading[]
+  /**
+   * Lieferungen im Zeitraum, älteste zuerst – die Jahresaufstellung, die
+   * Ölkunden ohnehin führen. Bei einem Zählwerk immer leer.
+   */
+  refills: RefillRow[]
+  /** Summe der gelieferten Menge im Zeitraum. */
+  refillAmount?: number
+  /** Summe der Rechnungsbeträge im Zeitraum (nur erfasste). */
+  refillCostEur?: number
 }
 
 export interface MonitoringReportData {
@@ -204,6 +225,7 @@ function buildEntry(
     points: [],
     segments: [],
     history: [],
+    refills: [],
   }
 
   if (all.length === 0) return entry
@@ -230,6 +252,28 @@ function buildEntry(
     windowReadings = inWindow(all, fromMs, nowMs)
     windowCounted = inWindow(counted, fromMs, nowMs)
     prevCounted = inWindow(counted, prevFromMs, fromMs)
+  }
+
+  // Lieferungen: eigene Zeilen, nicht als Ablesungen getarnt. Erst sie machen
+  // aus dem Bericht die Aufstellung, die man beim Steuerberater vorlegt.
+  entry.refills = windowReadings
+    .filter((r) => typeof r.refill === 'number' && Number.isFinite(r.refill) && r.refill > 0)
+    .map((r) => {
+      const amount = r.refill as number
+      const cost =
+        typeof r.refillCostEur === 'number' && Number.isFinite(r.refillCostEur) && r.refillCostEur > 0
+          ? r.refillCostEur
+          : undefined
+      return {
+        date: r.date,
+        amount,
+        ...(cost !== undefined ? { costEur: cost, eurPerUnit: cost / amount } : {}),
+      }
+    })
+  if (entry.refills.length > 0) {
+    entry.refillAmount = entry.refills.reduce((sum, r) => sum + r.amount, 0)
+    const cost = entry.refills.reduce((sum, r) => sum + (r.costEur ?? 0), 0)
+    if (cost > 0) entry.refillCostEur = cost
   }
 
   entry.readingCount = windowReadings.length

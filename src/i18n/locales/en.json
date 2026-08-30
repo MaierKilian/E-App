@@ -1699,7 +1699,17 @@
       "rangeBasisLinear": "evenly spread",
       "refillDue": "Order more",
       "reminderLowTitle": "Store is running low",
-      "reminderLowText": "Lasts until about {{date}}. Oil and pellets take time to arrive – order now."
+      "reminderLowText": "Lasts until about {{date}}. Oil and pellets take time to arrive – order now.",
+      "fromRefills": "Calculated from {{count}} delivery: {{price}}",
+      "fromRefills_other": "Calculated from {{count}} deliveries: {{price}}",
+      "fromRefillsApply": "Apply",
+      "fromRefillsHint": "From the quantities and amounts on your delivery notes of the last twelve months – more accurate than any estimate.",
+      "refillsTitle": "Deliveries",
+      "refillsAmount": "Quantity",
+      "refillsCost": "Amount",
+      "refillsPerUnit": "per unit",
+      "refillsTotal": "Total",
+      "refillsNone": "No deliveries in this period."
     }
   },
   "pages": {

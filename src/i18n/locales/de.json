@@ -1281,7 +1281,17 @@
       "rangeBasisLinear": "gleichmäßig gerechnet",
       "refillDue": "Nachbestellen",
       "reminderLowTitle": "Vorrat wird knapp",
-      "reminderLowText": "Reicht noch bis etwa {{date}}. Öl und Pellets brauchen Vorlauf – jetzt bestellen."
+      "reminderLowText": "Reicht noch bis etwa {{date}}. Öl und Pellets brauchen Vorlauf – jetzt bestellen.",
+      "fromRefills": "Aus {{count}} Lieferung berechnet: {{price}}",
+      "fromRefills_other": "Aus {{count}} Lieferungen berechnet: {{price}}",
+      "fromRefillsApply": "Übernehmen",
+      "fromRefillsHint": "Aus Menge und Betrag deiner Lieferscheine der letzten zwölf Monate – genauer als jeder Schätzwert.",
+      "refillsTitle": "Lieferungen",
+      "refillsAmount": "Menge",
+      "refillsCost": "Betrag",
+      "refillsPerUnit": "je Einheit",
+      "refillsTotal": "Summe",
+      "refillsNone": "Keine Lieferungen im Zeitraum."
     }
   },
   "onboarding": {

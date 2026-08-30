@@ -318,6 +318,61 @@ const SPECIFIC_UNIT_KEY = {
   perPersonLiterDay: 'monitoring.detail.specificPerPersonDay',
 } as const
 
+/**
+ * Lieferübersicht: Datum, Menge, Betrag und € je Einheit, darunter die Summe.
+ *
+ * Das ist die Jahresaufstellung, die Ölkunden ohnehin von Hand führen – und
+ * einer der wenigen Fälle, in denen der Bericht etwas zeigt, was die
+ * App-Ansicht nicht besser kann. Bei einem Zählwerk bleibt der Abschnitt weg,
+ * statt leer zu erscheinen.
+ */
+function writeRefills(
+  kit: PdfKit,
+  t: TFunction,
+  language: string,
+  num: Intl.NumberFormat,
+  e: MonitoringEntry,
+): void {
+  if (e.refills.length === 0) return
+  // Beträge und Preise mit fester Nachkommastelle: „2.707,5 €" liest sich wie
+  // eine gerundete Zahl, „2.707,50 €" wie der Betrag von der Rechnung.
+  const eur = new Intl.NumberFormat(language, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+
+  const rows = e.refills.map((r) => [
+    fmtDate(r.date, language),
+    fmtVal(r.amount, e.unit, num),
+    r.costEur !== undefined ? `${eur.format(r.costEur)} €` : '–',
+    r.eurPerUnit !== undefined ? `${eur.format(r.eurPerUnit)} €/${e.unit}` : '–',
+  ])
+  // Summenzeile: ohne sie müsste man die Spalte im Kopf addieren, und genau
+  // dafür holt man den Bericht heraus.
+  rows.push([
+    t('monitoring.tank.refillsTotal'),
+    e.refillAmount !== undefined ? fmtVal(e.refillAmount, e.unit, num) : '–',
+    e.refillCostEur !== undefined ? `${eur.format(e.refillCostEur)} €` : '–',
+    e.refillAmount && e.refillCostEur
+      ? `${eur.format(e.refillCostEur / e.refillAmount)} €/${e.unit}`
+      : '–',
+  ])
+
+  // Tabelle mit ihrer Überschrift zusammenhalten – eine Lieferübersicht, die
+  // ihren Kopf auf der Vorseite lässt, ist keine.
+  kit.subHead(t('monitoring.tank.refillsTitle'), { keepWith: kit.measureTable(rows.length) })
+  kit.table(
+    [
+      t('report.pdf.monitoring.historyDate'),
+      t('monitoring.tank.refillsAmount'),
+      t('monitoring.tank.refillsCost'),
+      t('monitoring.tank.refillsPerUnit'),
+    ],
+    rows,
+    { align: ['left', 'right', 'right', 'right'], emphasizeLast: true },
+  )
+}
+
 /** Historie mit ehrlichem Hinweis, wenn gekürzt wurde. */
 function writeHistory(
   kit: PdfKit,
@@ -399,6 +454,8 @@ function writeCarrier(
 
   kit.gap(4)
   writeReadingCurve(kit, t, language, e, 150)
+  kit.gap(6)
+  writeRefills(kit, t, language, num, e)
   kit.gap(6)
   writeHistory(kit, t, language, num, e)
 }
