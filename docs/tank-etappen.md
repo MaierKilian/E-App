@@ -28,7 +28,7 @@ nach `main` macht Kilian (siehe „Der Merge nach `main` gehört dem Menschen“
 | 1 | Modell und virtueller Zähler | ✅ fertig | 2026-08-30 | `c6ca126` |
 | 2 | Eingabe und Anzeige | ✅ fertig | 2026-08-30 | `11f502f` |
 | 3 | Reichweite und Nachbestellen | ✅ fertig | 2026-08-30 | `715d271` |
-| 4 | Preis aus Lieferungen, Bericht | ⬜ offen | – | – |
+| 4 | Preis aus Lieferungen, Bericht | ✅ fertig | 2026-08-30 | `99a8b76` |
 
 **Abhängigkeiten:** 2 braucht 1 · 3 braucht 1 und 2 · 4 braucht 1 und 2.
 Etappe 1 trägt alles Weitere: Ist der Adapter sauber und getestet, ist der Rest
@@ -352,18 +352,81 @@ Gegenprobe mit einem Gas-Zählwerk).
 ### Berührte Dateien
 
 ```
-        src/features/monitoring/priceConfig.ts          (Preis aus Lieferungen)
+        src/features/monitoring/priceConfig.ts          (priceFromRefills)
         src/features/monitoring/TariffModal.tsx
-        src/store/tariffStore.ts
         src/features/reports/monitoringReportData.ts
         src/features/reports/generateMonitoringPdf.ts
         src/i18n/locales/de.json, en.json
+neu     tests/unit/refillPrice.test.ts
+        tests/unit/monitoringReport.test.ts
 ```
+
+### Unterwegs entschieden
+
+- **Der `tariffStore` blieb unangetastet.** Geplant war, den gemessenen Preis
+  dort als Vorschlag zu hinterlegen. Nötig ist das nicht: Der Preis lässt sich
+  aus den Lieferungen jederzeit herleiten, und ein zweites gespeichertes Feld
+  neben `PriceEntry` wäre eine zweite Wahrheit, die mit der ersten in Streit
+  geraten kann. Der Vorschlag steht deshalb im Tarif-Dialog und wird erst
+  durch einen Tipp auf „Übernehmen" zum Preis. Damit ist auch die Bedingung
+  „ein selbst gesetzter Preis wird nie überschrieben" nicht bloß eingehalten,
+  sondern strukturell unmöglich zu verletzen.
+
+- **Zwei Nachkommastellen bei Beträgen und Preisen** – im Dialog wie im PDF.
+  „2.707,5 €" liest sich wie eine gerundete Zahl, „2.707,50 €" wie der Betrag
+  von der Rechnung; „1 €/l" wie ein Schätzwert, „1,00 €/l" wie ein Ergebnis.
+
+- **Eine Lieferung ohne Betrag zählt trotzdem.** Sie geht in Menge, Verbrauch
+  und Lieferübersicht ein, nur nicht in den Preis. Wer den Lieferschein nicht
+  zur Hand hat, soll die Menge trotzdem eintragen können – der Verbrauch hängt
+  daran, der Preis ist Zugabe.
 
 ### Fertig, wenn
 
-- [ ] Drei Lieferungen zu verschiedenen Preisen ergeben den mengengewichteten
-      Mittelwert, nicht den arithmetischen.
-- [ ] Ein selbst gesetzter Preis bleibt unangetastet.
-- [ ] Der Bericht listet die Lieferungen des gewählten Zeitraums mit Summe.
-- [ ] Typecheck, ESLint und `npx vitest run` grün.
+- [x] Drei Lieferungen zu verschiedenen Preisen ergeben den mengengewichteten
+      Mittelwert, nicht den arithmetischen (3.000 l zu 0,95 € plus 500 l zu
+      1,30 € ergeben 1,00 €/l, nicht 1,13 €/l).
+- [x] Ein selbst gesetzter Preis bleibt unangetastet – der Vorschlag wirkt erst
+      auf Tastendruck.
+- [x] Der Bericht listet die Lieferungen des gewählten Zeitraums mit Summe;
+      außerhalb des Zeitraums bleiben sie weg, bei einem Zählwerk entfällt der
+      Abschnitt ganz.
+- [x] Typecheck, ESLint und `npx vitest run` grün (626 Tests), Build grün.
+
+Abnahme gefahren mit `tests/unit/refillPrice.test.ts` und den neuen Fällen in
+`monitoringReport.test.ts` (Rechenebene) sowie zwei Playwright-Durchläufen
+(Bedienebene: Preisvorschlag samt Übernehmen und Gegenprobe mit eigenem Preis;
+PDF-Export mit anschließender Textprüfung der Lieferübersicht). Die PDF-Seite
+wurde per Textextraktion geprüft, nicht visuell – in dieser Umgebung fehlt ein
+PDF-Renderer.
+
+---
+
+## Alle vier Etappen sind abgearbeitet
+
+Öl, Pellets und Flüssiggas sind nicht länger Zähler, die zufällig rückwärts
+laufen. Der Füllstand wird in einen virtuellen Zählerstand übersetzt und läuft
+durch die vorhandene Auswertung – eine Adapterfunktion statt einer zweiten
+Rechenkette. Die Lieferung ist ein eigener Eintrag, weil der Verbrauch im
+Auffüll-Zeitraum sonst nicht berechenbar wäre; sie liefert nebenbei den
+gemessenen Preis. Und der Vorrat kann etwas, was kein Zählwerk kann: sagen, wie
+lange er noch reicht, und rechtzeitig ans Bestellen erinnern.
+
+**Was für später notiert bleibt:**
+
+- **Doppelte Segment-Logik.** `monitoringReportData.ts` rechnet mit
+  `consumptionOf`/`segmentsOf` neben `readings.ts` ein zweites Mal. Der Adapter
+  greift an beiden Stellen, ein Test hält sie gegeneinander – zusammengeführt
+  sind sie damit nicht. Das gehört in einen eigenen Aufräumschritt.
+- **Nutzbarer Anteil.** Öltanks werden nur zu etwa 95 % befüllt, und die
+  untersten Zentimeter sind nicht entnehmbar. Bis es ein `usableShare` gibt,
+  trägt der Nutzer die nutzbare Größe als Kapazität ein.
+- **Mehrere Tanks** je Energieträger lassen sich weiterhin nur als Summe
+  abbilden – dieselbe Grenze wie bei Zählern.
+- **Peilstab-Kennlinie.** Bei liegenden Zylindertanks ist die Höhe nicht
+  proportional zum Volumen. Erst sinnvoll, wenn die Tankform erfasst wird.
+- **Scan der Schwimmeranzeige** wäre über dieselbe Cloud Function mit eigenem
+  Prompt denkbar – eigenes Vorhaben mit eigener Genauigkeitsfrage.
+- **Der Preis aus Lieferungen wird nicht gespeichert**, sondern bei Bedarf
+  hergeleitet. Sollte er einmal an mehr Stellen gebraucht werden als im
+  Tarif-Dialog, ist `priceFromRefills` der eine Ort, an dem das zu ändern wäre.
