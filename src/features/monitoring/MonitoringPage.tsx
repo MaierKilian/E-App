@@ -12,7 +12,9 @@ import { ENERGY_META, ALL_ENERGY_TYPES, boardEnergyTypes } from './energyConfig'
 import { sortByDate } from './readings'
 import { dueTypes } from './due'
 import { AddReadingScreen } from './AddReadingScreen'
+import { MeterSetupScreen } from './MeterSetupScreen'
 import { WidgetBoard } from './WidgetBoard'
+import { isTankType } from './counterSeries'
 
 /**
  * Führt die gespeicherte Wunsch-Reihenfolge mit den aktuell sichtbaren Zählern
@@ -37,6 +39,7 @@ export function MonitoringPage() {
   const { t } = useTranslation()
   const data = useOnboardingStore((s) => s.data)
   const readingsByType = useReadingsStore((s) => s.readings)
+  const meters = useReadingsStore((s) => s.meters)
   const frequency = useReadingsStore((s) => s.reminderFrequency)
   const savedOrder = useWidgetOrderStore((s) => s.order)
   const setOrder = useWidgetOrderStore((s) => s.setOrder)
@@ -48,6 +51,9 @@ export function MonitoringPage() {
   const [now] = useState(() => Date.now())
   // Direkteingabe: ohne Umweg über die Detailseite den Zählerstand erfassen.
   const [addType, setAddType] = useState<EnergyType | null>(null)
+  // Ein bevorratbarer Träger wird vor der ersten Eingabe eingerichtet: Ohne die
+  // Frage „Zähler oder Vorrat?" landete ein Öltank im Zählwerk-Modell.
+  const [setupType, setSetupType] = useState<EnergyType | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
 
   // Auf dem Board stehen die vorgeschlagenen Träger und alles, wofür schon
@@ -64,6 +70,22 @@ export function MonitoringPage() {
 
   const addMeta = addType ? ENERGY_META[addType] : null
   const addLatest = addType ? sortByDate(readingsByType[addType] ?? []).at(-1) : undefined
+  const addConfig = addType ? meters[addType] : undefined
+  const addIsLevel = addConfig?.mode === 'level'
+
+  /**
+   * Öffnet die Eingabe – bei einem noch nicht eingerichteten bevorratbaren
+   * Träger zuerst die Modus-Wahl. Nach dem Einrichten geht es in die passende
+   * Eingabemaske weiter.
+   */
+  function startAdd(type: EnergyType) {
+    const isNewTank =
+      isTankType(type) &&
+      meters[type] === undefined &&
+      (readingsByType[type]?.length ?? 0) === 0
+    if (isNewTank) setSetupType(type)
+    else setAddType(type)
+  }
 
   // Angegebene PV-Anlage, aber nie ein Erzeugungswert: Die Profilangabe erinnert
   // daran, statt – wie früher – den Zähler überhaupt erst freizuschalten.
@@ -97,7 +119,7 @@ export function MonitoringPage() {
             </p>
             <button
               type="button"
-              onClick={() => setAddType('pv')}
+              onClick={() => startAdd('pv')}
               className="focus-ring mt-1 rounded text-sm font-semibold text-primary underline-offset-2 hover:underline"
             >
               {t('monitoring.overview.pvPromptCta')}
@@ -120,7 +142,7 @@ export function MonitoringPage() {
           due={due}
           now={now}
           onReorder={setOrder}
-          onAdd={setAddType}
+          onAdd={startAdd}
         />
       )}
 
@@ -155,7 +177,7 @@ export function MonitoringPage() {
                   // ohne das hier bliebe er trotz neuer Ablesung unsichtbar.
                   showType(type)
                   if (known) navigate(`/monitoring/${type}`)
-                  else setAddType(type)
+                  else startAdd(type)
                 }}
                 className="glass focus-ring flex items-center gap-2.5 rounded-2xl px-3 py-3 text-left text-sm font-semibold text-foreground transition-transform active:scale-[0.98]"
               >
@@ -188,6 +210,20 @@ export function MonitoringPage() {
         <p className="text-center text-xs text-muted">{t('monitoring.overview.reorderHint')}</p>
       )}
 
+      {setupType && (
+        <MeterSetupScreen
+          type={setupType}
+          isNew
+          onClose={(saved) => {
+            const next = setupType
+            setSetupType(null)
+            // Abbrechen heißt abbrechen: Ohne Einrichtung wird auch nichts
+            // eingetragen, sonst entstünde still ein Zähler im falschen Modell.
+            if (saved) setAddType(next)
+          }}
+        />
+      )}
+
       {addType && addMeta && (
         <AddReadingScreen
           type={addType}
@@ -195,7 +231,9 @@ export function MonitoringPage() {
           typeLabel={t(`monitoring.energyTypes.${addType}`)}
           accent={addMeta.accent}
           icon={addMeta.icon}
-          defaultValue={addLatest ? Math.trunc(addLatest.value) : 0}
+          defaultValue={addLatest ? (addIsLevel ? addLatest.value : Math.trunc(addLatest.value)) : 0}
+          level={addIsLevel}
+          capacity={addConfig?.capacity}
           onClose={() => setAddType(null)}
         />
       )}

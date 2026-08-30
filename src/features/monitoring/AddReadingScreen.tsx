@@ -4,8 +4,9 @@ import { X, Keyboard, Gauge, ScanLine } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/readingsStore'
 import { OdometerInput } from './OdometerInput'
+import { FillLevelInput } from './FillLevelInput'
 import { clampInt } from './odometer'
-import { parseDecimalInput } from '@/lib/decimalInput'
+import { parseDecimalInput, formatDecimalInput } from '@/lib/decimalInput'
 import { todayIso } from '@/lib/timeAxis'
 
 // Der Scanner zieht Tesseract.js (WASM) nach – nur bei Bedarf laden.
@@ -24,6 +25,14 @@ interface AddReadingScreenProps {
   icon: LucideIcon
   /** Letzter bekannter Stand als Default für das Zählwerk (Ganzzahl-Anteil). */
   defaultValue: number
+  /**
+   * Vorratszähler: Statt des Zählwerks erscheint die Füllstands-Eingabe, der
+   * Kamera-Scan entfällt. Ein Peilstab ist kein Zählwerk – und `scanMeter` ist
+   * auf Zählwerke geprompted, nicht auf Schwimmeranzeigen.
+   */
+  level?: boolean
+  /** Fassungsvermögen des Vorrats; ohne Angabe rechnet die Eingabe in Prozent. */
+  capacity?: number
   /** Wenn gesetzt: bestehende Ablesung bearbeiten statt neu anlegen. */
   editReading?: MeterReading
   onClose: () => void
@@ -46,6 +55,8 @@ export function AddReadingScreen({
   accent,
   icon: Icon,
   defaultValue,
+  level = false,
+  capacity,
   editReading,
   onClose,
 }: AddReadingScreenProps) {
@@ -58,8 +69,15 @@ export function AddReadingScreen({
   const initialValue = editReading ? editReading.value : defaultValue
   const [date, setDate] = useState(() => editReading?.date ?? todayIso())
   const [value, setValue] = useState(() => clampInt(Math.trunc(initialValue), max))
-  // Bei Dezimalwerten direkt die Tastatur zeigen, damit die Nachkommastelle sichtbar ist.
-  const [keyboard, setKeyboard] = useState(() => !Number.isInteger(initialValue))
+  // Bei Dezimalwerten direkt die Tastatur zeigen, damit die Nachkommastelle
+  // sichtbar ist. Beim Vorrat übernimmt die Füllstands-Eingabe diese Rolle;
+  // dort ist die Tastatur der Nebenweg für absolute Werte.
+  const [keyboard, setKeyboard] = useState(
+    () => !level && !Number.isInteger(initialValue),
+  )
+  // Der Füllstand ist nicht auf ganze Zahlen beschränkt – ein Prozentschritt
+  // eines 3000-l-Tanks sind 30 l.
+  const [levelValue, setLevelValue] = useState(() => (Number.isFinite(initialValue) ? initialValue : 0))
   const [scanning, setScanning] = useState(false)
   // Manuelles Tastaturfeld erlaubt auch Dezimaleingabe.
   const [text, setText] = useState(() => String(initialValue))
@@ -75,7 +93,7 @@ export function AddReadingScreen({
 
   /** Aktuell gültiger numerischer Wert (Zählwerk oder Tastatur). */
   const parsedText = parseDecimalInput(text, i18n.language)
-  const effectiveValue = keyboard ? (parsedText ?? NaN) : value
+  const effectiveValue = keyboard ? (parsedText ?? NaN) : level ? levelValue : value
   const valid = date !== '' && Number.isFinite(effectiveValue) && effectiveValue >= 0
 
   function handleSave() {
@@ -105,7 +123,15 @@ export function AddReadingScreen({
           </span>
           <div className="min-w-0">
             <h2 className="text-base font-semibold text-foreground truncate">
-              {t(editReading ? 'monitoring.odometer.editTitle' : 'monitoring.odometer.title')}
+              {t(
+                level
+                  ? editReading
+                    ? 'monitoring.tank.levelEditTitle'
+                    : 'monitoring.tank.levelTitle'
+                  : editReading
+                    ? 'monitoring.odometer.editTitle'
+                    : 'monitoring.odometer.title',
+              )}
             </h2>
             <p className="text-sm text-muted truncate">
               {typeLabel} · {unit}
@@ -152,30 +178,41 @@ export function AddReadingScreen({
             />
             <span className="text-base text-muted">{unit}</span>
           </div>
+        ) : level ? (
+          <FillLevelInput
+            value={levelValue}
+            capacity={capacity}
+            unit={unit}
+            accent={accent}
+            onChange={setLevelValue}
+          />
         ) : (
           <OdometerInput digits={DIGITS} value={value} onChange={setValue} accent={accent} />
         )}
 
         {/* Aktionen: Scannen + Umschalter Zählwerk <-> Tastatur */}
         <div className="flex justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => setScanning(true)}
-            className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-            style={{ background: accent }}
-          >
-            <ScanLine className="w-4 h-4" />
-            {t('scan.button')}
-          </button>
+          {!level && (
+            <button
+              type="button"
+              onClick={() => setScanning(true)}
+              className="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              style={{ background: accent }}
+            >
+              <ScanLine className="w-4 h-4" />
+              {t('scan.button')}
+            </button>
+          )}
           <button
             type="button"
             onClick={() => {
               if (keyboard) {
-                // Tastatur -> Zählwerk: ganzzahligen Anteil übernehmen.
-                setValue(clampInt(parsedText ?? 0, max))
+                // Tastatur -> Anzeige: den getippten Wert übernehmen.
+                if (level) setLevelValue(parsedText ?? 0)
+                else setValue(clampInt(parsedText ?? 0, max))
               } else {
-                // Zählwerk -> Tastatur: aktuellen Wert vorbelegen.
-                setText(String(value))
+                // Anzeige -> Tastatur: aktuellen Wert vorbelegen.
+                setText(formatDecimalInput(level ? levelValue : value, i18n.language))
               }
               setKeyboard((v) => !v)
             }}
@@ -187,7 +224,7 @@ export function AddReadingScreen({
         </div>
       </div>
 
-      {scanning && (
+      {scanning && !level && (
         <Suspense fallback={null}>
           <MeterScanner
             unit={unit}

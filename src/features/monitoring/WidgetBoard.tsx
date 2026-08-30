@@ -5,7 +5,8 @@ import { ChevronRight, Plus } from 'lucide-react'
 import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
 import { ENERGY_META } from './energyConfig'
 import { sortByDate, consumptionTrend, daysSinceLastReading } from './readings'
-import { counterSeries } from './counterSeries'
+import { counterSeries, meterMode } from './counterSeries'
+import { toPercent } from './fillLevel'
 import { Sparkline } from './Sparkline'
 import { TrendBadge } from './MeterTrend'
 import { useLastReadingText } from './useLastReadingText'
@@ -359,6 +360,7 @@ function HeroMeter({ type, due, now, onAdd }: MeterProps & { onAdd: () => void }
   const meterConfig = useReadingsStore((s) => s.meters[type])
 
   const meta = ENERGY_META[type]
+  const isLevel = meterMode(meterConfig) === 'level'
   const Icon = meta.icon
   const readings = sortByDate(readingsByType[type] ?? [])
   const latest = readings[readings.length - 1]
@@ -412,13 +414,20 @@ function HeroMeter({ type, due, now, onAdd }: MeterProps & { onAdd: () => void }
           <div className="mt-4 flex items-end justify-between gap-3">
             <div className="min-w-0">
               <p className="text-xs uppercase tracking-wide text-muted">
-                {t('monitoring.detail.current')}
+                {isLevel ? t('monitoring.tank.currentLevel') : t('monitoring.detail.current')}
               </p>
               {latest ? (
-                <p className="mt-0.5 text-3xl font-bold tabular-nums leading-none">
-                  {numFmt.format(latest.value)}
-                  <span className="ml-1 text-base font-medium text-muted">{meta.unit}</span>
-                </p>
+                isLevel ? (
+                  <p className="mt-0.5 text-3xl font-bold tabular-nums leading-none">
+                    {Math.round(toPercent(latest.value, meterConfig?.capacity))}
+                    <span className="ml-1 text-base font-medium text-muted">%</span>
+                  </p>
+                ) : (
+                  <p className="mt-0.5 text-3xl font-bold tabular-nums leading-none">
+                    {numFmt.format(latest.value)}
+                    <span className="ml-1 text-base font-medium text-muted">{meta.unit}</span>
+                  </p>
+                )
               ) : (
                 <p className="mt-0.5 text-base text-muted">{t('monitoring.overview.empty')}</p>
               )}
@@ -466,6 +475,7 @@ function MeterTile({ type, due }: MeterProps) {
   const meterConfig = useReadingsStore((s) => s.meters[type])
 
   const meta = ENERGY_META[type]
+  const isLevel = meterMode(meterConfig) === 'level'
   const Icon = meta.icon
   const readings = sortByDate(readingsByType[type] ?? [])
   const latest = readings[readings.length - 1]
@@ -504,8 +514,12 @@ function MeterTile({ type, due }: MeterProps) {
         </p>
         {latest ? (
           <p className="mt-0.5 text-base font-bold tabular-nums truncate">
-            {numFmt.format(latest.value)}
-            <span className="ml-1 text-xs font-medium text-muted">{meta.unit}</span>
+            {isLevel
+              ? Math.round(toPercent(latest.value, meterConfig?.capacity))
+              : numFmt.format(latest.value)}
+            <span className="ml-1 text-xs font-medium text-muted">
+              {isLevel ? '%' : meta.unit}
+            </span>
           </p>
         ) : (
           <p className="mt-0.5 text-sm text-muted truncate">{t('monitoring.overview.empty')}</p>

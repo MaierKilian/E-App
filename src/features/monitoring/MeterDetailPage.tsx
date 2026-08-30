@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, Plus, Trash2, ChevronDown, Pencil, RotateCcw } from 'lucide-react'
+import { ChevronLeft, Plus, Trash2, ChevronDown, Pencil, RotateCcw, Truck, Settings2 } from 'lucide-react'
 import { useReadingsStore, type EnergyType, type MeterReading } from '@/store/readingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useTariffStore, resolvePrice, resolveEnergyContent } from '@/store/tariffStore'
@@ -14,7 +14,10 @@ import { AddReadingScreen } from './AddReadingScreen'
 import { ReadingReminder } from './ReadingReminder'
 import { TariffModal } from './TariffModal'
 import { sortByDate, stats, consumptionTrend, daysSinceLastReading } from './readings'
-import { counterSeries } from './counterSeries'
+import { counterSeries, isTankType, meterMode } from './counterSeries'
+import { AddRefillScreen } from './AddRefillScreen'
+import { MeterSetupScreen } from './MeterSetupScreen'
+import { toPercent } from './fillLevel'
 import { TrendBadge } from './MeterTrend'
 import { specificValue } from './specificValues'
 import { filterByRange, fullSpan, RANGE_KEYS, type RangeKey } from './rangeFilter'
@@ -44,6 +47,8 @@ export function MeterDetailPage() {
   const hideType = useWidgetOrderStore((s) => s.hideType)
 
   const [addOpen, setAddOpen] = useState(false)
+  const [refillOpen, setRefillOpen] = useState(false)
+  const [setupOpen, setSetupOpen] = useState(false)
   const [editing, setEditing] = useState<MeterReading | null>(null)
   const [tariffOpen, setTariffOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -74,8 +79,20 @@ export function MeterDetailPage() {
   // der virtuellen Zählerreihe, die einen Vorrat in kumulierten Verbrauch
   // übersetzt (bei einem Zählwerk ist sie die Reihe selbst).
   const counted = counterSeries(readings, meterConfig)
+  const isLevel = meterMode(meterConfig) === 'level'
+  const capacity = meterConfig?.capacity
+  // Die Detailseite ist direkt erreichbar (Kachel auf dem Board). Ohne diese
+  // Weiche käme ein noch nicht eingerichteter Öltank hier am Einrichten vorbei
+  // und landete stillschweigend im Zählwerk-Modell.
+  //
+  // Ausdrücklich nur für einen **neuen** Zähler: Wer seinen Öl-Zähler schon
+  // führt, bekommt die Frage nicht vorgesetzt. Sonst stünde er vor einer
+  // Auswahl mit „Vorrat" vorbelegt und deutete mit einem Tipp auf Speichern
+  // seinen ganzen bisherigen Verlauf um. Umstellen geht über die
+  // Zähler-Einstellungen – dort, wo man es sucht, und mit Warnung.
+  const needsSetup = isTankType(type) && meterConfig === undefined && readings.length === 0
   const latest = readings.length > 0 ? readings[readings.length - 1] : undefined
-  const defaultValue = latest ? Math.trunc(latest.value) : 0
+  const defaultValue = latest ? (isLevel ? latest.value : Math.trunc(latest.value)) : 0
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
   // Spezifische Kennwerte sind Orientierungsgrössen – Nachkommastellen
@@ -148,7 +165,11 @@ export function MeterDetailPage() {
         : t('monitoring.overview.readDaysAgo', { count: sinceDays })
 
   // Diagramm-Punkte nach Zeitraum filtern.
-  const allPoints: LinePoint[] = readings.map((r) => ({ date: r.date, value: r.value }))
+  const allPoints: LinePoint[] = readings.map((r) => ({
+    date: r.date,
+    value: r.value,
+    ...(r.refill !== undefined ? { refill: r.refill } : {}),
+  }))
   const points = filterByRange(allPoints, range, now, customFrom, customTo)
 
   // Volle Messspanne – Vorbelegung und Ziel des Zurücksetzens für den freien
@@ -213,13 +234,31 @@ export function MeterDetailPage() {
 
           <div className="mt-4">
             <p className="text-xs uppercase tracking-wide text-muted">
-              {t('monitoring.detail.current')}
+              {isLevel ? t('monitoring.tank.currentLevel') : t('monitoring.detail.current')}
             </p>
             {latest ? (
-              <p className="mt-0.5 text-3xl font-bold tabular-nums leading-none">
-                {numFmt.format(latest.value)}
-                <span className="ml-1 text-base font-medium text-muted">{unit}</span>
-              </p>
+              isLevel ? (
+                <>
+                  <p className="mt-0.5 text-3xl font-bold tabular-nums leading-none">
+                    {Math.round(toPercent(latest.value, capacity))}
+                    <span className="ml-1 text-base font-medium text-muted">%</span>
+                  </p>
+                  {capacity !== undefined && capacity > 0 && (
+                    <p className="mt-1 text-xs text-muted tabular-nums">
+                      {numFmt.format(latest.value)} {unit}{' '}
+                      {t('monitoring.tank.ofCapacity', {
+                        total: numFmt.format(capacity),
+                        unit,
+                      })}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-0.5 text-3xl font-bold tabular-nums leading-none">
+                  {numFmt.format(latest.value)}
+                  <span className="ml-1 text-base font-medium text-muted">{unit}</span>
+                </p>
+              )
             ) : (
               <p className="mt-0.5 text-base text-muted">{t('monitoring.detail.noReadings')}</p>
             )}
@@ -299,14 +338,29 @@ export function MeterDetailPage() {
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => setAddOpen(true)}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
-          >
-            <Plus className="w-4 h-4" />
-            {t('monitoring.detail.addReading')}
-          </button>
+          <div className="mt-4 flex gap-2">
+            <button
+              type="button"
+              onClick={() => (needsSetup ? setSetupOpen(true) : setAddOpen(true))}
+              className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
+            >
+              <Plus className="w-4 h-4" />
+              {isLevel ? t('monitoring.tank.addLevel') : t('monitoring.detail.addReading')}
+            </button>
+            {/* Die Lieferung ist eine eigene Aktion, weil sie eine eigene Zahl
+                trägt: Ohne die gelieferte Menge lässt sich der Verbrauch im
+                Auffüll-Zeitraum nicht berechnen. */}
+            {isLevel && (
+              <button
+                type="button"
+                onClick={() => setRefillOpen(true)}
+                className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition-transform active:scale-[0.98] hover:bg-surface-2/70"
+              >
+                <Truck className="w-4 h-4" />
+                {t('monitoring.tank.addRefill')}
+              </button>
+            )}
+          </div>
         </div>
       </section>
 
@@ -417,11 +471,21 @@ export function MeterDetailPage() {
                   className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-2/40 px-3 py-2 text-sm"
                 >
                   <span className="min-w-0">
-                    <span className="block font-medium text-foreground tabular-nums">
+                    <span className="flex items-center gap-1.5 font-medium text-foreground tabular-nums">
                       {numFmt.format(r.value)} {unit}
+                      {r.refill !== undefined && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                          style={{ background: `${meta.accent}1f`, color: meta.accent }}
+                        >
+                          <Truck className="h-3 w-3" />
+                          +{numFmt.format(r.refill)}
+                        </span>
+                      )}
                     </span>
                     <span className="block text-xs text-muted truncate">
                       {formatDate(r.date)}
+                      {r.refillCostEur !== undefined && ` · ${eurFmt.format(r.refillCostEur)}`}
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-1">
@@ -452,6 +516,17 @@ export function MeterDetailPage() {
       {/* Erinnerung (kompakt) */}
       <ReadingReminder readings={readings} />
 
+      {isTankType(type) && (
+        <button
+          type="button"
+          onClick={() => setSetupOpen(true)}
+          className="focus-ring flex w-full items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border px-5 py-3 text-sm font-medium text-muted transition-colors hover:text-foreground"
+        >
+          <Settings2 className="h-4 w-4" />
+          {t('monitoring.tank.settings')}
+        </button>
+      )}
+
       {/* Zähler entfernen – bewusst ganz unten, hinter allem Nützlichen, und
           ohne Signalfarbe: Es ist kein Weg, den man versehentlich geht. */}
       <button
@@ -471,6 +546,8 @@ export function MeterDetailPage() {
           accent={meta.accent}
           icon={Icon}
           defaultValue={defaultValue}
+          level={isLevel}
+          capacity={capacity}
           onClose={() => setAddOpen(false)}
         />
       )}
@@ -482,8 +559,26 @@ export function MeterDetailPage() {
           accent={meta.accent}
           icon={Icon}
           defaultValue={defaultValue}
+          // Eine Lieferung wird als Füllstand bearbeitet: Menge und Betrag
+          // bleiben unangetastet, korrigiert wird der Stand danach.
+          level={isLevel}
+          capacity={capacity}
           editReading={editing}
           onClose={() => setEditing(null)}
+        />
+      )}
+      {refillOpen && (
+        <AddRefillScreen type={type} config={meterConfig} onClose={() => setRefillOpen(false)} />
+      )}
+      {setupOpen && (
+        <MeterSetupScreen
+          type={type}
+          isNew={needsSetup}
+          onClose={(saved) => {
+            setSetupOpen(false)
+            // Wer über „Eintragen" hierher kam, will danach eintragen.
+            if (saved && needsSetup) setAddOpen(true)
+          }}
         />
       )}
       <TariffModal open={tariffOpen} onClose={() => setTariffOpen(false)} type={type} />

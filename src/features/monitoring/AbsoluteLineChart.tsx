@@ -5,8 +5,14 @@ import { isoToTime, timeAxisPositions } from '@/lib/timeAxis'
 export interface LinePoint {
   /** ISO-Datum yyyy-mm-dd der Ablesung. */
   date: string
-  /** Absoluter Zählerstand. */
+  /** Absoluter Zählerstand bzw. Füllstand. */
   value: number
+  /**
+   * Gelieferte Menge, falls dieser Punkt eine Lieferung ist. Er wird dann
+   * hervorgehoben: Ein Sprung nach oben ist bei einem Vorrat kein Messfehler,
+   * sondern das Befüllen – ohne Markierung sähe die Kurve nach Datenmüll aus.
+   */
+  refill?: number
 }
 
 interface AbsoluteLineChartProps {
@@ -299,9 +305,22 @@ export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartPro
             opacity={0.5}
           />
         )}
-        {coords.map((c, i) => (
-          <circle key={i} cx={c.cx} cy={c.cy} r={i === active ? 2 : 3} fill={color} />
-        ))}
+        {coords.map((c, i) =>
+          points[i].refill !== undefined ? (
+            // Lieferung: offener Ring statt gefülltem Punkt.
+            <circle
+              key={i}
+              cx={c.cx}
+              cy={c.cy}
+              r={4}
+              fill="var(--color-surface)"
+              stroke={color}
+              strokeWidth={1.8}
+            />
+          ) : (
+            <circle key={i} cx={c.cx} cy={c.cy} r={i === active ? 2 : 3} fill={color} />
+          ),
+        )}
         {/* Aktiver Punkt mit Halo, damit der Scrub-Wert klar ablesbar ist. */}
         <circle
           cx={activeCx}
