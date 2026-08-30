@@ -8,28 +8,31 @@
    - Commits die im aktuellen Branch sind, aber nicht in `main` (eigene Arbeit)
 3. Kurze Zusammenfassung der Änderungen ausgeben (was wurde geändert, welche Dateien betroffen)
 4. Falls `main` neue Commits hat: `git merge origin/main` anbieten oder automatisch ausführen
-5. `docs/tank-etappen.md` überfliegen und den Arbeitsstand des Tank-Umbaus mit
-   einer Zeile nennen (welche Etappe ist als Nächstes dran)
+5. Falls ein Etappen-Vorhaben läuft: dessen Tracker überfliegen und den
+   Arbeitsstand mit einer Zeile nennen. Zurzeit läuft keines – beide sind
+   abgeschlossen (siehe unten).
 
-## Laufendes Vorhaben: Tank-Umbau
+## Abgeschlossene Vorhaben
+
+### Tank-Umbau (2026-08-30)
 
 Öl, Pellets und Flüssiggas werden nicht gezählt, sondern bevorratet: Der Stand
-fällt und springt beim Befüllen zurück. Die App modelliert sie heute als
-aufsteigende Zähler – für diese Haushalte rechnet sie damit falsch.
+fällt und springt beim Befüllen zurück. Sie liefen bis dahin im Zähler-Modell,
+das für sie falsch herum rechnet.
 
-- **Konzept (Was und Warum):** `docs/tank-concept.md`
-- **Arbeitsstand (Wie weit):** `docs/tank-etappen.md` – vier Etappen, jede
-  einzeln lauffähig und deploybar
-- **Bearbeiten mit:** `/tank` (nächste offene), `/tank 2` (gezielt),
-  `/tank status` (nur berichten)
-- Leitgedanke: Ein Tank ist ein Zähler, rückwärts gelesen, plus Lieferungen.
-  Der Füllstand wird in einen virtuellen Zählerstand übersetzt und läuft durch
-  die vorhandene Auswertung – **keine zweite Rechenkette.**
+- **Konzept:** `docs/tank-concept.md` · **Etappen:** `docs/tank-etappen.md` –
+  alle vier fertig
+- `/tank status` berichtet den Stand; was offen blieb, steht am Ende des
+  Trackers.
+- Leitgedanke, der weiter gilt: Ein Tank ist ein Zähler, rückwärts gelesen,
+  plus Lieferungen. Der Füllstand wird in `counterSeries` in einen virtuellen
+  Zählerstand übersetzt und läuft durch die vorhandene Auswertung – **keine
+  zweite Rechenkette.** Wer hier etwas anbaut, baut es dort an.
 
-## Abgeschlossenes Vorhaben: Fragebogen-Umbau
+### Fragebogen-Umbau (2026-08-24)
 
 - **Konzept:** `docs/questionnaire-concept.md` · **Etappen:**
-  `docs/questionnaire-etappen.md` – alle sechs Etappen fertig (2026-08-24)
+  `docs/questionnaire-etappen.md` – alle sechs Etappen fertig
 - `/etappe status` berichtet den Stand; was danach offen blieb, steht am Ende
   des Trackers.
 
