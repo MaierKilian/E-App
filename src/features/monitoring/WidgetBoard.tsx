@@ -5,6 +5,7 @@ import { ChevronRight, Plus } from 'lucide-react'
 import { useReadingsStore, type EnergyType } from '@/store/readingsStore'
 import { ENERGY_META } from './energyConfig'
 import { sortByDate, consumptionTrend, daysSinceLastReading } from './readings'
+import { counterSeries } from './counterSeries'
 import { Sparkline } from './Sparkline'
 import { TrendBadge } from './MeterTrend'
 import { useLastReadingText } from './useLastReadingText'
@@ -355,15 +356,18 @@ function HeroMeter({ type, due, now, onAdd }: MeterProps & { onAdd: () => void }
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const readingsByType = useReadingsStore((s) => s.readings)
+  const meterConfig = useReadingsStore((s) => s.meters[type])
 
   const meta = ENERGY_META[type]
   const Icon = meta.icon
   const readings = sortByDate(readingsByType[type] ?? [])
   const latest = readings[readings.length - 1]
   // Gleiche Datengrundlage wie das Detail-Diagramm (absoluter Zählerstand),
-  // damit Mini- und Detailkurve übereinstimmen.
+  // damit Mini- und Detailkurve übereinstimmen. Bei einem Vorrat ist das die
+  // fallende Kurve mit den Sprüngen der Lieferungen – der Trend darunter
+  // rechnet dagegen auf der virtuellen Zählerreihe.
   const series = readings.map((r) => r.value)
-  const trend = consumptionTrend(readings)
+  const trend = consumptionTrend(counterSeries(readings, meterConfig))
   const days = daysSinceLastReading(readings, now)
   const lastText = useLastReadingText(days)
 
@@ -459,13 +463,14 @@ function MeterTile({ type, due }: MeterProps) {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const readingsByType = useReadingsStore((s) => s.readings)
+  const meterConfig = useReadingsStore((s) => s.meters[type])
 
   const meta = ENERGY_META[type]
   const Icon = meta.icon
   const readings = sortByDate(readingsByType[type] ?? [])
   const latest = readings[readings.length - 1]
   const series = readings.map((r) => r.value)
-  const trend = consumptionTrend(readings)
+  const trend = consumptionTrend(counterSeries(readings, meterConfig))
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 })
 

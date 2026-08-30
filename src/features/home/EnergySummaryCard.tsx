@@ -4,6 +4,7 @@ import { ChevronRight } from 'lucide-react'
 import { useReadingsStore } from '@/store/readingsStore'
 import { ALL_ENERGY_TYPES, ENERGY_META } from '@/features/monitoring/energyConfig'
 import { sortByDate, consumptionTrend, daysSinceLastReading } from '@/features/monitoring/readings'
+import { counterSeries } from '@/features/monitoring/counterSeries'
 import { TrendBadge } from '@/features/monitoring/MeterTrend'
 import { valueSizeClass } from './meterValueSize'
 
@@ -26,6 +27,7 @@ export function EnergySummaryCard() {
   const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const readingsByType = useReadingsStore((s) => s.readings)
+  const meters = useReadingsStore((s) => s.meters)
 
   const numFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
@@ -44,8 +46,9 @@ export function EnergySummaryCard() {
         lastValue: last?.value,
         sinceDays: daysSinceLastReading(readings),
         // Tagesverbrauch ggü. Vorzeitraum (bzw. Vorjahr, wenn die Historie
-        // reicht) – erfordert mindestens zwei Ablesungen.
-        trend: consumptionTrend(readings),
+        // reicht) – erfordert mindestens zwei Ablesungen. Ein Vorrat läuft
+        // vorher durch die virtuelle Zählerreihe.
+        trend: consumptionTrend(counterSeries(readings, meters[type])),
       }
     })
     .filter((c) => c.lastValue !== undefined)

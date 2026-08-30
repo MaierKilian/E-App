@@ -14,6 +14,7 @@ import { AddReadingScreen } from './AddReadingScreen'
 import { ReadingReminder } from './ReadingReminder'
 import { TariffModal } from './TariffModal'
 import { sortByDate, stats, consumptionTrend, daysSinceLastReading } from './readings'
+import { counterSeries } from './counterSeries'
 import { TrendBadge } from './MeterTrend'
 import { specificValue } from './specificValues'
 import { filterByRange, fullSpan, RANGE_KEYS, type RangeKey } from './rangeFilter'
@@ -55,6 +56,7 @@ export function MeterDetailPage() {
   const type = rawType as EnergyType
   const priceWork = useTariffStore((st) => resolvePrice(st, type).work)
   const kwhPerUnit = useTariffStore((st) => resolveEnergyContent(st, type))
+  const meterConfig = useReadingsStore((st) => st.meters[type])
   // Nur ein der App unbekannter Träger führt zurück. Die frühere Sperre
   // („nicht im Profil" → Umleitung) ist entfallen: Wer im Schnellstart keine PV
   // angegeben hat, konnte seine Erzeugung sonst nie erfassen.
@@ -68,6 +70,10 @@ export function MeterDetailPage() {
   const name = t(`monitoring.energyTypes.${type}`)
 
   const readings = sortByDate(readingsByType[type] ?? [])
+  // Verlauf, Liste und Eingabe zeigen den abgelesenen Wert; gerechnet wird auf
+  // der virtuellen Zählerreihe, die einen Vorrat in kumulierten Verbrauch
+  // übersetzt (bei einem Zählwerk ist sie die Reihe selbst).
+  const counted = counterSeries(readings, meterConfig)
   const latest = readings.length > 0 ? readings[readings.length - 1] : undefined
   const defaultValue = latest ? Math.trunc(latest.value) : 0
 
@@ -123,7 +129,7 @@ export function MeterDetailPage() {
 
   const priceMeta = PRICE_META[type]
   const eurPerUnit = priceMeta ? priceWork * priceMeta.priceToEur : undefined
-  const s = stats(readings, eurPerUnit, { seasonal: isSeasonal(type) })
+  const s = stats(counted, eurPerUnit, { seasonal: isSeasonal(type) })
   // Spezifischer Kennwert: der Jahresverbrauch bezogen auf Fläche bzw. Personen –
   // erst damit lässt sich der eigene Verbrauch überhaupt einordnen.
   const specific = specificValue(
@@ -132,7 +138,7 @@ export function MeterDetailPage() {
     data,
     kwhPerUnit,
   )
-  const trend = consumptionTrend(readings)
+  const trend = consumptionTrend(counted)
   const sinceDays = daysSinceLastReading(readings, now)
   const lastText =
     sinceDays === undefined

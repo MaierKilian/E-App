@@ -1,9 +1,10 @@
 import type { OnboardingData } from '@/types'
-import type { EnergyType, MeterReading } from '@/store/readingsStore'
+import type { EnergyType, MeterConfig, MeterReading } from '@/store/readingsStore'
 import { ENERGY_META, boardEnergyTypes, isSeasonal } from '@/features/monitoring/energyConfig'
 import { PRICE_META } from '@/features/monitoring/priceConfig'
 import { resolvePrice } from '@/store/tariffStore'
 import { sortByDate } from '@/features/monitoring/readings'
+import { counterSeries } from '@/features/monitoring/counterSeries'
 import { seasonalShareBetween } from '@/features/monitoring/seasonality'
 import { specificValue, type SpecificBasis } from '@/features/monitoring/specificValues'
 import { resolveEnergyContent } from '@/store/tariffStore'
@@ -115,6 +116,11 @@ export interface BuildMonitoringArgs {
   types?: EnergyType[]
   /** Vom Nutzer entfernte Zähler – gehören in keinen Bericht. */
   hidden?: readonly EnergyType[]
+  /**
+   * Zähler-Konfiguration je Träger. Ohne sie gilt überall `counter` – ein
+   * Vorrat würde dann falsch herum gerechnet, siehe `counterSeries`.
+   */
+  meters?: Partial<Record<EnergyType, MeterConfig>>
 }
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24
@@ -174,11 +180,16 @@ function buildEntry(
   rangeDays: RangeDays,
   tariff?: TariffLike,
   profile?: OnboardingData,
+  config?: MeterConfig,
 ): MonitoringEntry {
   const meta = ENERGY_META[type]
   const priceMeta = PRICE_META[type]
   const seasonal = isSeasonal(type)
   const all = sortByDate(readingsByType[type] ?? [])
+  // Kurve, Liste und „aktueller Stand" zeigen den abgelesenen Wert; gerechnet
+  // wird auf der virtuellen Zählerreihe. Sie ist gleich lang und trägt
+  // dieselben Daten, deshalb greift derselbe Fensterfilter auf beiden.
+  const counted = counterSeries(all, config)
   const latest = all.length > 0 ? all[all.length - 1] : undefined
 
   const entry: MonitoringEntry = {
@@ -207,20 +218,23 @@ function buildEntry(
     entry.currentAgeDays = Math.max(0, Math.round((todayMidnight - readingMidnight) / MS_PER_DAY))
   }
   let windowReadings: MeterReading[]
-  let prevReadings: MeterReading[] = []
+  let windowCounted: MeterReading[]
+  let prevCounted: MeterReading[] = []
 
   if (rangeDays === null) {
     windowReadings = all
+    windowCounted = counted
   } else {
     const fromMs = nowMs - rangeDays * MS_PER_DAY
     const prevFromMs = nowMs - 2 * rangeDays * MS_PER_DAY
     windowReadings = inWindow(all, fromMs, nowMs)
-    prevReadings = inWindow(all, prevFromMs, fromMs)
+    windowCounted = inWindow(counted, fromMs, nowMs)
+    prevCounted = inWindow(counted, prevFromMs, fromMs)
   }
 
   entry.readingCount = windowReadings.length
   entry.points = windowReadings.map((r) => ({ date: r.date, value: r.value }))
-  entry.segments = segmentsOf(windowReadings)
+  entry.segments = segmentsOf(windowCounted)
   entry.history = windowReadings
   if (windowReadings.length > 0) {
     entry.windowFrom = windowReadings[0].date
@@ -234,7 +248,7 @@ function buildEntry(
     entry.windowFrom && entry.windowTo ? daysBetween(entry.windowFrom, entry.windowTo) : 0
   entry.days = spanDays > 0 ? spanDays : undefined
 
-  const consumption = consumptionOf(windowReadings)
+  const consumption = consumptionOf(windowCounted)
   if (consumption !== undefined) {
     entry.consumption = consumption
     // Ohne echten Tagesabstand (nur eine Ablesung oder alle am selben Tag)
@@ -280,7 +294,7 @@ function buildEntry(
 
   // Vergleich zur Vorperiode (gleich langes Fenster davor).
   if (rangeDays !== null && consumption !== undefined && consumption > 0) {
-    const prevConsumption = consumptionOf(prevReadings)
+    const prevConsumption = consumptionOf(prevCounted)
     if (prevConsumption !== undefined && prevConsumption > 0) {
       entry.changePercent = ((consumption - prevConsumption) / prevConsumption) * 100
     }
@@ -323,6 +337,7 @@ export function buildMonitoringReportData({
   tariff,
   types,
   hidden,
+  meters,
 }: BuildMonitoringArgs): MonitoringReportData {
   // Über die Träger des Boards statt über die des Profils: Ein selbst
   // angelegter Zähler gehört genauso in den Bericht wie ein vorgeschlagener.
@@ -330,7 +345,7 @@ export function buildMonitoringReportData({
   const filter = types && types.length > 0 ? new Set(types) : undefined
   const selected = filter ? available.filter((t) => filter.has(t)) : available
   const entries = selected.map((type) =>
-    buildEntry(type, readingsByType, rangeDays, tariff, profile),
+    buildEntry(type, readingsByType, rangeDays, tariff, profile, meters?.[type]),
   )
 
   // Gesamt-Zeitraum über alle Träger (für die Kopfzeile des Berichts).

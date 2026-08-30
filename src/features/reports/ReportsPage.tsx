@@ -31,6 +31,7 @@ export function ReportsPage() {
   const profile = useOnboardingStore((s) => s.data)
   const results = useMeasurementsStore((s) => s.results)
   const readingsByType = useReadingsStore((s) => s.readings)
+  const meters = useReadingsStore((s) => s.meters)
   // Ganzer Tarif-State: der Bericht rechnet Kosten für jeden Träger mit
   // hinterlegtem Preis, nicht nur für Strom.
   const tariff = useTariffStore()
@@ -56,8 +57,8 @@ export function ReportsPage() {
   // die Fakten und den Export, sodass die Vorschau dieselben Zahlen zeigt wie
   // das PDF.
   const monitoringData = useMemo(
-    () => buildMonitoringReportData({ profile, readingsByType, rangeDays, tariff, hidden }),
-    [profile, readingsByType, rangeDays, tariff, hidden],
+    () => buildMonitoringReportData({ profile, readingsByType, rangeDays, tariff, hidden, meters }),
+    [profile, readingsByType, rangeDays, tariff, hidden, meters],
   )
   const measurementsData = useMemo(
     // `rooms` benennt die Einzelergebnisse raumbezogener Messungen im Bericht.

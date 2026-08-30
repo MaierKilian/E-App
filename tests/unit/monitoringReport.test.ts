@@ -8,6 +8,8 @@ import {
   type TariffLike,
 } from '@/features/reports/monitoringReportData'
 import type { MeterReading } from '@/store/readingsStore'
+import { counterSeries } from '@/features/monitoring/counterSeries'
+import { consumptionSegments, stats } from '@/features/monitoring/readings'
 import type { OnboardingData } from '@/types'
 
 const NOW = new Date('2026-08-19T12:00:00Z').getTime()
@@ -391,5 +393,79 @@ describe('Ablesungen ausserhalb des gewählten Zeitraums', () => {
     const wasser = data.entries.find((e) => e.type === 'water')
     expect(wasser).toBeDefined()
     expect(wasser?.currentValue).toBeUndefined()
+  })
+})
+
+describe('Vorratszähler im Bericht', () => {
+  /** Profil mit Ölheizung. */
+  const OIL_PROFILE = { heatGenerators: ['oil_boiler'], hasPV: 'no' } as unknown as OnboardingData
+
+  /** Ölstand `d` Tage vor „jetzt"; `amount` macht daraus eine Lieferung. */
+  function level(daysAgo: number, value: number, amount?: number): MeterReading {
+    return {
+      id: `o-${daysAgo}`,
+      date: new Date(NOW - daysAgo * DAY).toISOString().slice(0, 10),
+      value,
+      ...(amount !== undefined ? { refill: amount } : {}),
+    }
+  }
+
+  it('rechnet den fallenden Vorrat vorwärts, statt ihn zu verwerfen', () => {
+    const readings = [level(60, 2600), level(30, 2100), level(15, 5100, 3000), level(1, 4300)]
+    const data = buildMonitoringReportData({
+      profile: OIL_PROFILE,
+      readingsByType: { oil: readings },
+      rangeDays: null,
+      types: ['oil'],
+      meters: { oil: { mode: 'level', capacity: 6000 } },
+    })
+
+    const oel = data.entries.find((e) => e.type === 'oil')
+    // 500 l bis zur Lieferung, 800 l danach.
+    expect(oel?.consumption).toBe(1300)
+    expect(oel?.segments.map((s) => s.value)).toEqual([500, 0, 800])
+    // Der ausgewiesene Stand bleibt der abgelesene Füllstand, nicht der
+    // virtuelle Zählerstand.
+    expect(oel?.currentValue).toBe(4300)
+    expect(oel?.points.map((p) => p.value)).toEqual([2600, 2100, 5100, 4300])
+  })
+
+  it('liefert dieselbe Zahl wie die App-Ansicht für denselben Tank', () => {
+    // Bericht und Detailseite rechnen in getrennten Modulen (`segmentsOf` hier,
+    // `consumptionSegments` in readings.ts). Für einen Tank müssen beide
+    // dasselbe Ergebnis liefern – sonst widerspricht das PDF der App.
+    const readings = [level(90, 2400), level(60, 1500), level(45, 4200, 3000), level(5, 2900)]
+    const config = { mode: 'level' as const, capacity: 5000 }
+
+    const data = buildMonitoringReportData({
+      profile: OIL_PROFILE,
+      readingsByType: { oil: readings },
+      rangeDays: null,
+      types: ['oil'],
+      meters: { oil: config },
+    })
+    const fromReport = data.entries.find((e) => e.type === 'oil')?.consumption
+
+    const s = stats(counterSeries(readings, config), undefined, { seasonal: true })
+    const fromApp = consumptionSegments(counterSeries(readings, config)).reduce(
+      (sum, seg) => sum + seg.kwh,
+      0,
+    )
+
+    expect(fromReport).toBe(fromApp)
+    expect(s.projectedYearKwh).toBeGreaterThan(0)
+  })
+
+  it('lässt einen Träger ohne Konfiguration unverändert als Zählwerk laufen', () => {
+    // Ein bestehender Öl-„Zähler" mit aufsteigenden Ständen darf sich durch den
+    // Tank-Umbau nicht ändern.
+    const readings = [level(30, 1000), level(10, 1400)]
+    const data = buildMonitoringReportData({
+      profile: OIL_PROFILE,
+      readingsByType: { oil: readings },
+      rangeDays: null,
+      types: ['oil'],
+    })
+    expect(data.entries.find((e) => e.type === 'oil')?.consumption).toBe(400)
   })
 })
