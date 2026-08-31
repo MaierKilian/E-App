@@ -26,7 +26,7 @@ Arbeits-Branch, Push – und einer aktualisierten Statuszeile hier. Den Merge na
 | # | Etappe | Status | Abgeschlossen | Commit |
 |---|---|---|---|---|
 | 1 | Gemeinsame Oberfläche | ✅ fertig | 2026-08-31 | `f127375` |
-| 2 | FAQ – Themen und Fragen | ⬜ offen | – | – |
+| 2 | FAQ – Themen und Fragen | ✅ fertig | 2026-08-31 | `PLATZHALTER` |
 | 3 | Glossar – Nachschlagen statt Aufklappen | ⬜ offen | – | – |
 | 4 | Messungen – Struktur, Richtwerte, Einstieg | ⬜ offen | – | – |
 
@@ -130,8 +130,48 @@ braucht; ein ungenutztes Feld auf Verdacht wäre geraten.
 - Jede Frage hat Thema, Teaser und eine Quelle mit Stand-Datum.
 - Eine Kategorie lässt sich filtern, ohne dass die Suche danebensteht.
 
-> Falls die 18 neuen Fragen den Rahmen sprengen: Oberfläche in der einen
-> Session, Fragen in der nächsten. Der Tracker bekommt dann 2a und 2b.
+### Ergebnis (2026-08-31)
+
+**12 → 35 Fragen**, alle mit Thema und stabiler Kennung. Neu dazugekommen sind
+23: Heizen (Thermostat-Zahlen, Nachtabsenkung, Heizkurve, Räume abdrehen,
+Entlüften, Möbel vorm Heizkörper), Wärmepumpe (Altbau, JAZ, Fußbodenheizung),
+Warmwasser (Temperatur/Legionellen, Zirkulation), Lüften (Regen, Schimmel),
+Strom (Balkonkraftwerk, Wärmepumpentarif, Grundversorgung, Wäschetrockner),
+Kosten (Abrechnung lesen, Abschlag, CO₂-Preis) und Sanieren (Dämmung, Fenster,
+Förderung).
+
+Oberfläche: Themen-Chips (die Leiste aus Etappe 1 geht damit an), „Beliebte
+Fragen" von 3 auf 5, darunter Themenblöcke mit Zwischenüberschrift statt einer
+Liste „ALLE FRAGEN", und ein Anker je Frage – `/education#faq-co2-preis` klappt
+die Frage auf und springt sie an.
+
+Neu am Datenmodell: `FaqItem.id` (trägt den Anker – **niemals nachträglich
+ändern**, sonst brechen alle Verweise) und ein gemeinsamer `Source`-Typ mit
+optionalem `stand`. 13 neue Tests in `faqContent.test.ts` prüfen Eindeutigkeit
+der Kennungen, Ankertauglichkeit, Themenzuordnung, Mindestlänge der Antworten
+und das Stand-Format.
+
+**Inhaltlich korrigiert:** Die alte Antwort „Werden meine Daten irgendwohin
+übertragen?" behauptete, die App verarbeite alles lokal und Cloud-Funktionen
+seien Zukunft. Das stimmt seit dem Firebase-Backend nicht mehr – angemeldete
+Nutzer synchronisieren ihr Profil nach Firestore, der Zähler-Scan schickt ein
+Foto an eine Cloud Function, und es läuft eine anonyme Nutzungsstatistik. Die
+Frage heißt jetzt „Wo liegen meine Daten?" und beschreibt beide Fälle.
+
+### Offen geblieben: die Quellen
+
+Die Umstellung von Wikipedia auf Primärquellen (UBA, BDEW, dena,
+Verbraucherzentrale, BAFA/KfW) **konnte nicht gemacht werden**: Die
+Netzwerk-Richtlinie dieser Umgebung blockiert externe Hosts – jeder Aufruf
+endet mit 403 am Gateway. Unverifizierte Deep-Links in eine ausgelieferte App
+zu schreiben, wäre schlechter als der Ist-Zustand: Ein toter Link ist
+schädlicher als ein Wikipedia-Link.
+
+Vorbereitet ist alles: Der `Source`-Typ trägt `stand`, die Oberfläche zeigt es
+an, und wo eine Zahl altert (CO₂-Preis, Förderung), steht der Stand bereits
+dran und die Jahreszahl im Text. Es fehlt nur das Ersetzen der URLs – ein
+Arbeitsschritt mit Netzzugang, entweder in einer lokalen Sitzung oder von
+Kilian.
 
 ---
 

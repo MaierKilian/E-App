@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Check, ChevronRight, GraduationCap, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
@@ -11,9 +11,11 @@ import { LookupList, LookupRow } from './lookup/LookupList'
 import { SearchField } from './lookup/SearchField'
 import { NoResults } from './lookup/NoResults'
 import { FilterChips } from './lookup/FilterChips'
+import { groupByTopic } from './lookup/topics'
 import type { Topic } from './lookup/topics'
 import { searchPreview, teaserOf } from './lookup/search'
 import { useLookup } from './lookup/useLookup'
+import type { Source } from './educationContent'
 import {
   FAQ,
   GLOSSARY,
@@ -93,20 +95,30 @@ function UniversityToggle({ group, onToggle }: { group: Group; onToggle: () => v
   )
 }
 
-/** Anklickbare Quellenangabe (öffnet im neuen Tab). */
-function SourceLink({ source }: { source?: { label: string; url: string } }) {
+/**
+ * Anklickbare Quellenangabe (öffnet im neuen Tab).
+ *
+ * Der Stand steht bewusst **neben** dem Link und nicht darin: Er gehört zur
+ * Angabe im Text, nicht zur verlinkten Seite – die ändert sich weiter.
+ */
+function SourceLink({ source }: { source?: Source }) {
   const { t } = useTranslation()
   if (!source) return null
   return (
-    <a
-      href={source.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-    >
-      {t('education.source')}: {source.label}
-      <ExternalLink className="h-3 w-3 shrink-0" />
-    </a>
+    <span className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+      <a
+        href={source.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+      >
+        {t('education.source')}: {source.label}
+        <ExternalLink aria-hidden className="h-3 w-3 shrink-0" />
+      </a>
+      {source.stand && (
+        <span className="text-xs text-muted">{t('education.stand', { stand: source.stand })}</span>
+      )}
+    </span>
   )
 }
 
@@ -138,13 +150,35 @@ function ListHeading({ children }: { children: string }) {
   )
 }
 
+/**
+ * Wenn die Seite mit `#faq-<id>` aufgerufen wird, die gemeinte Frage
+ * aufklappen und anspringen.
+ *
+ * Der Anker wird **einmal beim Aufbau** gelesen und danach nicht mehr: Klappt
+ * der Nutzer anschließend andere Fragen auf, soll sich die Seite nicht wieder
+ * auf den Anker zurückziehen.
+ */
+function useFaqAnchor(): string {
+  const [id] = useState(() =>
+    typeof window === 'undefined' ? '' : decodeURIComponent(window.location.hash).replace(/^#faq-/, ''),
+  )
+  useEffect(() => {
+    if (!id) return
+    document.getElementById(`faq-${id}`)?.scrollIntoView({ block: 'center' })
+  }, [id])
+  return id
+}
+
 function FaqView() {
   const { t } = useTranslation()
   const lookup = useLookup(FAQ, (item) => [item.q, item.a])
+  const anchor = useFaqAnchor()
 
   const row = (item: (typeof FAQ)[number]) => (
     <LookupRow
-      key={item.q}
+      key={item.id}
+      anchorId={`faq-${item.id}`}
+      defaultOpen={item.id === anchor}
       title={item.q}
       teaser={searchPreview(item.q, teaserOf(item, item.a), item.a, lookup.query)}
       query={lookup.query}
@@ -154,10 +188,10 @@ function FaqView() {
     </LookupRow>
   )
 
-  // „Alle Fragen" listet bewusst nur den Rest – die beliebten stehen bereits
-  // oben, eine zweite Kopie darunter wäre reine Wiederholung.
+  // „Beliebte Fragen" stehen oben; die Themenblöcke darunter listen bewusst nur
+  // den Rest – eine zweite Kopie wäre reine Wiederholung.
   const popular = lookup.filtered.filter((item) => item.popular)
-  const rest = lookup.filtered.filter((item) => !item.popular)
+  const groups = groupByTopic(lookup.filtered.filter((item) => !item.popular))
 
   return (
     <div className="space-y-4">
@@ -168,8 +202,8 @@ function FaqView() {
           <NoResults query={lookup.query} onReset={lookup.reset} />
         </LookupList>
       ) : lookup.narrowed ? (
-        // Eingeschränkte Liste: ein Block, sonst zerfiele das Suchergebnis in
-        // zwei Abschnitte, von denen einer oft leer wäre.
+        // Eingeschränkte Liste: ein Block. Nach Themen zu gliedern, wenn gerade
+        // nach einem Thema gefiltert wird, ergäbe genau eine Überschrift.
         <LookupList>{lookup.filtered.map(row)}</LookupList>
       ) : (
         <>
@@ -179,12 +213,14 @@ function FaqView() {
               <LookupList>{popular.map(row)}</LookupList>
             </div>
           )}
-          {rest.length > 0 && (
-            <div className="space-y-2">
-              <ListHeading>{t('education.faqAll')}</ListHeading>
-              <LookupList>{rest.map(row)}</LookupList>
+          {groups.map((group) => (
+            <div key={group.topic ?? 'rest'} className="space-y-2">
+              <ListHeading>
+                {group.topic ? t(`education.topics.${group.topic}`) : t('education.faqAll')}
+              </ListHeading>
+              <LookupList>{group.items.map(row)}</LookupList>
             </div>
-          )}
+          ))}
         </>
       )}
     </div>

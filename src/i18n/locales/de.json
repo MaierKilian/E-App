@@ -1991,7 +1991,7 @@
     },
     "faqSearch": "Frage suchen …",
     "faqPopular": "Beliebte Fragen",
-    "faqAll": "Alle Fragen",
+    "faqAll": "Weitere Fragen",
     "difficulty": {
       "easy": "Leicht",
       "medium": "Mittel",
@@ -2021,7 +2021,8 @@
       "renovation": "Sanieren",
       "cost": "Kosten",
       "app": "App"
-    }
+    },
+    "stand": "Stand {{stand}}"
   },
   "profiles": {
     "sectionTitle": "Meine Wohnungen",

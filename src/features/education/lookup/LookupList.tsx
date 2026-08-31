@@ -30,6 +30,10 @@ interface LookupRowProps {
   leading?: ReactNode
   /** Aktuelle Suchanfrage – hebt die Fundstelle in Titel und Vorschau hervor. */
   query?: string
+  /** Anker für Verweise auf genau diese Zeile (`<a href="#…">`). */
+  anchorId?: string
+  /** Zeile beim ersten Rendern schon aufgeklappt – für Sprünge auf den Anker. */
+  defaultOpen?: boolean
   children: ReactNode
 }
 
@@ -45,14 +49,18 @@ export function LookupRow({
   meta,
   leading,
   query = '',
+  anchorId,
+  defaultOpen = false,
   children,
 }: LookupRowProps) {
   const { t } = useTranslation()
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultOpen)
   const panelId = useId()
 
   return (
-    <div className="border-t border-border/60 first:border-t-0">
+    // `scroll-mt-28` haelt die Zeile beim Sprung auf den Anker unter der
+    // klebenden Kopfzeile samt Suchfeld, statt hinter ihr zu verschwinden.
+    <div id={anchorId} className="scroll-mt-28 border-t border-border/60 first:border-t-0">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

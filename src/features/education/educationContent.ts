@@ -6,6 +6,20 @@
 import type { Topic } from './lookup/topics'
 
 /**
+ * Quellenangabe eines Eintrags.
+ *
+ * `stand` nennt den Stand der Angabe (`MM/YYYY`). Nötig überall dort, wo eine
+ * Zahl altert – Preise, Förderquoten, Abgaben. Ohne Stand liest sich ein
+ * Betrag wie eine zeitlose Wahrheit, und genau das ist er nicht.
+ */
+export interface Source {
+  label: string
+  url: string
+  /** Stand der Angabe im Format `MM/YYYY`. */
+  stand?: string
+}
+
+/**
  * Felder, die alle drei Nachschlage-Gattungen teilen.
  *
  * Alle **optional**: Ein Bestandseintrag ohne sie rendert wie zuvor. Die
@@ -24,10 +38,16 @@ export interface LookupFields {
 }
 
 export interface FaqItem extends LookupFields {
+  /**
+   * Stabile Kennung – trägt den Anker `#faq-<id>` und damit jeden Verweis auf
+   * diese Frage. Wird eine Frage umformuliert, bleibt die Kennung; wird sie
+   * geändert, brechen alle Verweise. Also: niemals nachträglich ändern.
+   */
+  id: string
   q: string
   a: string
   /** Optionale, anklickbare Quelle. */
-  source?: { label: string; url: string }
+  source?: Source
   /** Hervorgehoben als „Beliebte Frage" oben in der FAQ-Liste. */
   popular?: boolean
 }
@@ -38,7 +58,7 @@ export interface GlossaryItem extends LookupFields {
   /** Einheit oder Formelzeichen, z. B. „W/(m²·K)". Nur wo es eine gibt. */
   unit?: string
   /** Quelle der Information (im Glossar anklickbar). */
-  source: { label: string; url: string }
+  source: Source
 }
 
 export interface MeasurementInfo extends LookupFields {
@@ -48,7 +68,7 @@ export interface MeasurementInfo extends LookupFields {
   title: string
   body: string
   /** Optionale, anklickbare Quelle. */
-  source?: { label: string; url: string }
+  source?: Source
 }
 
 export interface QuizQuestion {
@@ -82,64 +102,253 @@ const COURSE = 'HTW Berlin · GEIT · Labor Mechanische Gebäudetechnik'
 
 // --- FAQ (Erstentwurf) ---
 export const FAQ: FaqItem[] = [
+  // --- Die App selbst ---
   {
+    id: 'app-nutzen',
+    topic: 'app',
     q: 'Was bringt mir die E-App konkret?',
     a: 'Die App hilft dir, mit einfachen, geführten Messungen Energiefresser im Haushalt aufzuspüren, Einsparpotenziale in Euro abzuschätzen und deinen Verbrauch über die Zeit zu verfolgen. So werden abstrakte Kilowattstunden zu konkreten, nachvollziehbaren Beträgen – und du erkennst, welche Maßnahmen sich für dich am meisten lohnen.',
     popular: true,
   },
   {
+    id: 'app-messgeraete',
+    topic: 'app',
     q: 'Brauche ich spezielle Messgeräte?',
     a: 'Für die meisten Messungen reichen Alltagsgegenstände wie ein Messbecher und eine Uhr. Für Strommessungen ist ein einfaches Steckdosen-Energiemessgerät hilfreich (ab wenigen Euro), für Temperaturen ein Thermometer oder Infrarot-Thermometer. Bei jeder Messung steht dabei, was du genau benötigst.',
   },
   {
-    q: 'Wie viel Strom verbraucht der Standby-Betrieb wirklich?',
-    a: 'Geräte im Bereitschaftsbetrieb ziehen rund um die Uhr Strom. Schon 5 Watt Dauerlast bedeuten über 8.760 Stunden im Jahr rund 44 kWh – je nach Strompreis etwa 13–18 € jährlich, und das pro Gerät. Über alle Geräte eines Haushalts summiert sich das oft auf einen dreistelligen Betrag. Schaltbare Steckdosenleisten oder Smart-Plugs beseitigen diese Last.',
-    source: wiki('Bereitschaftsbetrieb'),
-    popular: true,
+    id: 'app-daten',
+    topic: 'app',
+    q: 'Wo liegen meine Daten?',
+    a: 'Ohne Anmeldung bleibt alles auf deinem Gerät: Profil, Messergebnisse und Zählerstände liegen im lokalen Speicher des Browsers und verlassen ihn nicht. Meldest du dich an, wird deine Wohnung zusätzlich verschlüsselt in der Cloud gespeichert – nur so lassen sich mehrere Geräte abgleichen und eine Wohnung mit anderen teilen. Zwei Dinge verlassen das Gerät unabhängig davon: das Foto beim Zähler-Scan, das zur automatischen Erkennung an einen Server geschickt und dort nicht gespeichert wird, und eine anonyme Nutzungsstatistik, der du in den Einstellungen widersprechen kannst.',
   },
+
+  // --- Heizen ---
   {
+    id: 'raumtemperatur',
+    topic: 'heating',
     q: 'Welche Raumtemperatur ist sinnvoll?',
-    a: 'Als Richtwert gelten rund 20 °C in Wohnräumen, etwas weniger in Schlafräumen (16–18 °C). Jedes Grad weniger senkt den Heizenergiebedarf um grob 6 %. Räume sollten aber nicht stark auskühlen, da das Wiederaufheizen Energie kostet und Feuchte-/Schimmelprobleme begünstigt.',
+    a: 'Als Richtwert gelten rund 20 °C in Wohnräumen, etwas weniger in Schlafräumen (16–18 °C) und etwa 22 °C im Bad. Jedes Grad weniger senkt den Heizenergiebedarf um grob 6 %. Räume sollten aber nicht stark auskühlen, da das Wiederaufheizen Energie kostet und kühle Wandflächen Feuchte- und Schimmelprobleme begünstigen.',
     source: wiki('Raumklima'),
     popular: true,
   },
   {
-    q: 'Wie oft und wie richtig lüften?',
-    a: 'Mehrmals täglich kurz stoßlüften (Fenster weit auf, 5–10 Minuten, am besten quer) statt Fenster dauerhaft auf Kipp. Stoßlüften tauscht die feuchte Luft schnell aus, ohne die Wände auszukühlen – das spart Heizenergie und beugt Schimmel vor.',
-    source: wiki('Lüftung'),
+    id: 'thermostat-zahlen',
+    topic: 'heating',
+    q: 'Was bedeuten die Zahlen am Thermostat?',
+    a: 'Die Zahlen sind keine Leistungsstufen, sondern Zieltemperaturen: 1 steht für etwa 12 °C, 2 für 16 °C, 3 für 20 °C, 4 für 24 °C und 5 für rund 28 °C. Das Schneeflocken-Symbol ist der Frostschutz bei ungefähr 6 °C. Daraus folgt das häufigste Missverständnis: Auf 5 zu drehen heizt den Raum nicht schneller auf 20 °C – das Ventil öffnet ohnehin voll und schließt erst, wenn 28 °C erreicht sind. Wer nach dem Lüften voll aufdreht, heizt deshalb regelmäßig über das Ziel hinaus.',
+    source: wiki('Thermostatventil'),
   },
   {
-    q: 'Welche Luftfeuchtigkeit ist gesund?',
-    a: 'In Wohnräumen sind etwa 40–60 % relative Luftfeuchte ideal. Dauerhaft über 60 % begünstigt Schimmel, unter 30 % reizt Atemwege und Schleimhäute. Ein Hygrometer hilft, den Wert im Blick zu behalten und gezielt zu lüften.',
-    source: wiki('Luftfeuchtigkeit'),
+    id: 'nachtabsenkung',
+    topic: 'heating',
+    q: 'Bringt eine Nachtabsenkung etwas?',
+    a: 'Bei Gas- und Ölheizungen in weniger gut gedämmten Gebäuden ja: Eine Absenkung um 2–5 K über Nacht spart spürbar, weil das Haus auskühlt und weniger Wärme nach außen verliert. Bei sehr gut gedämmten Häusern ist der Effekt klein, weil kaum etwas auskühlt. Bei Wärmepumpen kann eine Absenkung sogar schaden: Zum Wiederaufheizen braucht die Anlage eine höhere Vorlauftemperatur, und genau die verschlechtert ihren Wirkungsgrad. Dort ist ein gleichmäßiger, niedriger Betrieb meist günstiger.',
+    source: wiki('Nachtabsenkung'),
   },
   {
-    q: 'Wie senke ich meinen Warmwasserverbrauch?',
-    a: 'Ein Sparduschkopf reduziert den Durchfluss von oft 12–15 l/min auf 6–9 l/min – bei kaum spürbarem Komfortverlust. Da das Wasser zusätzlich erwärmt werden muss, sparst du doppelt: Wasser und Energie. Kürzere Duschzeiten und eine moderate Warmwassertemperatur (ca. 50–55 °C, auch aus Hygienegründen) wirken zusätzlich.',
-    source: wiki('Warmwasser'),
+    id: 'heizkurve',
+    topic: 'heating',
+    q: 'Was ist die Heizkurve – und wann sollte ich sie ändern?',
+    a: 'Die Heizkurve legt fest, wie warm das Heizungswasser bei welcher Außentemperatur wird. Steht sie zu hoch, läuft die Anlage dauerhaft heißer als nötig – das kostet bei jedem Erzeuger Geld und bei der Wärmepumpe besonders viel. Ein Hinweis auf eine zu hohe Kurve: Die Thermostatventile sind fast überall zugedreht und es wird trotzdem warm. Dann lässt sich die Kurve in kleinen Schritten senken, bis es an kalten Tagen gerade noch reicht. Ein Schritt, dann einige Tage beobachten.',
+    source: wiki('Heizkurve'),
   },
   {
+    id: 'raeume-abdrehen',
+    topic: 'heating',
+    q: 'Kann ich einzelne Räume einfach abdrehen?',
+    a: 'Nur mit Maß. Ein ungenutztes Zimmer etwas kühler zu fahren ist sinnvoll, ganz abdrehen dagegen selten: Der Raum holt sich die Wärme dann über Wände und offene Türen aus den Nachbarräumen, und an den kalten Außenwänden schlägt sich Feuchte nieder. Als Untergrenze gelten etwa 16 °C, und die Tür zum kühlen Raum bleibt geschlossen – sonst wandert feuchte Warmluft hinein und kondensiert dort.',
+  },
+  {
+    id: 'heizkoerper-entlueften',
+    topic: 'heating',
+    q: 'Wann muss ich Heizkörper entlüften?',
+    a: 'Wenn ein Heizkörper gluckert oder oben kalt bleibt, während er unten warm wird, steht Luft darin – sie verdrängt das Wasser und blockiert genau die Fläche, die Wärme abgeben soll. Zum Entlüften die Umwälzpumpe abschalten, warten, bis sich das Wasser beruhigt hat, dann das Ventil mit einem Vierkantschlüssel öffnen, bis Wasser statt Luft austritt. Danach den Anlagendruck prüfen und bei Bedarf Wasser nachfüllen – üblicherweise 1,0–2,0 bar, der genaue Wert steht an der Anlage.',
+  },
+  {
+    id: 'hydraulischer-abgleich',
+    topic: 'heating',
     q: 'Lohnt sich ein hydraulischer Abgleich?',
-    a: 'In den meisten Bestandsanlagen ja: Er sorgt dafür, dass jeder Heizkörper genau die richtige Wassermenge erhält. Ergebnis sind gleichmäßige Wärme, niedrigere Vorlauf-/Rücklauftemperaturen, weniger Strömungsgeräusche und ein messbar geringerer Energieverbrauch – besonders wichtig für effiziente Brennwert- und Wärmepumpenheizungen.',
+    a: 'In den meisten Bestandsanlagen ja: Er sorgt dafür, dass jeder Heizkörper genau die richtige Wassermenge erhält. Ergebnis sind gleichmäßige Wärme, niedrigere Vorlauf- und Rücklauftemperaturen, weniger Strömungsgeräusche und ein messbar geringerer Energieverbrauch. Besonders wichtig ist er für Brennwertkessel und Wärmepumpen, deren Wirkungsgrad direkt an der Vorlauftemperatur hängt. Ein Hinweis auf fehlenden Abgleich: Räume nahe am Kessel werden schnell warm, die entferntesten bleiben kühl.',
     source: wiki('Hydraulischer_Abgleich'),
   },
   {
-    q: 'Was unterscheidet Arbeitspreis und Grundpreis?',
-    a: 'Der Arbeitspreis wird pro verbrauchter Kilowattstunde berechnet (ct/kWh) und steigt mit dem Verbrauch. Der Grundpreis ist ein fixer Betrag pro Abrechnungszeitraum, unabhängig vom Verbrauch (z. B. für Zähler und Netz). Beide zusammen ergeben deine Energiekosten.',
-    source: wiki('Strompreis'),
+    id: 'moebel-vor-heizkoerper',
+    topic: 'heating',
+    q: 'Stört ein Sofa vor dem Heizkörper wirklich?',
+    a: 'Ja, und zwar doppelt. Ein Heizkörper gibt seine Wärme zu einem großen Teil als Luftstrom nach oben ab; steht ein Möbel davor oder hängt ein langer Vorhang darüber, staut sich die Wärme dahinter. Sitzt zusätzlich das Thermostatventil in dieser warmen Nische, misst es eine Temperatur, die im Raum gar nicht herrscht, und schließt zu früh – der Raum bleibt kühl, obwohl geheizt wird. Als Faustregel reichen etwa 10 cm Abstand, damit die Luft frei zirkulieren kann.',
+  },
+
+  // --- Wärmepumpe ---
+  {
+    id: 'waermepumpe-altbau',
+    topic: 'heat_pump',
+    q: 'Funktioniert eine Wärmepumpe auch im Altbau?',
+    a: 'Meistens ja – entscheidend ist nicht das Baujahr, sondern die nötige Vorlauftemperatur. Kommt das Haus an kalten Tagen mit etwa 55 °C aus, arbeitet eine Wärmepumpe wirtschaftlich. Das lässt sich vor jeder Investition ausprobieren: an einem richtig kalten Tag die Vorlauftemperatur der alten Heizung auf 55 °C begrenzen und prüfen, ob alle Räume warm werden. Wenn nicht, helfen oft schon größere Heizkörper in einzelnen Zimmern und ein hydraulischer Abgleich – ein kompletter Dämmumbau ist selten die Voraussetzung.',
+    source: wiki('Wärmepumpenheizung'),
+    popular: true,
   },
   {
+    id: 'jaz-gut',
+    topic: 'heat_pump',
+    q: 'Was ist eine gute Jahresarbeitszahl?',
+    a: 'Die Jahresarbeitszahl (JAZ) sagt, wie viele Kilowattstunden Wärme eine Wärmepumpe aus einer Kilowattstunde Strom über das ganze Jahr gewinnt. Bei Luft-Wasser-Wärmepumpen gelten Werte ab etwa 3,5 als ordentlich und ab 4,0 als gut; Erdreich- und Grundwasseranlagen erreichen häufig 4,0–5,0. Jedes Zehntel hängt vor allem an der Vorlauftemperatur – als grobe Orientierung kostet jedes Grad mehr Vorlauf rund 2–3 % Effizienz.',
+    source: wiki('Jahresarbeitszahl'),
+  },
+  {
+    id: 'waermepumpe-fussboden',
+    topic: 'heat_pump',
+    q: 'Brauche ich für eine Wärmepumpe eine Fußbodenheizung?',
+    a: 'Nein. Eine Fußbodenheizung ist günstig, weil sie über eine große Fläche mit niedriger Temperatur arbeitet – aber ausreichend große Heizkörper leisten dasselbe. Als Faustregel gilt: Wo heute 70 °C Vorlauf nötig sind, reicht die etwa doppelte Heizfläche für 50–55 °C. Oft sind nur einzelne Räume unterdimensioniert, und der Austausch dieser wenigen Heizkörper ist deutlich billiger als ein neuer Fußboden.',
+  },
+
+  // --- Warmwasser ---
+  {
+    id: 'warmwasser-senken',
+    topic: 'hot_water',
+    q: 'Wie senke ich meinen Warmwasserverbrauch?',
+    a: 'Ein Sparduschkopf reduziert den Durchfluss von oft 12–15 l/min auf 6–9 l/min – bei kaum spürbarem Komfortverlust. Da das Wasser zusätzlich erwärmt werden muss, sparst du doppelt: Wasser und Energie. Kürzere Duschzeiten wirken zusätzlich. Wie viel bei dir durchläuft, misst der Duschkopf-Test in wenigen Minuten mit einem Messbecher.',
+    source: wiki('Warmwasser'),
+  },
+  {
+    id: 'warmwasser-temperatur',
+    topic: 'hot_water',
+    q: 'Welche Warmwassertemperatur ist richtig?',
+    a: 'Hier stehen sich zwei Ziele gegenüber: Je heißer der Speicher, desto höher die Verluste – je kühler, desto besser vermehren sich Legionellen. Bei zentralen Anlagen mit größerem Speicher gelten deshalb 60 °C am Speicheraustritt als Regel, die nicht unterschritten werden sollte. In Ein- und Zweifamilienhäusern mit kleinem Speicher und kurzen Leitungen sind rund 50 °C üblich und vertretbar. Wer sein Wasser mit einem Durchlauferhitzer erwärmt, hat das Problem nicht: Dort steht kein Wasser lange warm.',
+    source: wiki('Legionellen'),
+  },
+  {
+    id: 'zirkulation',
+    topic: 'hot_water',
+    q: 'Was kostet eine Zirkulationspumpe?',
+    a: 'Eine Zirkulationsleitung hält warmes Wasser dauerhaft in Bewegung, damit es am Hahn sofort warm ankommt. Der Komfort ist real, der Preis auch: Läuft die Pumpe rund um die Uhr, kostet allein ihr Strom je nach Modell 30–90 € im Jahr, und die dauernd warme Leitung verliert zusätzlich Wärme. Eine Zeitschaltuhr oder ein Taster, der die Pumpe nur bei Bedarf startet, behält den Komfort und streicht den Großteil der Kosten. Wie lange es bei dir bis zum warmen Wasser dauert, misst der Warmwasser-Test.',
+  },
+
+  // --- Lüften & Feuchte ---
+  {
+    id: 'lueften',
+    topic: 'ventilation',
+    q: 'Wie oft und wie richtig lüften?',
+    a: 'Mehrmals täglich kurz stoßlüften (Fenster weit auf, 5–10 Minuten, am besten quer) statt Fenster dauerhaft auf Kipp. Stoßlüften tauscht die feuchte Luft schnell aus, ohne die Wände auszukühlen – das spart Heizenergie und beugt Schimmel vor. Ein gekipptes Fenster macht das Gegenteil: Es tauscht die Luft kaum, kühlt aber die Laibung dauerhaft aus, und genau dort schlägt sich dann Feuchte nieder.',
+    source: wiki('Lüftung'),
+  },
+  {
+    id: 'luftfeuchtigkeit',
+    topic: 'ventilation',
+    q: 'Welche Luftfeuchtigkeit ist gesund?',
+    a: 'In Wohnräumen sind etwa 40–60 % relative Luftfeuchte ideal. Dauerhaft über 60 % begünstigt Schimmel, unter 30 % reizt Atemwege und Schleimhäute. Ein Hygrometer für wenige Euro hilft, den Wert im Blick zu behalten und gezielt zu lüften, statt nach Gefühl.',
+    source: wiki('Luftfeuchtigkeit'),
+  },
+  {
+    id: 'lueften-bei-regen',
+    topic: 'ventilation',
+    q: 'Soll ich bei Regen lüften?',
+    a: 'Ja. Der Reflex, bei Regen die Fenster zu lassen, führt in die Irre: Entscheidend ist nicht die relative Feuchte draußen, sondern wie viel Wasser die Luft tatsächlich trägt. Kühle Regenluft enthält fast immer weniger Wasser als warme Zimmerluft – erwärmt sie sich drinnen, sinkt ihre relative Feuchte, und sie kann Feuchtigkeit aufnehmen. Falsch herum wird es nur im Hochsommer, wenn draußen schwüle 25 °C herrschen und der Keller 14 °C hat: Dann schlägt sich die Feuchte an den kalten Kellerwänden nieder.',
+  },
+  {
+    id: 'schimmel',
+    topic: 'ventilation',
+    q: 'Was tun bei Schimmel in der Wohnung?',
+    a: 'Kleine Flecken bis etwa einen halben Quadratmeter lassen sich selbst entfernen – mit hochprozentigem Alkohol, Handschuhen und offenem Fenster. Größere Flächen, Schimmel im Mauerwerk oder wiederkehrender Befall gehören in fachliche Hände. Wichtiger als das Wegwischen ist in jedem Fall die Ursache: fast immer eine kalte Oberfläche, an der sich Feuchte niederschlägt. Solange die bleibt, kommt der Schimmel wieder. Also Möbel von Außenwänden abrücken, regelmäßig stoßlüften, Feuchte messen – und bei baulichen Mängeln den Vermieter einschalten.',
+  },
+
+  // --- Strom ---
+  {
+    id: 'standby',
+    topic: 'electricity',
+    q: 'Wie viel Strom verbraucht der Standby-Betrieb wirklich?',
+    a: 'Geräte im Bereitschaftsbetrieb ziehen rund um die Uhr Strom. Schon 5 Watt Dauerlast bedeuten über 8.760 Stunden im Jahr rund 44 kWh – je nach Strompreis etwa 13–18 € jährlich, und das pro Gerät. Über alle Geräte eines Haushalts summiert sich das oft auf einen dreistelligen Betrag. Schaltbare Steckdosenleisten oder Smart-Plugs beseitigen diese Last. Der Standby-Check misst, welche Geräte bei dir wie viel ziehen.',
+    source: wiki('Bereitschaftsbetrieb'),
+    popular: true,
+  },
+  {
+    id: 'ausschalten-schaedlich',
+    topic: 'electricity',
     q: 'Ist häufiges Ein- und Ausschalten schädlich?',
-    a: 'Bei den meisten modernen Geräten ist vollständiges Ausschalten klar sinnvoll. Der oft genannte hohe „Einschaltstrom" dauert nur Sekundenbruchteile und fällt über das Jahr kaum ins Gewicht gegenüber dauerhafter Standby-Last. Ausnahme: Geräte mit sehr häufigen Schaltzyklen oder Anlaufverschleiß (z. B. manche Leuchtmittel).',
+    a: 'Bei den meisten modernen Geräten ist vollständiges Ausschalten klar sinnvoll. Der oft genannte hohe Einschaltstrom dauert nur Sekundenbruchteile und fällt über das Jahr kaum ins Gewicht gegenüber dauerhafter Standby-Last. Ausnahmen sind Geräte, die beim Start einen echten Anlaufvorgang durchlaufen – etwa Anlagen mit Kompressor – und Router, deren Neuaufbau der Verbindung mehr Ärger macht als der gesparte Strom wert ist.',
   },
   {
+    id: 'led-wechsel',
+    topic: 'electricity',
     q: 'Wie viel spart der Wechsel auf LED?',
-    a: 'LED-Lampen verbrauchen rund 80–90 % weniger Strom als klassische Glühlampen bei gleicher Helligkeit und halten deutlich länger. Gerade bei lange brennenden Leuchten (Küche, Wohnzimmer, Außenbeleuchtung) amortisiert sich der Tausch oft schon innerhalb eines Jahres.',
+    a: 'LED-Lampen verbrauchen rund 80–90 % weniger Strom als klassische Glühlampen bei gleicher Helligkeit und halten deutlich länger. Gerade bei lange brennenden Leuchten – Küche, Wohnzimmer, Außenbeleuchtung – amortisiert sich der Tausch oft schon innerhalb eines Jahres. Bei Lampen, die nur Minuten am Tag brennen, lohnt sich der Tausch dagegen kaum; dort wartet man besser, bis das alte Leuchtmittel durch ist.',
     source: wiki('Leuchtdiode'),
   },
   {
-    q: 'Werden meine Daten irgendwohin übertragen?',
-    a: 'Die App verarbeitet deine Eingaben lokal auf deinem Gerät. Es geht darum, dir selbst Transparenz über deinen Energieverbrauch zu geben – ohne dass deine Daten zwingend das Gerät verlassen. (Spätere Cloud-/Konto-Funktionen wären optional und klar gekennzeichnet.)',
+    id: 'balkonkraftwerk',
+    topic: 'electricity',
+    q: 'Lohnt sich ein Balkonkraftwerk?',
+    a: 'Für viele Haushalte ja. Eine steckerfertige Anlage mit bis zu 800 Watt Wechselrichterleistung liefert je nach Ausrichtung und Verschattung grob 400–800 kWh im Jahr. Davon zählt aber nur, was du selbst verbrauchst – der Rest fließt unvergütet ins Netz. Deshalb rechnet sich die Anlage vor allem in Haushalten mit tagsüber laufender Grundlast: Kühlschrank, Router, Homeoffice. Die Anmeldung ist inzwischen schlank; eingetragen wird die Anlage im Marktstammdatenregister. Bei Miete oder Eigentümergemeinschaft klärst du die Montage vorher ab.',
+    source: wiki('Steckersolargerät'),
+  },
+  {
+    id: 'waermepumpentarif',
+    topic: 'electricity',
+    q: 'Gibt es günstigere Tarife für Wärmepumpe und E-Auto?',
+    a: 'Ja. Für Wärmepumpen und Ladepunkte gibt es eigene Stromtarife, die deutlich unter dem Haushaltsstrompreis liegen können. Voraussetzung ist meist ein separater Zähler und die Bereitschaft, dem Netzbetreiber in Spitzenzeiten kurze Abschaltungen oder eine gedrosselte Leistung zuzugestehen – im Gegenzug sinken die Netzentgelte. Ob sich der Aufwand für den zweiten Zähler lohnt, hängt an der Menge: Bei einer Wärmepumpe mit einigen tausend Kilowattstunden im Jahr meist ja, bei gelegentlichem Laden eher nicht.',
+  },
+  {
+    id: 'grundversorgung',
+    topic: 'electricity',
+    q: 'Bin ich in der Grundversorgung – und lohnt ein Wechsel?',
+    a: 'In der Grundversorgung ist, wer nie aktiv einen Vertrag geschlossen hat: Man zieht ein, dreht den Strom auf, und der örtliche Grundversorger liefert. Bequem, aber fast immer der teuerste Tarif. Auf der Jahresabrechnung steht der Tarifname; heißt er „Grundversorgung" oder „Grundpreis Allgemein", trifft es zu. Der Wechsel ist unkritisch: Die Kündigungsfrist beträgt zwei Wochen, der neue Anbieter übernimmt die Abmeldung, und der Strom fließt währenddessen ohne Unterbrechung weiter.',
+  },
+  {
+    id: 'waeschetrockner',
+    topic: 'electricity',
+    q: 'Wie viel kostet ein Wäschetrockner im Jahr?',
+    a: 'Das hängt vor allem an der Bauart. Ein Wärmepumpentrockner braucht rund 1,5–2 kWh je Ladung, ein älterer Kondens- oder Ablufttrockner eher 3,5–4 kWh. Bei drei Ladungen pro Woche und 35 ct/kWh sind das etwa 95 € gegenüber rund 200 € im Jahr. Die Wäscheleine kostet nichts – braucht aber Platz und in der Wohnung zusätzliches Lüften, sonst wandert die Feuchtigkeit in die Wände.',
+  },
+
+  // --- Kosten & Abrechnung ---
+  {
+    id: 'arbeitspreis-grundpreis',
+    topic: 'cost',
+    q: 'Was unterscheidet Arbeitspreis und Grundpreis?',
+    a: 'Der Arbeitspreis wird pro verbrauchter Kilowattstunde berechnet (ct/kWh) und steigt mit dem Verbrauch. Der Grundpreis ist ein fixer Betrag pro Abrechnungszeitraum, unabhängig vom Verbrauch – er deckt Zähler, Messung und Netzanschluss. Beide zusammen ergeben deine Energiekosten. Für den Tarifvergleich zählt deshalb nie der Arbeitspreis allein: Bei kleinem Verbrauch kann ein Tarif mit niedrigem Grundpreis günstiger sein, obwohl seine Kilowattstunde mehr kostet.',
+    source: wiki('Strompreis'),
+  },
+  {
+    id: 'abrechnung-lesen',
+    topic: 'cost',
+    q: 'Wie lese ich meine Jahresabrechnung?',
+    a: 'Drei Zahlen tragen die ganze Rechnung. Erstens der Verbrauch: Zählerstand am Ende minus Zählerstand am Anfang, in kWh (bei Gas steht dort ein Kubikmeter-Wert, den eine Zustandszahl und ein Brennwert in Kilowattstunden umrechnen). Zweitens der Preis, aufgeteilt in Arbeits- und Grundpreis. Drittens die Summe deiner Abschläge im Zeitraum. Verbrauch mal Arbeitspreis plus Grundpreis minus gezahlte Abschläge – das ist die Nachzahlung oder Erstattung. Lohnt sich zu prüfen: Wurde der Anfangsstand geschätzt statt abgelesen, verschiebt das den Verbrauch zwischen zwei Jahren.',
+  },
+  {
+    id: 'abschlag',
+    topic: 'cost',
+    q: 'Warum steigt mein Abschlag – und kann ich ihn ändern?',
+    a: 'Der Abschlag ist keine Rechnung, sondern eine Vorauszahlung auf den erwarteten Jahresverbrauch. Er steigt, wenn der Preis steigt oder wenn du im Vorjahr mehr verbraucht hast als angenommen. Du kannst ihn anpassen lassen – nach oben jederzeit, nach unten mit einer nachvollziehbaren Begründung, etwa einem gesunkenen Verbrauch nach einer Sanierung oder einem Auszug. Zu niedrig ansetzen lohnt selten: Die Differenz kommt am Jahresende auf einen Schlag.',
+    popular: true,
+  },
+  {
+    id: 'co2-preis',
+    topic: 'cost',
+    q: 'Was ist der CO₂-Preis und was kostet er mich?',
+    a: 'Seit 2021 kostet fossiles Heizen und Tanken einen Aufschlag je Tonne Kohlendioxid, der planmäßig jedes Jahr steigt. Auf deiner Gas- oder Heizölrechnung taucht er als eigener Posten auf. Zur Größenordnung: Ein Preis von 50 € je Tonne entspricht bei Erdgas ungefähr 1 ct je Kilowattstunde, bei Heizöl etwas mehr. Bei 15.000 kWh Gas im Jahr sind das rund 150 €. Den aktuell gültigen Satz nennt deine Abrechnung – wer ihn in der App hinterlegt, rechnet mit dem echten Wert statt mit einem Richtwert.',
+    source: { ...wiki('Brennstoffemissionshandelsgesetz'), stand: '08/2026' },
+  },
+
+  // --- Sanieren & Fördern ---
+  {
+    id: 'daemmung',
+    topic: 'renovation',
+    q: 'Was bringt Dämmung wirklich?',
+    a: 'Sehr unterschiedlich viel – und die günstigste Maßnahme ist fast nie die auffälligste. Die oberste Geschossdecke zu dämmen kostet vergleichsweise wenig, ist oft in Eigenleistung machbar und amortisiert sich häufig in wenigen Jahren; für ungedämmte oberste Geschossdecken schreibt das Gebäudeenergiegesetz ohnehin einen Mindeststandard vor. Eine Fassadendämmung bringt absolut am meisten, kostet aber ein Vielfaches und rechnet sich meist nur zusammen mit einer ohnehin fälligen Fassadenerneuerung. Ungedämmte Heizungsrohre im kalten Keller sind der billigste Posten von allen.',
+    source: wiki('Wärmedämmung'),
+  },
+  {
+    id: 'fenster',
+    topic: 'renovation',
+    q: 'Fenster tauschen oder erst mal nachrüsten?',
+    a: 'Es kommt auf das Alter an. Einfachverglasung und Fenster bis etwa Baujahr 1995 sind ein echter Schwachpunkt, dort lohnt der Austausch. Moderne Zweifachverglasung gegen Dreifachverglasung zu tauschen bringt dagegen wenig, solange die Wände deutlich schlechter dämmen. Häufig sitzt das Problem gar nicht in der Scheibe, sondern in der Dichtung: Neue Dichtungen und eine nachgestellte Beschlagmechanik kosten wenig und beseitigen Zugluft. Ein wichtiger Nebeneffekt: Dichte neue Fenster ohne angepasstes Lüften verlagern das Feuchteproblem an die kälteste Wand.',
+  },
+  {
+    id: 'foerderung',
+    topic: 'renovation',
+    q: 'Wo bekomme ich Förderung?',
+    a: 'Für Heizungstausch und Effizienzmaßnahmen im Bestand gibt es Zuschüsse und zinsgünstige Kredite von Bund und teils von Land und Kommune. Zwei Regeln sind wichtiger als jede Prozentzahl: Der Antrag muss meist **vor** Auftragsvergabe gestellt sein, und für viele Programme ist eine Energieberatung oder die Einbindung eines Fachbetriebs Voraussetzung. Die Sätze ändern sich regelmäßig – verlass dich deshalb nie auf eine Zahl aus zweiter Hand, sondern auf die aktuelle Programmseite oder deine Energieberatung.',
+    source: { ...wiki('Bundesförderung_für_effiziente_Gebäude'), stand: '08/2026' },
   },
 ]
 
@@ -147,7 +356,7 @@ export const FAQ: FaqItem[] = [
 // Quellen verweisen auf die deutschsprachige Wikipedia (stabile, anklickbare
 // Artikel-Links) als allgemein zugängliche Referenz. Bei fachlicher Prüfung
 // können sie durch Primärquellen (z. B. VDI, Umweltbundesamt) ersetzt werden.
-function wiki(article: string): { label: string; url: string } {
+function wiki(article: string): Source {
   return { label: `Wikipedia: ${article.replace(/_/g, ' ')}`, url: `https://de.wikipedia.org/wiki/${article}` }
 }
 
