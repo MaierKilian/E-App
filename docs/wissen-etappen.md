@@ -26,7 +26,7 @@ Arbeits-Branch, Push – und einer aktualisierten Statuszeile hier. Den Merge na
 | # | Etappe | Status | Abgeschlossen | Commit |
 |---|---|---|---|---|
 | 1 | Gemeinsame Oberfläche | ✅ fertig | 2026-08-31 | `f127375` |
-| 2 | FAQ – Themen und Fragen | ✅ fertig | 2026-08-31 | `PLATZHALTER` |
+| 2 | FAQ – Themen und Fragen | ✅ fertig | 2026-08-31 | `63dabfc` |
 | 3 | Glossar – Nachschlagen statt Aufklappen | ⬜ offen | – | – |
 | 4 | Messungen – Struktur, Richtwerte, Einstieg | ⬜ offen | – | – |
 
