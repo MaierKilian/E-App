@@ -22,10 +22,10 @@ import type { MeasurementRating } from '../types'
  */
 
 // Schwellenwerte für die Bewertung (°C).
-const GOOD_MIN = 5
-const GOOD_MAX = 7
-const TOO_COLD_MAX = 2 // <3 °C = zu kalt
-const TOO_WARM_MIN = 8 // >8 °C = zu warm
+export const GOOD_MIN = 5
+export const GOOD_MAX = 7
+export const TOO_COLD_MAX = 2 // <3 °C = zu kalt
+export const TOO_WARM_MIN = 8 // >8 °C = zu warm
 
 const PERCENT_PER_DEGREE = 0.06 // ~6 % Mehrverbrauch je °C kälter
 const REFERENCE_TEMP = 7 // empfohlene Innentemperatur

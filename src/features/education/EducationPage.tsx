@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Check, ChevronRight, GraduationCap, ExternalLink } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft, ArrowRight, Check, ChevronRight, GraduationCap, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useProgressStore } from '@/store/progressStore'
+import { CATEGORY_COLOR, getMeasurementMeta, type MeasurementMeta } from '@/features/measurements/catalog'
+import { RATING_COLOR } from '@/features/measurements/rating'
+import type { MeasurementId } from '@/features/measurements/types'
+import { MEASUREMENT_THRESHOLDS, type ThresholdTable } from './measurementThresholds'
 import { PhotoPlaceholder } from './PhotoPlaceholder'
 import { Quiz } from './Quiz'
 import { FlashcardsView } from './flashcards/FlashcardsView'
@@ -355,8 +360,77 @@ function GlossaryView() {
   )
 }
 
+/** Farbige Icon-Kachel der Messung – dasselbe Symbol wie im Messbereich. */
+function MeasurementIcon({ meta }: { meta: MeasurementMeta }) {
+  const color = CATEGORY_COLOR[meta.category]
+  return (
+    <span
+      aria-hidden
+      className="flex h-7 w-7 items-center justify-center rounded-xl"
+      style={{ backgroundColor: `color-mix(in srgb, ${color} 16%, transparent)` }}
+    >
+      <meta.icon className="h-4 w-4" style={{ color }} />
+    </span>
+  )
+}
+
+/**
+ * Richtwert-Tabelle einer Messung.
+ *
+ * Die Zahlen kommen aus `measurementThresholds.ts` und damit aus den
+ * Mess-Modulen selbst – der Wissensbereich kann hier nichts behaupten, was die
+ * Messung anders sieht.
+ */
+function ThresholdTableView({ table }: { table: ThresholdTable }) {
+  const { t } = useTranslation()
+  return (
+    <div className="mt-3">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+        {t('education.measurement.thresholds')}
+      </h3>
+      <p className="mt-0.5 text-xs text-muted">{table.quantity}</p>
+      <dl className="mt-2 space-y-1">
+        {table.rows.map((row) => (
+          <div key={row.label} className="flex items-baseline justify-between gap-3">
+            <dt className="flex min-w-0 items-center gap-2 text-sm">
+              {row.rating && (
+                <span
+                  aria-hidden
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: RATING_COLOR[row.rating] }}
+                />
+              )}
+              <span className="truncate">{row.label}</span>
+            </dt>
+            <dd className="shrink-0 font-mono text-sm tabular-nums">{row.range}</dd>
+          </div>
+        ))}
+      </dl>
+      {table.note && <p className="mt-2 text-xs text-muted">{table.note}</p>}
+    </div>
+  )
+}
+
+/** Aufzählung eines Abschnitts („Was du beeinflussen kannst", „Häufige Fehler"). */
+function SectionList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="mt-4">
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">{title}</h3>
+      <ul className="mt-1.5 space-y-1.5">
+        {items.map((item) => (
+          <li key={item} className="flex items-start gap-2 text-sm">
+            <span aria-hidden className="mt-[0.45rem] h-1 w-1 shrink-0 rounded-full bg-muted" />
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 function MeasurementsView() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   // Titel über i18n, damit die Suche findet, was auch auf dem Schirm steht.
   const titleOf = (info: (typeof MEASUREMENT_INFOS)[number]) =>
     t(`measurements.${info.id}.title`, info.title)
@@ -369,22 +443,51 @@ function MeasurementsView() {
         {lookup.filtered.length === 0 ? (
           <NoResults query={lookup.query} onReset={lookup.reset} />
         ) : (
-          lookup.filtered.map((info) => (
-            <LookupRow
-              key={info.id}
-              title={titleOf(info)}
-              teaser={searchPreview(
-                titleOf(info),
-                teaserOf(info, info.body),
-                info.body,
-                lookup.query,
-              )}
-              query={lookup.query}
-            >
-              <p>{info.body}</p>
-              <SourceLink source={info.source} />
-            </LookupRow>
-          ))
+          lookup.filtered.map((info) => {
+            const meta = getMeasurementMeta(info.id)
+            const table = MEASUREMENT_THRESHOLDS[info.id as MeasurementId]
+            return (
+              <LookupRow
+                key={info.id}
+                title={titleOf(info)}
+                leading={meta && <MeasurementIcon meta={meta} />}
+                meta={meta && `${meta.estimatedMinutes} ${t('measurements.minutesUnit')}`}
+                teaser={searchPreview(
+                  titleOf(info),
+                  teaserOf(info, info.body),
+                  info.body,
+                  lookup.query,
+                )}
+                query={lookup.query}
+              >
+                <p>{info.body}</p>
+                {table && <ThresholdTableView table={table} />}
+                {info.sections && (
+                  <>
+                    <SectionList
+                      title={t('education.measurement.influence')}
+                      items={info.sections.influence}
+                    />
+                    <SectionList
+                      title={t('education.measurement.mistakes')}
+                      items={info.sections.mistakes}
+                    />
+                  </>
+                )}
+                <SourceLink source={info.source} />
+                {meta?.available && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/measurements/${info.id}`)}
+                    className="focus-ring mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground"
+                  >
+                    {t('education.measurement.start')}
+                    <ArrowRight aria-hidden className="h-4 w-4" />
+                  </button>
+                )}
+              </LookupRow>
+            )
+          })
         )}
       </LookupList>
     </div>

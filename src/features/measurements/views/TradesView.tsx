@@ -3,7 +3,7 @@ import { Flame, Droplet, Zap, Waves } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { MEASUREMENT_CATALOG } from '../catalog'
-import type { MeasurementCategory } from '../catalog'
+import { CATEGORY_COLOR, type MeasurementCategory } from '../catalog'
 import type { MeasurementResult } from '../types'
 import { anyResultFor } from '../rooms'
 import { countingRooms, isMeasurementDone, measurementProgress } from '../progress'
@@ -21,13 +21,6 @@ const CATEGORY_ICON: Record<MeasurementCategory, LucideIcon> = {
   hot_water: Droplet,
   electricity: Zap,
   water: Waves,
-}
-
-const CATEGORY_COLOR: Record<MeasurementCategory, string> = {
-  heating: '#f97316',
-  hot_water: '#3b82f6',
-  electricity: '#eab308',
-  water: '#06b6d4',
 }
 
 /**

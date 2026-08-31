@@ -28,7 +28,7 @@ Arbeits-Branch, Push – und einer aktualisierten Statuszeile hier. Den Merge na
 | 1 | Gemeinsame Oberfläche | ✅ fertig | 2026-08-31 | `f127375` |
 | 2 | FAQ – Themen und Fragen | ✅ fertig | 2026-08-31 | `63dabfc` |
 | 3 | Glossar – Nachschlagen statt Aufklappen | ✅ fertig | 2026-08-31 | `5de39c6` |
-| 4 | Messungen – Struktur, Richtwerte, Einstieg | ⬜ offen | – | – |
+| 4 | Messungen – Struktur, Richtwerte, Einstieg | ✅ fertig | 2026-08-31 | `PLATZHALTER` |
 
 **Abhängigkeiten:** 2, 3 und 4 brauchen alle Etappe 1 – untereinander sind sie
 unabhängig und können in beliebiger Reihenfolge kommen.
@@ -271,6 +271,39 @@ ungegliederte Absätze, die jeweils mit „So misst du: …" enden.
 - Kein Richtwert steht doppelt: die Tabelle liest die Schwellen aus dem Modul.
 - Von jedem Eintrag führt ein Knopf in die zugehörige Messung.
 - Kein Reiter heißt mehr wie ein Bereich der Bottom-Nav.
+
+### Ergebnis (2026-08-31)
+
+**5 → 9 Hintergründe**, jeder in vier Abschnitten: *Warum das zählt* ·
+*Richtwerte* · *Was du beeinflussen kannst* · *Häufige Fehler*. Neu geschrieben
+sind `hot_water_wait`, `furniture_spacing`, `lighting` und `base_load`; die
+fünf vorhandenen sind gegliedert und um ihr „So misst du: …" gekürzt – die
+Anleitung steht im Messablauf.
+
+Jede Zeile trägt Symbol und Gewerk-Farbe ihrer Messung sowie die geschätzte
+Dauer, und aufgeklappt endet sie mit **„Diese Messung starten"** auf
+`/measurements/:id`.
+
+**Die Richtwerte stehen an einer Stelle.** `measurementThresholds.ts` enthält
+keine einzige Grenze als Zahl im Quelltext – jede wird aus dem Modul
+importiert, das mit ihr rechnet. Dafür mussten die Konstanten erst freigelegt
+werden: `GOOD_MAX`/`MEDIUM_MAX` in Duschkopf, Standby und Grundlast, die
+Temperaturgrenzen in Kühl- und Gefriergerät, die Luftfeuchte-Grenzen im
+Raumklima. Bei der Warmwasser-Wartezeit standen die Schwellen als nackte
+Literale in `rateWait` – sie heißen jetzt `WAIT_GOOD_MAX_S` und so weiter und
+werden von der Bewertung selbst benutzt. Ein Test hält an drei Stichproben
+fest, dass die Tabelle wirklich aus den Modulen liest.
+
+Nebenbei aufgeräumt: `CATEGORY_COLOR` lag in `views/TradesView.tsx` und war
+damit an eine Ansicht gebunden. Die Farben stehen jetzt im Katalog, wo die
+Gewerke definiert sind; der Wissensbereich hätte sie sonst abschreiben müssen.
+
+Der Reiter heißt **„Hintergründe"**. Damit ist die Namensgleichheit mit dem
+Messbereich der unteren Navigationsleiste erledigt, die seit Juni in
+`ux-roadmap.md` stand; ein Test hält fest, dass sich die beiden Beschriftungen
+in beiden Sprachen unterscheiden.
+
+Die Quellen bleiben wie in Etappe 2 und 3 bei Wikipedia.
 
 ---
 

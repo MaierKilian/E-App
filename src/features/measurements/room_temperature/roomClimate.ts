@@ -69,8 +69,8 @@ export function comfortBand(roomType?: RoomType): ComfortBand {
 const TEMP_EXTREME_TOLERANCE = 3
 
 // Schwellenwerte Luftfeuchte (%).
-const HUM_OPTIMAL_MIN = 40
-const HUM_OPTIMAL_MAX = 60
+export const HUM_OPTIMAL_MIN = 40
+export const HUM_OPTIMAL_MAX = 60
 const HUM_EXTREME_LOW = 30
 const HUM_EXTREME_HIGH = 70
 

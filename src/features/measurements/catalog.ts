@@ -6,6 +6,18 @@ import type { RoomType } from '@/types'
 /** Gewerk-Kategorie einer Messung (für die „Gewerke"-Ansicht). */
 export type MeasurementCategory = 'heating' | 'hot_water' | 'electricity' | 'water'
 
+/**
+ * Farbe je Gewerk. Lag vorher in `views/TradesView.tsx` und war damit an eine
+ * Ansicht gebunden – der Wissensbereich zeigt dieselben Gewerke und hätte die
+ * Werte sonst abschreiben müssen.
+ */
+export const CATEGORY_COLOR: Record<MeasurementCategory, string> = {
+  heating: '#f97316',
+  hot_water: '#3b82f6',
+  electricity: '#eab308',
+  water: '#06b6d4',
+}
+
 export interface MeasurementMeta {
   id: MeasurementId
   icon: LucideIcon

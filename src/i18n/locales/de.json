@@ -1790,7 +1790,7 @@
     "sections": {
       "faq": "FAQ",
       "glossary": "Glossar",
-      "measurements": "Messungen",
+      "measurements": "Hintergründe",
       "university": "Laborversuche",
       "flashcards": "Karteikarten"
     },
@@ -2024,7 +2024,13 @@
     },
     "stand": "Stand {{stand}}",
     "alphabet": "Zu einem Buchstaben springen",
-    "related": "Verwandt:"
+    "related": "Verwandt:",
+    "measurement": {
+      "thresholds": "Richtwerte",
+      "influence": "Was du beeinflussen kannst",
+      "mistakes": "Häufige Fehler",
+      "start": "Diese Messung starten"
+    }
   },
   "profiles": {
     "sectionTitle": "Meine Wohnungen",

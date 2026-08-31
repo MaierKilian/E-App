@@ -61,12 +61,29 @@ export interface GlossaryItem extends LookupFields {
   source: Source
 }
 
+/**
+ * Die drei Fließtext-Abschnitte eines Mess-Hintergrunds.
+ *
+ * Der vierte Abschnitt – die Richtwerte – steht bewusst **nicht** hier: Er wird
+ * aus `measurementThresholds.ts` gebaut, das die Grenzen aus den Mess-Modulen
+ * liest. Stünden sie hier als Text, gäbe es sie zweimal.
+ */
+export interface MeasurementSections {
+  /** „Was du beeinflussen kannst" – kurze Handlungspunkte. */
+  influence: string[]
+  /** „Häufige Fehler" – was die Messung oder die Sache verdirbt. */
+  mistakes: string[]
+}
+
 export interface MeasurementInfo extends LookupFields {
   /** i18n-Key-Suffix der Messung (measurements.<id>.title). */
   id: string
   /** Anzeige-Titel (kann auch über i18n aufgelöst werden – hier deutscher Fallback). */
   title: string
+  /** „Warum das zählt" – trägt zugleich die Vorschauzeile. */
   body: string
+  /** Die übrigen Abschnitte. Ohne sie rendert nur `body`. */
+  sections?: MeasurementSections
   /** Optionale, anklickbare Quelle. */
   source?: Source
 }
@@ -805,31 +822,182 @@ export const MEASUREMENT_INFOS: MeasurementInfo[] = [
   {
     id: 'showerhead',
     title: 'Duschkopf-Durchfluss',
-    body: 'Warmwasser ist nach dem Heizen oft der zweitgrößte Energieposten im Haushalt – und Duschen macht davon einen großen Teil aus. Ein herkömmlicher Duschkopf liefert 12–15 Liter pro Minute, ein Sparduschkopf nur etwa 6–9 Liter, ohne dass der Komfort spürbar leidet. Da jeder Liter zusätzlich von etwa 10 °C auf rund 38 °C erwärmt werden muss, spart ein geringerer Durchfluss doppelt: Trinkwasser und Heizenergie. So misst du: einen Messbecher unter den laufenden Duschkopf halten und stoppen, wie viele Liter in einer bestimmten Zeit zusammenkommen – daraus ergibt sich der Durchfluss in l/min.',
+    topic: 'hot_water',
+    body: 'Warmwasser ist nach dem Heizen der zweitgrößte Energieposten im Haushalt, und Duschen macht davon den größten Teil aus. Jeder Liter muss von etwa 10 °C auf rund 38 °C erwärmt werden – ein geringerer Durchfluss spart deshalb doppelt: Trinkwasser und die Energie, es zu erwärmen. Der Hebel ist ungewöhnlich günstig: Ein Sparduschkopf kostet wenig und wirkt vom ersten Tag an.',
+    sections: {
+      influence: [
+        'Sparduschkopf statt Standardbrause – der größte Einzelschritt.',
+        'Durchflussbegrenzer in die Armatur, wenn der Kopf bleiben soll.',
+        'Duschdauer: jede Minute weniger zählt linear.',
+        'Warmwassertemperatur am Speicher moderat halten.',
+      ],
+      mistakes: [
+        'Mit halb geöffnetem Hahn messen – gemessen wird bei voller Öffnung.',
+        'Den Messbecher erst nach dem Aufdrehen unterhalten; die ersten Sekunden verfälschen.',
+        'Regenduschen unterschätzen: Sie liegen oft deutlich über 15 l/min.',
+      ],
+    },
     source: wiki('Warmwasser'),
   },
   {
+    id: 'hot_water_wait',
+    title: 'Warmwasser-Wartezeit',
+    topic: 'hot_water',
+    body: 'Die Sekunden, bis warmes Wasser am Hahn ankommt, sind kein Komfortproblem, sondern ein Verbrauch: Das kalte Wasser aus der Leitung läuft ungenutzt in den Abfluss, und die Wärme, die vorher darin steckte, ist längst an die Rohre abgegeben. Lange Wartezeiten verraten entweder weite Wege zum Erzeuger oder eine abgeschaltete Zirkulation.',
+    sections: {
+      influence: [
+        'Zirkulationsleitung mit Zeitschaltung oder Anforderungstaster statt Dauerbetrieb.',
+        'Warmwasserleitungen dämmen – besonders im kalten Keller.',
+        'Bei sehr langen Wegen: dezentraler Durchlauferhitzer an der entfernten Zapfstelle.',
+        'Das erste kalte Wasser auffangen und nutzen, statt es wegzuschütten.',
+      ],
+      mistakes: [
+        'Direkt nach dem letzten Zapfen messen – die Leitung ist dann noch warm.',
+        'Am Einhebelmischer nicht ganz auf heiß stellen.',
+        'Die Wartezeit an der nächstgelegenen Zapfstelle messen statt an der entferntesten.',
+      ],
+    },
+    source: wiki('Zirkulationsleitung'),
+  },
+  {
     id: 'room_temperature',
-    title: 'Raumtemperatur',
-    body: 'Die Raumtemperatur ist einer der größten Hebel beim Heizen: Jedes Grad weniger reduziert den Heizenergiebedarf um grob 6 %. Als Richtwerte gelten etwa 20 °C in Wohnräumen, 16–18 °C in Schlafräumen und um die 22 °C im Bad. Wichtig ist, Räume nicht stark auskühlen zu lassen – das spätere Wiederaufheizen kostet Energie und kühle Wandflächen begünstigen Feuchte und Schimmel. Miss die Temperatur in Raummitte, nicht direkt an Heizkörper oder Außenwand, und lass das Thermometer kurz angleichen.',
+    title: 'Raumklima',
+    topic: 'heating',
+    body: 'Die Raumtemperatur ist der größte Hebel beim Heizen: Jedes Grad weniger senkt den Heizenergiebedarf um grob 6 %. Gleichzeitig ist sie kein reiner Sparposten – zu kühle Räume kosten beim Wiederaufheizen Energie, und kalte Wandflächen sind der Anfang jedes Feuchteschadens. Deshalb zählt neben der Temperatur immer auch die Luftfeuchte.',
+    sections: {
+      influence: [
+        'Thermostatventile auf die Zieltemperatur einstellen, nicht auf Anschlag.',
+        'Ungenutzte Räume kühler fahren, aber nicht unter 16 °C.',
+        'Türen zu kühleren Räumen geschlossen halten – sonst wandert feuchte Warmluft hinein.',
+        'Nachts absenken, sofern nicht mit Wärmepumpe geheizt wird.',
+      ],
+      mistakes: [
+        'Am Heizkörper oder an der Außenwand messen statt in Raummitte.',
+        'Das Thermometer nicht angleichen lassen – es braucht einige Minuten.',
+        'Direkt nach dem Lüften messen.',
+        'In der Sonne messen: Direkte Einstrahlung verfälscht jedes Thermometer.',
+      ],
+    },
     source: wiki('Raumklima'),
+  },
+  {
+    id: 'furniture_spacing',
+    title: 'Heizkörper frei?',
+    topic: 'heating',
+    body: 'Ein Heizkörper gibt einen großen Teil seiner Wärme als aufsteigenden Luftstrom ab. Steht ein Möbel davor oder hängt ein langer Vorhang darüber, staut sich die Wärme dahinter, statt in den Raum zu gelangen. Schlimmer noch: Sitzt das Thermostatventil in dieser warmen Nische, misst es eine Temperatur, die im Raum gar nicht herrscht, und schließt zu früh – der Raum bleibt kühl, obwohl geheizt wird.',
+    sections: {
+      influence: [
+        'Möbel abrücken – wenige Zentimeter entscheiden.',
+        'Lange Vorhänge kürzen oder vor dem Heizkörper enden lassen.',
+        'Keine Verkleidung über dem Heizkörper, auch keine abgelegten Handtücher.',
+        'Bei fest verbautem Möbel: Thermostatkopf mit Fernfühler nachrüsten.',
+      ],
+      mistakes: [
+        'Nur den Abstand betrachten und die Verdeckung von oben übersehen.',
+        'Die Heizkörpernische hinter dem Sofa vergessen, weil man sie nie sieht.',
+        'Annehmen, ein Zentimeter Luft genüge – die Luft muss zirkulieren können.',
+      ],
+    },
+  },
+  {
+    id: 'lighting',
+    title: 'Beleuchtung',
+    topic: 'electricity',
+    body: 'Beleuchtung ist selten der größte Posten im Haushalt, aber der mit dem einfachsten Hebel: LED-Lampen brauchen bei gleicher Helligkeit rund 80–90 % weniger Strom als Glühlampen und halten ein Vielfaches länger. Entscheidend ist nicht die Zahl der Lampen, sondern wie lange sie brennen – deshalb geht dieser Check Raum für Raum vor.',
+    sections: {
+      influence: [
+        'Zuerst die Dauerbrenner tauschen: Küche, Wohnzimmer, Außenlicht.',
+        'Auf Lumen achten statt auf Watt – Lumen ist die Helligkeit.',
+        'Warmweiß (2.700 K) für Wohnräume, neutralweiß fürs Arbeiten.',
+        'Bewegungsmelder für Flur, Keller und Außenbereich.',
+      ],
+      mistakes: [
+        'Funktionierende Leuchtmittel in selten genutzten Räumen vorzeitig tauschen – dort amortisiert sich der Kauf kaum.',
+        'Halogen für sparsam halten: Es ist eine Glühlampe mit etwas besserer Ausbeute.',
+        'Beim Tausch die Helligkeit unterschätzen und den Raum zu dunkel machen.',
+      ],
+    },
+    source: wiki('Leuchtdiode'),
+  },
+  {
+    id: 'base_load',
+    title: 'Grundlast',
+    topic: 'electricity',
+    body: 'Die Grundlast ist die Leistung, die dein Haushalt rund um die Uhr zieht – auch nachts und im Urlaub. Sie ist deshalb der wirksamste Ansatzpunkt beim Stromsparen: Jedes Watt wird mit 8.760 Stunden im Jahr multipliziert. Anders als die anderen Checks beziffert dieser keine Ersparnis, sondern stellt eine Diagnose: Ist die Grundlast hoch, sagen die Folge-Checks, woher sie kommt.',
+    sections: {
+      influence: [
+        'Standby-Geräte über schaltbare Steckdosenleisten trennen.',
+        'Alte Kühl- und Gefriergeräte prüfen – sie laufen dauerhaft.',
+        'Zweitgeräte im Keller hinterfragen: Der alte Kühlschrank ist oft der größte Einzelposten.',
+        'Netzteile und Ladegeräte ziehen, die dauerhaft in der Dose stecken.',
+      ],
+      mistakes: [
+        'Zu kurz messen: Kühlgeräte takten, ein Messfenster unter einer Stunde trifft zufällig einen Zustand.',
+        'Während der Messung Geräte ein- oder ausschalten.',
+        'Die Umwälzpumpe der Heizung vergessen – in der Heizsaison ist sie Teil der Grundlast.',
+      ],
+    },
+    source: wiki('Grundlast'),
   },
   {
     id: 'standby',
     title: 'Standby-Verbrauch',
-    body: 'Viele Geräte ziehen auch im Bereitschaftsbetrieb dauerhaft Strom – Fernseher, Konsolen, PCs, Router, Ladegeräte oder Audioanlagen. Schon wenige Watt summieren sich über 8.760 Stunden im Jahr zu mehreren Kilowattstunden je Gerät; über den ganzen Haushalt entstehen schnell 50–150 € im Jahr „für nichts". Mit einem Steckdosen-Energiemessgerät bestimmst du die tatsächliche Standby-Leistung in Watt. Schaltbare Steckdosenleisten oder Smart-Plugs trennen mehrere Geräte auf einen Schlag vom Netz.',
+    topic: 'electricity',
+    body: 'Viele Geräte ziehen auch im Bereitschaftsbetrieb dauerhaft Strom – Fernseher, Konsolen, PCs, Router, Ladegeräte, Audioanlagen. Schon wenige Watt summieren sich über 8.760 Stunden im Jahr zu mehreren Kilowattstunden je Gerät; über den ganzen Haushalt entstehen daraus schnell dreistellige Beträge. Das Tückische: Man sieht dem Gerät nichts an.',
+    sections: {
+      influence: [
+        'Schaltbare Steckdosenleiste für ganze Gerätegruppen – ein Griff statt sechs.',
+        'Netzwerkfunktionen abschalten, die niemand nutzt (Wake-on-LAN, Schnellstart).',
+        'Beim Neukauf auf die Standby-Aufnahme achten, nicht nur auf die Effizienzklasse.',
+        'Router und Netzwerk bewusst ausnehmen – dort stört das Wiederhochfahren mehr, als das Watt bringt.',
+      ],
+      mistakes: [
+        'Nur die offensichtlichen Geräte messen und Netzteile übersehen.',
+        'Im ausgeschalteten Zustand messen, während das Gerät noch herunterfährt.',
+        'Geräte mit stark schwankender Aufnahme (Drucker, Konsolen) in einem Moment erfassen.',
+      ],
+    },
     source: wiki('Bereitschaftsbetrieb'),
   },
   {
     id: 'fridge',
     title: 'Kühlschrank',
-    body: 'Der Kühlschrank läuft rund um die Uhr und zählt damit zu den ständigen Stromverbrauchern. Eine Innentemperatur von etwa 5–7 °C ist ausreichend; jedes Grad kälter erhöht den Verbrauch spürbar (Richtwert ~6 % je Grad). Auch Gerätealter, Türdichtungen, Vereisung und der Aufstellort beeinflussen den Verbrauch – das Gerät sollte nicht neben Herd, Spülmaschine oder Heizung stehen. Zum Messen ein Thermometer in ein Glas Wasser in die Mitte stellen und nach einigen Stunden ablesen (das dämpft kurzfristige Schwankungen).',
+    topic: 'electricity',
+    body: 'Der Kühlschrank läuft rund um die Uhr und gehört damit zu den ständigen Stromverbrauchern. Eine Innentemperatur von 5–7 °C reicht für alle Lebensmittel; jedes Grad kälter erhöht den Verbrauch um grob 6 %. Neben der Einstellung entscheiden Alter, Türdichtung und Aufstellort – ein Gerät neben Herd oder Heizung arbeitet dauerhaft gegen die Wärme an.',
+    sections: {
+      influence: [
+        'Temperatur auf 7 °C stellen und mit einem Thermometer prüfen.',
+        'Aufstellort: nicht neben Herd, Spülmaschine oder Heizkörper.',
+        'Türdichtung prüfen – ein eingeklemmtes Blatt Papier darf sich nicht leicht herausziehen lassen.',
+        'Lüftungsgitter hinten und unten frei halten und entstauben.',
+      ],
+      mistakes: [
+        'Die Temperatur direkt in der Luft messen – sie schwankt bei jedem Öffnen.',
+        'Zu früh ablesen: Ein Glas Wasser in der Mitte braucht mehrere Stunden.',
+        'Nach dem Einräumen warmer Einkäufe messen.',
+        'Der Stufenanzeige am Regler vertrauen – sie ist keine Temperatur.',
+      ],
+    },
     source: wiki('Kühlschrank'),
   },
   {
     id: 'freezer',
     title: 'Gefrierschrank',
-    body: 'Gefriergeräte arbeiten dauerhaft auf tiefem Temperaturniveau und laufen ununterbrochen. Etwa −18 °C sind ausreichend – jedes Grad kälter kostet unnötig Energie. Eine Eisschicht an den Innenwänden wirkt wie eine Dämmung gegen die Kühlung: Schon wenige Millimeter Reif können den Stromverbrauch deutlich erhöhen, daher lohnt regelmäßiges Abtauen. Prüfe außerdem die Türdichtung und vermeide langes Offenstehen.',
+    topic: 'electricity',
+    body: 'Gefriergeräte arbeiten dauerhaft auf tiefem Temperaturniveau und laufen ununterbrochen. −18 °C genügen für die Haltbarkeit; jedes Grad kälter kostet unnötig Energie. Der größte Einzelfaktor ist aber nicht die Einstellung, sondern der Reif: Eine Eisschicht an den Innenwänden wirkt wie eine Dämmung – allerdings in die falsche Richtung, sie hält die Kälte vom Innenraum fern.',
+    sections: {
+      influence: [
+        'Auf −18 °C einstellen, nicht kälter.',
+        'Abtauen, sobald die Eisschicht ein paar Millimeter erreicht.',
+        'Türdichtung prüfen und die Tür kurz halten.',
+        'Gerät gut gefüllt halten – Luft muss bei jedem Öffnen neu gekühlt werden.',
+      ],
+      mistakes: [
+        'Direkt nach dem Abtauen messen, bevor das Gerät wieder heruntergekühlt hat.',
+        'Das Thermometer beim Ablesen herausnehmen – der Wert steigt in Sekunden.',
+        'Die Schnellgefrierfunktion dauerhaft laufen lassen.',
+      ],
+    },
     source: wiki('Gefriergerät'),
   },
 ]

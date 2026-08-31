@@ -39,8 +39,8 @@ export interface ShowerheadResult {
 }
 
 // Schwellenwerte für die Bewertung (L/min).
-const GOOD_MAX = 9
-const MEDIUM_MAX = 12
+export const GOOD_MAX = 9
+export const MEDIUM_MAX = 12
 
 // Annahmen für die Warmwasser-Kostenschätzung. Kalibriert: 1 Dusche/Tag à 5 min,
 // 9 L/min, ΔT 27 K → ~516 kWh/Person·Jahr (deckt sich mit Quellen: ~500–600

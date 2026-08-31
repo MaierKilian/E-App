@@ -32,9 +32,9 @@ const MS_PER_HOUR = 3_600_000
 // und zwangsläufig unfair: Eine Familie im Haus mit Gefriertruhe liegt immer
 // über 70 W, egal wie sparsam sie lebt. Sie greifen nur, solange kein
 // Jahresverbrauch aus dem Monitoring vorliegt.
-const GOOD_MAX = 70
-const MEDIUM_MAX = 150
-const ELEVATED_MAX = 250
+export const GOOD_MAX = 70
+export const MEDIUM_MAX = 150
+export const ELEVATED_MAX = 250
 
 // Schwellen für den Anteil der Grundlast am Jahres-Stromverbrauch. Sie messen,
 // was der Haushalt verbraucht, ohne etwas zu nutzen – und sind dadurch von

@@ -125,9 +125,9 @@ export function defrostAdvice(stage: FrostStage): DefrostAdvice {
 }
 
 // Schwellenwerte Temperatur (°C). Optimal ~ -18 °C.
-const TEMP_OPTIMAL = -18
-const TEMP_TOO_WARM = -16 // wärmer als -16 °C = zu warm
-const TEMP_TOO_COLD = -20 // kälter als -20 °C = zu kalt
+export const TEMP_OPTIMAL = -18
+export const TEMP_TOO_WARM = -16 // wärmer als -16 °C = zu warm
+export const TEMP_TOO_COLD = -20 // kälter als -20 °C = zu kalt
 
 export type FreezerTempStatus = 'optimal' | 'tooWarm' | 'tooCold'
 
@@ -227,5 +227,3 @@ export function calcFreezerSaving(input: FreezerSavingInput): FreezerSaving {
     temperatureStatus,
   }
 }
-
-export { TEMP_OPTIMAL }

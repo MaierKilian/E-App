@@ -75,11 +75,23 @@ export interface HotWaterWaitResult {
   yearlySaving: number
 }
 
+/**
+ * Schwellen der Wartezeit-Bewertung in Sekunden.
+ *
+ * Benannt und exportiert, damit der Wissensbereich sie **lesen** kann, statt
+ * dieselben Zahlen im Text zu wiederholen. Nackte Literale in `rateWait` waren
+ * von außen nicht erreichbar – und eine zweite Fassung im Fließtext wäre genau
+ * die Art Dopplung, die irgendwann auseinanderläuft.
+ */
+export const WAIT_GOOD_MAX_S = 15
+export const WAIT_MEDIUM_MAX_S = 30
+export const WAIT_ELEVATED_MAX_S = 60
+
 /** Bewertung der Wartezeit (vierstufig). */
 export function rateWait(seconds: number): MeasurementRating {
-  if (seconds <= 15) return 'good'
-  if (seconds <= 30) return 'medium'
-  if (seconds <= 60) return 'elevated'
+  if (seconds <= WAIT_GOOD_MAX_S) return 'good'
+  if (seconds <= WAIT_MEDIUM_MAX_S) return 'medium'
+  if (seconds <= WAIT_ELEVATED_MAX_S) return 'elevated'
   return 'high'
 }
 

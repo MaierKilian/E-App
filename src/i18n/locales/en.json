@@ -1790,7 +1790,7 @@
     "sections": {
       "faq": "FAQ",
       "glossary": "Glossary",
-      "measurements": "Measurements",
+      "measurements": "Backgrounds",
       "university": "Lab experiments",
       "flashcards": "Flashcards"
     },
@@ -2024,7 +2024,13 @@
     },
     "stand": "As of {{stand}}",
     "alphabet": "Jump to a letter",
-    "related": "Related:"
+    "related": "Related:",
+    "measurement": {
+      "thresholds": "Reference values",
+      "influence": "What you can change",
+      "mistakes": "Common mistakes",
+      "start": "Start this measurement"
+    }
   },
   "profiles": {
     "sectionTitle": "My homes",

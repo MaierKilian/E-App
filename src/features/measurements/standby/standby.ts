@@ -38,8 +38,8 @@ export interface StandbyDevice {
 }
 
 // Schwellenwerte für die Bewertung der Gesamt-Standby-Leistung (Watt).
-const GOOD_MAX = 5
-const MEDIUM_MAX = 20
+export const GOOD_MAX = 5
+export const MEDIUM_MAX = 20
 
 const HOURS_PER_YEAR = 24 * 365
 
