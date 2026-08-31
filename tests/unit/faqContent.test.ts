@@ -60,12 +60,22 @@ describe('FAQ-Inhalt', () => {
   })
 
   it('nennt bei alternden Angaben einen Stand', () => {
-    // Wo eine Zahl altert (Abgaben, Förderung), muss der Stand dabeistehen –
-    // sonst liest sich ein Betrag wie eine zeitlose Wahrheit.
-    const dated = FAQ.filter((f) => f.source?.stand)
-    expect(dated.length).toBeGreaterThan(0)
-    for (const item of dated) {
+    // App-Antworten brauchen in aller Regel keine Quelle – sie beschreiben die
+    // App selbst. Wo doch eine steht und eine Zahl altert, gehört der Stand
+    // dazu; geprüft wird deshalb nur das Format, nicht die Existenz.
+    for (const item of FAQ.filter((f) => f.source?.stand)) {
       expect(item.source?.stand, item.id).toMatch(/^\d{2}\/\d{4}$/)
+    }
+  })
+
+  it('dreht sich ausschließlich um die App', () => {
+    // Seit 2026-08-31 beantwortet die FAQ nur noch Fragen zur App. Fachfragen
+    // zur Sache stehen an der Messung, die sie misst (MeasurementInfo.sections
+    // .questions), oder im Glossar. Dieser Test hält den Schnitt fest – ohne
+    // ihn wandern Energie-Fragen mit der Zeit zurück.
+    const APP_TOPICS = ['start', 'measuring', 'meters', 'results', 'account', 'privacy']
+    for (const item of FAQ) {
+      expect(APP_TOPICS, `${item.id} (${item.topic})`).toContain(item.topic)
     }
   })
 })

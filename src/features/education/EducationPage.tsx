@@ -434,7 +434,14 @@ function MeasurementsView() {
   // Titel über i18n, damit die Suche findet, was auch auf dem Schirm steht.
   const titleOf = (info: (typeof MEASUREMENT_INFOS)[number]) =>
     t(`measurements.${info.id}.title`, info.title)
-  const lookup = useLookup(MEASUREMENT_INFOS, (info) => [titleOf(info), info.body])
+  // Die vertiefenden Fragen werden mitdurchsucht: Sie sind aus der FAQ
+  // hierhergezogen, und wer nach „Nachtabsenkung" sucht, soll sie finden – egal,
+  // in welchem Bereich sie inzwischen steht.
+  const lookup = useLookup(MEASUREMENT_INFOS, (info) => [
+    titleOf(info),
+    info.body,
+    ...(info.sections?.questions?.flatMap((q) => [q.q, q.a]) ?? []),
+  ])
 
   return (
     <div className="space-y-4">
@@ -472,6 +479,21 @@ function MeasurementsView() {
                       title={t('education.measurement.mistakes')}
                       items={info.sections.mistakes}
                     />
+                    {info.sections.questions && (
+                      <div className="mt-4">
+                        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">
+                          {t('education.measurement.more')}
+                        </h3>
+                        <dl className="mt-1.5 space-y-3">
+                          {info.sections.questions.map((item) => (
+                            <div key={item.q}>
+                              <dt className="text-sm font-semibold">{item.q}</dt>
+                              <dd className="mt-0.5 text-sm leading-relaxed">{item.a}</dd>
+                            </div>
+                          ))}
+                        </dl>
+                      </div>
+                    )}
                   </>
                 )}
                 <SourceLink source={info.source} />

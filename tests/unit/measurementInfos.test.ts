@@ -59,6 +59,28 @@ describe('Mess-Hintergründe', () => {
   })
 })
 
+describe('Vertiefende Fragen an den Messungen', () => {
+  const withQuestions = MEASUREMENT_INFOS.filter((i) => i.sections?.questions?.length)
+
+  it('hat die Fachfragen aus der FAQ aufgenommen', () => {
+    expect(withQuestions.length).toBeGreaterThanOrEqual(5)
+  })
+
+  it('stellt jede Frage als Frage und beantwortet sie', () => {
+    for (const info of withQuestions) {
+      for (const item of info.sections!.questions!) {
+        expect(item.q.endsWith('?'), `${info.id}: ${item.q}`).toBe(true)
+        expect(item.a.length, `${info.id}: ${item.q}`).toBeGreaterThan(120)
+      }
+    }
+  })
+
+  it('stellt keine Frage zweimal', () => {
+    const all = withQuestions.flatMap((i) => i.sections!.questions!.map((q) => q.q))
+    expect(new Set(all).size).toBe(all.length)
+  })
+})
+
 describe('Richtwert-Tabellen', () => {
   it('gehört jede Tabelle zu einer vorhandenen Messung', () => {
     const known = new Set(MEASUREMENT_CATALOG.map((m) => m.id))

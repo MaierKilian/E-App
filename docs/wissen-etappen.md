@@ -307,6 +307,31 @@ Die Quellen bleiben wie in Etappe 2 und 3 bei Wikipedia.
 
 ---
 
+## Nacharbeit: FAQ auf die App zugeschnitten (2026-08-31)
+
+Nach dem Merge entschieden: Die FAQ beantwortet **nur noch Fragen zur App**.
+30 Fragen in sechs Gruppen – Erste Schritte, Messen, Zählerstände, Auswertung,
+Konto & Teilen, Daten. Die sechs Gruppen sind neue Themen in `topics.ts`; die
+Sachthemen bleiben für Glossar und Hintergründe.
+
+Die Fachfragen aus Etappe 2 sind nicht verloren: 15 davon stehen jetzt als
+**„Mehr dazu"** an der Messung, die die Sache untersucht – Thermostat-Zahlen,
+Nachtabsenkung, Heizkurve, Lüften, Schimmel und hydraulischer Abgleich am
+Raumklima-Check, Zirkulation an der Warmwasser-Wartezeit, Warmwassertemperatur
+am Duschkopf-Test, Entlüften am Möbel-Abstands-Check, LED an der Beleuchtung,
+Ein-/Ausschalten am Standby, Wäschetrockner an der Grundlast. Die Suche in den
+Hintergründen liest sie mit: „Nachtabsenkung" führt jetzt zum Raumklima-Check.
+
+Ohne Heimat blieben die Fragen zu Wärmepumpen-Kauf, Balkonkraftwerk,
+Stromtarifen, Abrechnung, CO₂-Preis, Dämmung, Fenstern und Förderung – zu
+keiner Messung gehörig. Ihre Substanz steht im Glossar (Wärmepumpe, JAZ,
+Balkonkraftwerk, Grundversorgung, Abschlag, CO₂-Preis, GEG, U-Wert,
+Einspeisevergütung …); die ausformulierten Antworten liegen in der
+Versionsgeschichte, falls sie später wieder gebraucht werden.
+
+Zwei neue Tests sichern den Schnitt: Jede FAQ-Frage trägt ein App-Thema, und
+jede vertiefende Frage an einer Messung ist als Frage gestellt und beantwortet.
+
 ## Offen / bewusst nicht in diesem Vorhaben
 
 - **Personalisierung** („Bei dir"-Bänder aus Profil und Messergebnissen),

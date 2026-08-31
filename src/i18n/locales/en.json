@@ -2011,6 +2011,12 @@
       "all": "All"
     },
     "topics": {
+      "start": "Getting started",
+      "measuring": "Measuring",
+      "meters": "Meter readings",
+      "results": "Results",
+      "account": "Account & sharing",
+      "privacy": "Data",
       "heating": "Heating",
       "heat_pump": "Heat pump",
       "hot_water": "Hot water",
@@ -2029,7 +2035,8 @@
       "thresholds": "Reference values",
       "influence": "What you can change",
       "mistakes": "Common mistakes",
-      "start": "Start this measurement"
+      "start": "Start this measurement",
+      "more": "More on this"
     }
   },
   "profiles": {

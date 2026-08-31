@@ -6,6 +6,14 @@
  * oder Werte exportieren sollte (Fast Refresh, `react-refresh/only-export-components`).
  */
 export type Topic =
+  // Bereiche der App – tragen die FAQ.
+  | 'start'
+  | 'measuring'
+  | 'meters'
+  | 'results'
+  | 'account'
+  | 'privacy'
+  // Sachthemen – tragen Glossar und Mess-Hintergründe.
   | 'heating'
   | 'heat_pump'
   | 'hot_water'
@@ -19,6 +27,12 @@ export type Topic =
 
 /** Anzeigereihenfolge der Chips – unabhängig davon, wie der Inhalt sortiert ist. */
 const TOPIC_ORDER: Topic[] = [
+  'start',
+  'measuring',
+  'meters',
+  'results',
+  'account',
+  'privacy',
   'heating',
   'heat_pump',
   'hot_water',

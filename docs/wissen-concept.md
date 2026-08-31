@@ -164,7 +164,19 @@ starten"** auf die bestehende Route `/measurements/:id`.
 
 ## 3. Der Inhalt
 
-### 3.1 FAQ: 12 → ~30
+### 3.1 FAQ: nur noch die App
+
+> **Nachtrag 2026-08-31.** Hier stand zuerst ein Ausbau der FAQ um Energiethemen
+> (Wärmepumpe, Balkonkraftwerk, Abrechnung, Dämmung). Auf Wunsch von Kilian
+> dreht sich die FAQ jetzt **ausschließlich um die App**: Bedienung,
+> Messablauf, Zählerstände, Konto, Daten – 30 Fragen in sechs Gruppen.
+>
+> Fachfragen zur Sache haben zwei neue Heimaten: Was zu einer Messung gehört,
+> steht als „Mehr dazu" **an dieser Messung** (`MeasurementInfo.sections
+> .questions`); Begriffe stehen im Glossar. Ein Test hält den Schnitt fest –
+> ohne ihn wandern Energiefragen mit der Zeit in die FAQ zurück.
+
+### Ursprünglicher Plan – FAQ: 12 → ~30
 
 | Thema | Fehlende Fragen |
 |---|---|

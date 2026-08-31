@@ -2011,6 +2011,12 @@
       "all": "Alle"
     },
     "topics": {
+      "start": "Erste Schritte",
+      "measuring": "Messen",
+      "meters": "Zählerstände",
+      "results": "Auswertung",
+      "account": "Konto & Teilen",
+      "privacy": "Daten",
       "heating": "Heizen",
       "heat_pump": "Wärmepumpe",
       "hot_water": "Warmwasser",
@@ -2029,7 +2035,8 @@
       "thresholds": "Richtwerte",
       "influence": "Was du beeinflussen kannst",
       "mistakes": "Häufige Fehler",
-      "start": "Diese Messung starten"
+      "start": "Diese Messung starten",
+      "more": "Mehr dazu"
     }
   },
   "profiles": {
