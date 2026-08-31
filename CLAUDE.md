@@ -9,30 +9,31 @@
 3. Kurze Zusammenfassung der Änderungen ausgeben (was wurde geändert, welche Dateien betroffen)
 4. Falls `main` neue Commits hat: `git merge origin/main` anbieten oder automatisch ausführen
 5. Falls ein Etappen-Vorhaben läuft: dessen Tracker überfliegen und den
-   Arbeitsstand mit einer Zeile nennen. Zurzeit läuft der **Wissen-Ausbau**
-   (`docs/wissen-etappen.md`); Tank- und Fragebogen-Umbau sind abgeschlossen.
-
-## Laufendes Vorhaben
-
-### Wissen-Ausbau (Konzept seit 2026-08-31)
-
-Die drei Ansichten des Wissensbereichs – FAQ, Glossar und Messungen – sind
-dieselbe Konstruktion: ein Suchfeld über zugeklappten Accordions. Der Zuschnitt
-bleibt; Oberfläche und Inhalt werden aufgewertet.
-
-- **Konzept:** `docs/wissen-concept.md` · **Etappen:** `docs/wissen-etappen.md` –
-  4 Etappen, alle offen
-- `/wissen status` berichtet den Stand.
-- Zwei Regeln: **additiv** – die Typen `FaqItem`, `GlossaryItem` und
-  `MeasurementInfo` bekommen nur *optionale* Felder, kein Bestandseintrag muss
-  angefasst werden. Und: **Zahlen stehen an einer Stelle** – nennt der
-  Wissensbereich einen Richtwert, den eine Messung auch kennt, liest er ihn aus
-  dem Mess-Modul (`GOOD_MAX`, `MEDIUM_MAX`), statt ihn im Text zu wiederholen.
-- Ausdrücklich **nicht** dabei: Artikel-Datenmodell, Personalisierung aus dem
-  Profil, Themen-Navigation, Rechner im Text, Entscheidungsstrecken,
-  Karteikarten. Der HTW-Teil bleibt unberührt.
+   Arbeitsstand mit einer Zeile nennen. Zurzeit läuft keines – Wissen-Ausbau,
+   Tank- und Fragebogen-Umbau sind abgeschlossen (siehe unten).
 
 ## Abgeschlossene Vorhaben
+
+### Wissen-Ausbau (2026-08-31)
+
+Die drei Ansichten des Wissensbereichs waren dieselbe Konstruktion: ein
+Suchfeld über zugeklappten Accordions. Der Zuschnitt blieb; Oberfläche und
+Inhalt wurden aufgewertet.
+
+- **Konzept:** `docs/wissen-concept.md` · **Etappen:** `docs/wissen-etappen.md` –
+  alle vier fertig
+- `/wissen status` berichtet den Stand; was offen blieb, steht am Ende des
+  Trackers.
+- Inhalt: FAQ 12 → 35 Fragen, Glossar 31 → 58 Begriffe, Mess-Hintergründe
+  5 → 9.
+- Zwei Regeln, die weiter gelten: **additiv** – die Content-Typen bekommen
+  optionale Felder, kein Bestandseintrag muss angefasst werden. Und **Zahlen
+  stehen an einer Stelle**: Die Richtwerte-Tabellen in
+  `src/features/education/measurementThresholds.ts` enthalten keine einzige
+  Grenze als Zahl, sondern importieren sie aus dem Mess-Modul, das mit ihr
+  rechnet. Wer hier einen Richtwert ergänzt, exportiert ihn dort.
+- Offen geblieben: Die Quellen zeigen weiter auf Wikipedia. Die Umstellung auf
+  Primärquellen braucht Netzzugang zum Prüfen der URLs – Begründung im Tracker.
 
 ### Tank-Umbau (2026-08-30)
 
