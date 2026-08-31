@@ -2022,7 +2022,9 @@
       "cost": "Kosten",
       "app": "App"
     },
-    "stand": "Stand {{stand}}"
+    "stand": "Stand {{stand}}",
+    "alphabet": "Zu einem Buchstaben springen",
+    "related": "Verwandt:"
   },
   "profiles": {
     "sectionTitle": "Meine Wohnungen",

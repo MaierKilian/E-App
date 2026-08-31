@@ -2022,7 +2022,9 @@
       "cost": "Costs",
       "app": "App"
     },
-    "stand": "As of {{stand}}"
+    "stand": "As of {{stand}}",
+    "alphabet": "Jump to a letter",
+    "related": "Related:"
   },
   "profiles": {
     "sectionTitle": "My homes",

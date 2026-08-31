@@ -27,7 +27,7 @@ Arbeits-Branch, Push – und einer aktualisierten Statuszeile hier. Den Merge na
 |---|---|---|---|---|
 | 1 | Gemeinsame Oberfläche | ✅ fertig | 2026-08-31 | `f127375` |
 | 2 | FAQ – Themen und Fragen | ✅ fertig | 2026-08-31 | `63dabfc` |
-| 3 | Glossar – Nachschlagen statt Aufklappen | ⬜ offen | – | – |
+| 3 | Glossar – Nachschlagen statt Aufklappen | ✅ fertig | 2026-08-31 | `PLATZHALTER` |
 | 4 | Messungen – Struktur, Richtwerte, Einstieg | ⬜ offen | – | – |
 
 **Abhängigkeiten:** 2, 3 und 4 brauchen alle Etappe 1 – untereinander sind sie
@@ -197,6 +197,44 @@ Kilian.
 - Keine Definition muss aufgeklappt werden, um gelesen zu werden.
 - Die A–Z-Leiste springt zu jedem belegten Buchstaben.
 - Jeder Begriff mit physikalischer Größe zeigt seine Einheit.
+
+### Ergebnis (2026-08-31)
+
+**31 → 58 Begriffe.** Alle 31 alten sind erhalten; 27 neue füllen die beiden
+Lücken aus dem Konzept – Abrechnung (Abschlag, Netzentgelt, Grundversorgung,
+CO₂-Preis, HT/NT, Heizkostenverteiler, Wärmemengenzähler) und PV (kWp,
+Eigenverbrauchsquote, Einspeisevergütung, Wechselrichter, Balkonkraftwerk,
+Wallbox) – dazu Bau (Heizlast, Wärmebrücke, Taupunkt, Luftdichtheit, GEG,
+Energieausweis, Effizienzhaus), Heizung (Nachtabsenkung, Zirkulation,
+Legionellen, Einrohr-/Zweirohrsystem) und Strom (Grundlast, Lastgang,
+Scheinbares Aus). 32 Begriffe tragen eine Einheit, alle 58 haben Querverweise.
+
+Oberfläche: Die Definition steht **immer** da, zugeklappt auf zwei Zeilen
+beschnitten. Dazu Buchstaben-Überschriften, eine A–Z-Leiste als eigene Spalte
+rechts (19 belegte Buchstaben, klebt beim Scrollen) und „Verwandt:"-Chips am
+Fuß eines Eintrags, die zum genannten Begriff springen und ihn aufklappen.
+
+Neu am Baustein `LookupRow`: ein `body`-Feld für Text, der immer sichtbar ist –
+im Unterschied zum `teaser`, der eine Ankündigung ist. Dazu ein von außen
+gesteuerter Aufklapp-Zustand: Im Glossar ist **genau ein** Begriff offen, sonst
+zeigte jeder Sprung der A–Z-Leiste ins Leere.
+
+Zwei Fehler fielen erst im Browser auf:
+
+1. **`line-clamp-2` wirkte nicht.** `block` und `line-clamp-2` setzen beide
+   `display`; zusammen gewinnt `block`, und die Definitionen standen in voller
+   Länge da. Die beiden schließen sich jetzt gegenseitig aus.
+2. **Der Suchausschnitt griff zu spät.** Die Schätzung, wie viel Text zugeklappt
+   sichtbar ist, lag bei 120 Zeichen – tatsächlich sind es bei Mobilbreite rund
+   75. Treffer knapp darunter blieben deshalb unerklärt. Nebenbei hängt der
+   Ausschnitt kein „…" mehr an einen fertigen Satz.
+
+Ein Test hält fest, dass **jeder Querverweis auf einen vorhandenen Begriff
+zeigt** – ein Tippfehler in `related` erzeugt sonst einen Chip, der ins Leere
+führt, und das fällt in der Oberfläche erst beim Antippen auf. 20 Tests in
+`glossaryContent.test.ts`.
+
+Die Quellen bleiben wie in Etappe 2 bei Wikipedia; die Begründung steht dort.
 
 ---
 

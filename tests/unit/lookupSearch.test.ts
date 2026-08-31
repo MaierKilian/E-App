@@ -196,6 +196,11 @@ describe('snippetAround', () => {
     expect(snippetAround(body, 'in den meisten').startsWith('…')).toBe(false)
   })
 
+  it('haengt kein Auslassungszeichen an einen fertigen Satz', () => {
+    const text = 'Erster Satz mit dem Wort Kavitation darin. Und danach geht der Text noch lange weiter.'
+    expect(snippetAround(text, 'kavitation', 45)).not.toMatch(/\. …$/)
+  })
+
   it('bleibt ohne Treffer leer', () => {
     expect(snippetAround(body, 'pellets')).toBe('')
     expect(snippetAround(body, '  ')).toBe('')

@@ -12,8 +12,10 @@ import { SearchField } from './lookup/SearchField'
 import { NoResults } from './lookup/NoResults'
 import { FilterChips } from './lookup/FilterChips'
 import { groupByTopic } from './lookup/topics'
+import { groupByInitial, slugifyTerm } from './lookup/glossary'
+import { AlphabetRail } from './lookup/AlphabetRail'
 import type { Topic } from './lookup/topics'
-import { searchPreview, teaserOf } from './lookup/search'
+import { matchesQuery, normalizeQuery, searchPreview, snippetAround, teaserOf } from './lookup/search'
 import { useLookup } from './lookup/useLookup'
 import type { Source } from './educationContent'
 import {
@@ -227,31 +229,128 @@ function FaqView() {
   )
 }
 
+/**
+ * „Verwandte Begriffe" am Fuß eines Glossareintrags.
+ *
+ * Macht aus einzelnen Definitionen ein Netz: Wer bei „Wärmepumpe" landet,
+ * findet von dort zu „JAZ" und „Vorlauftemperatur", statt neu suchen zu müssen.
+ */
+function RelatedTerms({
+  terms,
+  onSelect,
+}: {
+  terms?: string[]
+  onSelect: (term: string) => void
+}) {
+  const { t } = useTranslation()
+  if (!terms || terms.length === 0) return null
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-1.5">
+      <span className="text-xs text-muted">{t('education.related')}</span>
+      {terms.map((term) => (
+        <button
+          key={term}
+          type="button"
+          onClick={() => onSelect(term)}
+          className="focus-ring rounded-full border border-border px-2.5 py-0.5 text-xs font-medium text-foreground transition-colors hover:border-primary/40 hover:text-primary"
+        >
+          {term}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Der sichtbare Teil einer Definition, solange die Zeile zugeklappt ist –
+ * grob zwei Zeilen bei Mobilbreite. Nur eine Schätzung für die Suche, das
+ * genaue Beschneiden macht CSS.
+ *
+ * Lieber zu klein als zu groß geschätzt: Zu groß, und die Zeile zeigt die
+ * Definition statt des Ausschnitts, obwohl die Fundstelle knapp unter der
+ * Beschneidung liegt – der Treffer bliebe unerklärt. Zu klein kostet nur einen
+ * Ausschnitt, wo die Definition auch gereicht hätte.
+ */
+const GLOSSARY_VISIBLE_CHARS = 75
+
+/**
+ * Was in der Glossarzeile steht: normalerweise die Definition, während einer
+ * Suche der Ausschnitt um die Fundstelle.
+ *
+ * Ohne den Ausschnitt bliebe ein Treffer unerklärt, dessen Wort erst im dritten
+ * Satz der Definition steht – sichtbar sind ja nur die ersten zwei Zeilen.
+ */
+function glossaryBody(item: (typeof GLOSSARY)[number], query: string): string {
+  if (!normalizeQuery(query)) return item.def
+  if (matchesQuery(query, item.term, item.def.slice(0, GLOSSARY_VISIBLE_CHARS))) return item.def
+  return snippetAround(item.def, query) || item.def
+}
+
 function GlossaryView() {
   const { t } = useTranslation()
   const lookup = useLookup(GLOSSARY, (item) => [item.term, item.def])
+  /**
+   * Genau ein Begriff ist offen.
+   *
+   * Ein Glossar schlägt man nach – man arbeitet es nicht durch. Blieben zehn
+   * Einträge gleichzeitig offen, wäre die A–Z-Leiste nutzlos, weil jeder Sprung
+   * ins Leere zeigte.
+   */
+  const [openTerm, setOpenTerm] = useState<string | null>(null)
+
+  const jumpTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  }
+
+  const groups = groupByInitial(lookup.filtered)
+
+  const row = (item: (typeof GLOSSARY)[number]) => (
+    <LookupRow
+      key={item.term}
+      anchorId={`glossar-${slugifyTerm(item.term)}`}
+      title={item.term}
+      meta={item.unit}
+      body={glossaryBody(item, lookup.query)}
+      query={lookup.query}
+      open={openTerm === item.term}
+      onToggle={() => setOpenTerm((cur) => (cur === item.term ? null : item.term))}
+    >
+      <SourceLink source={item.source} />
+      <RelatedTerms
+        terms={item.related}
+        onSelect={(term) => {
+          setOpenTerm(term)
+          jumpTo(`glossar-${slugifyTerm(term)}`)
+        }}
+      />
+    </LookupRow>
+  )
 
   return (
     <div className="space-y-4">
       <LookupControls placeholder={t('education.glossarySearch')} lookup={lookup} />
-      <LookupList>
-        {lookup.filtered.length === 0 ? (
+
+      {lookup.filtered.length === 0 ? (
+        <LookupList>
           <NoResults query={lookup.query} onReset={lookup.reset} />
-        ) : (
-          lookup.filtered.map((item) => (
-            <LookupRow
-              key={item.term}
-              title={item.term}
-              meta={item.unit}
-              teaser={searchPreview(item.term, teaserOf(item, item.def), item.def, lookup.query)}
-              query={lookup.query}
-            >
-              <p>{item.def}</p>
-              <SourceLink source={item.source} />
-            </LookupRow>
-          ))
-        )}
-      </LookupList>
+        </LookupList>
+      ) : (
+        <div className="flex gap-1">
+          <div className="min-w-0 flex-1 space-y-4">
+            {groups.map((group) => (
+              <div key={group.letter} id={`glossar-buchstabe-${group.letter}`} className="space-y-2 scroll-mt-32">
+                <ListHeading>{group.letter}</ListHeading>
+                <LookupList>{group.items.map(row)}</LookupList>
+              </div>
+            ))}
+          </div>
+          <AlphabetRail
+            letters={groups.map((g) => g.letter)}
+            onJump={(letter) => jumpTo(`glossar-buchstabe-${letter}`)}
+            label={t('education.alphabet')}
+          />
+        </div>
+      )}
     </div>
   )
 }

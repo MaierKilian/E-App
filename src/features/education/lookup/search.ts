@@ -187,7 +187,11 @@ export function snippetAround(text: string, query: string, len = 96): string {
     end = space > hitEnd ? space : end
   }
 
-  return `${start > 0 ? '… ' : ''}${clean.slice(start, end)}${end < clean.length ? ' …' : ''}`
+  const cut = clean.slice(start, end)
+  // Endet der Ausschnitt auf einem Satzzeichen, ist der Satz zu Ende – ein
+  // angehaengtes Auslassungszeichen ergaebe „… nutzen. …".
+  const tail = end < clean.length && !/[.!?]$/.test(cut) ? ' …' : ''
+  return `${start > 0 ? '… ' : ''}${cut}${tail}`
 }
 
 /**
