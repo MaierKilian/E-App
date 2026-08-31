@@ -188,6 +188,13 @@ Quiz mit Sofort-Feedback → Erfolgs-Screen mit XP + Zertifikat.
 
 ## 7. Roadmap (abhakbar)
 
+> **Hinweis (2026-08-31):** Parallel läuft der **Wissen-Ausbau**
+> (`wissen-concept.md` / `wissen-etappen.md`) – eine Aufwertung von Oberfläche
+> und Inhalt der drei Ansichten FAQ, Glossar und Messungen. Er lässt diese
+> Roadmap unberührt, überschneidet sich aber in zwei Punkten: die
+> Begriffs-Verlinkung aus Phase 3 und die A11y-Härtung aus Phase 4 werden dort
+> für den Wissensbereich teilweise miterledigt.
+
 ### Phase 0 – Quick Wins (½–1 Tag) — ✅ erledigt
 - [x] Lesbarkeit: Body-Text entgrauen (Accordion/FAQ/Glossar)
 - [x] Foto-Platzhalter bedingt ausblenden (nur echte Fotos, sonst nichts)
@@ -202,22 +209,17 @@ Quiz mit Sofort-Feedback → Erfolgs-Screen mit XP + Zertifikat.
 - [x] Mess-Wirkungskarte: aggregiertes €-Einsparpotenzial + CO₂-Schätzung
       (Hero oben in der Empfohlen-Ansicht)
 
-> **Abgelöst ab 2026-08-31.** Phase 0 und 1 sind erledigt und bleiben gültig.
-> Die Phasen 2–4 werden durch `wissen-concept.md` / `wissen-etappen.md`
-> ersetzt – dort mit anderem Schwerpunkt: Personalisierung statt Punktesystem.
-> XP, Level und Badges entfallen bewusst (Begründung: Konzept Abschnitt 4).
-
-### Phase 2 – Gamification-Fundament (3–4 Tage) — ⛔ abgelöst
+### Phase 2 – Gamification-Fundament (3–4 Tage)
 - [ ] `progressStore`: XP, Level, Streak, Badges
 - [ ] „Wissen"-Hub mit Streak + „Heute lernen" + Wochenring
 - [ ] Erfolge-Galerie
 
-### Phase 3 – Bindung & Personalisierung (4–5 Tage) — ⛔ abgelöst
+### Phase 3 – Bindung & Personalisierung (4–5 Tage)
 - [ ] Profilbasierte Empfehlungen (Wissen + Messungen)
 - [ ] Ablese-Erinnerung ↔ XP/Streak verknüpfen
 - [ ] Begriffs-Verlinkung FAQ↔Glossar↔Messung (Lernpfad)
 
-### Phase 4 – Politur & Modernität (laufend) — ⛔ abgelöst
+### Phase 4 – Politur & Modernität (laufend)
 - [ ] Illustrationen/Cover statt Platzhalter
 - [ ] Micro-Interactions, Skeletons, Bottom-Sheets
 - [ ] A11y-Härtung (Radiogroup-Semantik im Quiz, Labels, WCAG-AA-Kontrast-Audit)

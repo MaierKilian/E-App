@@ -9,27 +9,28 @@
 3. Kurze Zusammenfassung der Änderungen ausgeben (was wurde geändert, welche Dateien betroffen)
 4. Falls `main` neue Commits hat: `git merge origin/main` anbieten oder automatisch ausführen
 5. Falls ein Etappen-Vorhaben läuft: dessen Tracker überfliegen und den
-   Arbeitsstand mit einer Zeile nennen. Zurzeit läuft der **Wissen-Umbau**
+   Arbeitsstand mit einer Zeile nennen. Zurzeit läuft der **Wissen-Ausbau**
    (`docs/wissen-etappen.md`); Tank- und Fragebogen-Umbau sind abgeschlossen.
 
 ## Laufendes Vorhaben
 
-### Wissen-Umbau (Konzept seit 2026-08-31)
+### Wissen-Ausbau (Konzept seit 2026-08-31)
 
-Der Wissensbereich ist heute ein statisches Nachschlagewerk – der einzige
-Bereich der App, der den Nutzer nicht kennt. Er wird zur **Erklär-Schicht der
-App**: Antworten rechnen mit den Zahlen dieses Haushalts, die Gliederung folgt
-Nutzerfragen statt Inhaltstypen, und jeder Artikel führt in eine Handlung.
+Die drei Ansichten des Wissensbereichs – FAQ, Glossar und Messungen – sind
+dieselbe Konstruktion: ein Suchfeld über zugeklappten Accordions. Der Zuschnitt
+bleibt; Oberfläche und Inhalt werden aufgewertet.
 
 - **Konzept:** `docs/wissen-concept.md` · **Etappen:** `docs/wissen-etappen.md` –
-  7 Etappen, alle offen
+  4 Etappen, alle offen
 - `/wissen status` berichtet den Stand.
-- Leitgedanke: Wissen ist keine Bibliothek neben der App, sondern ihre
-  Erklär-Schicht. Persönliche Zahlen kommen über denselben Weg wie in Tipps und
-  Bericht (`impact.ts`, `specificValues.ts`, `tariffStore`) – **keine zweite
-  Rechenkette.**
-- Ersetzt die offenen Phasen 2–4 aus `docs/ux-roadmap.md`; XP/Level/Badges sind
-  dabei bewusst gestrichen (Begründung im Konzept, Abschnitt 4).
+- Zwei Regeln: **additiv** – die Typen `FaqItem`, `GlossaryItem` und
+  `MeasurementInfo` bekommen nur *optionale* Felder, kein Bestandseintrag muss
+  angefasst werden. Und: **Zahlen stehen an einer Stelle** – nennt der
+  Wissensbereich einen Richtwert, den eine Messung auch kennt, liest er ihn aus
+  dem Mess-Modul (`GOOD_MAX`, `MEDIUM_MAX`), statt ihn im Text zu wiederholen.
+- Ausdrücklich **nicht** dabei: Artikel-Datenmodell, Personalisierung aus dem
+  Profil, Themen-Navigation, Rechner im Text, Entscheidungsstrecken,
+  Karteikarten. Der HTW-Teil bleibt unberührt.
 
 ## Abgeschlossene Vorhaben
 
