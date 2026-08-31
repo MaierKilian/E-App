@@ -27,7 +27,7 @@ Arbeits-Branch, Push – und einer aktualisierten Statuszeile hier. Den Merge na
 |---|---|---|---|---|
 | 1 | Gemeinsame Oberfläche | ✅ fertig | 2026-08-31 | `f127375` |
 | 2 | FAQ – Themen und Fragen | ✅ fertig | 2026-08-31 | `63dabfc` |
-| 3 | Glossar – Nachschlagen statt Aufklappen | ✅ fertig | 2026-08-31 | `PLATZHALTER` |
+| 3 | Glossar – Nachschlagen statt Aufklappen | ✅ fertig | 2026-08-31 | `5de39c6` |
 | 4 | Messungen – Struktur, Richtwerte, Einstieg | ⬜ offen | – | – |
 
 **Abhängigkeiten:** 2, 3 und 4 brauchen alle Etappe 1 – untereinander sind sie
