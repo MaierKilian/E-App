@@ -202,17 +202,22 @@ Quiz mit Sofort-Feedback → Erfolgs-Screen mit XP + Zertifikat.
 - [x] Mess-Wirkungskarte: aggregiertes €-Einsparpotenzial + CO₂-Schätzung
       (Hero oben in der Empfohlen-Ansicht)
 
-### Phase 2 – Gamification-Fundament (3–4 Tage)
+> **Abgelöst ab 2026-08-31.** Phase 0 und 1 sind erledigt und bleiben gültig.
+> Die Phasen 2–4 werden durch `wissen-concept.md` / `wissen-etappen.md`
+> ersetzt – dort mit anderem Schwerpunkt: Personalisierung statt Punktesystem.
+> XP, Level und Badges entfallen bewusst (Begründung: Konzept Abschnitt 4).
+
+### Phase 2 – Gamification-Fundament (3–4 Tage) — ⛔ abgelöst
 - [ ] `progressStore`: XP, Level, Streak, Badges
 - [ ] „Wissen"-Hub mit Streak + „Heute lernen" + Wochenring
 - [ ] Erfolge-Galerie
 
-### Phase 3 – Bindung & Personalisierung (4–5 Tage)
+### Phase 3 – Bindung & Personalisierung (4–5 Tage) — ⛔ abgelöst
 - [ ] Profilbasierte Empfehlungen (Wissen + Messungen)
 - [ ] Ablese-Erinnerung ↔ XP/Streak verknüpfen
 - [ ] Begriffs-Verlinkung FAQ↔Glossar↔Messung (Lernpfad)
 
-### Phase 4 – Politur & Modernität (laufend)
+### Phase 4 – Politur & Modernität (laufend) — ⛔ abgelöst
 - [ ] Illustrationen/Cover statt Platzhalter
 - [ ] Micro-Interactions, Skeletons, Bottom-Sheets
 - [ ] A11y-Härtung (Radiogroup-Semantik im Quiz, Labels, WCAG-AA-Kontrast-Audit)
