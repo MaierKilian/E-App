@@ -25,7 +25,7 @@ Arbeits-Branch, Push – und einer aktualisierten Statuszeile hier. Den Merge na
 
 | # | Etappe | Status | Abgeschlossen | Commit |
 |---|---|---|---|---|
-| 1 | Gemeinsame Oberfläche | ⬜ offen | – | – |
+| 1 | Gemeinsame Oberfläche | ✅ fertig | 2026-08-31 | `b85cb00` |
 | 2 | FAQ – Themen und Fragen | ⬜ offen | – | – |
 | 3 | Glossar – Nachschlagen statt Aufklappen | ⬜ offen | – | – |
 | 4 | Messungen – Struktur, Richtwerte, Einstieg | ⬜ offen | – | – |
@@ -72,10 +72,40 @@ hat gar keine Suche. `AccordionItem` rendert je Eintrag eine eigene `Card`.
 
 ### Fertig, wenn
 
-- Rund 10 statt 6 Einträge passen auf einen Bildschirm.
+- Kein Eintrag muss angetippt werden, um beurteilt zu werden.
 - Alle drei Ansichten haben dieselbe Suche, mit Trefferzahl.
 - Kein Inhalt hat sich geändert; ohne `teaser` rendert ein Eintrag wie vorher.
 - A11y bleibt: `aria-expanded`, Fokusring, Tastaturbedienung der Chips.
+
+### Ergebnis (2026-08-31)
+
+Neu unter `src/features/education/lookup/`: `search.ts` (Faltung, Hervorhebung,
+Vorschau, Ausschnitt), `LookupList.tsx`, `SearchField.tsx`, `FilterChips.tsx`,
+`topics.ts`, `NoResults.tsx`, `Highlight.tsx`, `useLookup.ts`.
+`Accordion.tsx` ist darin aufgegangen und entfallen – eine Zeile ist jetzt Teil
+der Liste, keine eigene Karte mehr. 38 Unit-Tests auf `search.ts`.
+
+Drei Dinge kamen beim Ansehen im Browser dazu, die auf dem Papier nicht
+absehbar waren:
+
+1. **Die Vorschau braucht zwei Zeilen.** Einzeilig brach sie nach rund fünf
+   Wörtern ab („Die App hilft dir, mit einfachen, geführten Mes…") und kostete
+   mehr Platz, als sie an Auskunft gab.
+2. **Die Fundstelle war unsichtbar.** Wer „Wärme" suchte, bekam „Lohnt sich ein
+   hydraulischer Abgleich?" ohne erkennbaren Grund – das Wort stand im
+   zugeklappten Text. Jetzt zeigt die Zeile bei einer Suche den Ausschnitt
+   rund um den Treffer (`searchPreview`, `snippetAround`).
+3. **Angebrochene Abkürzungen am Kürzungsende** („… genutzt wird (z. B …")
+   werden abgeräumt (`trimDanglingTail`).
+
+Nebenbei behoben: Der alte `AccordionItem` trug ein `aria-label="Aufklappen"`
+auf dem Knopf. Das **ersetzt** den zugänglichen Namen – Screenreader lasen
+„Aufklappen" statt der Frage. Der Titel ist jetzt der Name, der Hinweis steht
+als `sr-only` daneben.
+
+Bewusst **nicht** gemacht: das im Konzept erwähnte `sections?`-Feld an
+`MeasurementInfo`. Seine Form entscheidet Etappe 4, wenn sie weiß, was sie
+braucht; ein ungenutztes Feld auf Verdacht wäre geraten.
 
 ---
 

@@ -1,13 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ArrowLeft, Check, ChevronRight, GraduationCap, Search, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Check, ChevronRight, GraduationCap, ExternalLink } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { useProgressStore } from '@/store/progressStore'
-import { AccordionItem } from './Accordion'
 import { PhotoPlaceholder } from './PhotoPlaceholder'
 import { Quiz } from './Quiz'
 import { FlashcardsView } from './flashcards/FlashcardsView'
+import { LookupList, LookupRow } from './lookup/LookupList'
+import { SearchField } from './lookup/SearchField'
+import { NoResults } from './lookup/NoResults'
+import { FilterChips } from './lookup/FilterChips'
+import type { Topic } from './lookup/topics'
+import { searchPreview, teaserOf } from './lookup/search'
+import { useLookup } from './lookup/useLookup'
 import {
   FAQ,
   GLOSSARY,
@@ -104,77 +110,79 @@ function SourceLink({ source }: { source?: { label: string; url: string } }) {
   )
 }
 
+/** Suchfeld und Themenfilter – in allen drei Ansichten identisch aufgebaut. */
+function LookupControls({
+  placeholder,
+  lookup,
+}: {
+  placeholder: string
+  lookup: ReturnType<typeof useLookup<{ topic?: Topic }>>
+}) {
+  return (
+    <>
+      <SearchField
+        value={lookup.query}
+        onChange={lookup.setQuery}
+        placeholder={placeholder}
+        resultCount={lookup.filtered.length}
+      />
+      <FilterChips topics={lookup.topics} active={lookup.topic} onChange={lookup.setTopic} />
+    </>
+  )
+}
+
+/** Überschrift über einem Abschnitt der Liste. */
+function ListHeading({ children }: { children: string }) {
+  return (
+    <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">{children}</h2>
+  )
+}
+
 function FaqView() {
   const { t } = useTranslation()
-  const [query, setQuery] = useState('')
+  const lookup = useLookup(FAQ, (item) => [item.q, item.a])
 
-  const q = query.trim().toLowerCase()
-  const filtered = useMemo(() => {
-    if (!q) return FAQ
-    return FAQ.filter(
-      (item) => item.q.toLowerCase().includes(q) || item.a.toLowerCase().includes(q),
-    )
-  }, [q])
+  const row = (item: (typeof FAQ)[number]) => (
+    <LookupRow
+      key={item.q}
+      title={item.q}
+      teaser={searchPreview(item.q, teaserOf(item, item.a), item.a, lookup.query)}
+      query={lookup.query}
+    >
+      <p>{item.a}</p>
+      <SourceLink source={item.source} />
+    </LookupRow>
+  )
 
-  const popular = FAQ.filter((item) => item.popular)
   // „Alle Fragen" listet bewusst nur den Rest – die beliebten stehen bereits
   // oben, eine zweite Kopie darunter wäre reine Wiederholung.
-  const rest = FAQ.filter((item) => !item.popular)
-  const searching = q.length > 0
+  const popular = lookup.filtered.filter((item) => item.popular)
+  const rest = lookup.filtered.filter((item) => !item.popular)
 
   return (
     <div className="space-y-4">
-      <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5">
-        <Search className="h-4 w-4 shrink-0 text-muted" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('education.faqSearch')}
-          aria-label={t('education.faqSearch')}
-          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted focus:outline-none"
-        />
-      </div>
+      <LookupControls placeholder={t('education.faqSearch')} lookup={lookup} />
 
-      {searching ? (
-        filtered.length > 0 ? (
-          <div className="space-y-3">
-            {filtered.map((item) => (
-              <AccordionItem key={item.q} title={item.q}>
-                <p>{item.a}</p>
-                <SourceLink source={item.source} />
-              </AccordionItem>
-            ))}
-          </div>
-        ) : (
-          <p className="py-8 text-center text-sm text-muted">{t('education.faqNoResults')}</p>
-        )
+      {lookup.filtered.length === 0 ? (
+        <LookupList>
+          <NoResults query={lookup.query} onReset={lookup.reset} />
+        </LookupList>
+      ) : lookup.narrowed ? (
+        // Eingeschränkte Liste: ein Block, sonst zerfiele das Suchergebnis in
+        // zwei Abschnitte, von denen einer oft leer wäre.
+        <LookupList>{lookup.filtered.map(row)}</LookupList>
       ) : (
         <>
           {popular.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-                {t('education.faqPopular')}
-              </h2>
-              {popular.map((item) => (
-                <AccordionItem key={item.q} title={item.q}>
-                  <p>{item.a}</p>
-                  <SourceLink source={item.source} />
-                </AccordionItem>
-              ))}
+            <div className="space-y-2">
+              <ListHeading>{t('education.faqPopular')}</ListHeading>
+              <LookupList>{popular.map(row)}</LookupList>
             </div>
           )}
           {rest.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
-                {t('education.faqAll')}
-              </h2>
-              {rest.map((item) => (
-                <AccordionItem key={item.q} title={item.q}>
-                  <p>{item.a}</p>
-                  <SourceLink source={item.source} />
-                </AccordionItem>
-              ))}
+            <div className="space-y-2">
+              <ListHeading>{t('education.faqAll')}</ListHeading>
+              <LookupList>{rest.map(row)}</LookupList>
             </div>
           )}
         </>
@@ -185,47 +193,65 @@ function FaqView() {
 
 function GlossaryView() {
   const { t } = useTranslation()
-  const [query, setQuery] = useState('')
-  const items = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return GLOSSARY
-    return GLOSSARY.filter(
-      (g) => g.term.toLowerCase().includes(q) || g.def.toLowerCase().includes(q),
-    )
-  }, [query])
+  const lookup = useLookup(GLOSSARY, (item) => [item.term, item.def])
 
   return (
-    <div className="space-y-3">
-      <div className="glass flex items-center gap-2 rounded-2xl px-4 py-2.5">
-        <Search className="h-4 w-4 shrink-0 text-muted" />
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('education.glossarySearch')}
-          className="w-full bg-transparent text-sm text-foreground placeholder:text-muted focus:outline-none"
-        />
-      </div>
-      {items.map((item) => (
-        <AccordionItem key={item.term} title={item.term}>
-          <p>{item.def}</p>
-          <SourceLink source={item.source} />
-        </AccordionItem>
-      ))}
+    <div className="space-y-4">
+      <LookupControls placeholder={t('education.glossarySearch')} lookup={lookup} />
+      <LookupList>
+        {lookup.filtered.length === 0 ? (
+          <NoResults query={lookup.query} onReset={lookup.reset} />
+        ) : (
+          lookup.filtered.map((item) => (
+            <LookupRow
+              key={item.term}
+              title={item.term}
+              meta={item.unit}
+              teaser={searchPreview(item.term, teaserOf(item, item.def), item.def, lookup.query)}
+              query={lookup.query}
+            >
+              <p>{item.def}</p>
+              <SourceLink source={item.source} />
+            </LookupRow>
+          ))
+        )}
+      </LookupList>
     </div>
   )
 }
 
 function MeasurementsView() {
   const { t } = useTranslation()
+  // Titel über i18n, damit die Suche findet, was auch auf dem Schirm steht.
+  const titleOf = (info: (typeof MEASUREMENT_INFOS)[number]) =>
+    t(`measurements.${info.id}.title`, info.title)
+  const lookup = useLookup(MEASUREMENT_INFOS, (info) => [titleOf(info), info.body])
+
   return (
-    <div className="space-y-3">
-      {MEASUREMENT_INFOS.map((info) => (
-        <AccordionItem key={info.id} title={t(`measurements.${info.id}.title`, info.title)}>
-          <p>{info.body}</p>
-          <SourceLink source={info.source} />
-        </AccordionItem>
-      ))}
+    <div className="space-y-4">
+      <LookupControls placeholder={t('education.measurementsSearch')} lookup={lookup} />
+      <LookupList>
+        {lookup.filtered.length === 0 ? (
+          <NoResults query={lookup.query} onReset={lookup.reset} />
+        ) : (
+          lookup.filtered.map((info) => (
+            <LookupRow
+              key={info.id}
+              title={titleOf(info)}
+              teaser={searchPreview(
+                titleOf(info),
+                teaserOf(info, info.body),
+                info.body,
+                lookup.query,
+              )}
+              query={lookup.query}
+            >
+              <p>{info.body}</p>
+              <SourceLink source={info.source} />
+            </LookupRow>
+          ))
+        )}
+      </LookupList>
     </div>
   )
 }

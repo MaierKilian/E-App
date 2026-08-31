@@ -1992,11 +1992,35 @@
     "faqSearch": "Search a question …",
     "faqPopular": "Popular questions",
     "faqAll": "All questions",
-    "faqNoResults": "No matching question found.",
     "difficulty": {
       "easy": "Easy",
       "medium": "Medium",
       "hard": "Advanced"
+    },
+    "measurementsSearch": "Search measurements …",
+    "search": {
+      "clear": "Clear search",
+      "results_one": "{{count}} result",
+      "results_other": "{{count}} results",
+      "noResults": "Nothing found for “{{query}}”.",
+      "noResultsHint": "Check the spelling or try a broader term.",
+      "reset": "Reset search"
+    },
+    "filter": {
+      "label": "Filter by topic",
+      "all": "All"
+    },
+    "topics": {
+      "heating": "Heating",
+      "heat_pump": "Heat pump",
+      "hot_water": "Hot water",
+      "ventilation": "Ventilation & humidity",
+      "electricity": "Electricity",
+      "water": "Water",
+      "building": "Building",
+      "renovation": "Renovation",
+      "cost": "Costs",
+      "app": "App"
     }
   },
   "profiles": {

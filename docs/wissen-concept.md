@@ -90,8 +90,15 @@ Juni in `ux-roadmap.md`. Vorschlag: **„Hintergründe"**.
 
 Heute: eine eigene `Card` je Eintrag, dazwischen 12 px Lücke. Künftig **ein**
 Glass-Container mit Haarlinien-Trennern („inset grouped", iOS-Muster). Das
-halbiert das visuelle Rauschen und bringt rund 10 statt 6 Einträge auf den
-Schirm.
+nimmt dem Schirm das Rauschen aus zwölf gleich schweren Einzelblöcken.
+
+> **Nachtrag nach Etappe 1 (2026-08-31).** Hier stand zuerst „rund 10 statt 6
+> Einträge auf dem Schirm". Das gilt nur ohne Vorschauzeile: Eine Zeile ohne
+> Vorschau misst rund 48 px statt bisher 84 px (Karte plus Lücke), *mit*
+> zweizeiliger Vorschau rund 96 px. Am Bildschirm stehen damit weiter etwa
+> sechs Einträge – aber jeder sagt jetzt, was in ihm steht. Der Gewinn ist
+> nicht die Menge, sondern dass niemand mehr aufklappen muss, um zu
+> beurteilen.
 
 ### 2.2 Teaser-Zeile
 
@@ -232,8 +239,8 @@ Eintrag ohne `topic` erscheint unter „Alle". Damit lässt sich die Oberfläche
 
 ## 5. Abnahme
 
-1. Auf einem Bildschirm stehen rund 10 statt 6 Einträge.
-2. Kein Eintrag muss angetippt werden, um zu beurteilen, ob er hilft.
+1. Kein Eintrag muss angetippt werden, um zu beurteilen, ob er hilft.
+2. Wer sucht, sieht **warum** ein Eintrag ein Treffer ist.
 3. Im Glossar ist jede Definition ohne Tippen lesbar.
 4. Eine Suche, dreimal benutzt – mit Trefferzahl und markierter Fundstelle.
 5. Alle 9 Messungen haben einen Hintergrund; keiner nennt einen Richtwert, den

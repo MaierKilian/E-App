@@ -3,7 +3,27 @@
 // bewusst hier als deutscher Content (NICHT in i18n). Nur die UI-Beschriftungen
 // (Buttons, Überschriften, Labels) werden über i18next übersetzt.
 
-export interface FaqItem {
+import type { Topic } from './lookup/topics'
+
+/**
+ * Felder, die alle drei Nachschlage-Gattungen teilen.
+ *
+ * Alle **optional**: Ein Bestandseintrag ohne sie rendert wie zuvor. Die
+ * Vorschauzeile leitet die Oberfläche sonst aus dem Fließtext ab (siehe
+ * `lookup/search.ts`), die Themen-Chips erscheinen erst, sobald `topic`
+ * gepflegt ist. So lässt sich die Oberfläche ausliefern, bevor eine Zeile
+ * Inhalt geschrieben ist.
+ */
+export interface LookupFields {
+  /** Handverlesene Vorschauzeile. Ohne sie greift die abgeleitete. */
+  teaser?: string
+  /** Thema für die Filter-Chips. */
+  topic?: Topic
+  /** Verweise auf verwandte Einträge (Begriff, Frage oder Messung). */
+  related?: string[]
+}
+
+export interface FaqItem extends LookupFields {
   q: string
   a: string
   /** Optionale, anklickbare Quelle. */
@@ -12,14 +32,16 @@ export interface FaqItem {
   popular?: boolean
 }
 
-export interface GlossaryItem {
+export interface GlossaryItem extends LookupFields {
   term: string
   def: string
+  /** Einheit oder Formelzeichen, z. B. „W/(m²·K)". Nur wo es eine gibt. */
+  unit?: string
   /** Quelle der Information (im Glossar anklickbar). */
   source: { label: string; url: string }
 }
 
-export interface MeasurementInfo {
+export interface MeasurementInfo extends LookupFields {
   /** i18n-Key-Suffix der Messung (measurements.<id>.title). */
   id: string
   /** Anzeige-Titel (kann auch über i18n aufgelöst werden – hier deutscher Fallback). */
