@@ -17,7 +17,7 @@ export function ShowerheadIntro() {
   return (
     <div className="space-y-3">
       <IntroHeroVideo
-        src="measurements/showerhead.mp4"
+        src="measurements/showerhead"
         label={t('measurements.showerhead.intro.videoAlt')}
       />
 

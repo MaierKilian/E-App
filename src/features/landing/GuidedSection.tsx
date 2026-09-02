@@ -110,8 +110,10 @@ function Step({
 }
 
 /**
- * Das echte Erklär-Video des Duschkopf-Tests (`public/measurements/showerhead.mp4`,
- * ~460 KB) – dasselbe, das in der Messung selbst läuft.
+ * Das echte Erklär-Video des Duschkopf-Tests (`public/measurements/showerhead.*`,
+ * je ~450 KB) – dasselbe, das in der Messung selbst läuft. Es liegt in zwei
+ * Formaten vor: MP4/H.264 zuerst, WebM/VP9 für Browser ohne das
+ * lizenzpflichtige H.264.
  *
  * Geladen wird es erst, wenn der Abschnitt in Sichtweite kommt: Auf der
  * Startseite darf ein Video, das die meisten Besucher nie sehen, nicht das
@@ -161,7 +163,7 @@ function StepVideo({ label, steps }: { label: string; steps: string[] }) {
         <video
           className={`hero-video h-full w-auto shrink-0 ${playable ? 'block' : 'hidden'}`}
           style={{ aspectRatio: '768 / 972' }}
-          src={`${import.meta.env.BASE_URL}measurements/showerhead.mp4`}
+          poster={`${import.meta.env.BASE_URL}measurements/showerhead-poster.webp`}
           muted
           loop
           playsInline
@@ -169,7 +171,18 @@ function StepVideo({ label, steps }: { label: string; steps: string[] }) {
           preload="metadata"
           aria-label={label}
           onCanPlay={() => setPlayable(true)}
-        />
+        >
+          {/* MP4/H.264 zuerst, WebM/VP9 als lizenzfreier Rueckfall fuer
+              Browser ohne H.264. */}
+          <source
+            src={`${import.meta.env.BASE_URL}measurements/showerhead.mp4`}
+            type='video/mp4; codecs="avc1.64001F"'
+          />
+          <source
+            src={`${import.meta.env.BASE_URL}measurements/showerhead.webm`}
+            type='video/webm; codecs="vp9"'
+          />
+        </video>
       )}
 
       {/* In der schmalen Handy-Zeile ist für die Schritt-Texte kein Platz – dort
