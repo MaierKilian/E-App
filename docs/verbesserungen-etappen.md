@@ -66,7 +66,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 2 | Einwilligung vor Analytics | 1.3 | M | 15 % | ✅ fertig | 2026-09-03 | `05c2b14` |
 | 3 | Die Feld-Landkarte | 21.1 (neu) | M | 15 % | ✅ fertig | 2026-09-03 | `b9aa6af` |
 | 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | 30 % | ✅ fertig | 2026-09-03 | `1faeb82` |
-| 5 | Handlungsplan im Bericht | 4.2b | M | 20 % | offen | | |
+| 5 | Handlungsplan im Bericht | 4.2b | M | 20 % | ✅ fertig | 2026-09-03 | `7011fec` |
 | 6 | Richtwerte mit Primärquellen | 4.1 | L | 30 % | offen ⚠️ | | |
 | 7 | HTW raus aus dem Fragebogen | 1.5 | S | 8 % | ✅ fertig | 2026-09-03 | `29ea4ec` |
 | 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | offen | | |
@@ -524,13 +524,42 @@ Diese Etappe zieht die Messreihenfolge nach, damit beide dieselbe Logik nutzen.
 
 ### Fertig, wenn
 
-- Zwei Nutzer mit gleichen Messergebnissen, aber verschiedenen Interessen,
-  bekommen unterschiedlich sortierte Handlungspläne.
-- Reihenfolge im PDF und auf der Tipps-Seite stimmen überein.
-- Ein Nutzer ohne offene Tipps bekommt kein leeres Kapitel, sondern einen
-  Satz, der das würdigt.
-- Kein Euro-Betrag im Handlungsplan, den die zugehörige Messung nicht mehr
-  behauptet.
+- [x] Zwei Nutzer mit verschiedenen Interessen bekommen unterschiedlich
+  sortierte Handlungspläne – die Sortierung ist `compareTips` mit `goalBonus`,
+  unverändert übernommen.
+- [x] Reihenfolge im PDF und auf der Tipps-Seite stimmen überein: Der Bericht
+  sortiert nicht selbst, er bekommt die fertige Liste von `buildTips`.
+- [x] Kein leeres Kapitel – `tips.allHandled`, derselbe Satz wie auf dem
+  Bildschirm.
+- [x] Kein Euro-Betrag ohne Deckung: Summen laufen durch `displaySavingEur`;
+  trägt keiner der Tipps einen anzeigbaren Betrag, steht dort keine Zahl statt
+  einer Null. Ein Test prüft beide Fälle.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **Der Bericht bekommt jetzt die *offenen* Tipps.** Er baute seine Liste
+  bisher mit `buildTips(profile, results)` – ohne `TipContext` und ohne den
+  Filter auf erledigte und ausgeblendete. Ein Handlungsplan, der eine
+  abgehakte Maßnahme wieder als offen führt, wäre falsch; die Reihenfolge wäre
+  ohne denselben Kontext außerdem eine andere als auf dem Bildschirm.
+- **Nichts nachgebaut, auch keine Texte.** Gruppentitel, Ziel-Zeile und der
+  Leerfall nutzen dieselben i18n-Schlüssel wie die Tipps-Seite
+  (`tips.groupQuick`, `tips.sortedByGoal`, `tips.allHandled`). Neu sind nur
+  der Kapiteltitel und die Verzeichnis-Zeile.
+- **`goalCategoryBonus` ist aus `buildTips` exportiert** und auf
+  `MeasurementCategory` erweitert – die Obermenge, die zusätzlich `hot_water`
+  kennt. Tipps ändern sich dadurch nicht, weil kein Tipp diese Kategorie
+  trägt. Zwei Gewichtungen für dieselbe Frage („was ist diesem Nutzer
+  wichtig?") wären zwei Gelegenheiten, auseinanderzulaufen.
+- **Befund: Bei „CO₂ senken" ändert die neue Messreihenfolge nichts.** Der
+  Katalog führt ohnehin mit Warmwasser und Wärme – die Gewichtung findet dort
+  nichts zu verschieben. Bei „Komfort verbessern" greift sie: Raumklima und
+  Möbelabstand rücken vor den Duschkopf. Ein Test hält beides fest, damit das
+  Zusammenfallen niemand für einen Fehler hält; sortiert jemand den Katalog
+  später um, schlägt er an.
+- **Nicht belegt:** Das Layout des neuen Kapitels hat niemand gesehen – diese
+  Umgebung hat keinen PDF-Renderer. Geprüft sind Inhalt, Reihenfolge und
+  Übersetzungen.
 
 ---
 
