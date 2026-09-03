@@ -1,0 +1,798 @@
+# Verbesserungen – Etappen-Tracker
+
+> **Arbeitsdokument.** Es löst die Sammelliste
+> `weitere_Verbesserungen_der_Eapp.txt` für die noch offenen Punkte ab: dort
+> steht *was* gemeldet wurde, hier steht *wie* es umgesetzt wird und wo wir
+> stehen.
+>
+> **Nach jeder abgeschlossenen Etappe wird dieses Dokument aktualisiert** –
+> Status, Datum, Commit. Es ist die einzige Quelle für „wo stehen wir".
+
+## So wird gearbeitet
+
+Eine Etappe pro Session. Einstieg:
+
+```
+/verbesserung          → nimmt die nächste offene Etappe
+/verbesserung 3        → nimmt gezielt Etappe 3
+/verbesserung status   → nur der Stand, ohne zu arbeiten
+```
+
+Jede Etappe endet mit: Typecheck grün, ESLint grün, Tests grün, Abnahmeliste
+ehrlich abgehakt, Commit auf dem Arbeits-Branch, Push – und einer
+aktualisierten Statuszeile hier. Den Merge nach `main` macht Kilian (siehe
+„Der Merge nach `main` gehört dem Menschen" in `CLAUDE.md`); der Auto-Deploy
+läuft erst danach.
+
+**Die Etappen sind bewusst unterschiedlich groß.** Vor dem Start wird die
+Größe genannt, damit sich nach verbleibendem Usage-Fenster entscheiden lässt,
+was noch reinpasst:
+
+| Größe | Aufwand | Zum Vergleich |
+|---|---|---|
+| **S** | eine halbe Stunde | „Trendlinie bei einem Messwert" (Runde 5) |
+| **M** | eine gute Stunde | „Gefrierschrank-Check neu" (Runde 5) |
+| **L** | zwei Stunden und mehr | „Frei wählbarer Zeitraum im Monitoring" |
+
+## Stand
+
+| # | Etappe | Punkte | Größe | Status | Abgeschlossen | Commit |
+|---|---|---|---|---|---|---|
+| 1 | Impressum und Datenschutzerklärung | 1.4 | M | offen | | |
+| 2 | Einwilligung vor Analytics | 1.3 | M | offen | | |
+| 3 | Die Feld-Landkarte | (neu) 21.1 | M | offen | | |
+| 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | offen | | |
+| 5 | Handlungsplan im Bericht | 4.2b | M | offen | | |
+| 6 | Richtwerte mit Primärquellen | 4.1 | L | offen | | |
+| 7 | HTW raus aus dem Fragebogen | 1.5 | S | offen | | |
+| 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | offen | | |
+| 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | offen | | |
+| 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | offen | | |
+| 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | offen | | |
+| 12 | Ergebnis je Gerät | 18.2 | XL | **blockiert** | | |
+
+**Abhängigkeiten:**
+
+- **4 braucht 3.** Der Steckbrief schließt die Lücken, die die Landkarte
+  überhaupt erst sichtbar macht.
+- **5 braucht 4** nur lose (gemeinsames Kapitel-Gerüst im PDF); wer 5 zuerst
+  macht, baut das Gerüst eben dort.
+- **6 hat ein Risiko** (siehe dort): der Netzzugang dieser Umgebung erlaubt
+  Suche, aber kein Abrufen einzelner Seiten.
+- **12 ist blockiert**, bis ein Konzept dafür steht – Umfang wie der
+  Tank-Umbau, nicht wie eine Etappe.
+- Alles andere ist unabhängig und kann in beliebiger Reihenfolge kommen.
+
+## Vorab geklärt (nichts mehr zu tun)
+
+- **5.1 (Trend-Prozent)** – erledigt durch `9ad1c1e`. In Runde 5 hatte ich den
+  Fehler nicht gefunden und den Punkt zur Rückfrage zurückgestuft; das war
+  falsch. Der Jahresvergleich verlangte nur, dass die *Historie* weit genug
+  zurückreicht, nicht dass im Vergleichsfenster Ablesungen liegen – bei einer
+  385-Tage-Lücke wurde interpoliert (+52 % statt ~17 %).
+- **1.2 (Verwalten-Button)** – identifiziert: `ProfileSwitcher.tsx:284`, der
+  Knopf in der Wohnungs-/Profil-Auswahl. Es gibt in der ganzen App keinen
+  zweiten. Was damit passieren soll, ist weiter offen.
+- **10.1 (LED-Check)** – der Check selbst ist in Ordnung: `LightingRun.tsx:74`
+  fängt die leere Raumliste mit Hinweis und „Raum anlegen" ab. Der gemeldete
+  Befund ist mit hoher Wahrscheinlichkeit dasselbe Symptom wie 19.1 – ein
+  hängengebliebener Fragebogen-Zustand, den erst das Löschen der Browserdaten
+  gelöst hat. **Bitte einmal im Handy-Firefox gegenprüfen**, dann wird der
+  Punkt geschlossen.
+
+---
+
+## Etappe 1 – Impressum und Datenschutzerklärung
+
+> **Ziel:** Die App hat die zwei Rechtstexte, die sie als öffentlich
+> erreichbares Telemedien-Angebot braucht – mit Platzhaltern dort, wo nur
+> Kilian die Angaben liefern kann.
+> Punkte: 1.4
+
+### Ausgangslage
+
+Es gibt **beides nicht**. Kein Impressum, keine Datenschutzerklärung, keine
+Route dafür (`App.tsx` kennt weder `/impressum` noch `/datenschutz`), kein
+Link im Footer oder in den Einstellungen. Die Einstellungen haben lediglich
+einen Abschnitt „Datenschutz" mit einem Analytics-Schalter
+(`SettingsPage.tsx:174`).
+
+Verarbeitet wird trotzdem einiges, und das gehört in die Erklärung:
+
+| Was | Wo im Code | Was das datenschutzrechtlich bedeutet |
+|---|---|---|
+| Firebase Hosting | `firebase.json` | Server-Logs mit IP-Adresse, Google Ireland/LLC |
+| Firebase Auth | `src/features/auth/` | E-Mail, Anmeldezeitpunkte |
+| Firestore | `src/lib/firebase.ts` | Profil, Ablesungen, Messergebnisse – Klardaten |
+| Firebase Analytics | `src/features/analytics/analytics.ts` | Nutzungsstatistik, Gerätekennung (siehe Etappe 2) |
+| Cloud Function `scanMeter` | `functions/index.js` | **Zählerfoto geht an die Gemini-API** |
+| localStorage | `persist`-Middleware | Alles auch lokal, auch ohne Anmeldung |
+
+Der Zähler-Scan ist der Punkt, den man leicht übersieht: Ein Foto des Zählers
+verlässt das Gerät und wird von einem Google-Modell ausgewertet. Das muss in
+der Erklärung stehen, mitsamt Zweck, Rechtsgrundlage und Speicherdauer.
+
+Immerhin: **keine externen Ressourcen.** `index.html` lädt keine Google Fonts,
+kein CDN, keine Tracking-Pixel; alle Bilder liegen im eigenen Bundle. Die
+klassische „Google-Fonts-Abmahnung" greift hier nicht.
+
+### Zu tun
+
+- **`src/features/legal/ImprintPage.tsx`** – Impressum nach § 5 DDG (früher
+  § 5 TMG) und § 18 Abs. 2 MStV. Platzhalter als sichtbare, nicht zu
+  übersehende Marker (`[NAME]`, `[ANSCHRIFT]`, `[E-MAIL]`, `[TELEFON]`),
+  nicht als Blindtext, der versehentlich live geht.
+  Inhalt: Diensteanbieter, Kontakt, Verantwortlicher i. S. d. § 18 Abs. 2 MStV,
+  Haftung für Inhalte (§ 7 Abs. 1, §§ 8–10 DDG), Haftung für Links,
+  Urheberrecht, EU-Streitschlichtung (Art. 14 ODR-VO), Hinweis nach § 36 VSBG.
+- **`src/features/legal/PrivacyPage.tsx`** – Datenschutzerklärung nach
+  Art. 13 DSGVO, gegliedert nach Verarbeitungsvorgängen (Tabelle oben), je
+  Vorgang: Zweck, Rechtsgrundlage (Art. 6 Abs. 1 lit. a/b/f), Empfänger,
+  Drittlandübermittlung (Google LLC, EU-US Data Privacy Framework),
+  Speicherdauer. Dazu die Betroffenenrechte (Art. 15–21) und das
+  Beschwerderecht (Art. 77).
+- **Ein gemeinsames `LegalPage`-Gerüst** – die zwei Seiten sind
+  Fließtext-Seiten mit Überschriften; keine zwei Layouts bauen.
+- **Routen** `/impressum` und `/datenschutz` in `App.tsx`, erreichbar **ohne
+  Anmeldung** (das ist der Sinn eines Impressums).
+- **Verlinkung** an drei Stellen: Einstellungen (neuer Abschnitt „Rechtliches"),
+  Landing-Page-Footer, und aus dem Einwilligungs-Schirm der Etappe 2.
+- **Texte auf Deutsch und Englisch.** Die englische Fassung bekommt den
+  Hinweis, dass im Streitfall die deutsche gilt.
+
+### Fertig, wenn
+
+- Beide Seiten sind ohne Anmeldung erreichbar und von jeder Seite der App aus
+  in höchstens zwei Tipps zu finden.
+- Jeder Platzhalter ist im gerenderten Text als solcher erkennbar.
+- Die Datenschutzerklärung nennt **alle sechs** Verarbeitungen aus der Tabelle,
+  den Zähler-Scan eingeschlossen.
+- Kein Rechtstext behauptet etwas, das der Code nicht tut (kein
+  „wir setzen keine Cookies", solange Analytics läuft).
+- Beide Sprachen vollständig, keine Mischsprache.
+
+### Was ausdrücklich nicht dazugehört
+
+Rechtsberatung. Der Text ist nach bestem Wissen aufgebaut und benennt die
+tatsächlichen Verarbeitungen – geprüft werden muss er von einem Menschen mit
+Zulassung, bevor die App öffentlich beworben wird.
+
+---
+
+## Etappe 2 – Einwilligung vor Analytics
+
+> **Ziel:** Nichts wird auf dem Gerät gespeichert oder ausgelesen, bevor der
+> Nutzer zugestimmt hat – außer dem, was die App zum Funktionieren braucht.
+> Punkte: 1.3
+
+### Ausgangslage – hier liegt ein echter Rechtsverstoß
+
+Zwei Befunde, beide belegt:
+
+**1. Analytics startet vor jeder Einwilligung.** `src/lib/firebase.ts:102`:
+
+```ts
+export const analyticsReady: Promise<Analytics | null> = isSupported().then(
+  (ok) => (ok ? getAnalytics(app) : null),
+)
+```
+
+Das läuft beim Import des Moduls, also beim App-Start. `getAnalytics()` legt
+seine Kennung im Speicher des Geräts ab und feuert das automatische
+`session_start`. Der Schalter wird erst **danach** angewandt –
+`syncAnalyticsConsent()` ruft `setAnalyticsCollectionEnabled()` auf, wenn das
+Kind schon im Brunnen liegt.
+
+**2. Der Schalter steht auf „an".** `settingsStore.ts:73`: `analyticsEnabled: true`.
+Das ist ein Opt-out.
+
+§ 25 Abs. 1 TDDDG verlangt für das Speichern von Informationen auf der
+Endeinrichtung und den Zugriff darauf eine **vorherige** Einwilligung. Die
+Ausnahme in Abs. 2 gilt nur für unbedingt Erforderliches – Nutzungsstatistik
+ist das nicht. Ein Opt-out-Schalter, der zudem zu spät greift, erfüllt das
+nicht. Zusätzlich fehlt die Information nach Art. 13 DSGVO (Etappe 1).
+
+Was **nicht** betroffen ist: der `localStorage` für Profil, Ablesungen und
+Messergebnisse. Das ist der ausdrücklich gewünschte Dienst selbst und fällt
+unter § 25 Abs. 2 Nr. 2. Ebenso das Theme im `<head>` von `index.html` – es
+liest nur, was der Nutzer selbst eingestellt hat.
+
+### Zu tun
+
+- **`getAnalytics` erst nach Einwilligung.** `analyticsReady` wird von einer
+  Konstante zu einer Funktion, die beim ersten Aufruf initialisiert – und die
+  ohne Einwilligung `null` liefert, ohne Firebase Analytics überhaupt
+  anzufassen.
+- **Voreinstellung auf `false`** in `settingsStore.ts`. **Achtung Migration:**
+  Bestandsnutzer haben `analyticsEnabled: true` im persistierten Zustand
+  stehen – das ist aber keine Einwilligung, sondern die alte Voreinstellung.
+  Deshalb ein *neues* Feld `analyticsConsent: 'granted' | 'denied' | null`
+  mit `null` als Start; das alte Feld bleibt als abgeleiteter Wert erhalten,
+  damit der Schalter in den Einstellungen weiter funktioniert.
+- **Einwilligungs-Schirm beim ersten Start**: gleichwertige Knöpfe
+  („Einverstanden" / „Nur Notwendiges"), kein Dark Pattern, mit Link auf die
+  Datenschutzerklärung. Ablehnen ist genauso leicht wie Zustimmen – sonst ist
+  die Einwilligung nach Art. 4 Nr. 11 DSGVO nicht freiwillig.
+- **Widerruf jederzeit**: der bestehende Schalter in den Einstellungen bleibt,
+  bekommt aber den Hinweis, dass ein Widerruf die künftige Erhebung beendet.
+- **Nichts sperren.** Wer ablehnt, benutzt die App vollständig. Der Schirm
+  erscheint einmal; die Entscheidung wird gespeichert.
+
+### Fertig, wenn
+
+- Ein frischer Browser lädt die App, und in den Entwicklertools ist **vor**
+  der Entscheidung kein Analytics-Eintrag im Speicher und kein Aufruf an
+  `google-analytics.com` zu sehen.
+- „Nur Notwendiges" führt dazu, dass auch nach Neustart nichts erhoben wird.
+- Ein Bestandsnutzer mit `analyticsEnabled: true` bekommt den Schirm **einmal**
+  gezeigt und wird nicht stillschweigend als einwilligend behandelt.
+- Der Widerruf in den Einstellungen wirkt sofort.
+- Profil, Ablesungen und Messergebnisse funktionieren bei Ablehnung
+  unverändert.
+
+---
+
+## Etappe 3 – Die Feld-Landkarte
+
+> **Ziel:** Für jede Angabe des Fragebogens ist im Code hinterlegt, wer sie
+> verwertet – und ein Test schlägt an, wenn ein Feld keinen Abnehmer hat.
+> Punkte: neu aufgenommen als 21.1
+
+### Ausgangslage – die Hälfte der Fragen läuft ins Leere
+
+Auszählung über `OnboardingData` (30 Felder) gegen die drei Verwerter
+`src/features/measurements` + `src/features/tips`, `src/features/monitoring`
+und `src/features/reports`:
+
+**Verwertet (14):** `profileName`, `personsCount`, `buildingYear`,
+`livingArea`, `rooms`, `heatGenerators`, `hotWaterType`, `instruments`,
+`completed`, `mode`, `goals`, `hasPV`, `appliances`, `appliancesAnswered`.
+
+**Ohne Abnehmer (15):** `roomsCount`, `buildingType`, `locationMode`,
+`postalCode`, `occupancyStatus`, `floors`, `windowAge`, `hasExtraFireplace`,
+`ventilationType`, `insulationState`, `smartHomeDevices`, `renovations`,
+`heatGeneratorYears`, `lastRenovationYear`, `renovationItems`.
+
+(`profileImage` zählt nicht mit – ein Bild braucht keinen Verwerter.)
+
+Diese 15 Felder werden erhoben, gespeichert, in die Cloud synchronisiert, im
+Fragebogen zusammengefasst – und danach nie wieder gelesen. Zwei Sonderfälle:
+
+- `renovations` und `renovationItems` fließen in `estimateEnvelope()`
+  (`estimateEnergy.ts:88`), das aber **nur im Fragebogen selbst** benutzt wird
+  (`StepRenovationLog.tsx:257`). Die Frage wertet sich selbst aus – das zählt
+  nicht.
+- `heatGeneratorYears` erreicht über `boilerAgeYears()` einen Tipp
+  (`buildTips.ts:671`). Das ist ein echter Abnehmer, aber ein einzelner.
+
+### Zu tun
+
+- **`src/features/onboarding/fieldUsage.ts`** – eine Tabelle
+  `Record<keyof OnboardingData, FieldUsage>`, wobei `FieldUsage` die Verwerter
+  benennt (`'measurements' | 'monitoring' | 'report' | 'tips'`) plus eine
+  Begründung im Klartext. Felder ohne Abnehmer bekommen `consumers: []` und
+  eine Zeile, warum das (noch) so ist.
+- **Ein Test, der nicht durchgehen lässt.** `tests/unit/fieldUsage.test.ts`
+  prüft zweierlei:
+  1. Die Tabelle deckt **jedes** Feld von `OnboardingData` ab – ein neues Feld
+     ohne Eintrag lässt den Test rot werden. (Über `satisfies Record<keyof
+     OnboardingData, …>` fängt das schon der Typechecker; der Test sichert,
+     dass niemand den Typ aufweicht.)
+  2. Die Menge der Felder ohne Abnehmer entspricht **genau** einer im Test
+     festgehaltenen Liste. Wer ein Feld anschließt, muss die Liste kürzen –
+     wer ein totes Feld hinzufügt, muss sie erweitern und dabei erklären.
+- **Der Abschluss-Schirm „Wofür wir das nutzen"** am Ende des Fragebogens:
+  eine ruhige Aufstellung, welche Angabe wo landet, gespeist aus derselben
+  Tabelle. Kein Abzeichen an jeder einzelnen Frage – für einen neuen Nutzer,
+  der noch nichts gemessen hat, sagt „Monitoring" an einer Frage nichts.
+- **Dieselbe Aufstellung in der Profil-Übersicht**, wo sie nach ein paar
+  Wochen Nutzung tatsächlich etwas erklärt.
+
+### Fertig, wenn
+
+- `npx tsc -b --noEmit` schlägt fehl, wenn man `OnboardingData` um ein Feld
+  erweitert, ohne die Tabelle zu pflegen. (Beim Bauen einmal ausprobieren.)
+- Der Test benennt die toten Felder namentlich – die Zahl steht nicht nur als
+  Summe da.
+- Der Abschluss-Schirm liest aus der Tabelle, hat also keine zweite Wahrheit.
+- Kein Feld wurde entfernt. Diese Etappe **stellt fest**, sie räumt nicht auf.
+
+---
+
+## Etappe 4 – Haushalts-Steckbrief im Bericht
+
+> **Ziel:** Der PDF-Bericht beginnt mit einer Seite „Das ist dein Haushalt" –
+> und verwertet damit auf einen Schlag die Felder, die Etappe 3 als tot
+> ausgewiesen hat.
+> Punkte: 4.2 (erster Teil), schließt den Großteil von 21.1
+
+### Ausgangslage
+
+Der Bericht kennt vom Profil **zwei** Felder: `profile.profileName` und
+`profile.rooms`. Mehr steht nicht drin (Auszählung über
+`src/features/reports/`). Ein Energieberater, dem man das PDF hinlegt, erfährt
+also, wie die Wohnung heißt und welche Räume sie hat – nicht, wie alt das Haus
+ist, womit geheizt wird oder wann zuletzt saniert wurde.
+
+### Zu tun
+
+- **Neues Kapitel** vor „Messungen", im Stil der vorhandenen Kapitel
+  (Seitenumbruch je Kapitel ist schon da – siehe 4.3).
+- **Vier Blöcke**, jeweils als beschriftete Wertepaare:
+  - *Gebäude* – Typ, Baujahr, Wohnfläche, Geschosse, Dämmzustand, Fensteralter,
+    Lüftung
+  - *Haushalt* – Personen, Räume, Mieter/Eigentümer, Postleitzahl (nur die
+    ersten zwei Stellen, siehe unten)
+  - *Anlagentechnik* – Wärmeerzeuger mit Baujahr, Warmwasser, Kaminofen, PV,
+    Smart-Home, vorhandene Messgeräte
+  - *Sanierungen* – der Ereignis-Log aus `renovations`, chronologisch, mit dem
+    ausdrücklichen Unterschied zwischen „nie saniert" (`[]`) und „nicht
+    beantwortet" (`null`)
+- **Fehlende Angaben werden benannt, nicht verschwiegen.** Ein Feld ohne
+  Antwort erscheint als „nicht angegeben" – ein Bericht, der die Lücke
+  versteckt, verleitet dazu, die Zahlen für vollständig zu halten.
+- **Datensparsamkeit:** Die volle Postleitzahl macht den Bericht in Verbindung
+  mit Wohnfläche und Baujahr gut identifizierbar. Zwei Stellen genügen für die
+  Einordnung.
+- **`fieldUsage.ts` nachziehen** – jedes hier angeschlossene Feld bekommt
+  `'report'` als Abnehmer, und die Liste der toten Felder im Test schrumpft
+  entsprechend.
+
+### Fertig, wenn
+
+- Von den 15 Feldern ohne Abnehmer sind mindestens 12 angeschlossen. Was
+  bewusst offen bleibt (`locationMode`, `roomsCount`, `lastRenovationYear` sind
+  Kandidaten – abgeleitete oder rein steuernde Felder), steht mit Begründung
+  in `fieldUsage.ts`.
+- Der Test aus Etappe 3 ist grün, weil die Liste gekürzt wurde – nicht, weil
+  sie aufgeweicht wurde.
+- Ein Profil im Schnellstart-Modus (die meisten Felder leer) erzeugt ein
+  lesbares Kapitel, keine Seite voller „nicht angegeben".
+- Das Demo-Profil erzeugt ein vollständiges Kapitel.
+- Export in beiden Sprachen geprüft.
+
+---
+
+## Etappe 5 – Handlungsplan im Bericht
+
+> **Ziel:** Der Bericht sagt nicht nur, wie es steht, sondern was zu tun ist –
+> in der Reihenfolge, die zu den im Fragebogen genannten Interessen passt.
+> Punkte: 4.2 (zweiter Teil)
+
+### Ausgangslage
+
+Die Tipps-Seite gruppiert offene Empfehlungen bereits nach Aufwand
+(„Schnell erledigt" / „Braucht etwas Vorbereitung", Commit `a2cdfbd`,
+`isQuickWin` in `buildTips.ts`) und sortiert sie nach Interessen
+(`goalBonus` `:273`, `compareTips` `:295`). Im PDF kommt davon **nichts** an.
+
+**Anmerkung zur Annahme:** Die *empfohlene Messreihenfolge* ist nicht nach
+Interessen sortiert – sie ist die feste Reihenfolge im `MEASUREMENT_CATALOG`
+(Duschkopf → Warmwasser-Wartezeit → Raumklima → Möbelabstand → LED → Grundlast
+→ Standby → Kühlschrank → Gefrierschrank). Goal-sortiert sind nur die Tipps.
+Diese Etappe zieht die Messreihenfolge nach, damit beide dieselbe Logik nutzen.
+
+### Zu tun
+
+- **Neues Kapitel „Was du als Nächstes tun kannst"** nach den Messungen.
+- **Zwei Gruppen** wie auf der Tipps-Seite, `isQuickWin` wiederverwenden –
+  keine zweite Einteilung.
+- **Sortierung über `compareTips(a, b, data.goals)`** – dieselbe Funktion, die
+  die App benutzt. Der Bericht darf nicht anders ordnen als der Bildschirm.
+- **Summe des Sparpotenzials je Gruppe**, unter demselben Riegel wie im
+  Rest der App: Nur Beträge, die die Messung selbst noch behauptet
+  (`yieldsSaving` im Katalog, siehe `b6df00e`).
+- **Die genannten Interessen stehen im Kapitelkopf** – sonst wirkt die
+  Reihenfolge willkürlich. „Sortiert nach deinen Zielen: Kosten sparen, CO₂
+  senken."
+- **`MEASUREMENT_CATALOG`-Reihenfolge** um dieselbe Goal-Gewichtung ergänzen,
+  damit die empfohlene Messreihenfolge zur Tipp-Reihenfolge passt. Die
+  Katalog-Reihenfolge bleibt der Grundstock, die Interessen verschieben nur.
+- **`goals` bekommt damit einen zweiten Abnehmer** – in `fieldUsage.ts`
+  nachziehen.
+
+### Fertig, wenn
+
+- Zwei Nutzer mit gleichen Messergebnissen, aber verschiedenen Interessen,
+  bekommen unterschiedlich sortierte Handlungspläne.
+- Reihenfolge im PDF und auf der Tipps-Seite stimmen überein.
+- Ein Nutzer ohne offene Tipps bekommt kein leeres Kapitel, sondern einen
+  Satz, der das würdigt.
+- Kein Euro-Betrag im Handlungsplan, den die zugehörige Messung nicht mehr
+  behauptet.
+
+---
+
+## Etappe 6 – Richtwerte mit Primärquellen
+
+> **Ziel:** Jede Bewertung im Export sagt, woran sie gemessen ist – und jeder
+> Richtwert nennt seine Quelle mit Stand-Datum.
+> Punkte: 4.1
+
+### Ausgangslage – die halbe Arbeit ist schon getan
+
+`generateMeasurementsPdf.ts:175` und `:253` drucken eine Spalte „Bewertung"
+mit dem Wort („gut", „hoch") und **keinen** Vergleichsmaßstab.
+
+Der Anschluss liegt aber bereit: `src/features/education/measurementThresholds.ts`
+enthält `MEASUREMENT_THRESHOLDS` – fertige Richtwert-Tabellen für acht der
+neun Checks, und **keine einzige Zahl steht dort im Quelltext**; jede Grenze
+wird aus dem Mess-Modul importiert, das mit ihr rechnet. Genau das braucht der
+Bericht. Es ist keine neue Tabelle zu bauen, sondern eine vorhandene zu nutzen.
+
+Was fehlt: der LED-Check hat keinen Eintrag (er bewertet „Räume mit alter
+Beleuchtung", nicht eine Messgröße), und **keine** Tabelle hat eine Quelle.
+
+### Zu tun
+
+- **`ThresholdTable` um `source: Source` erweitern** – der Typ existiert
+  bereits in `educationContent.ts:9` samt `stand`-Feld für das Datum.
+- **Für jeden der neun Richtwerte eine Primärquelle recherchieren** und
+  eintragen. Anhaltspunkte, wo zu suchen ist:
+  - Duschkopf-Durchfluss, Warmwasser-Wartezeit → DIN 1988-200,
+    Umweltbundesamt „Wasser sparen"
+  - Standby, Grundlast → EU-Ökodesign-Verordnung 1275/2008 (0,5 W / 1 W /
+    8 W HiNA), Umweltbundesamt „Leerlaufverluste"
+  - Raumtemperatur, Luftfeuchte → Umweltbundesamt „Richtig heizen und lüften",
+    ASR A3.5, WHO-Leitlinien Innenraumfeuchte
+  - Kühlschrank 5–7 °C, Gefrierschrank −18 °C → Bundeszentrum für Ernährung,
+    Verbraucherzentrale
+  - Möbelabstand → Herstellerangaben / VDI 6030
+- **Neue Spalte „Richtwert" im PDF**, gespeist aus `MEASUREMENT_THRESHOLDS`.
+  Bei mehrzeiligen Tabellen (Raumklima hat Bänder je Raumtyp) die für das
+  Ergebnis einschlägige Zeile.
+- **Quellenverzeichnis am Ende des Berichts** – die Fußnote je Zeile würde die
+  Tabelle sprengen.
+- **Nebenwirkung nutzen:** Damit sind auch die Richtwerte im Wissensbereich
+  belegt. Der Punkt „Quellen zeigen weiter auf Wikipedia" aus dem
+  Wissen-Ausbau ist für die Mess-Hintergründe damit erledigt (Glossar und FAQ
+  bleiben offen).
+
+### Risiko – vorher lesen
+
+Der Netzzugang dieser Umgebung erlaubt **Suche**, aber **kein Abrufen einzelner
+Seiten**: `WebFetch` auf `umweltbundesamt.de` scheitert am Egress-Proxy
+(`EGRESS_BLOCKED`), `curl` bekommt 403 auf den CONNECT-Tunnel. `WebSearch`
+funktioniert und liefert Titel, URLs und Inhaltszusammenfassungen.
+
+Praktisch heißt das: Eine Quelle lässt sich **finden und zitieren**, aber nicht
+**verifizieren, dass der Deep-Link lädt**. Genau daran ist derselbe Punkt beim
+Wissen-Ausbau schon einmal gescheitert.
+
+**Vorgehen deshalb:** Auf die stabilste erreichbare Ebene verlinken (die
+Themenseite statt der PDF-Unterseite), Titel und Stand-Datum vollständig
+angeben, damit die Quelle auch bei totem Link auffindbar bleibt – und im
+Tracker festhalten, welche Links ungeprüft sind, damit Kilian sie einmal
+durchklicken kann.
+
+### Fertig, wenn
+
+- Jede Zeile der Mess-Übersicht im PDF nennt neben der Bewertung den Richtwert.
+- Alle neun Checks haben eine Quelle mit Stand-Datum – auch der LED-Check,
+  dann eben als Einordnung statt als Messgrenze.
+- Keine Zahl steht doppelt: Der Bericht importiert aus
+  `measurementThresholds.ts`, das aus den Mess-Modulen importiert.
+- Nichts ist einer Quelle untergeschoben, die die Zahl nicht hergibt. Wo sich
+  keine Primärquelle finden ließ, steht „Richtwert der E-App, hergeleitet aus
+  …" – das ist ehrlicher als eine passend wirkende Fundstelle.
+- Die Liste ungeprüfter Links steht am Ende dieser Etappe im Tracker.
+
+---
+
+## Etappe 7 – HTW raus aus dem Fragebogen
+
+> **Ziel:** Der Fragebogen erwähnt die HTW nicht mehr. Die Lerninhalte bleiben,
+> erreichbar über den vorhandenen Knopf im Wissensbereich.
+> Punkte: 1.5
+
+### Ausgangslage
+
+Der Rückbau ist zu zwei Dritteln erledigt: Der breite Umschalter auf der
+Wissen-Seite ist weg (nur noch ein Icon-Knopf, [R1]), der Trust-Chip auf der
+Landing-Page ist ersetzt ([R2]). Geblieben ist:
+
+- **`Step1Profile.tsx:29`** – `htw_study` als eines von fünf Zielen im
+  Fragebogen, mit Absolventenkappen-Icon (`:35`). **Das ist der Punkt.**
+- `types/index.ts:10` – `'htw_study'` im `UserGoal`-Typ
+- `buildTips.ts:269` – `htw_study: {}`, ein leerer Eintrag in der
+  Goal-Gewichtung
+- `settingsStore.ts:4` – Theme `'htw'` („HTW-Grün")
+- `EducationPage.tsx`, `flashcardsContent.ts` – die Lerninhalte selbst
+
+### Zu tun
+
+- **`htw_study` aus `GOALS` in `Step1Profile.tsx` entfernen.**
+- **Aus dem `UserGoal`-Typ entfernen** und den Eintrag in
+  `GOAL_CATEGORY_BONUS` mit. Er war ohnehin leer – die Sortierung ändert sich
+  nicht.
+- **Migration in `migrateOnboardingData`** (`onboardingStore.ts`) – nicht im
+  `merge`-Block des `persist`-Aufrufs. Ein Bestandsprofil mit
+  `goals: ['save_costs', 'htw_study']` muss zu `['save_costs']` werden, und
+  zwar auf **beiden** Ladewegen: beim Start und beim Cloud-Sync (siehe die
+  Konvention in `CLAUDE.md`). Ein Profil, dessen einziges Ziel `htw_study`
+  war, behält eine leere Liste – das ist zulässig, `goals` ist nirgends
+  Pflicht.
+- **Das Theme `'htw'` bleibt.** Es heißt „HTW-Grün", ist aber eine Farbwahl,
+  keine inhaltliche Verknüpfung – und ein entferntes Theme würde bei jedem,
+  der es eingestellt hat, das Aussehen der App ändern. (`index.html` fängt ein
+  unbekanntes Theme zwar ab, aber unnötig ist es trotzdem.)
+- **Die Lerninhalte bleiben unangetastet**, hinter dem Icon-Knopf.
+
+### Fertig, wenn
+
+- Der Fragebogen enthält an keiner Stelle das Wort HTW.
+- Ein Bestandsprofil mit `htw_study` lädt fehlerfrei – aus dem localStorage
+  **und** aus der Cloud. Beides einzeln prüfen.
+- Die Tipp-Sortierung liefert für ein migriertes Profil dieselbe Reihenfolge
+  wie vorher.
+- Die Karteikarten und die HTW-Ansicht funktionieren unverändert.
+
+---
+
+## Etappe 8 – Kellerklima statt Wohnraum-Maßstab
+
+> **Ziel:** Der Raumklima-Check bewertet die Luftfeuchte im Keller nach
+> Keller-Maßstäben – als Teil des bestehenden Checks, nicht als zehnter Check.
+> Punkte: 18.1 (Entscheidung: kellerspezifische Bewertung im Raumklima-Check)
+
+### Ausgangslage
+
+Die Temperatur ist raumtypabhängig: `COMFORT_BANDS` (`roomClimate.ts:47`) gibt
+dem Keller 14–18 °C, dem Wohnzimmer 20–22 °C. Die Luftfeuchte ist es **nicht**:
+
+```ts
+export function rateHumidity(humidity: number): DimensionStatus {
+  if (humidity < HUM_OPTIMAL_MIN) return 'tooDry'      // 40 %
+  if (humidity > HUM_OPTIMAL_MAX) return 'tooHumid'    // 60 %
+  return 'optimal'
+}
+```
+
+Kein Raumbezug. Ein Keller mit 65 % relativer Feuchte bei 16 °C wird als
+„zu feucht" gemeldet – dabei ist das dort unauffällig. Umgekehrt ist die
+eigentliche Gefahr gar nicht erfasst: Schimmel entsteht nicht bei einer
+Prozentzahl, sondern wenn warme, feuchte Luft auf eine kalte Oberfläche trifft
+und dort der Taupunkt unterschritten wird. Im Sommer ist ein gelüfteter Keller
+deshalb gefährlicher als ein geschlossener.
+
+### Zu tun
+
+- **`rateHumidity` bekommt den Raumtyp** – wie `rateTemperature` es schon tut.
+  Signatur `rateHumidity(humidity: number, roomType?: RoomType)`, mit einem
+  `HUMIDITY_BANDS`-Objekt neben `COMFORT_BANDS`. Keller und Waschküche
+  bekommen ein eigenes Band (Richtwert 50–65 %), alles andere behält 40–60 %.
+- **Taupunkt-Rechnung** als eigene, getestete Funktion (Magnus-Formel) – aus
+  Temperatur und relativer Feuchte. Sie ist der eigentliche Erkenntnisgewinn
+  und gehört in ein eigenes Modul, nicht in `roomClimate.ts` versteckt.
+- **Ein kellerspezifischer Hinweis im Ergebnis**, wenn der Taupunkt der
+  Kellerluft über der zu erwartenden Wandtemperatur liegt: die Lüftungsregel
+  im Klartext („im Sommer nachts oder früh morgens lüften, nicht mittags").
+- **Kompatibilität:** Gespeicherte Raumklima-Ergebnisse enthalten `humidity`
+  als Zahl in `details`. Die Bewertung wird bei der Anzeige neu berechnet, die
+  gespeicherte Zahl bleibt gültig – es ist kein Format-Wechsel, also keine
+  Doppel-Lesung nötig. **Beim Bauen einmal gegenprüfen**, dass das wirklich so
+  ist und nicht der Status mitgespeichert wird.
+- **Der Wissensbereich zieht mit:** `MEASUREMENT_THRESHOLDS.room_temperature`
+  importiert `HUM_OPTIMAL_MIN`/`MAX` – die Tabelle muss die neuen Bänder
+  zeigen, ohne dass eine Zahl doppelt steht.
+
+### Fertig, wenn
+
+- Ein Keller mit 16 °C und 65 % wird nicht mehr als „zu feucht" gemeldet.
+- Ein Wohnzimmer mit 65 % wird weiterhin als „zu feucht" gemeldet.
+- Die Taupunkt-Funktion hat eigene Tests mit von Hand nachgerechneten Werten.
+- Der Check bleibt **einer**. Die Gesamtzahl der Checks steht weiter auf 9
+  (siehe 8.2).
+- Ein gespeichertes Keller-Ergebnis von vorgestern öffnet sich fehlerfrei.
+- Die Richtwert-Tabelle im Wissensbereich zeigt beide Bänder.
+
+---
+
+## Etappe 9 – Zwei kleine Nacharbeiten
+
+> **Ziel:** Zwei Befunde, die je für sich zu klein für eine Etappe sind.
+> Punkte: 4.5, 8.3
+
+### 4.5 – Abstände im kleinen Verlaufsdiagramm
+
+**Ausgangslage:** Halb erledigt, an der falschen Stelle. Das große Diagramm
+(`AbsoluteLineChart.tsx:121`) und der PDF-Verlauf (`pdfKit.ts:1212`) nutzen
+seit `02a1f01` eine echte Datumsachse über `timeAxisPositions()`. Die kleine
+Kachel auf der Monitoring-Übersicht nicht: `Sparkline.tsx` nimmt nur
+`values: number[]` entgegen und rechnet mit festem `stepX` (`:38`). Eine
+Ablesung nach einer Woche und eine nach drei Monaten stehen dort gleich weit
+auseinander.
+
+**Zu tun:** `Sparkline` bekommt optional die Daten zu den Werten und nutzt
+`timeAxisPositions()`. Optional, weil die Komponente auch anderswo eingesetzt
+wird – ohne Daten bleibt sie gleichmäßig, mit Daten wird sie ehrlich.
+
+### 8.3 – Der Bildschirm nach „Speichern & Fertig"
+
+**Ausgangslage:** Für die Pro-Raum-Checks wurde die Auto-Weiterleitung durch
+einen Knopf ersetzt ([R4]). Der Timer lebt aber weiter und gilt für alle
+übrigen Checks – `MeasurementRunner.tsx:101`:
+
+```ts
+const delay = justSaved.continuing ? SAVED_DELAY_CONTINUING_MS : SAVED_DELAY_MS
+const tid = setTimeout(() => navigate(justSaved.nextHref), delay)
+```
+
+1600 ms bzw. 700 ms. `SavedInterstitial` rendert zwar einen Weiter-Knopf –
+aber der Timer schießt trotzdem los, der Knopf kommt gegen ihn nicht an. Für
+Grundlast, Standby, LED, Duschkopf, Kühl- und Gefrierschrank heißt das:
+Der Bildschirm ist weg, bevor man ihn gelesen hat.
+
+**Zu tun:** Den `setTimeout` ersatzlos entfernen. Der Knopf ist da, er trägt
+den Namen des Ziels – das genügt. Wer nichts tut, bleibt stehen; das ist bei
+einem Ergebnis-Schirm das gewünschte Verhalten.
+
+### Fertig, wenn
+
+- Zwei Ablesungen im Abstand von einer Woche und drei Monaten stehen in der
+  Übersichtskachel unterschiedlich weit auseinander.
+- Kein Check leitet mehr von selbst weiter; jeder wartet auf den Knopf.
+- Der Weiter-Knopf trägt in allen Checks den Namen des Ziels.
+
+---
+
+## Etappe 10 – Warmwasser belastbar und transparent
+
+> **Ziel:** Die Warmwasser-Rechnungen benutzen, was gemessen wurde, und der
+> Nutzer kann nachlesen, wie sie zustande kommen.
+> Punkte: 9.2, 9.3, 13.2
+
+### Ausgangslage – drei Befunde
+
+**9.2 – Der „pro Zapfung"-Wert ignoriert die Duschkopfmessung.**
+`hotWaterWait.ts:44` setzt für die Dusche pauschal `flowLpm: 9` an. Wer im
+Duschkopf-Test 14 L/min gemessen hat, bekommt im Wartezeit-Check trotzdem eine
+Rechnung mit 9. Die App hat den besseren Wert und benutzt ihn nicht.
+
+**9.3 – Die Jahresrechnung ist in Ordnung, aber unsichtbar.** Die Personenzahl
+fließt ein (`litersPerDraw * drawsPerPersonPerDay * persons * 365`), kalibriert
+auf einen Zwei-Personen-Haushalt (`CALIBRATION_PERSONS`). Sauber gerechnet –
+nur steht nirgends in der App, dass und wie.
+
+**13.2 – Der Kommentar beschreibt eine andere Rechnung als der Code.** Über
+`yearlyCostForFlow` (`showerhead.ts:60`) steht:
+
+> „Davon werden ~60 % als Warmwasser angesetzt; die Energie zum Erwärmen folgt
+> aus 1.16 Wh/(L·K) bei ΔT = 25 K."
+
+Der Code kennt **keinen** 60-%-Faktor und rechnet mit `DELTA_T = 27`. Die
+Rechnung selbst ist plausibel (ergibt ~516 kWh/Person·Jahr, deckt sich mit den
+500–600 kWh aus der Literatur) – die Beschreibung daneben ist schlicht falsch.
+Wer sie liest, um die Zahl zu prüfen, prüft die falsche Formel.
+
+### Zu tun
+
+- **Gemessenen Durchfluss verwenden.** Liegt ein Duschkopf-Ergebnis vor,
+  benutzt der Wartezeit-Check für die Entnahmestelle „Dusche" den gemessenen
+  Wert statt der 9 L/min. Ohne Messung bleibt der Richtwert – und das
+  Ergebnis sagt, welcher der beiden benutzt wurde.
+- **Den falschen Kommentar korrigieren.** Er beschreibt, was der Code tut:
+  Duschminuten/Jahr × Durchfluss × ΔT 27 K × 1,163 Wh/(L·K), Kosten über den
+  quellenabhängigen Warmwasserpreis aus `hotWaterEnergy.ts`.
+- **„So gerechnet"-Aufklapper im Ergebnis** beider Checks: die Annahmen im
+  Klartext (1 Dusche/Person/Tag, 5 Minuten, Kaltwasser 11 °C → 38 °C), die
+  Formel, und was davon gemessen und was angenommen ist. Die Konstanten
+  kommen aus dem Modul, nicht aus dem Text – dieselbe Regel wie bei den
+  Richtwert-Tabellen.
+- **`CALIBRATION_PERSONS` sichtbar machen** – dass die Werte auf zwei Personen
+  kalibriert sind, ist eine Annahme, die der Nutzer kennen sollte.
+
+### Fertig, wenn
+
+- Ein Duschkopf-Ergebnis von 14 L/min verändert das Ergebnis des
+  Wartezeit-Checks für die Dusche nachweislich.
+- Ohne Duschkopf-Messung rechnet der Check wie bisher – keine stille
+  Verschlechterung für Nutzer, die den einen Check nicht gemacht haben.
+- Kein Kommentar im Warmwasser-Code beschreibt eine andere Rechnung als der
+  Code daneben. Beide Module einmal komplett durchgehen.
+- Der Aufklapper nennt jede Annahme, die in die Zahl eingeht.
+- Bestehende Ergebnisse beider Checks öffnen sich unverändert.
+
+---
+
+## Etappe 11 – Duschkopf-Empfehlung neu formulieren
+
+> **Ziel:** Die Empfehlung sagt, was zu tun ist, ohne eine Genauigkeit zu
+> behaupten, die die Messung nicht hergibt.
+> Punkte: 13.1
+
+### Ausgangslage
+
+Aus der Meldung geht nicht hervor, was genau stört. Die heutigen Texte
+(`de.json`, `measurements.showerhead.result`):
+
+- `summary.high`: „Hoher Verbrauch – ein Sparaufsatz lohnt sich."
+- `summary.medium`: „Mittlerer Verbrauch – hier ist noch Sparpotenzial."
+- `chips`: „Sparaufsatz prüfen", „Kürzer duschen"
+- `savingLabel`: „Ersparnis ≈ {{value}}"
+
+Zwei Verdachtsmomente: „ein Sparaufsatz lohnt sich" ist eine Kaufempfehlung
+ohne Kenntnis von Preis und Einbausituation. Und der Euro-Betrag steht
+gleichberechtigt neben der Wassermenge, obwohl die Menge die belastbarere
+Größe ist (sie folgt direkt aus der Messung, der Betrag zusätzlich über
+Warmwasseranteil, Temperaturhub und Preis) – das steht so sogar im Code
+kommentiert (`showerhead.ts:88`).
+
+### Zu tun
+
+- **Erst einen Vorschlag vorlegen**, dann bauen. Kilian entscheidet, was
+  gemeint war. Richtung: die eingesparte **Wassermenge** nach vorn, den
+  Euro-Betrag als Größenordnung dahinter, und statt „lohnt sich" die konkrete
+  Handlung mit ihrer Bedingung („Ein Sparaufsatz für ~15 € bringt dich auf
+  ~8 L/min – wenn dein Duschkopf ein Standardgewinde hat.").
+- Die englische Fassung mitziehen.
+
+### Fertig, wenn
+
+- Die Formulierung ist mit Kilian abgestimmt, nicht geraten.
+- Keine Aussage im Text behauptet mehr, als die Messung hergibt.
+- Beide Sprachen gleichwertig.
+
+---
+
+## Etappe 12 – Ergebnis je Gerät *(blockiert)*
+
+> **Ziel:** Zwei Kühlschränke, eine Gefriertruhe im Keller und ein Gefrierfach
+> in der Küche ergeben vier Ergebnisse, nicht zwei.
+> Punkte: 18.2
+
+### Warum das keine Etappe ist
+
+Der Fragebogen erfasst in `appliances: ApplianceEntry[]` bereits eine Liste –
+`kind` plus optionaler `room`. Die Checks lesen davon aber nur einen
+Booleschen Wert: `ApplianceGate.tsx:46` fragt `hasAppliance(appliances, kind)`,
+also „gibt es so ein Gerät, ja oder nein". Der `room` dient nur der
+Vorauswahl. Das zweite Gerät überschreibt beim Messen das Ergebnis des ersten.
+
+Der Umbau macht aus einem Check einen **Check mit variablem Nenner** – die
+Mechanik, die die Pro-Raum-Checks schon haben:
+`roomInstances()` (`rooms.ts:16`) erzeugt aus `{type: 'bedroom', count: 2}` die
+Instanzen `bedroom#0`/`bedroom#1`, Ergebnisse liegen unter
+`room_temperature@bedroom#0`, und `measurementProgress()` (`progress.ts:44`)
+zählt über die Instanzen.
+
+Analog wären nötig:
+
+1. **Identität für `ApplianceEntry`** – heute sind zwei Kühlschränke zwei
+   ununterscheidbare Einträge.
+2. **`applianceInstances()`** als Gegenstück zu `roomInstances()`.
+3. **`perAppliance` in `MeasurementMeta`**, und `progress.ts` muss es kennen –
+   das ist die Stelle, an der *alle* Fortschrittszahlen der App zusammenlaufen.
+4. **Kompatibilität mit Altergebnissen.** Sie liegen unter dem nackten
+   Schlüssel `freezer` und müssen dem ersten Gerät zugeordnet werden – sonst
+   verschwindet eine bereits gemachte Messung aus Sicht des Nutzers.
+5. **Bericht, Tipps und Gerätekacheln** lesen `results['fridge']` direkt und
+   ziehen mit.
+6. **Der Fragebogen** braucht eine Geräteliste, in der sich zwei gleiche
+   Geräte benennen lassen („Kühlschrank Küche", „Kühlschrank Keller").
+
+Das ist ein eigenes Vorhaben in der Größenordnung des Tank-Umbaus, mit
+Konzept und eigenen Etappen. Vorher wird es nicht angefasst.
+
+### Voraussetzung zum Entsperren
+
+Ein `docs/geraete-concept.md` nach dem Muster von `tank-concept.md` – und die
+Entscheidung, ob die Gesamtzahl der Checks (heute 9, siehe 8.2) damit zu einer
+variablen Größe wird oder ob Geräte innerhalb eines Checks gezählt werden.
+
+---
+
+## Was dieser Plan nicht enthält
+
+Die noch offenen Rückfragen aus `weitere_Verbesserungen_der_Eapp.txt`, für die
+weiter eine Antwort fehlt:
+
+- **1.2 (Verwalten-Button)** – der Knopf ist gefunden
+  (`ProfileSwitcher.tsx:284`), aber was mit ihm geschehen soll, ist offen.
+- **10.1 (LED-Check)** – wartet auf die Gegenprüfung im Handy-Firefox.
+- **Methoden- und Quellenanhang im PDF** – bewusst zurückgestellt. Die
+  Herleitungen wandern zuerst in den Wissensbereich (Etappe 10 legt mit dem
+  „So gerechnet"-Aufklapper den Grundstein); ob sie später zusätzlich in den
+  Export gehören, wird dann entschieden.
+- **Vergleich zum vorigen Bericht** – nicht gewählt. Bräuchte eine Ablage
+  erzeugter Berichte, die es noch nicht gibt.

@@ -8,9 +8,24 @@
    - Commits die im aktuellen Branch sind, aber nicht in `main` (eigene Arbeit)
 3. Kurze Zusammenfassung der Änderungen ausgeben (was wurde geändert, welche Dateien betroffen)
 4. Falls `main` neue Commits hat: `git merge origin/main` anbieten oder automatisch ausführen
-5. Falls ein Etappen-Vorhaben läuft: dessen Tracker überfliegen und den
-   Arbeitsstand mit einer Zeile nennen. Zurzeit läuft keines – Wissen-Ausbau,
-   Tank- und Fragebogen-Umbau sind abgeschlossen (siehe unten).
+5. `docs/verbesserungen-etappen.md` überfliegen und den Arbeitsstand mit einer
+   Zeile nennen (welche Etappe ist als Nächstes dran, welche Größe hat sie).
+
+## Laufendes Vorhaben: Verbesserungen aus der Sammelliste
+
+Die gemeldeten Punkte aus `weitere_Verbesserungen_der_Eapp.txt` sind bis auf
+zwölf abgearbeitet. Der Rest ist in Etappen gefasst.
+
+- **Arbeitsstand (Wie weit):** `docs/verbesserungen-etappen.md` – zwölf
+  Etappen, jede einzeln lauffähig und deploybar, bewusst unterschiedlich groß
+  (S/M/L), damit sich nach verbleibendem Usage-Fenster entscheiden lässt, was
+  noch reinpasst
+- **Bearbeiten mit:** `/verbesserung` (nächste offene), `/verbesserung 3`
+  (gezielt), `/verbesserung status` (nur berichten)
+- Zwei Etappen betreffen Rechtstexte (Impressum, Datenschutzerklärung,
+  Einwilligung vor Analytics). Sie sind nach bestem Wissen aufgebaut und
+  benennen die tatsächlichen Verarbeitungen – **eine juristische Prüfung
+  ersetzen sie nicht.**
 
 ## Abgeschlossene Vorhaben
 
