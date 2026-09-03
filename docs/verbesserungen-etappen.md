@@ -64,7 +64,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 |---|---|---|---|---|---|---|---|
 | 1 | Impressum und Datenschutzerklärung | 1.4 | M | 15 % | ✅ fertig | 2026-09-03 | `05c2b14` |
 | 2 | Einwilligung vor Analytics | 1.3 | M | 15 % | ✅ fertig | 2026-09-03 | `05c2b14` |
-| 3 | Die Feld-Landkarte | 21.1 (neu) | M | 15 % | offen | | |
+| 3 | Die Feld-Landkarte | 21.1 (neu) | M | 15 % | ✅ fertig | 2026-09-03 | `b9aa6af` |
 | 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | 30 % | offen | | |
 | 5 | Handlungsplan im Bericht | 4.2b | M | 20 % | offen | | |
 | 6 | Richtwerte mit Primärquellen | 4.1 | L | 30 % | offen ⚠️ | | |
@@ -378,12 +378,32 @@ Fragebogen zusammengefasst – und danach nie wieder gelesen. Zwei Sonderfälle:
 
 ### Fertig, wenn
 
-- `npx tsc -b --noEmit` schlägt fehl, wenn man `OnboardingData` um ein Feld
-  erweitert, ohne die Tabelle zu pflegen. (Beim Bauen einmal ausprobieren.)
-- Der Test benennt die toten Felder namentlich – die Zahl steht nicht nur als
-  Summe da.
-- Der Abschluss-Schirm liest aus der Tabelle, hat also keine zweite Wahrheit.
-- Kein Feld wurde entfernt. Diese Etappe **stellt fest**, sie räumt nicht auf.
+- [x] `npx tsc -b --noEmit` schlägt fehl, wenn man `OnboardingData` um ein Feld
+  erweitert, ohne die Tabelle zu pflegen. Probeweise ausprobiert: ein
+  eingefügtes Feld erzeugt TS1360 in `fieldUsage.ts`, danach zurückgenommen.
+- [x] Der Test benennt die toten Felder namentlich – `OHNE_ABNEHMER` in
+  `tests/unit/fieldUsage.test.ts` listet alle 15 einzeln.
+- [x] Der Abschluss-Schirm liest aus der Tabelle, hat also keine zweite
+  Wahrheit. `FieldUsageSummary` importiert ausschließlich aus `fieldUsage.ts`.
+- [x] Kein Feld wurde entfernt; `OnboardingData` ist unverändert.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **`labelKey` ist optional, und das ist die Trennlinie.** Ein Feld ohne
+  Beschriftung taucht in der Aufstellung nicht auf – `completed`, `mode`,
+  `locationMode`, `profileImage` und `appliancesAnswered` sind innerer Zustand,
+  keine beantwortete Frage. In der Tabelle stehen sie trotzdem, weil der Test
+  jedes Feld abdecken soll.
+- **`usageOf()` statt direktem Zugriff.** `satisfies` behält den engen Typ je
+  Eintrag – ein Eintrag ohne `labelKey` kennt die Eigenschaft dann gar nicht.
+  Für die Tabelle ist das genau richtig, zum Auslesen zu eng.
+- **Die Auszählung des Plans stimmt.** Gegengeprüft: Auch `occupancyStatus`
+  hat wirklich keinen Abnehmer – die Angabe steht zwar im Test-Profil von
+  `buildTips`, wird dort aber nie gelesen.
+- **Zwei vorhandene i18n-Schlüssel wiederverwendet, fünf neu.** 20 der
+  Beschriftungen standen schon unter `onboarding.step8.labels`; neu sind nur
+  `rooms`, `instruments`, `renovations`, `heatGeneratorYears`, `appliances`
+  unter `onboarding.fieldUsage.labels`.
 
 ---
 
