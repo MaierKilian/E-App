@@ -67,7 +67,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 3 | Die Feld-Landkarte | 21.1 (neu) | M | 15 % | ✅ fertig | 2026-09-03 | `b9aa6af` |
 | 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | 30 % | ✅ fertig | 2026-09-03 | `1faeb82` |
 | 5 | Handlungsplan im Bericht | 4.2b | M | 20 % | ✅ fertig | 2026-09-03 | `7011fec` |
-| 6 | Richtwerte mit Primärquellen | 4.1 | L | 30 % | offen ⚠️ | | |
+| 6 | Richtwerte mit Primärquellen | 4.1 | L | 30 % | ✅ fertig | 2026-09-04 | `1910830` |
 | 7 | HTW raus aus dem Fragebogen | 1.5 | S | 8 % | ✅ fertig | 2026-09-03 | `29ea4ec` |
 | 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | ✅ fertig | 2026-09-03 | `5ac71ac` |
 | 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | ✅ fertig | 2026-09-03 | `fe7c714` |
@@ -77,10 +77,6 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | ✅ fertig | 2026-09-03 | `7f84372` |
 | 12c | Tipps, Bericht und Folgemessungen nachziehen | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cf6ee4d` |
 | 12d | Der Raum wird benutzt | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `02832f3` |
-
-⚠️ **Etappe 6 braucht Kilian am PC** – siehe dort. Die Quellen-Links lassen
-sich in dieser Umgebung finden, aber nicht öffnen; sie müssen von Hand geprüft
-werden. Am Handy ist die Etappe wenig sinnvoll.
 
 💬 **Etappe 11 beginnt mit einem Vorschlag**, nicht mit Code – die Formulierung
 wird abgestimmt, bevor sie gebaut wird.
@@ -694,16 +690,40 @@ eine andere nehmen.
 
 ### Fertig, wenn
 
-- Jede Zeile der Mess-Übersicht im PDF nennt neben der Bewertung den Richtwert.
-- Alle neun Checks haben eine Quelle mit Stand-Datum – auch der LED-Check,
-  dann eben als Einordnung statt als Messgrenze.
-- Keine Zahl steht doppelt: Der Bericht importiert aus
-  `measurementThresholds.ts`, das aus den Mess-Modulen importiert.
-- Nichts ist einer Quelle untergeschoben, die die Zahl nicht hergibt. Wo sich
-  keine Primärquelle finden ließ, steht „Richtwert der E-App, hergeleitet aus
-  …" – das ist ehrlicher als eine passend wirkende Fundstelle.
-- Die Prüfliste der Links ist ausgegeben – und von Kilian am PC durchgeklickt.
-  Erst dann steht die Etappe auf „fertig".
+- [x] Jede Zeile der Mess-Übersicht nennt neben der Bewertung den Richtwert –
+  den Zielbereich, also den brauchbaren Maßstab. Wo es keinen einzelnen gibt
+  (Raumklima: ein Band je Raumtyp), bleibt die Spalte leer, statt eine
+  beliebige Zeile zu zeigen.
+- [x] Alle neun Checks haben eine Herkunftsangabe, der LED-Check als
+  Einordnung. Der Typechecker verlangt sie jetzt für jede Tabelle.
+- [x] Keine Zahl doppelt – ein Test vergleicht den Bericht gegen die Tabelle
+  und die Tabelle gegen die Mess-Module.
+- [x] Nichts untergeschoben. `ThresholdOrigin` hat dafür **drei** Zustände
+  statt zwei (siehe unten).
+- [x] Die Prüfliste war ausgegeben und ist von Kilian durchgeklickt – der
+  Stand steht oben unter „Quellenstand nach Kilians Prüfung".
+
+### Unterwegs entschieden (2026-09-04)
+
+- **Drei Zustände, nicht zwei.** `reference` (belegt, mit Stand-Datum), `own`
+  (Richtwert der E-App, mit Begründung) und `pending` (noch zu klären). Der
+  Unterschied zwischen den letzten beiden ist der zwischen „wir haben
+  entschieden" und „wir sind noch nicht fertig"; ihn einzuebnen wäre bequem
+  und falsch gewesen. Ein Test nagelt fest, welche drei Checks auf `pending`
+  stehen.
+- **Die Ökodesign-Verordnung taugt nicht als Standby-Quelle.** Sie begrenzt
+  den Bereitschaftsbetrieb *neuer* Geräte auf 0,5 W – eine Bauvorschrift, kein
+  Maßstab für ein Bestandsgerät am Messgerät. Sie steht deshalb in der
+  Begründung des offenen Punkts, nicht als Beleg.
+- **Der Richtwert ist der Zielbereich**, nicht die zum Ergebnis passende
+  Zeile. „Dein Wert gegen den, der gut wäre" ist der Vergleich, der etwas sagt.
+- **Das Quellenverzeichnis zeigt auch das Unbelegte.** Eines, das nur die
+  belegten Werte auflistet, ließe den Rest wie belegt aussehen.
+- **Beim Raumklima ist die Herkunft gemischt** – belegt für Wohnräume,
+  Schlafzimmer, Küche und Bad; Richtwert der App für Keller, Waschküche und
+  die angenommene Wandtemperatur. Die Zusatzzeile der Tabelle sagt das.
+- **Nicht belegt:** Das PDF wurde nicht angesehen – kein Renderer in dieser
+  Umgebung. Geprüft sind Inhalt, Verweise, Übersetzungen und der Build.
 
 ---
 
