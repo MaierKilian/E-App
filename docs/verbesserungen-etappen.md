@@ -76,7 +76,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cc13d24` |
 | 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | ✅ fertig | 2026-09-03 | `7f84372` |
 | 12c | Tipps, Bericht und Folgemessungen nachziehen | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cf6ee4d` |
-| 12d | Der Raum wird benutzt | 18.2 | M | 18 % | offen | | |
+| 12d | Der Raum wird benutzt | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `02832f3` |
 
 ⚠️ **Etappe 6 braucht Kilian am PC** – siehe dort. Die Quellen-Links lassen
 sich in dieser Umgebung finden, aber nicht öffnen; sie müssen von Hand geprüft
@@ -1259,13 +1259,59 @@ bewertet nichts und benennt nichts.
 
 ### Fertig, wenn
 
-- Zwei Geräte derselben Art in verschiedenen Räumen sind überall am Namen
-  auseinanderzuhalten – Check, Liste, Tipps, Bericht.
-- Ein gemessener Kellerraum verändert die Aussage des Gefrier-Checks
-  nachweislich, und das Ergebnis sagt, woher die Temperatur kommt.
-- Ohne Raumklima-Messung rechnet der Check wie in 12b – keine stille
-  Verschlechterung.
-- Ein Gerät ohne Raumangabe funktioniert vollständig.
+- [x] Überall am Namen auseinanderzuhalten – alle vier Stellen ziehen ihn aus
+  derselben Funktion (`applianceLabel`), erledigt mit 12a und 12c.
+- [x] Ein gemessener Raum verändert die Aussage nachweislich, und das Ergebnis
+  nennt die Herkunft („aus deinem Raumklima-Check" statt „Richtwert").
+- [x] Ohne Raumklima-Messung ändert sich nichts – ein Test prüft auch, dass
+  eine Messung in einem *anderen* Raum nicht zählt.
+- [x] Ein Gerät ohne Raumangabe funktioniert vollständig; der Hinweis
+  erscheint dann gar nicht erst.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **Kein Euro-Betrag und keine Prozentzahl aus dem Standort.** Der Plan sagte
+  „bewerten"; belegbar ist aber nur, *dass* der Standort zählt, nicht *wie
+  viel*. Der Mehrverbrauch hängt an Dämmung, Alter und Dichtung des Geräts –
+  Größen, die dieser Check nicht kennt. Eine Zahl dort wäre erfunden gewesen,
+  und „kein Betrag ohne Deckung" gilt hier wie überall.
+- **Zwei Fälle bekommen einen eigenen Satz:** über 20 °C das größere Gefälle,
+  unter 10 °C die Klimaklasse (ältere Thermostate schalten dort nicht mehr
+  zuverlässig – die Truhe taut im Winter an). Beide Schwellen sind
+  **Erfahrungswerte der E-App** und stehen so in der Liste unter Etappe 6.
+- **Die Umgebungstemperatur wird beim Anzeigen hergeleitet**, nicht ins
+  Ergebnis geschrieben. So zieht ein später gemessener Raum den Hinweis nach;
+  ein eingefrorener Wert bliebe auf dem Richtwert stehen.
+- **Ein Gerät kennt nur den Raumtyp, nicht die Rauminstanz.** Bei mehreren
+  gleichartigen Räumen zählt die jüngste Messung unter ihnen. Genauer ginge es
+  nur mit einer weiteren Frage im Fragebogen – der schlechtere Tausch.
+- **Nicht belegt:** Der Hinweis wurde nicht im Browser gesehen.
+
+---
+
+## Die Geräte-Kette ist abgearbeitet
+
+Ein Haushalt hat selten genau einen Kühlschrank und genau ein Gefriergerät.
+Die App konnte das nicht abbilden – nicht, weil die Datenstruktur zu klein
+war, sondern weil sie als **Menge** angelegt war: Ein zweiter Eintrag derselben
+Art entfernte den ersten. Nach unten durchgereicht hieß das: Das zweite Gerät
+überschrieb das Ergebnis des ersten, der Fortschritt meldete trotzdem
+„erledigt", und der erfasste Standort bewertete nichts.
+
+Jetzt: vier Geräte, vier Messungen, vier Ergebnisse, benannt nach Raum oder
+eigenem Namen, mit Folgemessungen und Tipps je Gerät – und der Standort ist
+die erste Verbindung zwischen zwei Checks dieser App.
+
+**Was für später notiert bleibt:**
+
+- **Die Rückfallkette lebt an vier Stellen** (`progress.ts`, `followUps.ts`,
+  `buildTips.ts`, `measurementsReportData.ts`). Sie ist überall dieselbe Regel
+  – „der neue Schlüssel gewinnt, das Altergebnis zählt für das erste Gerät" –
+  aber viermal geschrieben. Ein gemeinsamer Helfer wäre ein eigener
+  Aufräumschritt.
+- **Geräte-Alter und Energieeffizienzklasse** würden aus dem Standort-Hinweis
+  eine Rechnung machen. Beides erfragt der Fragebogen nicht.
+- **Der Raumbezug bleibt auf den Raumtyp beschränkt** (siehe oben).
 
 ---
 
