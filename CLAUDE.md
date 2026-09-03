@@ -9,19 +9,31 @@
 3. Kurze Zusammenfassung der Änderungen ausgeben (was wurde geändert, welche Dateien betroffen)
 4. Falls `main` neue Commits hat: `git merge origin/main` anbieten oder automatisch ausführen
 5. `docs/verbesserungen-etappen.md` überfliegen und den Arbeitsstand mit einer
-   Zeile nennen (welche Etappe ist als Nächstes dran, welche Größe hat sie).
+   Zeile nennen: welche Etappe ist als Nächstes dran, welche Größe und welcher
+   Usage-Anteil.
+6. **Nach Usage-Stand und Zeit bis zum Reset fragen** – und daraus eine
+   Etappen-Kombination für heute vorschlagen (Faustregeln in der Tabelle
+   „Was in mein Fenster passt" im Tracker). Ein Vorschlag, keine Entscheidung.
+   Dann auf Kilians Auswahl warten und mit `/verbesserung <Nummer>` starten.
 
 ## Laufendes Vorhaben: Verbesserungen aus der Sammelliste
 
 Die gemeldeten Punkte aus `weitere_Verbesserungen_der_Eapp.txt` sind bis auf
-zwölf abgearbeitet. Der Rest ist in Etappen gefasst.
+elf abgearbeitet. Diese elf plus ein neu aufgenommener (21.1 – jede Angabe des
+Fragebogens braucht einen Abnehmer) sind in 15 Etappen gefasst.
 
-- **Arbeitsstand (Wie weit):** `docs/verbesserungen-etappen.md` – zwölf
-  Etappen, jede einzeln lauffähig und deploybar, bewusst unterschiedlich groß
-  (S/M/L), damit sich nach verbleibendem Usage-Fenster entscheiden lässt, was
-  noch reinpasst
+- **Arbeitsstand (Wie weit):** `docs/verbesserungen-etappen.md` – 15 Etappen,
+  jede einzeln lauffähig und deploybar, bewusst unterschiedlich groß (S/M/L)
+  mit geschätztem Usage-Anteil, damit sich nach verbleibendem Fenster
+  entscheiden lässt, was noch reinpasst
+- **Teil-Konzept:** `docs/geraete-concept.md` – das Warum hinter den Etappen
+  12a bis 12d (ein Ergebnis je Kühl-/Gefriergerät)
 - **Bearbeiten mit:** `/verbesserung` (nächste offene), `/verbesserung 3`
   (gezielt), `/verbesserung status` (nur berichten)
+- **Zwei Etappen brauchen einen Menschen:** Etappe 6 (Primärquellen) verlangt,
+  dass Kilian am PC die Links durchklickt – in dieser Umgebung lassen sie sich
+  finden, aber nicht öffnen. Etappe 11 (Duschkopf-Empfehlung) beginnt mit
+  einem Textvorschlag zur Abstimmung, nicht mit Code.
 - Zwei Etappen betreffen Rechtstexte (Impressum, Datenschutzerklärung,
   Einwilligung vor Analytics). Sie sind nach bestem Wissen aufgebaut und
   benennen die tatsächlichen Verarbeitungen – **eine juristische Prüfung

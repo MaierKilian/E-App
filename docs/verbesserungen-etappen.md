@@ -26,30 +26,64 @@ läuft erst danach.
 
 **Die Etappen sind bewusst unterschiedlich groß.** Vor dem Start wird die
 Größe genannt, damit sich nach verbleibendem Usage-Fenster entscheiden lässt,
-was noch reinpasst:
+was noch reinpasst.
 
-| Größe | Aufwand | Zum Vergleich |
-|---|---|---|
-| **S** | eine halbe Stunde | „Trendlinie bei einem Messwert" (Runde 5) |
-| **M** | eine gute Stunde | „Gefrierschrank-Check neu" (Runde 5) |
-| **L** | zwei Stunden und mehr | „Frei wählbarer Zeitraum im Monitoring" |
+### Wie die Schätzung zustande kommt
+
+Kalibriert an Runde 5 (25.08.2026), wo der Usage-Stand mehrfach mitgeschrieben
+wurde: Der Aufräum-Batch kostete rund **8 %**, die Standby-Etappe mit
+Nacharbeiten rund **20 %**. Daraus:
+
+| Größe | Usage (Erfahrungswert) | Dauer | Berührte Dateien | Zum Vergleich aus Runde 5 |
+|---|---|---|---|---|
+| **S** | 5–10 % | ~30 min | 1–3 | „Trendlinie bei einem Messwert" |
+| **M** | 10–20 % | ~1 h | 4–8 | „Gefrierschrank-Check neu" |
+| **L** | 20–35 % | ~2 h | 8–15 | „Frei wählbarer Zeitraum im Monitoring" |
+
+Die Schätzung ist eine Schätzung. Ein unerwarteter Befund kann eine M-Etappe
+auf L heben – **dann wird das gesagt, nicht durchgezogen.** Läuft das Fenster
+mitten in einer Etappe aus, wird der erreichte Stand committet und im Tracker
+als „angefangen" vermerkt; halbfertige Arbeit bleibt nie uncommittet liegen.
+
+### Was in mein Fenster passt
+
+| Restbudget | Vorschlag |
+|---|---|
+| **~10 %** | eine S-Etappe: 7, 9 oder 11 |
+| **~20 %** | eine M-Etappe, oder zwei S |
+| **~30 %** | eine L-Etappe, oder M + S |
+| **~50 %** | L + M, oder drei M |
+| **> 60 %** | 3 + 4 zusammen (Landkarte und Steckbrief gehören inhaltlich zusammen) |
+
+Kilian nennt zu Beginn der Session Usage-Stand und Zeit bis zum Reset. Daraus
+wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 
 ## Stand
 
-| # | Etappe | Punkte | Größe | Status | Abgeschlossen | Commit |
-|---|---|---|---|---|---|---|
-| 1 | Impressum und Datenschutzerklärung | 1.4 | M | offen | | |
-| 2 | Einwilligung vor Analytics | 1.3 | M | offen | | |
-| 3 | Die Feld-Landkarte | (neu) 21.1 | M | offen | | |
-| 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | offen | | |
-| 5 | Handlungsplan im Bericht | 4.2b | M | offen | | |
-| 6 | Richtwerte mit Primärquellen | 4.1 | L | offen | | |
-| 7 | HTW raus aus dem Fragebogen | 1.5 | S | offen | | |
-| 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | offen | | |
-| 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | offen | | |
-| 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | offen | | |
-| 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | offen | | |
-| 12 | Ergebnis je Gerät | 18.2 | XL | **blockiert** | | |
+| # | Etappe | Punkte | Größe | ~Usage | Status | Abgeschlossen | Commit |
+|---|---|---|---|---|---|---|---|
+| 1 | Impressum und Datenschutzerklärung | 1.4 | M | 15 % | offen | | |
+| 2 | Einwilligung vor Analytics | 1.3 | M | 15 % | offen | | |
+| 3 | Die Feld-Landkarte | 21.1 (neu) | M | 15 % | offen | | |
+| 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | 30 % | offen | | |
+| 5 | Handlungsplan im Bericht | 4.2b | M | 20 % | offen | | |
+| 6 | Richtwerte mit Primärquellen | 4.1 | L | 30 % | offen ⚠️ | | |
+| 7 | HTW raus aus dem Fragebogen | 1.5 | S | 8 % | offen | | |
+| 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | offen | | |
+| 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | offen | | |
+| 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | offen | | |
+| 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | offen 💬 | | |
+| 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | offen | | |
+| 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | offen | | |
+| 12c | Tipps, Bericht und Folgemessungen nachziehen | 18.2 | M | 18 % | offen | | |
+| 12d | Der Raum wird benutzt | 18.2 | M | 18 % | offen | | |
+
+⚠️ **Etappe 6 braucht Kilian am PC** – siehe dort. Die Quellen-Links lassen
+sich in dieser Umgebung finden, aber nicht öffnen; sie müssen von Hand geprüft
+werden. Am Handy ist die Etappe wenig sinnvoll.
+
+💬 **Etappe 11 beginnt mit einem Vorschlag**, nicht mit Code – die Formulierung
+wird abgestimmt, bevor sie gebaut wird.
 
 **Abhängigkeiten:**
 
@@ -59,8 +93,9 @@ was noch reinpasst:
   macht, baut das Gerüst eben dort.
 - **6 hat ein Risiko** (siehe dort): der Netzzugang dieser Umgebung erlaubt
   Suche, aber kein Abrufen einzelner Seiten.
-- **12 ist blockiert**, bis ein Konzept dafür steht – Umfang wie der
-  Tank-Umbau, nicht wie eine Etappe.
+- **12a → 12b → 12c** ist eine feste Kette. **12d** braucht 12b.
+  Konzept: `docs/geraete-concept.md`. Nach 12b zeigt der Bericht kurzzeitig
+  weniger als die App – **12c nicht liegen lassen.**
 - Alles andere ist unabhängig und kann in beliebiger Reihenfolge kommen.
 
 ## Vorab geklärt (nichts mehr zu tun)
@@ -448,7 +483,7 @@ Beleuchtung", nicht eine Messgröße), und **keine** Tabelle hat eine Quelle.
   Wissen-Ausbau ist für die Mess-Hintergründe damit erledigt (Glossar und FAQ
   bleiben offen).
 
-### Risiko – vorher lesen
+### Diese Etappe braucht Kilian am PC
 
 Der Netzzugang dieser Umgebung erlaubt **Suche**, aber **kein Abrufen einzelner
 Seiten**: `WebFetch` auf `umweltbundesamt.de` scheitert am Egress-Proxy
@@ -461,9 +496,17 @@ Wissen-Ausbau schon einmal gescheitert.
 
 **Vorgehen deshalb:** Auf die stabilste erreichbare Ebene verlinken (die
 Themenseite statt der PDF-Unterseite), Titel und Stand-Datum vollständig
-angeben, damit die Quelle auch bei totem Link auffindbar bleibt – und im
-Tracker festhalten, welche Links ungeprüft sind, damit Kilian sie einmal
-durchklicken kann.
+angeben, damit die Quelle auch bei totem Link auffindbar bleibt.
+
+**Und die Etappe endet mit einer Prüfliste.** Alle recherchierten Links werden
+am Ende als anklickbare Liste ausgegeben – Quelle, URL, welcher Richtwert
+darauf beruht. Kilian klickt sie am PC einmal durch und meldet die toten
+zurück; die werden dann ersetzt oder auf „Richtwert der E-App" umgestellt.
+Solange die Liste nicht geprüft ist, gilt die Etappe als **angefangen**, nicht
+als fertig.
+
+Am Handy ist diese Etappe deshalb wenig sinnvoll. Wenn Kilian unterwegs ist:
+eine andere nehmen.
 
 ### Fertig, wenn
 
@@ -475,7 +518,8 @@ durchklicken kann.
 - Nichts ist einer Quelle untergeschoben, die die Zahl nicht hergibt. Wo sich
   keine Primärquelle finden ließ, steht „Richtwert der E-App, hergeleitet aus
   …" – das ist ehrlicher als eine passend wirkende Fundstelle.
-- Die Liste ungeprüfter Links steht am Ende dieser Etappe im Tracker.
+- Die Prüfliste der Links ist ausgegeben – und von Kilian am PC durchgeklickt.
+  Erst dann steht die Etappe auf „fertig".
 
 ---
 
@@ -735,50 +779,194 @@ kommentiert (`showerhead.ts:88`).
 
 ---
 
-## Etappe 12 – Ergebnis je Gerät *(blockiert)*
+## Etappe 12a – Geräte bekommen eine Identität
 
-> **Ziel:** Zwei Kühlschränke, eine Gefriertruhe im Keller und ein Gefrierfach
-> in der Küche ergeben vier Ergebnisse, nicht zwei.
-> Punkte: 18.2
+> **Ziel:** Die Geräteliste bildet ab, was wirklich in der Wohnung steht – mit
+> stabiler Kennung je Gerät. Für den Nutzer ändert sich noch nichts außer der
+> Möglichkeit, ein zweites Gerät einzutragen.
+> Punkte: 18.2 · Konzept: `docs/geraete-concept.md` Abschnitte 3, 5
 
-### Warum das keine Etappe ist
+### Ausgangslage
 
-Der Fragebogen erfasst in `appliances: ApplianceEntry[]` bereits eine Liste –
-`kind` plus optionaler `room`. Die Checks lesen davon aber nur einen
-Booleschen Wert: `ApplianceGate.tsx:46` fragt `hasAppliance(appliances, kind)`,
-also „gibt es so ein Gerät, ja oder nein". Der `room` dient nur der
-Vorauswahl. Das zweite Gerät überschreibt beim Messen das Ergebnis des ersten.
+`appliances` ist als **Menge** angelegt, nicht als Liste. `toggleAppliance`
+(`appliances.ts:63`) sucht `findIndex((a) => a.kind === kind)` und *entfernt*
+den vorhandenen Eintrag, statt einen zweiten anzulegen. Zwei Kühlschränke sind
+heute nicht darstellbar, und `ApplianceEntry` (`types/index.ts:82`) hat kein
+Feld, das zwei Geräte unterscheiden könnte.
 
-Der Umbau macht aus einem Check einen **Check mit variablem Nenner** – die
-Mechanik, die die Pro-Raum-Checks schon haben:
-`roomInstances()` (`rooms.ts:16`) erzeugt aus `{type: 'bedroom', count: 2}` die
-Instanzen `bedroom#0`/`bedroom#1`, Ergebnisse liegen unter
-`room_temperature@bedroom#0`, und `measurementProgress()` (`progress.ts:44`)
-zählt über die Instanzen.
+### Zu tun
 
-Analog wären nötig:
+- **`ApplianceEntry` um `id: string` erweitern**, vergeben beim Anlegen,
+  danach unveränderlich.
+- **Migration in `migrateOnboardingData`** – nicht im `merge`-Block (siehe
+  `CLAUDE.md`). Bestandsgeräte bekommen `id = kind`: Weil bisher je Art
+  höchstens ein Eintrag existieren konnte, ist das eindeutig, deterministisch
+  und kollisionsfrei – und passt zufällig genau auf die Altergebnis-Schlüssel,
+  die 12b braucht.
+- **`toggleAppliance` ablösen** durch `addAppliance` / `removeAppliance(id)`.
+  Der Umschalt-Charakter bleibt für den häufigen Fall erhalten: Erstes Antippen
+  legt an, Antippen des Häkchens entfernt.
+- **`AppliancePicker` um „weiteres Gerät"** je Art. Ein Tipp mehr, und nur für
+  die, die ihn brauchen – der Fragebogen wird nicht länger.
+- **Optionaler Name je Gerät**, für zwei Geräte im selben Raum. Der Raum
+  bleibt die Voreinstellung für die Benennung (das baut 12d aus).
+- **`applianceInstances(appliances, wanted)`** als Gegenstück zu
+  `roomInstances()` – liefert die Geräte, die einen Check bedienen, in stabiler
+  Reihenfolge. Wird hier gebaut und getestet, aber noch von niemandem benutzt.
+- **`hasAppliance`, `applianceRoom`, `skippedMeasurements` bleiben** und
+  funktionieren unverändert – sie fragen nach Vorhandensein, nicht nach Anzahl.
 
-1. **Identität für `ApplianceEntry`** – heute sind zwei Kühlschränke zwei
-   ununterscheidbare Einträge.
-2. **`applianceInstances()`** als Gegenstück zu `roomInstances()`.
-3. **`perAppliance` in `MeasurementMeta`**, und `progress.ts` muss es kennen –
-   das ist die Stelle, an der *alle* Fortschrittszahlen der App zusammenlaufen.
-4. **Kompatibilität mit Altergebnissen.** Sie liegen unter dem nackten
-   Schlüssel `freezer` und müssen dem ersten Gerät zugeordnet werden – sonst
-   verschwindet eine bereits gemachte Messung aus Sicht des Nutzers.
-5. **Bericht, Tipps und Gerätekacheln** lesen `results['fridge']` direkt und
-   ziehen mit.
-6. **Der Fragebogen** braucht eine Geräteliste, in der sich zwei gleiche
-   Geräte benennen lassen („Kühlschrank Küche", „Kühlschrank Keller").
+### Fertig, wenn
 
-Das ist ein eigenes Vorhaben in der Größenordnung des Tank-Umbaus, mit
-Konzept und eigenen Etappen. Vorher wird es nicht angefasst.
+- Zwei Kühlschränke lassen sich eintragen, überstehen einen Neustart und den
+  Cloud-Sync, und behalten ihre Kennung, wenn eines gelöscht wird.
+- Ein Altprofil (ein Gerät je Art, ohne `id`) lädt aus localStorage **und** aus
+  der Cloud fehlerfrei und hat danach `id = kind`. Beides einzeln prüfen.
+- Ein Haushalt ohne Geräte verhält sich exakt wie vorher: Check fällt aus
+  Zähler und Nenner.
+- `applianceInstances` hat eigene Tests, auch für den Fall „ein
+  Kühl-Gefrier-Kombigerät bedient beide Checks".
+- Für den Nutzer, der genau ein Gerät je Art hat, sieht der Fragebogen aus wie
+  vorher.
 
-### Voraussetzung zum Entsperren
+---
 
-Ein `docs/geraete-concept.md` nach dem Muster von `tank-concept.md` – und die
-Entscheidung, ob die Gesamtzahl der Checks (heute 9, siehe 8.2) damit zu einer
-variablen Größe wird oder ob Geräte innerhalb eines Checks gezählt werden.
+## Etappe 12b – Ein Ergebnis je Gerät
+
+> **Ziel:** Vier Geräte, vier Messungen, vier Ergebnisse. Der Fortschritt
+> zählt Geräte statt Checks.
+> Punkte: 18.2 · Konzept: `docs/geraete-concept.md` Abschnitte 3, 6
+
+### Ausgangslage
+
+`ApplianceGate.tsx:46` fragt einen Booleschen Wert. Das Ergebnis landet unter
+`fridge` bzw. `freezer` – einmal je Haushalt. `measurementProgress()`
+(`progress.ts:44`) gibt für alles ohne `perRoom` `{ done: 1, total: 1 }`
+zurück, sobald irgendein Ergebnis existiert. Das zweite Gerät überschreibt das
+erste, und der Fortschritt merkt es nicht.
+
+### Zu tun
+
+- **`perAppliance?: boolean` in `MeasurementMeta`**, gesetzt bei `fridge` und
+  `freezer`.
+- **`measurementProgress` und `countableMeasurements` erweitern.** Das ist die
+  heikelste Stelle des ganzen Vorhabens: `progress.ts` ist ausdrücklich die
+  *eine* Stelle, an der „wie viele Checks sind erledigt?" beantwortet wird –
+  Ring, Zuhause-Karte und Gewerke-Kacheln hängen alle daran. Genau hier stand
+  schon einmal „0/2" neben „9/9" (siehe Kopfkommentar der Datei).
+- **Ergebnisschlüssel `fridge@<id>`** über dasselbe `instanceKey()`, das die
+  Pro-Raum-Checks nutzen – kein zweites Schlüsselformat.
+- **Rückfallkette für Altergebnisse:** `results['fridge@<id>'] ?? results['fridge']`
+  für das **erste** Gerät seiner Art. Nicht umschreiben, nur finden – gemäß der
+  Konvention „Gespeicherte Messergebnisse bleiben lesbar". Sobald das Gerät neu
+  gemessen wird, gewinnt der neue Schlüssel.
+- **Gerätewahl im Check:** Bei mehreren Geräten fragt der Check zuerst, welches
+  gemessen wird – mit Fortschritt je Gerät, wie die Raumauswahl es tut. Bei
+  genau einem Gerät entfällt die Frage.
+- **Weiter-Knopf mit Zielnamen** wie bei den Pro-Raum-Checks: „Speichern &
+  nächstes Gerät: Gefriertruhe Keller".
+
+### Fertig, wenn
+
+- Zwei Kühlschränke ergeben zwei Ergebnisse; das zweite überschreibt das erste
+  nicht.
+- Der Ring zeigt bei vier Geräten und zwei Messungen einen echten
+  Zwischenstand – und dieselbe Zahl wie die Zuhause-Karte und die
+  Gewerke-Kachel. **Alle drei einzeln nachsehen.**
+- Ein Bestandsnutzer mit einem `freezer`-Ergebnis sieht dieses Ergebnis
+  weiterhin, seinem ersten Gerät zugeordnet – nicht als „noch nicht gemessen".
+- Ein Haushalt mit genau einem Gerät je Art erlebt keinen Unterschied zu heute,
+  inklusive Fortschrittszahl.
+- Kein Euro-Betrag wird doppelt gezählt, wenn ein Gerät ein altes **und** ein
+  neues Ergebnis hat.
+
+---
+
+## Etappe 12c – Tipps, Bericht und Folgemessungen nachziehen
+
+> **Ziel:** Alles, was Ergebnisse liest, findet auch die gerätebezogenen –
+> und der Gerätezähler darf wieder sinken.
+> Punkte: 18.2 · Konzept: `docs/geraete-concept.md` Abschnitte 4, 6
+
+### Ausgangslage
+
+Drei Stellen lesen den nackten Schlüssel direkt und finden Instanz-Schlüssel
+nie:
+
+- **`followUps.ts:73`** – `results['fridge']`, Bewertung nicht `good` → wieder
+  fällig. **`:80`** – `results['freezer']?.completedAt` gegen
+  `DEFROST_RECHECK_DAYS = 182`.
+- **`buildTips.ts`** – die Kühl- und Gefrier-Tipps.
+- **`generateMeasurementsPdf.ts`** – die Mess-Übersicht.
+
+Genau dieses Muster hat bei den Pro-Raum-Checks schon einmal „0/2" neben „9/9"
+erzeugt.
+
+### Zu tun
+
+- **`pendingFollowUps` je Gerät.** Damit wird aus dem Zähler eine
+  Zustandsaussage: Die Truhe im Keller ist ein halbes Jahr nach dem abgehakten
+  Abtauen wieder dran, das Gefrierfach in der Küche noch nicht. Der
+  `defrostDoneAt` aus dem `tipsStore` muss dafür je Gerät geführt werden – ein
+  gemeinsamer Zeitstempel für vier Geräte wäre falsch.
+- **Tipps je Gerät**, mit dem Gerätenamen im Text: „Deine Gefriertruhe im
+  Keller ist stark vereist" statt „Dein Gefriergerät".
+- **Bericht: eine Zeile je Gerät**, mit Namen. Zwei Zeilen „Kühlschrank"
+  untereinander wären schlechter als eine – deshalb hängt das an der Benennung
+  aus 12a.
+- **Gerätekacheln in der Messungsliste** zeigen Fortschritt je Gerät.
+
+### Fertig, wenn
+
+- Ein Gerät, dessen Abtauen ein halbes Jahr her ist, erscheint wieder als
+  offen – und die anderen Geräte nicht.
+- Kein Tipp und keine Berichtszeile spricht von „dem Kühlschrank", wenn es
+  mehrere gibt.
+- Die Zahl im Bericht stimmt mit der Zahl in der App überein.
+- Ein Bestandsnutzer verliert seine Abtau-Erinnerung nicht (Rückfallkette aus
+  12b greift auch hier – **eigens prüfen**, `followUps` liest `completedAt`
+  direkt).
+
+---
+
+## Etappe 12d – Der Raum wird benutzt
+
+> **Ziel:** Der Standort eines Geräts benennt, bewertet und verbindet – statt
+> nur eine Vorauswahl zu treffen.
+> Punkte: 18.2 · Konzept: `docs/geraete-concept.md` Abschnitt 7
+
+### Ausgangslage
+
+`ApplianceEntry.room` wird im Fragebogen erfasst (`AppliancePicker.tsx:44`) und
+ausschließlich von `applianceRoom()` gelesen – zur Vorauswahl im Check. Er
+bewertet nichts und benennt nichts.
+
+### Zu tun
+
+- **Benennen:** Der Gerätename entsteht aus Art und Raum – „Kühlschrank Küche",
+  „Gefriertruhe Keller". Der frei getippte Name aus 12a bleibt der Ausweg für
+  zwei Geräte im selben Raum.
+- **Bewerten:** Ein Kühlschrank im 22 °C warmen Wohnzimmer arbeitet gegen ein
+  anderes Gefälle als einer im 16 °C kühlen Keller. Die Gefriertruhe im
+  unbeheizten Keller ist der Sparfall, über den sich etwas sagen lässt, das für
+  die Küche nicht gilt.
+- **Verbinden:** Steht das Gerät in einem Raum, der im Raumklima-Check bereits
+  gemessen wurde (`room_temperature@basement#0`), benutzt der Check die
+  **gemessene** Umgebungstemperatur statt einer Annahme – und sagt im Ergebnis,
+  dass er das tut. Das ist die erste Verbindung zwischen zwei Checks in dieser
+  App.
+- **Ohne Messung bleibt es beim Richtwert.** Kein Check darf einen anderen zur
+  Voraussetzung machen.
+
+### Fertig, wenn
+
+- Zwei Geräte derselben Art in verschiedenen Räumen sind überall am Namen
+  auseinanderzuhalten – Check, Liste, Tipps, Bericht.
+- Ein gemessener Kellerraum verändert die Aussage des Gefrier-Checks
+  nachweislich, und das Ergebnis sagt, woher die Temperatur kommt.
+- Ohne Raumklima-Messung rechnet der Check wie in 12b – keine stille
+  Verschlechterung.
+- Ein Gerät ohne Raumangabe funktioniert vollständig.
 
 ---
 
@@ -790,6 +978,9 @@ weiter eine Antwort fehlt:
 - **1.2 (Verwalten-Button)** – der Knopf ist gefunden
   (`ProfileSwitcher.tsx:284`), aber was mit ihm geschehen soll, ist offen.
 - **10.1 (LED-Check)** – wartet auf die Gegenprüfung im Handy-Firefox.
+- **1.5 vollständiger HTW-Rückbau** – Etappe 7 löst den Fragebogen los, wie
+  besprochen. Die Lerninhalte bleiben hinter dem Icon-Knopf; ob sie
+  mittelfristig ganz verschwinden, ist damit nicht entschieden.
 - **Methoden- und Quellenanhang im PDF** – bewusst zurückgestellt. Die
   Herleitungen wandern zuerst in den Wissensbereich (Etappe 10 legt mit dem
   „So gerechnet"-Aufklapper den Grundstein); ob sie später zusätzlich in den

@@ -22,9 +22,18 @@ Argument: `$ARGUMENTS` (leer = nächste offene Etappe, Zahl = diese Etappe,
    - `$ARGUMENTS` ist `status` → Stand berichten (fertig / offen / als Nächstes
      dran / was blockiert) und **hier aufhören**.
 
-3. **Größe nennen, bevor es losgeht.** Jede Etappe trägt S, M, L oder XL. Sag
-   die Größe und was sie ungefähr bedeutet, damit sich nach verbleibendem
-   Usage-Fenster entscheiden lässt, ob sie noch reinpasst.
+3. **Umfang nennen, bevor es losgeht.** Jede Etappe trägt eine Größe (S/M/L)
+   und einen geschätzten Usage-Anteil. Nenne beides in einem Satz, zusammen mit
+   dem, was die Etappe konkret anfasst.
+
+   **Hat Kilian Usage-Stand und Zeit bis zum Reset genannt**, schlage daraus
+   eine Kombination vor (die Tabelle „Was in mein Fenster passt" im Tracker
+   gibt die Faustregeln). Ein Vorschlag, keine Entscheidung – er wählt aus.
+   Zwei Etappen nur dann in einer Session, wenn er zustimmt.
+
+   Läuft das Fenster mitten in einer Etappe aus: erreichten Stand committen,
+   im Tracker als „angefangen" mit dem Erreichten vermerken. **Nie halbfertige
+   Arbeit uncommittet liegen lassen.**
 
 4. **Umsetzen.** Vorhandenen Code wiederverwenden, wo es geht. Kommentare auf
    Deutsch, im Stil der umliegenden Dateien: Sie erklären, *warum* etwas so
@@ -42,6 +51,11 @@ Argument: `$ARGUMENTS` (leer = nächste offene Etappe, Zahl = diese Etappe,
      Kodier-Format, muss die Ergebnis-Ansicht beide Formate lesen.
    - **Kein Kommentar darf etwas anderes beschreiben als der Code daneben.**
      Genau dieser Fehler steckt in `showerhead.ts` und ist Teil von Etappe 10.
+
+   Für die Etappen 12a–12d gilt zusätzlich `docs/geraete-concept.md` – das
+   Warum hinter der Geräte-Identität, dem Nenner und der Rückfallkette für
+   Altergebnisse. Ohne das entstehen Lösungen, die formal passen und den Punkt
+   verfehlen.
 
 5. **Prüfen** – alle drei müssen grün sein:
    ```
