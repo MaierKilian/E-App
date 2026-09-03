@@ -65,7 +65,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 1 | Impressum und Datenschutzerklärung | 1.4 | M | 15 % | ✅ fertig | 2026-09-03 | `05c2b14` |
 | 2 | Einwilligung vor Analytics | 1.3 | M | 15 % | ✅ fertig | 2026-09-03 | `05c2b14` |
 | 3 | Die Feld-Landkarte | 21.1 (neu) | M | 15 % | ✅ fertig | 2026-09-03 | `b9aa6af` |
-| 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | 30 % | offen | | |
+| 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | 30 % | ✅ fertig | 2026-09-03 | `1faeb82` |
 | 5 | Handlungsplan im Bericht | 4.2b | M | 20 % | offen | | |
 | 6 | Richtwerte mit Primärquellen | 4.1 | L | 30 % | offen ⚠️ | | |
 | 7 | HTW raus aus dem Fragebogen | 1.5 | S | 8 % | ✅ fertig | 2026-09-03 | `29ea4ec` |
@@ -448,16 +448,39 @@ ist, womit geheizt wird oder wann zuletzt saniert wurde.
 
 ### Fertig, wenn
 
-- Von den 15 Feldern ohne Abnehmer sind mindestens 12 angeschlossen. Was
-  bewusst offen bleibt (`locationMode`, `roomsCount`, `lastRenovationYear` sind
-  Kandidaten – abgeleitete oder rein steuernde Felder), steht mit Begründung
-  in `fieldUsage.ts`.
-- Der Test aus Etappe 3 ist grün, weil die Liste gekürzt wurde – nicht, weil
-  sie aufgeweicht wurde.
-- Ein Profil im Schnellstart-Modus (die meisten Felder leer) erzeugt ein
-  lesbares Kapitel, keine Seite voller „nicht angegeben".
-- Das Demo-Profil erzeugt ein vollständiges Kapitel.
-- Export in beiden Sprachen geprüft.
+- [~] **Zehn statt zwölf angeschlossen.** Übrig bleiben fünf: `profileImage`
+  (ein Bild braucht keinen Verwerter), `roomsCount` und `locationMode` (rein
+  steuernd), `lastRenovationYear` und `renovationItems` (beide aus
+  `renovations` abgeleitet, das im Steckbrief steht). Der Plan nannte drei
+  Kandidaten und rechnete mit zwölf; `renovationItems` gehört in dieselbe
+  Kategorie wie `lastRenovationYear` und ist der vierte. Ein abgeleitetes Feld
+  zusätzlich anzuschließen, hieße dieselbe Angabe zweimal in den Bericht zu
+  schreiben – die Zahl wäre erreicht, der Bericht schlechter. Jede der fünf
+  Begründungen steht in `fieldUsage.ts`.
+- [x] Der Test aus Etappe 3 ist grün, weil die Liste gekürzt wurde – die
+  Prüfung selbst ist unverändert.
+- [x] Ein Schnellstart-Profil erzeugt ein lesbares Kapitel; ein Test hält
+  fest, dass nicht jede Zeile leer ist.
+- [x] Das Demo-Profil erzeugt ein vollständiges Kapitel – ein Test prüft, dass
+  keine einzige Zeile „nicht angegeben" trägt.
+- [x] Beide Sprachen: Die Tests übersetzen gegen `de.json` **und** `en.json`;
+  ein fehlender Schlüssel fällt dort auf. Ein PDF-Export von Hand wurde in
+  dieser Umgebung nicht durchgeführt – es fehlt ein PDF-Renderer.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **Der Steckbrief ist kein wählbarer Abschnitt.** `reportTypes.ts` hielt
+  bisher fest, Profildaten seien bewusst draußen: „Stammdaten, die der
+  Empfänger ohnehin kennt". Die Begründung hält nicht – wer das PDF bekommt,
+  ist typischerweise gerade jemand, der die Wohnung *nicht* kennt. Der Vermerk
+  dort ist umgeschrieben, der frühere Beschluss (`04166d7`) damit ausdrücklich
+  aufgehoben. Abwählbar wird er trotzdem nicht.
+- **Inhalt getrennt vom Zeichnen.** `profileReportData.ts` baut die Zeilen,
+  `generateProfilePdf.ts` zeichnet sie. Ohne das wäre der Steckbrief nur mit
+  einem PDF-Renderer prüfbar, den diese Umgebung nicht hat.
+- **Ein Fehler unterwegs gefunden:** Jahreszahlen liefen durch
+  `Intl.NumberFormat` und wurden zu „2.005". Betraf Baujahr und
+  Sanierungsjahre; ein eigener `year()`-Helfer rendert sie jetzt roh.
 
 ---
 
