@@ -39,11 +39,26 @@ export interface OperatorInfo {
   responsibleForContent: string
 }
 
+/**
+ * ⚠️ **`name` und `email` fehlen weiterhin – das Impressum ist unvollständig.**
+ *
+ * Die Anschrift ist die des Campus Wilhelminenhof der HTW Berlin, wo das
+ * Projekt entsteht. Sie steht hier als vorläufige ladungsfähige Adresse, auf
+ * ausdrückliche Anweisung.
+ *
+ * **Was daran noch nicht stimmt:** Diensteanbieter im Sinne des § 5 DDG ist die
+ * natürliche oder juristische Person, die das Angebot betreibt – nicht der Ort,
+ * an dem es entstanden ist. Solange unter `name` kein Betreiber steht, benennt
+ * dieses Impressum niemanden. Und steht dort ein Personenname mit einer
+ * Hochschulanschrift, behauptet es eine Zustellbarkeit unter dieser Adresse;
+ * die trifft nur zu, wenn die Hochschule Post für diese Person entgegennimmt.
+ * Beides gehört geklärt, bevor die App öffentlich beworben wird.
+ */
 export const OPERATOR: OperatorInfo = {
   name: '',
-  street: '',
-  postalCode: '',
-  city: '',
+  street: 'Wilhelminenhofstraße 75A',
+  postalCode: '12459',
+  city: 'Berlin',
   country: 'Deutschland',
   email: '',
   phone: '',

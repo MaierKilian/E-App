@@ -113,15 +113,30 @@ export type FurnitureAnswers = Partial<Record<FindingKey, FurnitureAnswer>>
 // eingeben; daraus wird dieselbe 0/1/2-Antwort abgeleitet. Bewusst optional –
 // die Aussage soll auch ohne Messgerät funktionieren.
 
-/** Empfohlener freier Abstand vor dem Heizkörper in cm. */
-export const DISTANCE_TARGET_CM = 10
+/**
+ * Empfohlener freier Abstand vor dem Heizkörper in cm.
+ *
+ * Bis September 2026 standen hier 10 cm – ein Wert ohne Beleg. Die
+ * Verbraucherzentrale nennt **mindestens 30 cm** für Sofas und Schränke; darauf
+ * ist der Richtwert angehoben. Gespeicherte Ergebnisse ändern sich dadurch
+ * nicht: Die Antwortstufe entsteht beim Messen und wird mitgespeichert, nicht
+ * beim Anzeigen neu gerechnet.
+ */
+export const DISTANCE_TARGET_CM = 30
 
-/** Darunter ist die Luftzufuhr von unten praktisch unterbunden (cm). */
+/**
+ * Darunter ist die Luftzufuhr von unten praktisch unterbunden (cm).
+ *
+ * Anders als der Zielwert keine Empfehlung, sondern eine physikalische
+ * Aussage über den freien Querschnitt – deshalb unverändert.
+ */
 export const DISTANCE_BLOCKED_CM = 5
 
 export const DISTANCE_MIN_CM = 0
-export const DISTANCE_MAX_CM = 40
-export const DISTANCE_DEFAULT_CM = 10
+// Die Skala muss über den Zielwert hinausreichen, sonst liegt „ausreichend
+// Abstand" am Anschlag und wirkt wie ein Maximum.
+export const DISTANCE_MAX_CM = 60
+export const DISTANCE_DEFAULT_CM = 30
 
 /**
  * Übersetzt einen gemessenen Abstand in die Antwortstufe.
