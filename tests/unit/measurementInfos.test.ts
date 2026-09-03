@@ -107,11 +107,45 @@ describe('Richtwert-Tabellen', () => {
     expect(MEASUREMENT_THRESHOLDS.standby?.rows[0].range).toContain(String(STANDBY_GOOD_MAX))
   })
 
-  it('lässt nur den Check ohne Tabelle, der keine Messgröße hat', () => {
+  it('lässt keinen Check ohne Tabelle', () => {
+    // Bis Etappe 6 fehlte der LED-Check: Er bewertet einen Bestand, keine
+    // Messgröße. Eine Bewertung ohne Vergleichsmaßstab ist aber wertlos –
+    // also sagt seine Tabelle jetzt, wie gewichtet wird.
     const withoutTable = MEASUREMENT_CATALOG.map((m) => m.id).filter(
       (id) => !MEASUREMENT_THRESHOLDS[id],
     )
-    expect(withoutTable).toEqual(['lighting'])
+    expect(withoutTable).toEqual([])
+  })
+
+  // Der Kern von Etappe 6: Jede Bewertung sagt, woran sie gemessen ist – und
+  // wo nichts belegt ist, steht das ausdrücklich da. Eine erfundene Quelle ist
+  // schlimmer als gar keine.
+  it('nennt für jede Tabelle die Herkunft ihrer Werte', () => {
+    for (const [id, table] of Object.entries(MEASUREMENT_THRESHOLDS)) {
+      expect(table?.origin, id).toBeDefined()
+      const origin = table!.origin
+      if (origin.kind === 'reference') {
+        expect(origin.source.url, id).toMatch(/^https:\/\//)
+        expect(origin.source.label.length, id).toBeGreaterThan(10)
+        // Ohne Stand liest sich ein Richtwert wie eine zeitlose Wahrheit.
+        expect(origin.source.stand, id).toMatch(/^\d{2}\/\d{4}$/)
+      } else {
+        // „Richtwert der E-App" ohne Begründung wäre nur ein anderes Wort für
+        // „ausgedacht".
+        expect(origin.reason.length, id).toBeGreaterThan(40)
+      }
+    }
+  })
+
+  it('führt die vier offenen Werte als offen, nicht als Entscheidung', () => {
+    // Kilians Vorgabe vom 03.09.2026: Wartezeit, Grundlast und Standby werden
+    // nicht als Erfahrungswert abgehakt. Wer eine Quelle findet, stellt hier
+    // auf `reference` um – und dieser Test erinnert daran, dass es noch aussteht.
+    const offen = Object.entries(MEASUREMENT_THRESHOLDS)
+      .filter(([, table]) => table?.origin.kind === 'pending')
+      .map(([id]) => id)
+      .sort()
+    expect(offen).toEqual(['base_load', 'hot_water_wait', 'standby'])
   })
 })
 

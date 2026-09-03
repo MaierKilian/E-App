@@ -1,4 +1,5 @@
 import type { MeasurementId } from '@/features/measurements/types'
+import type { Source } from './educationContent'
 import type { MeasurementRating } from '@/features/measurements/types'
 import { GOOD_MAX as FLOW_GOOD_MAX, MEDIUM_MAX as FLOW_MEDIUM_MAX } from '@/features/measurements/showerhead/showerhead'
 import {
@@ -59,13 +60,49 @@ export interface ThresholdRow {
   range: string
 }
 
+/**
+ * Woher ein Richtwert kommt.
+ *
+ * **Drei Zustände, keine zwei.** Eine Bewertung ohne Vergleichsmaßstab ist
+ * wertlos – aber eine erfundene Quelle ist schlimmer als gar keine. Deshalb
+ * steht hier ausdrücklich auch, wo *nichts* gefunden wurde:
+ *
+ * - `reference` – belegt, mit Stand-Datum. Die Zahl steht so in der Quelle.
+ * - `own` – Richtwert der E-App, hergeleitet. Ehrlicher als eine passend
+ *   wirkende Fundstelle, die die Zahl nicht hergibt.
+ * - `pending` – noch zu klären. Weder belegt noch bewusst gesetzt: Hier ist
+ *   entweder eine Quelle zu finden oder die Schwelle zu überdenken.
+ *
+ * Der Unterschied zwischen `own` und `pending` ist der zwischen „wir haben
+ * entschieden" und „wir sind noch nicht fertig". Ihn einzuebnen wäre bequem
+ * und falsch.
+ */
+export type ThresholdOrigin =
+  | { kind: 'reference'; source: Source }
+  | { kind: 'own'; reason: string }
+  | { kind: 'pending'; reason: string }
+
 export interface ThresholdTable {
   /** Was gemessen wird, z. B. „Durchfluss". */
   quantity: string
   rows: ThresholdRow[]
   /** Zusatzzeile unter der Tabelle, wo eine Grenze allein nicht reicht. */
   note?: string
+  /** Woher die Werte stammen – jede Tabelle sagt es. */
+  origin: ThresholdOrigin
 }
+
+/** Kurzform für eine belegte Quelle. */
+const ref = (label: string, url: string, stand = '09/2026'): ThresholdOrigin => ({
+  kind: 'reference',
+  source: { label, url, stand },
+})
+
+/** Kurzform für einen Richtwert der E-App. */
+const own = (reason: string): ThresholdOrigin => ({ kind: 'own', reason })
+
+/** Kurzform für einen Wert, der noch zu klären ist. */
+const pending = (reason: string): ThresholdOrigin => ({ kind: 'pending', reason })
 
 const upTo = (value: number, unit: string) => `bis ${value} ${unit}`
 const between = (from: number, to: number, unit: string) => `${from}–${to} ${unit}`
@@ -79,6 +116,10 @@ export const MEASUREMENT_THRESHOLDS: Partial<Record<MeasurementId, ThresholdTabl
       { rating: 'medium', label: 'Mittel', range: between(FLOW_GOOD_MAX, FLOW_MEDIUM_MAX, 'l/min') },
       { rating: 'high', label: 'Hoch', range: above(FLOW_MEDIUM_MAX, 'l/min') },
     ],
+    origin: ref(
+      'Verbraucherzentrale – Warmwasser im Alltag sparen',
+      'https://www.verbraucherzentrale.de/wissen/energie/heizen-und-warmwasser/warmwasser-im-alltag-sparen-so-gehts-17752',
+    ),
   },
   hot_water_wait: {
     quantity: 'Wartezeit bis warm',
@@ -88,6 +129,9 @@ export const MEASUREMENT_THRESHOLDS: Partial<Record<MeasurementId, ThresholdTabl
       { rating: 'elevated', label: 'Lang', range: between(WAIT_MEDIUM_MAX_S, WAIT_ELEVATED_MAX_S, 's') },
       { rating: 'high', label: 'Sehr lang', range: above(WAIT_ELEVATED_MAX_S, 's') },
     ],
+    origin: pending(
+      'Ohne Beleg. Die Stufen sind gewachsen, nicht hergeleitet – vor dem nächsten Release entweder belegen oder überdenken.',
+    ),
   },
   room_temperature: {
     quantity: 'Komfortband je Raum',
@@ -123,7 +167,13 @@ export const MEASUREMENT_THRESHOLDS: Partial<Record<MeasurementId, ThresholdTabl
       `${between(HUMIDITY_BANDS.basement!.min, HUMIDITY_BANDS.basement!.max, '%')} in Keller und ` +
       `Waschküche – dort ist ein höherer Wert normal. Entscheidend ist im Keller ohnehin nicht die ` +
       `Prozentzahl, sondern der Taupunkt: Liegt er über der Wandtemperatur (rund ` +
-      `${ASSUMED_BASEMENT_WALL_C} °C am Erdreich), schlägt sich Wasser an der Wand nieder.`,
+      `${ASSUMED_BASEMENT_WALL_C} °C am Erdreich), schlägt sich Wasser an der Wand nieder. ` +
+      `Belegt sind die Werte für Wohnräume, Schlafzimmer, Küche und Bad sowie die Feuchte in ` +
+      `Wohnräumen. Keller, Waschküche und die angenommene Wandtemperatur sind Richtwerte dieser App.`,
+    origin: ref(
+      'Umweltbundesamt – Richtiges Heizen · Verbraucherzentrale Energieberatung – Heizen (Bad)',
+      'https://www.umweltbundesamt.de/umwelttipps-fuer-den-alltag/heizen-bauen/heizen-raumtemperatur',
+    ),
   },
   furniture_spacing: {
     quantity: 'Abstand vor dem Heizkörper',
@@ -137,6 +187,10 @@ export const MEASUREMENT_THRESHOLDS: Partial<Record<MeasurementId, ThresholdTabl
       { rating: 'high', label: 'Blockiert', range: `unter ${DISTANCE_BLOCKED_CM} cm` },
     ],
     note: `Verdeckte Fläche: bis ${COVER_PARTLY_PCT} % unkritisch, ab ${COVER_BLOCKED_PCT} % blockiert.`,
+    origin: ref(
+      'Verbraucherzentrale – Heizung: 10 einfache Tipps zum Heizkosten sparen',
+      'https://www.verbraucherzentrale.de/wissen/energie/heizen-und-warmwasser/heizung-10-einfache-tipps-zum-heizkosten-sparen-13892',
+    ),
   },
   standby: {
     quantity: 'Standby-Leistung je Gerät',
@@ -145,6 +199,9 @@ export const MEASUREMENT_THRESHOLDS: Partial<Record<MeasurementId, ThresholdTabl
       { rating: 'medium', label: 'Mittel', range: between(STANDBY_GOOD_MAX, STANDBY_MEDIUM_MAX, 'W') },
       { rating: 'high', label: 'Hoch', range: above(STANDBY_MEDIUM_MAX, 'W') },
     ],
+    origin: pending(
+      'Ohne Beleg. Die Ökodesign-Verordnung (EU) 2023/826 begrenzt den Bereitschaftsbetrieb neuer Geräte auf 0,5 W – das ist eine Bauvorschrift, kein Maßstab für ein Bestandsgerät am Messgerät. Sie taugt deshalb nicht als Quelle für diese Schwellen.',
+    ),
   },
   base_load: {
     quantity: 'Grundlast des Haushalts',
@@ -154,6 +211,9 @@ export const MEASUREMENT_THRESHOLDS: Partial<Record<MeasurementId, ThresholdTabl
       { rating: 'elevated', label: 'Erhöht', range: between(BASE_MEDIUM_MAX, BASE_ELEVATED_MAX, 'W') },
       { rating: 'high', label: 'Hoch', range: above(BASE_ELEVATED_MAX, 'W') },
     ],
+    origin: pending(
+      'Ohne Beleg. Was als hohe Grundlast gilt, hängt am Haushalt – eine veröffentlichte Schwelle dazu ist bislang nicht gefunden.',
+    ),
   },
   fridge: {
     quantity: 'Innentemperatur',
@@ -162,6 +222,10 @@ export const MEASUREMENT_THRESHOLDS: Partial<Record<MeasurementId, ThresholdTabl
       { rating: 'good', label: 'Richtig', range: between(FRIDGE_GOOD_MIN, FRIDGE_GOOD_MAX, '°C') },
       { rating: 'medium', label: 'Zu warm', range: above(FRIDGE_TOO_WARM_MIN, '°C') },
     ],
+    origin: ref(
+      'Umweltbundesamt – Kühlschrank: mit kleinen Tipps unnötigen Stromverbrauch vermeiden',
+      'https://www.umweltbundesamt.de/umwelttipps-fuer-den-alltag/kuehlschrank-kleinen-tipps-unnoetigen#hintergrund',
+    ),
   },
   freezer: {
     quantity: 'Innentemperatur',
@@ -170,6 +234,26 @@ export const MEASUREMENT_THRESHOLDS: Partial<Record<MeasurementId, ThresholdTabl
       { rating: 'good', label: 'Richtig', range: `${FREEZER_OPTIMAL} °C` },
       { rating: 'high', label: 'Zu warm', range: above(FREEZER_TOO_WARM, '°C') },
     ],
+    origin: ref(
+      'Umweltbundesamt – Kühlschrank: mit kleinen Tipps unnötigen Stromverbrauch vermeiden',
+      'https://www.umweltbundesamt.de/umwelttipps-fuer-den-alltag/kuehlschrank-kleinen-tipps-unnoetigen#hintergrund',
+    ),
+  },
+  // Der LED-Check misst keine Größe, er bewertet einen Bestand: welche Räume
+  // noch alte Beleuchtung haben. Ein Richtwert im Sinne einer Messgrenze
+  // existiert hier nicht – die Tabelle sagt stattdessen, wie gewichtet wird.
+  lighting: {
+    quantity: 'Gewicht der Räume mit alter Beleuchtung',
+    rows: [
+      { rating: 'good', label: 'Nichts offen', range: 'Gewicht 0' },
+      { rating: 'medium', label: 'Wenig offen', range: 'bis Gewicht 2' },
+      { rating: 'elevated', label: 'Spürbar offen', range: 'bis Gewicht 5' },
+      { rating: 'high', label: 'Viel offen', range: 'über Gewicht 5' },
+    ],
+    note: 'Räume zählen unterschiedlich: Küche und Wohnzimmer wiegen 3, Nebenräume 1. Vier Kellerräume wiegen damit weniger als eine Küche – dort brennt das Licht länger.',
+    origin: own(
+      'Keine Messgrenze, sondern eine Gewichtung: wo Licht lange brennt, lohnt der Tausch zuerst. Die Gewichte sind eine Setzung dieser App und bewusst grob – eine feinere Skala täuschte eine Genauigkeit vor, die die Frage „ist da noch alte Beleuchtung?" nicht hergibt.',
+    ),
   },
   // `lighting` bekommt bewusst keine Tabelle: Der Check bewertet, wie viele
   // Räume noch kein LED-Licht haben – dafür gibt es keine Messgröße mit

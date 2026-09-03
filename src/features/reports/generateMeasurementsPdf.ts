@@ -9,6 +9,7 @@ import {
 import { numberFmt, currencyFmt, fmtVal, fmtCurRange, fmtDate } from './pdf/format'
 import { roomLabel } from '@/features/measurements/rooms'
 import { applianceLabel } from '@/features/measurements/applianceLabel'
+import { buildSourceList, sourceIndexOf, targetRange } from './thresholdReference'
 import type { MeasurementRating } from '@/features/measurements/types'
 import type {
   MeasurementsReportData,
@@ -170,19 +171,28 @@ function writeOverviewTable(
   )
   const anySaving = sorted.some((e) => (e.yearlySaving ?? 0) > 0)
 
+  // Der Richtwert neben der Bewertung: Ohne ihn steht dort ein Wort („gut",
+  // „hoch") und nichts, woran es gemessen wäre. Die Nummer dahinter verweist
+  // ins Quellenverzeichnis am Ende – eine Fußnote je Zeile spränge die Tabelle.
+  const sources = buildSourceList(sorted.map((e) => e.id))
+
   const headers = [
     t('report.pdf.measurements.colMeasurement'),
     t('report.pdf.measurements.colResult'),
     t('report.pdf.measurements.colRating'),
+    t('report.pdf.measurements.colTarget'),
     t('report.pdf.measurements.colMeasuredAt'),
   ]
   if (anySaving) headers.push(t('report.pdf.measurements.colSaving'))
 
   const rows = sorted.map((e) => {
+    const target = targetRange(e.id)
+    const index = sourceIndexOf(sources, e.id)
     const row = [
       t(`measurements.${e.id}.title`),
       fmtVal(e.primaryValue, e.unit, num),
       t(`measurements.ratings.${e.rating}`),
+      target ? (index ? `${target} [${index}]` : target) : '–',
       e.measuredAt ? fmtDate(e.measuredAt, language) : '–',
     ]
     if (anySaving) row.push(e.savingRange ? fmtCurRange(e.savingRange, cur, num) : '–')
@@ -193,10 +203,10 @@ function writeOverviewTable(
   kit.table(headers, rows, {
     // Der Name braucht den meisten Platz; die Zahlenspalten sind schmal und
     // stehen rechtsbündig, damit sich Beträge untereinander vergleichen lassen.
-    widths: anySaving ? [2.5, 1.2, 1.1, 1.1, 1.1] : [2.8, 1.3, 1.2, 1.2],
+    widths: anySaving ? [2.1, 1.0, 0.95, 1.25, 1.0, 1.0] : [2.4, 1.1, 1.0, 1.4, 1.1],
     align: anySaving
-      ? ['left', 'right', 'left', 'right', 'right']
-      : ['left', 'right', 'left', 'right'],
+      ? ['left', 'right', 'left', 'right', 'right', 'right']
+      : ['left', 'right', 'left', 'right', 'right'],
   })
 }
 

@@ -6,6 +6,7 @@ import type { ReportSections } from './reportTypes'
 import { fillMeasurements } from './generateMeasurementsPdf'
 import { fillProfile } from './generateProfilePdf'
 import { fillActionPlan } from './generateActionPlanPdf'
+import { fillSources } from './generateSourcesPdf'
 import { fillMonitoring } from './generateMonitoringPdf'
 import type { MeasurementsReportData } from './measurementsReportData'
 import type { MonitoringReportData } from './monitoringReportData'
@@ -123,6 +124,13 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
   // Frage stellt sich erst, wenn die Befunde gelesen sind.
   chapter('report.pdf.section.actionPlan')
   fillActionPlan(kit, { t, language, tips: openTips, goals: profile.goals })
+
+  // Das Quellenverzeichnis schließt den Bericht ab – kein eigenes Kapitel,
+  // sondern der Apparat dazu. Es steht nur da, wo es etwas aufzulösen gibt.
+  if (sections.measurements && measurements.entries.length > 0) {
+    kit.gap(24)
+    fillSources(kit, t, measurements.entries.map((e) => e.id))
+  }
 
   // Erst jetzt stehen die Seitenzahlen fest – sie wandern zurück auf Seite 1.
   kit.fillTocPages(

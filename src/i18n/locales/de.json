@@ -169,7 +169,8 @@
         "measuredOn": "gemessen am {{date}}",
         "colAppliance": "Gerät",
         "appliances_one": "{{count}} Gerät",
-        "appliances_other": "{{count}} Geräte"
+        "appliances_other": "{{count}} Geräte",
+        "colTarget": "Richtwert"
       },
       "monitoring": {
         "title": "Monitoring-Bericht",
@@ -242,6 +243,13 @@
         "instruments": "Vorhandene Messgeräte",
         "renovationState": "Stand",
         "renovationNever": "Nie saniert"
+      },
+      "sources": {
+        "title": "Quellen der Richtwerte",
+        "intro": "Die Nummern in der Spalte „Richtwert\" der Mess-Übersicht lösen sich hier auf.",
+        "ownValue": "Richtwert der E-App",
+        "pending": "Noch ohne Beleg – zu klären",
+        "disclaimer": "Alle Links wurden im September 2026 geprüft. Die Bewertungen dieses Berichts sind Orientierungswerte für Privathaushalte und ersetzen keine Energieberatung."
       }
     },
     "overview": {

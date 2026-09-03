@@ -169,7 +169,8 @@
         "measuredOn": "measured on {{date}}",
         "colAppliance": "Appliance",
         "appliances_one": "{{count}} appliance",
-        "appliances_other": "{{count}} appliances"
+        "appliances_other": "{{count}} appliances",
+        "colTarget": "Reference"
       },
       "monitoring": {
         "title": "Monitoring report",
@@ -242,6 +243,13 @@
         "instruments": "Measuring devices available",
         "renovationState": "Status",
         "renovationNever": "Never renovated"
+      },
+      "sources": {
+        "title": "Sources of the reference values",
+        "intro": "The numbers in the \"Reference\" column of the measurement overview resolve here.",
+        "ownValue": "Reference value of the E-App",
+        "pending": "Not yet sourced – to be clarified",
+        "disclaimer": "All links were checked in September 2026. The assessments in this report are orientation values for private households and do not replace professional energy advice."
       }
     },
     "overview": {
