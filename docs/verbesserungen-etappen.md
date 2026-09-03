@@ -68,7 +68,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | 30 % | offen | | |
 | 5 | Handlungsplan im Bericht | 4.2b | M | 20 % | offen | | |
 | 6 | Richtwerte mit Primärquellen | 4.1 | L | 30 % | offen ⚠️ | | |
-| 7 | HTW raus aus dem Fragebogen | 1.5 | S | 8 % | offen | | |
+| 7 | HTW raus aus dem Fragebogen | 1.5 | S | 8 % | ✅ fertig | 2026-09-03 | `29ea4ec` |
 | 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | offen | | |
 | 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | offen | | |
 | 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | offen | | |
