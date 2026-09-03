@@ -215,8 +215,13 @@ export function calcRoomClimate(input: RoomClimateInput): RoomClimateResult {
 }
 
 // --- Geldeinsparung durch niedrigere Raumtemperatur ---------------------------
-// Faustregel: ~6 % Heizenergie pro 1 °C unter dem bisherigen Niveau (breiter
-// Konsens; Hochschule Biberach 2011 maß real 7–8 %). Wir rechnen konservativ.
+//
+// Rund 6 % Heizenergie je 1 °C weniger. Quelle: Verbraucherzentrale
+// Rheinland-Pfalz, „Raumtemperaturen und Heizzeiten" (geprüft 09/2026).
+//
+// Die Zahl trägt jede Heiz-Ersparnis, die diese App ausweist – sie stand bis
+// September 2026 mit einem ungeprüften Verweis („Hochschule Biberach 2011")
+// hier und war damit die unbelegteste Zahl im ganzen Projekt.
 export const PERCENT_PER_DEGREE = 0.06
 
 /**

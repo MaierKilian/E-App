@@ -622,7 +622,8 @@ hat.
 | Raumtemperatur Bad (dort 21–24 °C, unser Band 22–24 liegt darin) | [Verbraucherzentrale Energieberatung – Heizen](https://verbraucherzentrale-energieberatung.de/heizen/) |
 | Luftfeuchte Wohnräume 40–60 %, Schimmel an kalten Oberflächen | [UBA – Wie lüfte ich richtig?](https://www.umweltbundesamt.de/themen/gesundheit/umwelteinfluesse-auf-den-menschen/schimmel/wie-luefte-ich-richtig-tipps-tricks-zur) |
 | Duschkopf ≤ 9 l/min gut, 10–12 mittel, ab 14 hoch | [Verbraucherzentrale – Warmwasser sparen](https://www.verbraucherzentrale.de/wissen/energie/heizen-und-warmwasser/warmwasser-im-alltag-sparen-so-gehts-17752) |
-| Kühlschrank 7 °C, Gefriergerät −18 °C | [BZfE – Lebensmittel richtig lagern](https://www.bzfe.de/kueche-und-alltag/kochen/lebensmittel-richtig-lagern) · [VZ – Gefrierschrank](https://www.verbraucherzentrale.de/wissen/energie/strom-sparen/gefrierschrank-und-gefriertruhe-worauf-muss-ich-beim-kauf-achten-38681) |
+| Kühlschrank 7 °C, Gefriergerät −18 °C | [UBA – Kühlschrank](https://www.umweltbundesamt.de/umwelttipps-fuer-den-alltag/kuehlschrank-kleinen-tipps-unnoetigen#hintergrund) (Vorzugsquelle) · [BZfE – Lebensmittel richtig lagern](https://www.bzfe.de/kueche-und-alltag/kochen/lebensmittel-richtig-lagern) · [VZ – Gefrierschrank](https://www.verbraucherzentrale.de/wissen/energie/strom-sparen/gefrierschrank-und-gefriertruhe-worauf-muss-ich-beim-kauf-achten-38681) |
+| **6 % Heizenergie je Grad** (`PERCENT_PER_DEGREE`) | [Verbraucherzentrale RLP – Raumtemperaturen und Heizzeiten](https://www.verbraucherzentrale-rlp.de/20-prozent-weniger-heizenergie-nr2-raumtemperaturen-und-heizzeiten-82589) – die Zahl, aus der jede Heiz-Ersparnis der App folgt |
 | Möbelabstand 30 cm | [VZ – Heizung, 10 Tipps](https://www.verbraucherzentrale.de/wissen/energie/heizen-und-warmwasser/heizung-10-einfache-tipps-zum-heizkosten-sparen-13892) – **bereits umgesetzt**, `260a7ca` |
 | Ökodesign-Grenzwerte Standby | [VO (EU) 2023/826](https://eur-lex.europa.eu/eli/reg/2023/826/oj/deu) – ersetzt die im Plan genannte 1275/2008, die aufgehoben ist |
 
@@ -640,17 +641,31 @@ Fundstelle untergeschoben:
 
 - **Keller 14–18 °C** und **Feuchte Keller/Waschküche 50–65 %**
 - **Angenommene Kellerwand-Temperatur 12 °C** (begründet in `dewPoint.ts`)
-- **Wartezeit** 15 / 30 / 60 s
-- **Grundlast** 70 / 150 / 250 W
-- **Standby** 5 / 20 W je Gerät
-- **Verdeckte Heizkörperfläche** 15 % / 30 %; **blockiert unter 5 cm**
 - **Kühlschrank-Randwerte** (unter 3 °C zu kalt, über 8 °C zu warm) und
   **Gefrier-Toleranz** (−16 / −20 °C) – belegt ist je nur der Zielwert
-- **6 % Heizenergie je Grad** (`PERCENT_PER_DEGREE`). Der Kommentar dort nennt
-  „breiter Konsens; Hochschule Biberach 2011 maß real 7–8 %" – **ungeprüft.**
 - **Duschkopf-Kalibrierung**: 1 Dusche/Person/Tag, 5 Minuten, ΔT 27 K,
   Sparduschkopf 8 l/min, ~516 kWh je Person und Jahr
 - **`CALIBRATION_PERSONS` = 2** und **`DEFROST_RECHECK_DAYS` = 182**
+
+### Noch zu erledigen – nicht als Erfahrungswert durchwinken
+
+Kilians Entscheidung (03.09.2026): Diese vier werden **nicht** als
+„Erfahrungswert der E-App" abgehakt, sondern bleiben offen. Entweder findet
+sich eine Quelle, oder die Schwelle wird überdacht.
+
+| Richtwert | Heutiger Wert | Anmerkung |
+|---|---|---|
+| Warmwasser-Wartezeit | 15 / 30 / 60 s | Alle drei Stufen ohne Beleg |
+| Grundlast | 70 / 150 / 250 W | Alle drei Stufen ohne Beleg |
+| Standby je Gerät | 5 / 20 W | Die EU-Grenze von 0,5 W gilt je **Neugerät**, nicht als Messschwelle für Bestandsgeräte – sie taugt nicht als Beleg |
+| Verdeckte Heizkörperfläche (Fußbodenheizung) | 15 % / 30 % | Der Abstands-Fall ist mit den 30 cm belegt, der Flächen-Fall nicht |
+
+**Offene Rückfrage zum Möbelabstand:** Der Zielwert steht seit `260a7ca` auf
+den belegten 30 cm. Die Blockier-Schwelle steht weiter auf 5 cm und ist
+unbelegt. Sie einfach auf 30 anzuheben würde die mittlere Stufe „eng" (5–30 cm)
+ersatzlos verschlucken – aus drei Bewertungsstufen würden zwei. Das ist eine
+Produktentscheidung, keine Quellenfrage; siehe die Antwort an Kilian vom
+03.09.2026.
 
 ### Diese Etappe braucht Kilian am PC
 
