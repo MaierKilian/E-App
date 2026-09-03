@@ -75,7 +75,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | offen 💬 | | |
 | 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cc13d24` |
 | 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | ✅ fertig | 2026-09-03 | `7f84372` |
-| 12c | Tipps, Bericht und Folgemessungen nachziehen | 18.2 | M | 18 % | offen | | |
+| 12c | Tipps, Bericht und Folgemessungen nachziehen | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cf6ee4d` |
 | 12d | Der Raum wird benutzt | 18.2 | M | 18 % | offen | | |
 
 ⚠️ **Etappe 6 braucht Kilian am PC** – siehe dort. Die Quellen-Links lassen
@@ -1114,10 +1114,8 @@ erste, und der Fortschritt merkt es nicht.
   (`react-refresh/only-export-components`), und prüfbar ist die Beschriftung
   dort ohnehin besser.
 
-> ⚠️ **12c darf jetzt nicht liegen bleiben.** Tipps, Bericht und
-> Folgemessungen lesen weiter `results['fridge']` und sehen die
-> Geräte-Ergebnisse nicht – der Bericht zeigt dadurch vorübergehend weniger als
-> die App.
+> ✅ **Von 12c eingeholt** (`cf6ee4d`). Tipps, Bericht und Folgemessungen lesen
+> die Geräte-Ergebnisse jetzt.
 
 ---
 
@@ -1157,14 +1155,32 @@ erzeugt.
 
 ### Fertig, wenn
 
-- Ein Gerät, dessen Abtauen ein halbes Jahr her ist, erscheint wieder als
-  offen – und die anderen Geräte nicht.
-- Kein Tipp und keine Berichtszeile spricht von „dem Kühlschrank", wenn es
-  mehrere gibt.
-- Die Zahl im Bericht stimmt mit der Zahl in der App überein.
-- Ein Bestandsnutzer verliert seine Abtau-Erinnerung nicht (Rückfallkette aus
-  12b greift auch hier – **eigens prüfen**, `followUps` liest `completedAt`
-  direkt).
+- [x] Ein Gerät, dessen Abtauen ein halbes Jahr her ist, erscheint wieder als
+  offen – und die anderen nicht. Gilt genauso für den Kühlschrank-Hinweis.
+- [x] Tipp und Berichtszeile nennen das Gerät, sobald es mehrere gleichartige
+  gibt. Bei einem einzigen bleibt der Text wie bisher – „Kühlschrank · Küche"
+  unter „Dein Kühlschrank ist zu kalt" wäre eine Wiederholung.
+- [x] Die Zahl im Bericht folgt derselben Rückfallkette wie die App.
+- [x] **Eigens geprüft:** Ein Bestandsnutzer behält seine Abtau-Erinnerung.
+  Sein Ergebnis **und** sein abgehakter Tipp liegen beide unter `freezer`;
+  beide laufen über dieselbe Rückfallkette. Ein Test hält genau diesen Fall
+  fest.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **Der Abtau-Zeitstempel wurde nicht umgebaut.** Der Plan verlangte, ihn je
+  Gerät zu führen – nötig war das nicht: Der `tipsStore` schlüsselt ohnehin
+  nach Tipp-Kennung, und sobald die Tipps die Geräte-Kennung tragen
+  (`freezer@<id>`), gilt „erledigt", „ausgeblendet" **und** der Zeitstempel
+  automatisch je Gerät. Eine Änderung am Store wäre eine zweite Mechanik für
+  dieselbe Sache gewesen.
+- **Die Gefrier-Ersparnis stammt jetzt aus dem betroffenen Gerät**, nicht aus
+  der Summe aller. Vorher hing an jedem Tipp die Summe über alle Geräte – bei
+  einem Tipp je Gerät wäre das eine Behauptung über fremde Arbeit.
+- **Ein Fehler nebenbei gefunden:** `tipsByMeasurement` baute den
+  i18n-Schlüssel aus `tip.id` statt aus `textId`. Mit den neuen Tipp-Kennungen
+  hätte der Bericht ab sofort rohe Schlüssel gedruckt („tips.items.fridge@…").
+- **Nicht belegt:** Weder die Tipp-Liste noch das PDF wurden angesehen.
 
 ---
 
