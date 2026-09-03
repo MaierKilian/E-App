@@ -4,6 +4,9 @@ import { useMeasurementsStore } from '@/store/measurementsStore'
 import { ResultHero } from '../ResultHero'
 import type { ResultProps } from '../runnerTypes'
 import { fridgeStatus, fridgeChange } from './fridge'
+import { useOnboardingStore } from '@/store/onboardingStore'
+import { AmbientNote } from '../AmbientNote'
+import { ambientFor } from '../ambientTemperature'
 
 /** Formatiert eine Zahl in der aktuellen Sprache. */
 function useNumberFormat() {
@@ -32,6 +35,15 @@ function Chip({ label }: { label: string }) {
  * gebracht hat.
  */
 export function FridgeResult({ result }: ResultProps) {
+  // Standort des Geraets: Die Umgebungstemperatur wird **live** hergeleitet und
+  // nicht ins Ergebnis geschrieben. So zieht ein spaeter gemessener Raum den
+  // Hinweis nach; ein eingefrorener Wert bliebe auf dem Richtwert stehen.
+  const appliances = useOnboardingStore((s) => s.data.appliances)
+  const allResults = useMeasurementsStore((s) => s.results)
+  const ambient = ambientFor(
+    allResults,
+    appliances.find((a) => a.id === result.roomKey),
+  )
   const { t, i18n } = useTranslation()
   const fmt = useNumberFormat()
 
@@ -107,6 +119,7 @@ export function FridgeResult({ result }: ResultProps) {
           </p>
         </div>
       )}
+      <AmbientNote ambient={ambient} />
     </div>
   )
 }

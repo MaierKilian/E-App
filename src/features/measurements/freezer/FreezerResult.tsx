@@ -3,6 +3,10 @@ import { Snowflake } from 'lucide-react'
 import { ResultHero } from '../ResultHero'
 import type { ResultProps } from '../runnerTypes'
 import { defrostAdvice, freezerTempStatus, readFrostStage } from './freezer'
+import { useMeasurementsStore } from '@/store/measurementsStore'
+import { useOnboardingStore } from '@/store/onboardingStore'
+import { AmbientNote } from '../AmbientNote'
+import { ambientFor } from '../ambientTemperature'
 
 /** Knapper Tipp-Chip. */
 function Chip({ label }: { label: string }) {
@@ -27,6 +31,15 @@ function Chip({ label }: { label: string }) {
  * `readFrostStage`.
  */
 export function FreezerResult({ result }: ResultProps) {
+  // Standort des Geraets: Die Umgebungstemperatur wird **live** hergeleitet und
+  // nicht ins Ergebnis geschrieben. So zieht ein spaeter gemessener Raum den
+  // Hinweis nach; ein eingefrorener Wert bliebe auf dem Richtwert stehen.
+  const appliances = useOnboardingStore((s) => s.data.appliances)
+  const allResults = useMeasurementsStore((s) => s.results)
+  const ambient = ambientFor(
+    allResults,
+    appliances.find((a) => a.id === result.roomKey),
+  )
   const { t } = useTranslation()
 
   const stage = readFrostStage(result.details)
@@ -73,6 +86,7 @@ export function FreezerResult({ result }: ResultProps) {
           })}
         </p>
       )}
+      <AmbientNote ambient={ambient} />
     </div>
   )
 }

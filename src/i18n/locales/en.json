@@ -334,7 +334,17 @@
       "applianceChoose": "Which appliance are you measuring?",
       "applianceChooseHint": "Each appliance gets its own result.",
       "applianceDone": "measured",
-      "applianceOpen": "not yet measured"
+      "applianceOpen": "not yet measured",
+      "ambient": {
+        "title": "Located in the {{room}}, {{temp}} °C",
+        "measured": "from your room climate check",
+        "assumed": "reference value – no room climate measurement here yet",
+        "note": {
+          "cold": "Below 10 °C, older thermostats no longer switch reliably – the appliance may thaw in winter even though it is cold outside. Worth checking the climate class on the rating plate.",
+          "moderate": "A favourable spot: the cooler the surroundings, the less the appliance has to work against the heat.",
+          "warm": "Warm surroundings – the appliance works against a larger temperature gradient and therefore runs more often. A cooler location would be the most effective change."
+        }
+      }
     },
     "showerhead": {
       "title": "Showerhead Test",

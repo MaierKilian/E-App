@@ -334,7 +334,17 @@
       "applianceChoose": "Welches Gerät misst du?",
       "applianceChooseHint": "Jedes Gerät bekommt ein eigenes Ergebnis.",
       "applianceDone": "gemessen",
-      "applianceOpen": "noch offen"
+      "applianceOpen": "noch offen",
+      "ambient": {
+        "title": "Steht im {{room}}, {{temp}} °C",
+        "measured": "aus deinem Raumklima-Check",
+        "assumed": "Richtwert – noch keine Raumklima-Messung in diesem Raum",
+        "note": {
+          "cold": "Unter 10 °C schalten ältere Thermostate nicht mehr zuverlässig – das Gerät kann im Winter antauen, obwohl es draußen kalt ist. Ein Blick auf die Klimaklasse im Typenschild lohnt.",
+          "moderate": "Ein günstiger Standort: Je kühler die Umgebung, desto weniger muss das Gerät gegen die Wärme anarbeiten.",
+          "warm": "Warme Umgebung – das Gerät arbeitet gegen ein größeres Temperaturgefälle und läuft dadurch häufiger. Ein kühlerer Standort wäre der wirksamste Eingriff."
+        }
+      }
     },
     "showerhead": {
       "title": "Duschkopf-Test",
