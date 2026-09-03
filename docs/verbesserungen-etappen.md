@@ -74,7 +74,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | ✅ fertig | 2026-09-03 | `e06fa74` |
 | 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | offen 💬 | | |
 | 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cc13d24` |
-| 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | offen | | |
+| 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | ✅ fertig | 2026-09-03 | `7f84372` |
 | 12c | Tipps, Bericht und Folgemessungen nachziehen | 18.2 | M | 18 % | offen | | |
 | 12d | Der Raum wird benutzt | 18.2 | M | 18 % | offen | | |
 
@@ -1085,17 +1085,39 @@ erste, und der Fortschritt merkt es nicht.
 
 ### Fertig, wenn
 
-- Zwei Kühlschränke ergeben zwei Ergebnisse; das zweite überschreibt das erste
-  nicht.
-- Der Ring zeigt bei vier Geräten und zwei Messungen einen echten
-  Zwischenstand – und dieselbe Zahl wie die Zuhause-Karte und die
-  Gewerke-Kachel. **Alle drei einzeln nachsehen.**
-- Ein Bestandsnutzer mit einem `freezer`-Ergebnis sieht dieses Ergebnis
-  weiterhin, seinem ersten Gerät zugeordnet – nicht als „noch nicht gemessen".
-- Ein Haushalt mit genau einem Gerät je Art erlebt keinen Unterschied zu heute,
-  inklusive Fortschrittszahl.
-- Kein Euro-Betrag wird doppelt gezählt, wenn ein Gerät ein altes **und** ein
-  neues Ergebnis hat.
+- [x] Zwei Kühlschränke ergeben zwei Ergebnisse; das zweite überschreibt das
+  erste nicht (Schlüssel `fridge@<id>`).
+- [x] Alle drei Anzeigen bekommen die Geräteliste durchgereicht und rechnen
+  damit über dieselbe Funktion – im Code nachgezogen und getestet. **Im Browser
+  nicht nachgesehen**, diese Umgebung rendert nicht.
+- [x] Ein Bestandsnutzer sieht sein Ergebnis weiterhin, seinem ersten Gerät
+  zugeordnet.
+- [x] Ein Haushalt mit genau einem Gerät je Art erlebt keinen Unterschied –
+  die Auswahl springt von selbst weiter.
+- [x] Kein Doppelzählen: Das Altergebnis zählt **nur** für das erste Gerät
+  seiner Art, ein Test hält das fest.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **Der Ring zählt weiter Checks, nicht Instanzen.** Ein Geräte-Check ist eine
+  Einheit und gilt erst als erledigt, wenn alle Geräte gemessen sind – dieselbe
+  Regel, die für Pro-Raum-Checks schon galt. Der „echte Zwischenstand" aus der
+  Abnahme entsteht dadurch, dass der Check nicht mehr nach der ersten Messung
+  fertig meldet; die Gewerke-Kachel zeigt zusätzlich „2/4".
+- **Kein zweites Schlüsselformat.** Der Runner trägt `roomKey` ohnehin
+  generisch bis ins Ergebnis, die Geräte-Kennung läuft deshalb durch dieselbe
+  Mechanik – die Auswahl navigiert auf `?room=<geräte-id>`.
+- **Raum und Gerät laufen über einen gemeinsamen `nextOpen`-Wert** statt zweier
+  paralleler Zweige im Runner. Sonst hätte jede Knopf-Stelle beide Fälle
+  einzeln kennen müssen.
+- **`applianceLabel` steht in einer eigenen Datei** – ESLint verlangt es
+  (`react-refresh/only-export-components`), und prüfbar ist die Beschriftung
+  dort ohnehin besser.
+
+> ⚠️ **12c darf jetzt nicht liegen bleiben.** Tipps, Bericht und
+> Folgemessungen lesen weiter `results['fridge']` und sehen die
+> Geräte-Ergebnisse nicht – der Bericht zeigt dadurch vorübergehend weniger als
+> die App.
 
 ---
 
