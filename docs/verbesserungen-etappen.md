@@ -72,7 +72,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | ✅ fertig | 2026-09-03 | `5ac71ac` |
 | 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | ✅ fertig | 2026-09-03 | `fe7c714` |
 | 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | ✅ fertig | 2026-09-03 | `e06fa74` |
-| 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | offen 💬 | | |
+| 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | 💬 Vorschlag liegt vor | | |
 | 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cc13d24` |
 | 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | ✅ fertig | 2026-09-03 | `7f84372` |
 | 12c | Tipps, Bericht und Folgemessungen nachziehen | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cf6ee4d` |
@@ -1047,6 +1047,59 @@ kommentiert (`showerhead.ts:88`).
   Handlung mit ihrer Bedingung („Ein Sparaufsatz für ~15 € bringt dich auf
   ~8 L/min – wenn dein Duschkopf ein Standardgewinde hat.").
 - Die englische Fassung mitziehen.
+
+### Vorschlag (2026-09-04) – wartet auf Kilians Entscheidung
+
+Kein Code geschrieben, wie der Plan es vorsieht. Drei Änderungen, einzeln
+annehmbar.
+
+**1. Die Menge nach vorn, der Betrag dahinter.**
+
+Die Wassermenge folgt direkt aus der Messung. Der Euro-Betrag läuft zusätzlich
+über Warmwasseranteil, Temperaturhub und Preis – jede dieser Größen ist eine
+Annahme. Heute stehen beide gleichberechtigt da.
+
+| | heute | Vorschlag |
+|---|---|---|
+| `savingLabel` | „Ersparnis ≈ {{value}}" | „Rund {{liters}} Liter Warmwasser im Jahr – etwa {{value}}" |
+
+**2. „Lohnt sich" wird zur Handlung mit ihrer Bedingung.**
+
+„Ein Sparaufsatz lohnt sich" ist eine Kaufempfehlung ohne Kenntnis von Preis
+und Einbausituation. Was die App weiß, ist der gemessene Durchfluss.
+
+| | heute | Vorschlag |
+|---|---|---|
+| `summary.high` | „Hoher Verbrauch – ein Sparaufsatz lohnt sich." | „{{flow}} L/min – gut das Doppelte einer Sparbrause. Ein Sparaufsatz bringt dich auf rund 8 L/min, wenn dein Duschkopf ein Standardgewinde hat (½ Zoll, der Normalfall)." |
+| `summary.medium` | „Mittlerer Verbrauch – hier ist noch Sparpotenzial." | „{{flow}} L/min – im Mittelfeld. Ein Sparaufsatz brächte noch etwas, spürbarer ist bei diesem Wert die Duschdauer." |
+| `summary.good` | „Sehr sparsam – dein Duschkopf verbraucht wenig Wasser." | bleibt |
+| `chips.saver` | „Sparaufsatz prüfen" | „Gewinde prüfen, dann Sparaufsatz" |
+
+**3. Kilians Fund aus der Quellenprüfung gehört in den Text.**
+
+Die Verbraucherzentrale weist darauf hin, dass „Eco" und „sparsam" **keine
+geschützten Begriffe** sind – ein so beworbener Duschkopf kann trotzdem 15
+L/min haben. Das ist genau die Erkenntnis, die diesen Check rechtfertigt: Man
+muss messen, weil das Etikett nichts garantiert.
+
+Vorschlag als neuer Hinweis unter dem Ergebnis (`buyingNote`):
+
+> „Achtung beim Kauf: „Eco" und „sparsam" sind keine geschützten Begriffe.
+> Entscheidend ist die angegebene Durchflussmenge in Litern pro Minute – ein
+> Wert unter 9 gilt als sparsam."
+
+Quelle: Verbraucherzentrale, „Warmwasser im Alltag sparen" (belegt, siehe
+Quellenstand oben).
+
+**Englische Fassung** wird beim Bauen gleichwertig mitgezogen, nicht
+nachgereicht.
+
+**Was ich nicht vorschlage:** einen konkreten Preis („~15 €") im Text. Er
+stand als Beispiel im Etappenplan, ist aber eine Zahl ohne Deckung – die App
+kennt weder den Markt noch das Modell. „Ein Sparaufsatz" ohne Preis sagt
+dasselbe und behauptet weniger.
+
+---
 
 ### Fertig, wenn
 
