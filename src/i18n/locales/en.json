@@ -1164,8 +1164,7 @@
         "save_costs": "Save costs",
         "reduce_co2": "Reduce CO₂",
         "improve_comfort": "Improve comfort",
-        "curiosity": "Curiosity / Build knowledge",
-        "htw_study": "For school / university (HTW)"
+        "curiosity": "Curiosity / Build knowledge"
       },
       "occupancyOptions": {
         "tenant": "Tenant",

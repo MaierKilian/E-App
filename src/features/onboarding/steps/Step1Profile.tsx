@@ -6,7 +6,6 @@ import {
   Leaf,
   ThermometerSun,
   Sparkles,
-  GraduationCap,
   Building2,
   Home,
 } from 'lucide-react'
@@ -26,13 +25,12 @@ interface Props {
   detailed?: boolean
 }
 
-const GOALS: UserGoal[] = ['save_costs', 'reduce_co2', 'improve_comfort', 'curiosity', 'htw_study']
+const GOALS: UserGoal[] = ['save_costs', 'reduce_co2', 'improve_comfort', 'curiosity']
 const GOAL_ICONS: Record<UserGoal, LucideIcon> = {
   save_costs: PiggyBank,
   reduce_co2: Leaf,
   improve_comfort: ThermometerSun,
   curiosity: Sparkles,
-  htw_study: GraduationCap,
 }
 
 const BUILDING_TYPES: BuildingType[] = ['apartment', 'house']

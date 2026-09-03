@@ -256,17 +256,16 @@ export function isQuickWin(tip: Tip): boolean {
  * Gewicht eines Gewerks je Ziel – die Stelle, an der die Ziel-Frage endlich
  * etwas bewirkt. Sie wurde seit jeher erhoben und nirgends gelesen.
  *
- * `save_costs`, `curiosity` und `htw_study` bleiben leer: Die vorhandene
- * €-Sortierung *ist* die Antwort auf „Kosten sparen", und für Neugier und
- * Studienteilnahme gibt es keine sachliche Reihenfolge, die besser wäre als
- * die bisherige. Ohne Ziel ändert sich damit nichts.
+ * `save_costs` und `curiosity` bleiben leer: Die vorhandene €-Sortierung
+ * *ist* die Antwort auf „Kosten sparen", und für Neugier gibt es keine
+ * sachliche Reihenfolge, die besser wäre als die bisherige. Ohne Ziel ändert
+ * sich damit nichts.
  */
 const GOAL_CATEGORY_BONUS: Record<UserGoal, Partial<Record<TipCategory, number>>> = {
   save_costs: {},
   reduce_co2: { heating: 2, electricity: 1 }, // Wärme trägt den größten CO₂-Hebel
   improve_comfort: { heating: 2 }, // Raumklima und Zugluft zuerst
   curiosity: {},
-  htw_study: {},
 }
 
 /** Höchster Bonus über alle gewählten Ziele – Ziele addieren sich nicht. */

@@ -7,6 +7,7 @@ import type {
   RenovationEvent,
   RoomEntry,
   RoomType,
+  UserGoal,
 } from '@/types'
 import {
   derivedLegacyFields,
@@ -74,6 +75,23 @@ const defaultData: OnboardingData = {
 }
 
 /**
+ * Zurückgezogene Ziele aus einem Bestandsprofil entfernen.
+ *
+ * `htw_study` stand als Ziel im Fragebogen, solange die HTW dort erwähnt wurde.
+ * Der Wert ist aus `UserGoal` verschwunden, in gespeicherten Profilen steht er
+ * aber weiter – deshalb wird hier gefiltert und nicht auf den Typ vertraut.
+ *
+ * Eine leere Liste ist das zulässige Ergebnis: `goals` ist nirgends Pflicht,
+ * und ohne Ziel sortiert `buildTips` wie eh und je nach Ersparnis.
+ */
+const RETIRED_GOALS = ['htw_study']
+
+function withoutRetiredGoals(goals: UserGoal[] | undefined): UserGoal[] {
+  if (!Array.isArray(goals)) return []
+  return goals.filter((goal) => !RETIRED_GOALS.includes(goal))
+}
+
+/**
  * Bringt ein gespeichertes Profil auf den aktuellen Stand.
  *
  * Zwei Wege führen hier vorbei: der `persist`-Merge beim Start und der
@@ -99,6 +117,7 @@ export function migrateOnboardingData(stored: Partial<OnboardingData> | undefine
   // Ein Altprofil hat die Frage nie gesehen – sie gilt als offen, nicht als
   // mit „keines" beantwortet. Sonst verschwänden beide Checks stillschweigend.
   if (typeof data.appliancesAnswered !== 'boolean') data.appliancesAnswered = false
+  data.goals = withoutRetiredGoals(data.goals)
   return data
 }
 

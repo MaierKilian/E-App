@@ -7,7 +7,6 @@ export type UserGoal =
   | 'reduce_co2'
   | 'improve_comfort'
   | 'curiosity'
-  | 'htw_study'
 
 export type OccupancyStatus = 'tenant' | 'owner'
 
