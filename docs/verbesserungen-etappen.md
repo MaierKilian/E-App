@@ -70,7 +70,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 6 | Richtwerte mit Primärquellen | 4.1 | L | 30 % | offen ⚠️ | | |
 | 7 | HTW raus aus dem Fragebogen | 1.5 | S | 8 % | ✅ fertig | 2026-09-03 | `29ea4ec` |
 | 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | offen | | |
-| 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | offen | | |
+| 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | ✅ fertig | 2026-09-03 | `fe7c714` |
 | 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | offen | | |
 | 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | offen 💬 | | |
 | 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | offen | | |
@@ -673,10 +673,26 @@ einem Ergebnis-Schirm das gewünschte Verhalten.
 
 ### Fertig, wenn
 
-- Zwei Ablesungen im Abstand von einer Woche und drei Monaten stehen in der
+- [x] Zwei Ablesungen im Abstand von einer Woche und drei Monaten stehen in der
   Übersichtskachel unterschiedlich weit auseinander.
-- Kein Check leitet mehr von selbst weiter; jeder wartet auf den Knopf.
-- Der Weiter-Knopf trägt in allen Checks den Namen des Ziels.
+- [x] Kein Check leitet mehr von selbst weiter; jeder wartet auf den Knopf.
+- [x] Der Weiter-Knopf trägt in allen Checks den Namen des Ziels.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **Die Abstandsrechnung steht in `sparklineGeometry.ts`, nicht in der
+  Komponente.** Die Testumgebung kennt kein jsdom (`tests/**/*.test.ts`, reine
+  Logik) – in der `.tsx` wäre die Rechnung nur über einen gerenderten Browser
+  prüfbar gewesen. ESLint hat denselben Schnitt eingefordert
+  (`react-refresh/only-export-components`). Nebenbei stehen die ViewBox-Maße
+  jetzt an einer Stelle statt in Komponente und Rechnung getrennt.
+- **`continuing` in `SavedState` ist mit dem Timer weggefallen.** Das Feld
+  steuerte nur die kürzere Anzeigedauer beim Weitermessen und wurde sonst
+  nirgends gelesen. Den Fall „weiter zum nächsten Raum" trägt `nextRoomName`,
+  das den Knopf beschriftet.
+- **Der Weiter-Knopf benennt das Ziel schon vorher** – „Weiter: Bad" oder
+  „Zur Übersicht". Der allgemeine Fall („Weiter") ist nicht erreichbar:
+  `handleSave` setzt entweder einen Raum samt Namen oder `/measurements`.
 
 ---
 
