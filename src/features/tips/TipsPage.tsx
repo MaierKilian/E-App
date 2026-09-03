@@ -20,6 +20,7 @@ import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useTipsStore } from '@/store/tipsStore'
 import { useTipContext } from './useTipContext'
 import { roomLabel } from '@/features/measurements/rooms'
+import { applianceLabel } from '@/features/measurements/applianceLabel'
 import { displaySavingEur, savingRange } from '@/features/measurements/savingsDisplay'
 import { buildTips, isQuickWin, sortingGoals, type Tip, type TipCategory } from './buildTips'
 
@@ -123,6 +124,13 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
   // senken" und „Raum nicht auskühlen lassen" nebeneinander wie ein
   // Widerspruch, statt zwei verschiedene Räume zu meinen.
   const room = tip.room ? roomLabel(t, tip.room) : undefined
+  // Der Gerätename erscheint nur, wenn es mehrere gleichartige Geräte gibt.
+  // Bei einem einzigen Kühlschrank wäre „Kühlschrank · Küche" unter „Dein
+  // Kühlschrank ist zu kalt" eine Wiederholung.
+  const applianceName =
+    tip.appliance && tip.appliance.all.length > 1
+      ? applianceLabel(t, tip.appliance.entry, tip.appliance.all)
+      : undefined
   // Zahlen vor der Interpolation lokalisieren – i18next reicht sie sonst roh
   // durch, und „23.4 °C" ist im Deutschen falsch geschrieben.
   const params = localizeParams(tip.params, i18n.language)
@@ -188,6 +196,9 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
           >
             {t(`tips.items.${textId}.title`, params)}
           </p>
+          {applianceName && (
+            <p className="mt-0.5 text-xs font-medium text-muted">{applianceName}</p>
+          )}
           {/* Aufwand + Kosten auf jedem Tipp – die Frage, die vor dem Anfangen
               zählt. Die €-Schätzung steht unten am Wirkungsbalken. */}
           <span className="mt-1.5 inline-flex items-center rounded-full bg-surface-2/70 px-2.5 py-1 text-[11px] font-medium text-foreground/70 ring-1 ring-inset ring-black/5 dark:ring-white/10">

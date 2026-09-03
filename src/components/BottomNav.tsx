@@ -22,7 +22,8 @@ export function BottomNav() {
   const frequency = useReadingsStore((s) => s.reminderFrequency)
   const meters = useReadingsStore((s) => s.meters)
   const measurementResults = useMeasurementsStore((s) => s.results)
-  const defrostDoneAt = useTipsStore((s) => s.doneAt.freezer)
+  // Alle Zeitstempel: Die Abtau-Erinnerung gilt je Gerät, nicht je Check.
+  const doneAt = useTipsStore((s) => s.doneAt)
   const hiddenMeters = useWidgetOrderStore((s) => s.hidden)
   const [now] = useState(() => Date.now())
 
@@ -32,7 +33,7 @@ export function BottomNav() {
   // nach einer noch nicht guten Messung, Gefriertruhe ein halbes Jahr nach dem
   // Abtauen) → derselbe Hinweispunkt am Messungen-Tab.
   const measurementsDue =
-    pendingFollowUps(measurementResults, now, defrostDoneAt).length > 0
+    pendingFollowUps(measurementResults, now, doneAt, data.appliances).length > 0
   // Im Edit-Modus mit geöffnetem Abschnitt: "Zuhause" kehrt zum Profil-Hub zurück.
   const isEditingSection = flowMode === 'edit' && currentStep >= 0
 

@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import { roomLabel } from '@/features/measurements/rooms'
+import { applianceLabel } from '@/features/measurements/applianceLabel'
 import type { Tip } from './buildTips'
 
 /**
@@ -45,7 +46,14 @@ export function tipTitle(tip: Tip, t: TFunction, language: string): string {
   const room = tip.room ? roomLabel(t, tip.room) : undefined
   const params = { ...localizeParams(tip.params, language), room }
   const title = t(`tips.items.${textId}.title`, params)
-  return room ? `${title} (${room})` : title
+  // Raum oder Gerät – beides beantwortet dieselbe Frage: welches von mehreren
+  // ist gemeint? Der Gerätename nur, wenn es mehrere gleichartige gibt.
+  const appliance =
+    tip.appliance && tip.appliance.all.length > 1
+      ? applianceLabel(t, tip.appliance.entry, tip.appliance.all)
+      : undefined
+  const suffix = room ?? appliance
+  return suffix ? `${title} (${suffix})` : title
 }
 
 /** Baut `{ messId: [Empfehlungssatz, …] }` in der Reihenfolge der Tipp-Liste. */
@@ -64,15 +72,24 @@ export function tipsByMeasurement(
     const measurementId = tip.source?.measurementId
     if (!measurementId) continue
     const room = tip.room ? roomLabel(t, tip.room) : undefined
+    const appliance =
+      tip.appliance && tip.appliance.all.length > 1
+        ? applianceLabel(t, tip.appliance.entry, tip.appliance.all)
+        : undefined
     const params = { ...localizeParams(tip.params, language), room }
+    // Mehrere Tipps teilen sich einen Text (ein Tipp je Gerät); `textId`
+    // benennt dann den gemeinsamen i18n-Schlüssel.
+    const textId = tip.textId ?? tip.id
     // Variante ohne Raumnamen, wo die Messung keinen Raumbezug hat.
     const text =
-      t(`tips.items.${tip.id}.${room ? 'reason' : 'reasonNoRoom'}`, {
+      t(`tips.items.${textId}.${room ? 'reason' : 'reasonNoRoom'}`, {
         ...params,
         defaultValue: '',
-      }) || t(`tips.items.${tip.id}.reason`, params)
+      }) || t(`tips.items.${textId}.reason`, params)
     if (!text) continue
-    ;(out[measurementId] ??= []).push(text)
+    // „Gefriertruhe Keller: …" – ohne den Vorsatz stünden zwei Sätze über
+    // verschiedene Geräte im Bericht ununterscheidbar untereinander.
+    ;(out[measurementId] ??= []).push(appliance ? `${appliance}: ${text}` : text)
   }
   return out
 }

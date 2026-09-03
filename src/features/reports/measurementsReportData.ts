@@ -13,7 +13,8 @@ import {
 } from '@/features/measurements/savingsDisplay'
 import { resultSavingsEur } from '@/features/measurements/impact'
 import { hasWordUnit } from '@/features/measurements/resultValue'
-import type { RoomEntry } from '@/types'
+import type { ApplianceEntry, RoomEntry } from '@/types'
+import { applianceInstances } from '@/features/onboarding/appliances'
 
 /** Einheit je Messung (Fallback, falls ein Ergebnis ohne `unit` gespeichert wurde). */
 const UNIT_FALLBACK: Partial<Record<MeasurementId, string>> = {
@@ -49,6 +50,24 @@ const UNIT_FALLBACK: Partial<Record<MeasurementId, string>> = {
  * Räume nur einen einzigen, willkürlich gewählten Wert – „21,5 °C" ohne
  * Angabe, welcher Raum gemeint ist, und ohne die beiden anderen.
  */
+/**
+ * Ein Ergebnis je Gerät – das Gegenstück zu {@link MeasurementRoomResult}.
+ *
+ * Die Beschriftung entsteht erst beim Zeichnen (braucht `t`, siehe
+ * `applianceLabel`); `all` trägt die gleichartigen Geräte mit, weil erst sie
+ * entscheiden, ob eine Nummer nötig ist. Zwei Zeilen „Kühlschrank"
+ * untereinander wären schlechter als eine.
+ */
+export interface MeasurementApplianceResult {
+  entry: ApplianceEntry
+  all: readonly ApplianceEntry[]
+  value: number
+  unit: string
+  rating: MeasurementRating
+  /** Zeitpunkt der Messung als ISO-String. */
+  measuredAt: string
+}
+
 export interface MeasurementRoomResult {
   /** Raum-Instanz für die Beschriftung („Schlafzimmer 2"). */
   room: RoomInstance
@@ -82,6 +101,8 @@ export interface MeasurementEntry {
   measuredAt?: string
   /** Einzelergebnisse je Raum; leer bei Messungen fürs ganze Zuhause. */
   rooms: MeasurementRoomResult[]
+  /** Ergebnisse je Gerät (nur bei Geräte-Checks gefüllt). */
+  appliances: MeasurementApplianceResult[]
 }
 
 /** Gruppe erledigter Messungen je Gewerk (in Katalog-Reihenfolge). */
@@ -160,6 +181,8 @@ export interface BuildMeasurementsArgs {
   categories?: MeasurementCategory[]
   /** Räume des Profils – nur damit lassen sich Raum-Ergebnisse benennen. */
   rooms?: RoomEntry[]
+  /** Geräte des Profils – nur damit lassen sich Geräte-Ergebnisse benennen. */
+  appliances?: readonly ApplianceEntry[]
 }
 
 /**
@@ -170,6 +193,7 @@ export function buildMeasurementsReportData({
   results,
   categories,
   rooms = [],
+  appliances = [],
 }: BuildMeasurementsArgs): MeasurementsReportData {
   const catFilter = categories && categories.length > 0 ? new Set(categories) : undefined
   const roomByKey = new Map(roomInstances(rooms).map((inst) => [inst.key, inst]))
@@ -194,6 +218,9 @@ export function buildMeasurementsReportData({
       const saving = displaySavingEur(sumSavingsForMeasurement(results, meta.id))
       if (saving) savingsTotal += saving
       const roomResults = meta.perRoom ? collectRoomResults(results, meta.id, roomByKey) : []
+      const applianceResults = meta.perAppliance
+        ? collectApplianceResults(results, meta.id, appliances)
+        : []
       entries.push({
         id: r.id,
         category: meta.category,
@@ -211,8 +238,13 @@ export function buildMeasurementsReportData({
         rating: r.rating,
         yearlySaving: saving,
         savingRange: saving !== undefined ? savingRange(saving) : undefined,
-        measuredAt: newestDate([r, ...roomResults.map((rr) => rr.measuredAt)]),
+        measuredAt: newestDate([
+          r,
+          ...roomResults.map((rr) => rr.measuredAt),
+          ...applianceResults.map((ar) => ar.measuredAt),
+        ]),
         rooms: roomResults,
+        appliances: applianceResults,
       })
     } else {
       open.push({ id: meta.id, category: meta.category, available: meta.available })
@@ -237,6 +269,35 @@ export function buildMeasurementsReportData({
  * Profils. Ergebnisse zu Räumen, die es im Profil nicht (mehr) gibt, fallen
  * weg – ein Wert ohne benennbaren Ort sagt im Bericht nichts.
  */
+/**
+ * Ein Ergebnis je Gerät, in der Reihenfolge der Geräteliste.
+ *
+ * Das Altergebnis unter dem nackten Schlüssel zählt für das **erste** Gerät
+ * seiner Art – dieselbe Rückfallkette wie im Fortschritt. Ohne sie fiele die
+ * Messung eines Bestandsnutzers aus dem Bericht heraus.
+ */
+function collectApplianceResults(
+  results: Partial<Record<string, MeasurementResult>>,
+  id: string,
+  appliances: readonly ApplianceEntry[],
+): MeasurementApplianceResult[] {
+  const devices = applianceInstances(appliances, id as 'fridge' | 'freezer')
+  const out: MeasurementApplianceResult[] = []
+  devices.forEach((entry, i) => {
+    const value = results[`${id}@${entry.id}`] ?? (i === 0 ? results[id] : undefined)
+    if (!value || !Number.isFinite(value.primaryValue)) return
+    out.push({
+      entry,
+      all: devices,
+      value: value.primaryValue,
+      unit: (hasWordUnit(value.id) ? undefined : value.unit) || UNIT_FALLBACK[value.id] || '',
+      rating: value.rating,
+      measuredAt: value.completedAt,
+    })
+  })
+  return out
+}
+
 function collectRoomResults(
   results: Partial<Record<string, MeasurementResult>>,
   id: string,

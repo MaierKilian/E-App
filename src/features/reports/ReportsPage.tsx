@@ -64,8 +64,13 @@ export function ReportsPage() {
   )
   const measurementsData = useMemo(
     // `rooms` benennt die Einzelergebnisse raumbezogener Messungen im Bericht.
-    () => buildMeasurementsReportData({ results, categories: [], rooms: profile.rooms }),
-    [results, profile.rooms],
+    () => buildMeasurementsReportData({
+        results,
+        categories: [],
+        rooms: profile.rooms,
+        appliances: profile.appliances,
+      }),
+    [results, profile.rooms, profile.appliances],
   )
 
   // Zwei verschiedene Fragen, die vorher eine waren:

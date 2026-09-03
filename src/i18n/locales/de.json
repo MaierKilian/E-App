@@ -166,7 +166,10 @@
         "colRoom": "Raum",
         "rooms_one": "{{count}} Raum geprüft",
         "rooms_other": "{{count}} Räume geprüft",
-        "measuredOn": "gemessen am {{date}}"
+        "measuredOn": "gemessen am {{date}}",
+        "colAppliance": "Gerät",
+        "appliances_one": "{{count}} Gerät",
+        "appliances_other": "{{count}} Geräte"
       },
       "monitoring": {
         "title": "Monitoring-Bericht",

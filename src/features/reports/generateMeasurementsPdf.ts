@@ -8,6 +8,7 @@ import {
 } from './pdf/pdfKit'
 import { numberFmt, currencyFmt, fmtVal, fmtCurRange, fmtDate } from './pdf/format'
 import { roomLabel } from '@/features/measurements/rooms'
+import { applianceLabel } from '@/features/measurements/applianceLabel'
 import type { MeasurementRating } from '@/features/measurements/types'
 import type {
   MeasurementsReportData,
@@ -237,7 +238,10 @@ function writeEntryCard(
   tipsByMeasurement: Record<string, string[]>,
 ): void {
   const card = buildEntryCard(t, language, num, cur, e, tipsByMeasurement)
-  const withRooms = e.rooms.length > 1
+  // Räume oder Geräte – dieselbe Untertabelle, nur eine andere Instanz. Ab
+  // zwei Zeilen lohnt sie; bei einer stünde die Zahl doppelt.
+  const subRows = subTableRows(t, num, e)
+  const withRooms = subRows.length > 1
   // Karte und Raum-Tabelle gehören zusammen: Landet die Tabelle allein auf der
   // Folgeseite, steht dort eine Liste von Werten ohne die Messung, zu der sie
   // gehört.
@@ -248,17 +252,38 @@ function writeEntryCard(
 
   kit.table(
     [
-      t('report.pdf.measurements.colRoom'),
+      t(
+        e.appliances.length > 1
+          ? 'report.pdf.measurements.colAppliance'
+          : 'report.pdf.measurements.colRoom',
+      ),
       t('report.pdf.measurements.colResult'),
       t('report.pdf.measurements.colRating'),
     ],
-    e.rooms.map((r) => [
-      roomLabel(t, r.room),
-      fmtVal(r.value, r.unit, num),
-      t(`measurements.ratings.${r.rating}`),
-    ]),
+    subRows,
     { widths: [2.6, 1.2, 1.2], align: ['left', 'right', 'right'] },
   )
+}
+
+/**
+ * Die Zeilen der Untertabelle: je Raum oder je Gerät.
+ *
+ * Ein Eintrag hat immer nur eines von beidem – ein Pro-Raum-Check kennt keine
+ * Geräte und umgekehrt.
+ */
+function subTableRows(t: TFunction, num: Intl.NumberFormat, e: MeasurementEntry): string[][] {
+  if (e.appliances.length > 0) {
+    return e.appliances.map((a) => [
+      applianceLabel(t, a.entry, a.all),
+      fmtVal(a.value, a.unit, num),
+      t(`measurements.ratings.${a.rating}`),
+    ])
+  }
+  return e.rooms.map((r) => [
+    roomLabel(t, r.room),
+    fmtVal(r.value, r.unit, num),
+    t(`measurements.ratings.${r.rating}`),
+  ])
 }
 
 /** Höhe von Karte plus zugehöriger Raum-Tabelle, ohne etwas zu zeichnen. */
@@ -272,7 +297,8 @@ function entryBlockHeight(
   tipsByMeasurement: Record<string, string[]>,
 ): number {
   const card = kit.measureFindingCard(buildEntryCard(t, language, num, cur, e, tipsByMeasurement))
-  return card + 8 + (e.rooms.length > 1 ? kit.measureTable(e.rooms.length) : 0)
+  const rows = Math.max(e.rooms.length, e.appliances.length)
+  return card + 8 + (rows > 1 ? kit.measureTable(rows) : 0)
 }
 
 /** Baut die Kartendaten eines Messergebnisses – ohne sie zu zeichnen. */
@@ -310,7 +336,10 @@ function buildEntryCard(
  */
 function entryMeta(t: TFunction, language: string, e: MeasurementEntry): string | undefined {
   const parts: string[] = []
-  if (e.rooms.length === 1) parts.push(roomLabel(t, e.rooms[0].room))
+  if (e.appliances.length === 1) parts.push(applianceLabel(t, e.appliances[0].entry, e.appliances[0].all))
+  else if (e.appliances.length > 1)
+    parts.push(t('report.pdf.measurements.appliances', { count: e.appliances.length }))
+  else if (e.rooms.length === 1) parts.push(roomLabel(t, e.rooms[0].room))
   else if (e.rooms.length > 1) parts.push(t('report.pdf.measurements.rooms', { count: e.rooms.length }))
   if (e.measuredAt) {
     parts.push(t('report.pdf.measurements.measuredOn', { date: fmtDate(e.measuredAt, language) }))

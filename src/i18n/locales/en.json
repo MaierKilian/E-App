@@ -166,7 +166,10 @@
         "colRoom": "Room",
         "rooms_one": "{{count}} room checked",
         "rooms_other": "{{count}} rooms checked",
-        "measuredOn": "measured on {{date}}"
+        "measuredOn": "measured on {{date}}",
+        "colAppliance": "Appliance",
+        "appliances_one": "{{count}} appliance",
+        "appliances_other": "{{count}} appliances"
       },
       "monitoring": {
         "title": "Monitoring report",

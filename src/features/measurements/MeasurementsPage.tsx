@@ -84,7 +84,8 @@ export function MeasurementsPage() {
   const view = useMeasurementsStore((s) => s.measurementsView)
   const setView = useMeasurementsStore((s) => s.setMeasurementsView)
   const skipped = useSkippedKeys()
-  const defrostDoneAt = useTipsStore((s) => s.doneAt.freezer)
+  // Alle Zeitstempel: Die Abtau-Erinnerung gilt je Gerät, nicht je Check.
+  const doneAt = useTipsStore((s) => s.doneAt)
   const rooms = useOnboardingStore((s) => s.data.rooms)
   // Dieselben Ziele, die auch die Empfehlungen sortieren (siehe `order.ts`).
   const goals = useOnboardingStore((s) => s.data.goals)
@@ -103,7 +104,7 @@ export function MeasurementsPage() {
   // Kleine Hinweispunkte je Check (siehe `followUps.ts`) – deckt zusätzlich zur
   // ausführlichen Grundlast-Karte auch den Kühlschrank ab, dessen Ergebnis
   // noch nicht gut war, und die Gefriertruhe ein halbes Jahr nach dem Abtauen.
-  const followUpKeys = pendingFollowUpKeys(results, undefined, defrostDoneAt)
+  const followUpKeys = pendingFollowUpKeys(results, undefined, doneAt, appliances)
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
   return (

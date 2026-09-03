@@ -1,5 +1,8 @@
 import type { MeasurementId, MeasurementResult } from './types'
 import { remeasurePrompt } from './base_load/remeasure'
+import { instanceKey } from './rooms'
+import { applianceInstances } from '@/features/onboarding/appliances'
+import type { ApplianceEntry } from '@/types'
 
 /**
  * Ein anstehender Anlass, eine bereits abgeschlossene Messung erneut
@@ -40,28 +43,65 @@ function timeOf(iso: string | undefined): number | undefined {
  * räumt den Hinweis von selbst wieder ab.
  */
 function defrostRecheckDue(
-  results: Partial<Record<string, MeasurementResult>>,
+  result: MeasurementResult | undefined,
   defrostDoneAt: string | undefined,
   now: number,
 ): boolean {
   const doneAt = timeOf(defrostDoneAt)
   if (doneAt === undefined) return false
   if (now - doneAt < DEFROST_RECHECK_DAYS * MS_PER_DAY) return false
-  const measuredAt = timeOf(results['freezer']?.completedAt)
+  const measuredAt = timeOf(result?.completedAt)
   return measuredAt === undefined || measuredAt <= doneAt
+}
+
+/**
+ * Der Ergebnis-Schlüssel eines Geräts – und damit auch die Kennung seines
+ * Tipps im `tipsStore`.
+ *
+ * Der neue Schlüssel gewinnt; sonst zählt für das **erste** Gerät seiner Art
+ * das Altergebnis unter dem nackten Schlüssel. Dieselbe Rückfallkette wie im
+ * Fortschritt – ohne sie verlöre ein Bestandsnutzer seine Abtau-Erinnerung,
+ * weil sein Ergebnis und sein abgehakter Tipp beide unter `freezer` liegen.
+ */
+function keyForAppliance(
+  results: Partial<Record<string, MeasurementResult>>,
+  id: string,
+  device: ApplianceEntry,
+  isFirst: boolean,
+): string {
+  const own = instanceKey(id, device.id)
+  if (results[own]) return own
+  return isFirst && results[id] ? id : own
+}
+
+/**
+ * Ein Eintrag je Gerät, oder – solange kein Gerät bekannt ist – der eine
+ * Eintrag wie vor Etappe 12c.
+ */
+function applianceKeys(
+  results: Partial<Record<string, MeasurementResult>>,
+  id: 'fridge' | 'freezer',
+  appliances: readonly ApplianceEntry[],
+): string[] {
+  const devices = applianceInstances(appliances, id)
+  if (devices.length === 0) return [id]
+  return devices.map((device, i) => keyForAppliance(results, id, device, i === 0))
 }
 
 /**
  * Alle Messungen, für die gerade eine sinnvolle Folgemessung ansteht.
  *
- * @param defrostDoneAt Zeitpunkt, an dem die Abtau-Empfehlung abgehakt wurde
- *                      (aus dem `tipsStore`). Ohne ihn entfällt nur die
- *                      Gefrier-Erinnerung, der Rest bleibt unberührt.
+ * @param doneAt Zeitpunkte, an denen Empfehlungen abgehakt wurden (aus dem
+ *               `tipsStore`, je Tipp-Kennung). Ohne sie entfällt nur die
+ *               Gefrier-Erinnerung, der Rest bleibt unberührt.
+ * @param appliances Die Geräteliste aus dem Profil. Ohne sie verhält sich
+ *                   alles wie vor Etappe 12c: ein Eintrag je Check.
  */
 export function pendingFollowUps(
   results: Partial<Record<string, MeasurementResult>>,
   now = Date.now(),
-  defrostDoneAt?: string,
+  doneAt: Readonly<Record<string, string>> = {},
+  appliances: readonly ApplianceEntry[] = [],
 ): FollowUp[] {
   const out: FollowUp[] = []
 
@@ -70,15 +110,21 @@ export function pendingFollowUps(
   }
 
   // Kühlschrank: letztes Ergebnis nicht gut → die Stufe wurde noch nicht
-  // (oder noch nicht erfolgreich) angepasst.
-  const fridge = results['fridge']
-  if (fridge && fridge.rating !== 'good') {
-    out.push({ key: 'fridge', id: 'fridge' })
+  // (oder noch nicht erfolgreich) angepasst. Je Gerät einzeln: Der eine
+  // Kühlschrank kann längst richtig eingestellt sein, während der andere es
+  // nicht ist.
+  for (const key of applianceKeys(results, 'fridge', appliances)) {
+    const result = results[key]
+    if (result && result.rating !== 'good') out.push({ key, id: 'fridge' })
   }
 
-  // Gefriertruhe: ein halbes Jahr nach dem abgehakten Abtauen erneut prüfen.
-  if (defrostRecheckDue(results, defrostDoneAt, now)) {
-    out.push({ key: 'freezer', id: 'freezer' })
+  // Gefriergerät: ein halbes Jahr nach dem abgehakten Abtauen erneut prüfen.
+  // Der Zeitstempel gilt je Gerät – die Truhe im Keller ist wieder dran, das
+  // Gefrierfach in der Küche noch nicht.
+  for (const key of applianceKeys(results, 'freezer', appliances)) {
+    if (defrostRecheckDue(results[key], doneAt[key], now)) {
+      out.push({ key, id: 'freezer' })
+    }
   }
 
   return out
@@ -88,7 +134,8 @@ export function pendingFollowUps(
 export function pendingFollowUpKeys(
   results: Partial<Record<string, MeasurementResult>>,
   now = Date.now(),
-  defrostDoneAt?: string,
+  doneAt: Readonly<Record<string, string>> = {},
+  appliances: readonly ApplianceEntry[] = [],
 ): Set<string> {
-  return new Set(pendingFollowUps(results, now, defrostDoneAt).map((f) => f.key))
+  return new Set(pendingFollowUps(results, now, doneAt, appliances).map((f) => f.key))
 }

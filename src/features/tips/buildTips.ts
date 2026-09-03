@@ -13,11 +13,12 @@ import {
   Wind,
   Flame,
 } from 'lucide-react'
-import type { OnboardingData, RoomType, UserGoal } from '@/types'
+import type { ApplianceEntry, OnboardingData, RoomType, UserGoal } from '@/types'
 import type { MeasurementResult, MeasurementRating } from '@/features/measurements/types'
 import type { EnergyType, MeterReading } from '@/store/readingsStore'
 import { resultSavingsEur } from '@/features/measurements/impact'
 import { isMeasuredSaving } from '@/features/measurements/savingsDisplay'
+import { applianceInstances } from '@/features/onboarding/appliances'
 import type { MeasurementCategory } from '@/features/measurements/catalog'
 import { DEFAULT_COMFORT_BAND } from '@/features/measurements/room_temperature/roomClimate'
 import { parseRoomKey, roomInstances } from '@/features/measurements/rooms'
@@ -93,6 +94,18 @@ export interface Tip {
    * Widerspruch, statt zwei verschiedene Räume zu meinen.
    */
   room?: { type: RoomType; index: number; total: number }
+  /**
+   * Gerätebezug, wo das Ergebnis einen hat – analog zu {@link Tip.room}.
+   *
+   * Die Beschriftung entsteht erst in der Ansicht (braucht `t`, siehe
+   * `applianceLabel`). Ohne sie stünden „Dein Kühlschrank ist zu kalt" zweimal
+   * untereinander, wenn zwei Kühlschränke zu kalt sind – und der Nutzer wüsste
+   * bei keinem der beiden, welcher gemeint ist.
+   *
+   * `all` trägt die gleichartigen Geräte mit, weil erst sie entscheiden, ob
+   * eine Nummer nötig ist.
+   */
+  appliance?: { entry: ApplianceEntry; all: readonly ApplianceEntry[] }
   /** Zielseite einer weiterführenden Aktion (z. B. eine Messung in der App). */
   linkTo?: string
 }
@@ -147,10 +160,55 @@ const FRIDGE_WARM_C = 7
 
 /** Alle (Raum-)Ergebnisse einer Messung. */
 function resultsForId(results: Results, id: string): MeasurementResult[] {
+  return entriesForId(results, id).map(([, r]) => r)
+}
+
+/**
+ * Wie {@link resultsForId}, aber mit dem Schlüssel – aus ihm folgt, zu welchem
+ * Gerät (oder Raum) das Ergebnis gehört.
+ */
+function entriesForId(results: Results, id: string): [string, MeasurementResult][] {
   const prefix = `${id}@`
   return Object.entries(results)
     .filter(([key, r]) => Boolean(r) && (key === id || key.startsWith(prefix)))
-    .map(([, r]) => r as MeasurementResult)
+    .map(([key, r]) => [key, r as MeasurementResult])
+}
+
+/**
+ * Das Gerät zu einem Ergebnis-Schlüssel.
+ *
+ * `fridge@fridge-abc` gehört zum Gerät `fridge-abc`. Der nackte Schlüssel
+ * `fridge` stammt aus der Zeit vor Etappe 12b und gehört zum **ersten** Gerät
+ * seiner Art – dieselbe Rückfallkette wie im Fortschritt, damit ein
+ * Bestandsnutzer seinen Tipp nicht verliert.
+ */
+function applianceOf(
+  key: string,
+  id: string,
+  devices: readonly ApplianceEntry[],
+): ApplianceEntry | undefined {
+  if (key === id) return devices[0]
+  const applianceId = key.slice(id.length + 1)
+  return devices.find((d) => d.id === applianceId)
+}
+
+/**
+ * Ein Tipp je betroffenem Gerät statt eines für alle.
+ *
+ * Die Kennung trägt das Gerät (`fridge@fridge-abc`), damit „erledigt",
+ * „ausgeblendet" und der Zeitstempel im `tipsStore` je Gerät gelten – ein
+ * gemeinsamer Zeitstempel für vier Geräte wäre falsch. Der i18n-Schlüssel
+ * bleibt über `textId` derselbe.
+ */
+function perAppliance(
+  results: Results,
+  id: string,
+  devices: readonly ApplianceEntry[],
+  matches: (r: MeasurementResult) => boolean,
+): { key: string; result: MeasurementResult; appliance?: ApplianceEntry }[] {
+  return entriesForId(results, id)
+    .filter(([, r]) => matches(r))
+    .map(([key, result]) => ({ key, result, appliance: applianceOf(key, id, devices) }))
 }
 
 /** Summe der Jahresersparnis über alle Raum-Ergebnisse einer Messung. */
@@ -398,11 +456,18 @@ export function buildTips(
   }
 
   // Kühlschrank: zu kalt → wärmer (Sparen), zu warm → kälter (Lebensmittel).
-  const fridgeRs = resultsForId(results, 'fridge')
-  const fridgeCold = fridgeRs.filter((r) => tempOf(r) < FRIDGE_COLD_C)
-  if (fridgeCold.length) {
+  // Je Gerät ein Tipp: Zwei Kühlschränke, beide zu kalt, sind zwei Aufgaben.
+  const fridges = applianceInstances(data.appliances, 'fridge')
+  for (const { key, result, appliance } of perAppliance(
+    results,
+    'fridge',
+    fridges,
+    (r) => tempOf(r) < FRIDGE_COLD_C,
+  )) {
     tips.push({
-      id: 'fridge',
+      id: key,
+      textId: 'fridge',
+      appliance: appliance ? { entry: appliance, all: fridges } : undefined,
       source: sourceFor(results, 'fridge'),
       icon: Snowflake,
       category: 'electricity',
@@ -414,33 +479,47 @@ export function buildTips(
       // Details addierte; erreichbar war er nur noch über Altergebnisse.
       effortMinutes: 2,
       costEur: 0,
-      params: { temp: Math.round(tempOf(fridgeCold[0])) },
+      params: { temp: Math.round(tempOf(result)) },
     })
   }
-  const fridgeWarm = fridgeRs.filter((r) => tempOf(r) > FRIDGE_WARM_C)
-  if (fridgeWarm.length) {
+  for (const { key, result, appliance } of perAppliance(
+    results,
+    'fridge',
+    fridges,
+    (r) => tempOf(r) > FRIDGE_WARM_C,
+  )) {
     tips.push({
-      id: 'fridge_warm',
+      id: `fridge_warm@${key}`,
+      textId: 'fridge_warm',
+      appliance: appliance ? { entry: appliance, all: fridges } : undefined,
       source: sourceFor(results, 'fridge'),
       icon: Snowflake,
       category: 'electricity',
       effortMinutes: 2,
       costEur: 0,
-      params: { temp: Math.round(tempOf(fridgeWarm[0])) },
+      params: { temp: Math.round(tempOf(result)) },
     })
   }
 
-  const freezerRs = resultsForId(results, 'freezer')
-  const freezer = savingForId(results, 'freezer')
-  const freezerIced = freezerRs.some((r) => (r.details?.iced ?? 0) === 1)
-  const freezerMeasured = freezerRs.every((r) => isMeasuredSaving(r.details))
-  if (freezerIced) {
+  const freezers = applianceInstances(data.appliances, 'freezer')
+  for (const { key, result, appliance } of perAppliance(
+    results,
+    'freezer',
+    freezers,
+    (r) => (r.details?.iced ?? 0) === 1,
+  )) {
+    // Die Ersparnis stammt aus **diesem** Gerät, nicht aus der Summe aller:
+    // Der Tipp betrifft eines, und ein Betrag aus vier Geräten an einer
+    // einzelnen Empfehlung wäre eine Behauptung über fremde Arbeit.
+    const saving = Math.round(resultSavingsEur(result))
     tips.push({
-      id: 'freezer',
+      id: key,
+      textId: 'freezer',
+      appliance: appliance ? { entry: appliance, all: freezers } : undefined,
       source: sourceFor(results, 'freezer'),
       icon: Snowflake,
       category: 'electricity',
-      savingEur: freezerMeasured && freezer > 0 ? freezer : undefined,
+      savingEur: isMeasuredSaving(result.details) && saving > 0 ? saving : undefined,
       // Kostet nichts, dauert aber einen halben Nachmittag – deshalb keine
       // Sofortmaßnahme.
       effortMinutes: 60,
