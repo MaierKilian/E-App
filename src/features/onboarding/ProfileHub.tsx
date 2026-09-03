@@ -13,6 +13,7 @@ import {
   statusOf,
   type SectionState,
 } from './sections'
+import { FieldUsageSummary } from './FieldUsageSummary'
 
 interface ProfileHubProps {
   data: OnboardingData
@@ -174,6 +175,12 @@ export function ProfileHub({ data, onOpenSection, onDone }: ProfileHubProps) {
           )
         })}
       </div>
+
+      {/* Unter den Kacheln, nicht darüber: Wer hierher kommt, will zuerst
+          sehen, was offen ist. Wofür die Angaben gebraucht werden, ist die
+          Antwort auf die Frage danach – und hier, nach ein paar Wochen
+          Nutzung, erklärt sie tatsächlich etwas. */}
+      <FieldUsageSummary />
     </div>
   )
 }

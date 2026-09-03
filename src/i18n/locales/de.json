@@ -1726,6 +1726,23 @@
         "freezer": "Gefriergerät",
         "fridge_freezer": "Kühl-Gefrier-Kombination"
       }
+    },
+    "fieldUsage": {
+      "title": "Wofür wir das nutzen",
+      "intro": "Jede Angabe aus dem Fragebogen hat einen Ort, an dem sie etwas bewirkt. Hier steht, welcher.",
+      "consumers": {
+        "measurements": "Messungen",
+        "monitoring": "Verbrauch verfolgen",
+        "report": "Bericht",
+        "tips": "Empfehlungen"
+      },
+      "labels": {
+        "rooms": "Räume",
+        "instruments": "Messgeräte",
+        "renovations": "Sanierungen",
+        "heatGeneratorYears": "Alter der Heizung",
+        "appliances": "Kühl- und Gefriergeräte"
+      }
     }
   },
   "pages": {

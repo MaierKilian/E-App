@@ -1516,6 +1516,23 @@
         "freezer": "Freezer",
         "fridge_freezer": "Fridge-freezer"
       }
+    },
+    "fieldUsage": {
+      "title": "What we use this for",
+      "intro": "Every answer in the questionnaire has a place where it does something. Here is which one.",
+      "consumers": {
+        "measurements": "Measurements",
+        "monitoring": "Tracking consumption",
+        "report": "Report",
+        "tips": "Recommendations"
+      },
+      "labels": {
+        "rooms": "Rooms",
+        "instruments": "Measuring devices",
+        "renovations": "Renovations",
+        "heatGeneratorYears": "Age of the heating system",
+        "appliances": "Fridges and freezers"
+      }
     }
   },
   "monitoring": {

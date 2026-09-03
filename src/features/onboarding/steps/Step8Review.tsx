@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Sparkles } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { profileCompleteness, nextSection } from '../sections'
+import { FieldUsageSummary } from '../FieldUsageSummary'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import type { OnboardingData } from '@/types'
 import type { EnergyType } from '@/store/readingsStore'
@@ -155,6 +156,11 @@ export function Step8Review({ data }: Props) {
   return (
     <div className="space-y-4">
       <UnlockSummary data={data} />
+
+      {/* Direkt nach der Freischalt-Bilanz: erst was jetzt geht, dann wofuer
+          die Angaben gebraucht werden. Danach erst die Auflistung des
+          Eingetragenen. */}
+      <FieldUsageSummary />
 
       <p className="text-sm text-muted">{t('onboarding.step8.subtitle')}</p>
 
