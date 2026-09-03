@@ -323,7 +323,11 @@
       "estimated": "estimated",
       "saveAndNext": "Save & continue: {{room}}",
       "saveAndOverview": "Save & back to overview",
-      "gateHint": "Answer once – it goes into your profile and can be changed there."
+      "gateHint": "Answer once – it goes into your profile and can be changed there.",
+      "calculation": {
+        "title": "How this is calculated",
+        "measured": "measured"
+      }
     },
     "showerhead": {
       "title": "Showerhead Test",
@@ -389,6 +393,16 @@
           "good": "Keep it up",
           "saver": "Check a saving insert",
           "time": "Shower shorter"
+        },
+        "calculation": {
+          "formula": "Shower minutes per year = occupants × showers/day × minutes/shower × 365. Times the flow rate gives litres; times the temperature rise and the energy per litre and kelvin gives kWh – times your hot water source's unit price gives the cost.",
+          "flow": "Flow rate of your shower head",
+          "showers": "Showers per person per day",
+          "minutes": "Duration per shower",
+          "deltaT": "Heating from/to",
+          "energy": "Energy per litre and kelvin",
+          "reference": "Water-saving head for comparison",
+          "note": "Only the flow rate is measured. Shower frequency and duration are assumptions, chosen so the result lands at roughly 516 kWh per person per year – the range cited in the literature for domestic hot water is 500–600 kWh."
         }
       }
     },
@@ -790,6 +804,13 @@
           "medium": "Some drinking water runs off unused before the hot water arrives. Collected, it can still be put to use.",
           "elevated": "The wait is long – a noticeable amount of drinking water runs off unused every time you draw water.",
           "high": "Very long wait: a lot of drinking water is wasted per draw. Usually the cause is a long or uninsulated pipe."
+        },
+        "calculation": {
+          "formula": "Wait time × flow rate = litres wasted per draw. Times draws per person per day, times occupants, times 365 gives the yearly volume; times the water price gives the cost.",
+          "seconds": "Wait time",
+          "flow": "Flow rate of the tap",
+          "draws": "Draws per person per day",
+          "note": "Draws per day are a model assumption, not a measurement – calibrated for a {{persons}}-person household. The dependable figure is the volume per draw; the yearly value is an extrapolation."
         }
       }
     },

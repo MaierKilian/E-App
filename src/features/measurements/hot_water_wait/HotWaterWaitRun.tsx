@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Info, Pencil } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
+import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useTariffStore, resolvePrice } from '@/store/tariffStore'
 import { Stopwatch } from '@/components/ui/Stopwatch'
 import { TariffModal } from '@/features/monitoring/TariffModal'
@@ -19,6 +20,10 @@ export function HotWaterWaitRun({ onEvaluate }: RunProps) {
   // Die Zapfungen pro Tag skalieren mit der Haushaltsgroesse – wie beim
   // Duschkopf-Check, der schon immer mit `personsCount` rechnet.
   const persons = useOnboardingStore((s) => s.data.personsCount)
+  // Der Duschkopf-Check hat den Durchfluss der Dusche gemessen und legt ihn als
+  // `primaryValue` ab. Ihn hier zu ignorieren hiesse, den besseren Wert zu
+  // haben und den schlechteren zu benutzen.
+  const measuredShowerFlowLpm = useMeasurementsStore((s) => s.results['showerhead']?.primaryValue)
 
   const [fixture, setFixture] = useState<FixtureType | null>(null)
   const [seconds, setSeconds] = useState(0)
@@ -29,7 +34,13 @@ export function HotWaterWaitRun({ onEvaluate }: RunProps) {
 
   function handleEvaluate() {
     if (!fixture || seconds <= 0) return
-    const calc = calcHotWaterWait({ fixture, seconds, waterPriceEurPerM3: waterPrice, persons })
+    const calc = calcHotWaterWait({
+      fixture,
+      seconds,
+      waterPriceEurPerM3: waterPrice,
+      persons,
+      measuredShowerFlowLpm,
+    })
     onEvaluate({
       result: {
         id: 'hot_water_wait',
@@ -50,6 +61,10 @@ export function HotWaterWaitRun({ onEvaluate }: RunProps) {
           // `isMeasuredSaving` da ist: Gemessen ist die Wartezeit, belastbar
           // sind die Liter pro Entnahme; der Jahresbetrag ist geschätzt.
           savingEstimated: 1,
+          // Welcher Durchfluss in die Rechnung ging – und ob er gemessen war.
+          // Der Ergebnis-Schirm bekommt nur das Ergebnis, nicht den Store.
+          flowLpm: calc.flowLpm,
+          flowMeasured: calc.flowMeasured ? 1 : 0,
         },
       },
     })

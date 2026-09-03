@@ -2,6 +2,15 @@ import { useTranslation } from 'react-i18next'
 import { ResultHero } from '../ResultHero'
 import { HOT_WATER_SOURCES } from './hotWaterEnergy'
 import type { ResultProps } from '../runnerTypes'
+import { CalculationNote } from '../CalculationNote'
+import {
+  COLD_WATER_C,
+  DELTA_T,
+  EFFICIENT_FLOW_LPM,
+  MINUTES_PER_SHOWER,
+  SHOWERS_PER_PERSON_PER_DAY,
+  WH_PER_LITER_PER_K,
+} from './showerhead'
 
 /** Formatiert eine Zahl in der aktuellen Sprache. */
 function useNumberFormat() {
@@ -102,6 +111,38 @@ export function ShowerheadResult({ result }: ResultProps) {
           )}
         </div>
       )}
+
+      <CalculationNote
+        formula={t('measurements.showerhead.result.calculation.formula')}
+        rows={[
+          {
+            label: t('measurements.showerhead.result.calculation.flow'),
+            value: `${fmt(result.primaryValue ?? 0, 1)} l/min`,
+            measured: true,
+          },
+          {
+            label: t('measurements.showerhead.result.calculation.showers'),
+            value: fmt(SHOWERS_PER_PERSON_PER_DAY),
+          },
+          {
+            label: t('measurements.showerhead.result.calculation.minutes'),
+            value: `${fmt(MINUTES_PER_SHOWER)} min`,
+          },
+          {
+            label: t('measurements.showerhead.result.calculation.deltaT'),
+            value: `${fmt(COLD_WATER_C)} → ${fmt(COLD_WATER_C + DELTA_T)} °C`,
+          },
+          {
+            label: t('measurements.showerhead.result.calculation.energy'),
+            value: `${fmt(WH_PER_LITER_PER_K, 3)} Wh/(l·K)`,
+          },
+          {
+            label: t('measurements.showerhead.result.calculation.reference'),
+            value: `${fmt(EFFICIENT_FLOW_LPM)} l/min`,
+          },
+        ]}
+        note={t('measurements.showerhead.result.calculation.note')}
+      />
     </div>
   )
 }

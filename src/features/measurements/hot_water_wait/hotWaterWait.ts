@@ -5,21 +5,28 @@ import type { MeasurementRating } from '../types'
  *
  * Idee: Der Nutzer misst, wie lange es dauert, bis an einer Entnahmestelle
  * warmes Wasser ankommt. In dieser Zeit fließt (kaltes) Trinkwasser ungenutzt
- * ab. Aus der Wartezeit, einem typischen Durchfluss und einer groben Häufigkeit
- * je Entnahmestelle ergibt sich eine Schätzung der ungenutzten Wassermenge und
- * – über den Wasserpreis – ein jährliches Einsparpotenzial.
+ * ab. Aus der Wartezeit, dem Durchfluss und einer groben Häufigkeit je
+ * Entnahmestelle ergibt sich eine Schätzung der ungenutzten Wassermenge und –
+ * über den Wasserpreis – ein jährliches Einsparpotenzial.
  *
- * Alle Mengen-/Kostenwerte sind bewusste Näherungen zur Veranschaulichung:
- * gemessen ist allein die Wartezeit, die Häufigkeit der Zapfungen ist ein
- * typischer Wert je Person. Belastbar ist deshalb vor allem die Wassermenge –
- * der Euro-Betrag zeigt die Größenordnung und wird unterhalb der Schwelle in
+ * **Was gemessen ist und was nicht.** Die Wartezeit ist immer gemessen. Der
+ * Durchfluss der Dusche ist es, sobald der Duschkopf-Check gelaufen ist
+ * (`measuredShowerFlowLpm`) – sonst gilt der Richtwert aus {@link FIXTURES}.
+ * Die Häufigkeit der Zapfungen ist nie gemessen, sondern ein typischer Wert je
+ * Person. Belastbar ist deshalb vor allem die Wassermenge je Zapfung; der
+ * Euro-Betrag zeigt die Größenordnung und wird unterhalb der Schwelle in
  * `../savingsDisplay` gar nicht erst ausgewiesen.
  */
 
 export type FixtureType = 'shower' | 'bath' | 'kitchen' | 'washbasin'
 
 export interface FixtureMeta {
-  /** Typischer Durchfluss in L/min. */
+  /**
+   * Richtwert des Durchflusses in L/min.
+   *
+   * Rückfallwert: Für die Dusche schlägt ihn der im Duschkopf-Check gemessene
+   * Wert, sobald einer vorliegt.
+   */
   flowLpm: number
   /**
    * Grobe Anzahl Warmwasser-Zapfungen pro Tag **und Person**.
@@ -63,6 +70,14 @@ export interface HotWaterWaitInput {
   waterPriceEurPerM3: number
   /** Personen im Haushalt (aus dem Profil) – skaliert die Zapfungen pro Tag. */
   persons: number
+  /**
+   * Im Duschkopf-Check **gemessener** Durchfluss in L/min.
+   *
+   * Gilt nur für die Entnahmestelle „Dusche" – die Messung fand dort statt.
+   * Ohne Messung bleibt es beim Richtwert aus {@link FIXTURES}: Wer den einen
+   * Check nicht gemacht hat, bekommt dieselbe Zahl wie bisher.
+   */
+  measuredShowerFlowLpm?: number
 }
 
 export interface HotWaterWaitResult {
@@ -73,6 +88,16 @@ export interface HotWaterWaitResult {
   litersPerYear: number
   /** Jährliches Einsparpotenzial in € (Wasserkosten der ungenutzten Menge). */
   yearlySaving: number
+  /** Tatsächlich verwendeter Durchfluss in L/min. */
+  flowLpm: number
+  /**
+   * Kam der Durchfluss aus dem Duschkopf-Check?
+   *
+   * Steht im Ergebnis, weil der Unterschied den Nutzer angeht: Eine Zahl aus
+   * seiner eigenen Messung ist etwas anderes als ein Richtwert, und er soll
+   * sehen, welche von beiden er vor sich hat.
+   */
+  flowMeasured: boolean
 }
 
 /**
@@ -102,7 +127,16 @@ export function calcHotWaterWait(input: HotWaterWaitInput): HotWaterWaitResult {
   // auf null ziehen, sondern rechnet wie ein Ein-Personen-Haushalt.
   const persons = Number.isFinite(input.persons) ? Math.max(1, Math.floor(input.persons)) : 1
 
-  const litersPerDraw = (seconds / 60) * fixture.flowLpm
+  // Der gemessene Durchfluss schlägt den Richtwert – aber nur an der Dusche,
+  // denn dort wurde gemessen. Ein Waschbecken mit dem Duschkopf-Wert zu rechnen
+  // wäre schlechter als der Richtwert, nicht besser.
+  const measured =
+    input.fixture === 'shower' &&
+    Number.isFinite(input.measuredShowerFlowLpm) &&
+    (input.measuredShowerFlowLpm as number) > 0
+  const flowLpm = measured ? (input.measuredShowerFlowLpm as number) : fixture.flowLpm
+
+  const litersPerDraw = (seconds / 60) * flowLpm
   const litersPerYear = litersPerDraw * fixture.drawsPerPersonPerDay * persons * 365
   const price = Number.isFinite(input.waterPriceEurPerM3) ? Math.max(0, input.waterPriceEurPerM3) : 0
   const yearlySaving = (litersPerYear / 1000) * price
@@ -112,5 +146,7 @@ export function calcHotWaterWait(input: HotWaterWaitInput): HotWaterWaitResult {
     litersPerDraw: Math.round(litersPerDraw * 10) / 10,
     litersPerYear: Math.round(litersPerYear),
     yearlySaving: Math.round(yearlySaving),
+    flowLpm,
+    flowMeasured: measured,
   }
 }

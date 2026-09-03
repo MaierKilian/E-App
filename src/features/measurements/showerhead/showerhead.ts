@@ -45,12 +45,21 @@ export const MEDIUM_MAX = 12
 // Annahmen für die Warmwasser-Kostenschätzung. Kalibriert: 1 Dusche/Tag à 5 min,
 // 9 L/min, ΔT 27 K → ~516 kWh/Person·Jahr (deckt sich mit Quellen: ~500–600
 // kWh/Person für die Warmwasserbereitung).
-const SHOWERS_PER_PERSON_PER_DAY = 1
-const MINUTES_PER_SHOWER = 5
+//
+// Exportiert, damit der „So gerechnet"-Aufklapper sie **liest**, statt
+// dieselben Zahlen im Text zu wiederholen – dieselbe Regel wie bei den
+// Richtwert-Tabellen im Wissensbereich.
+export const SHOWERS_PER_PERSON_PER_DAY = 1
+export const MINUTES_PER_SHOWER = 5
 const DAYS_PER_YEAR = 365
-const DELTA_T = 27 // K Temperaturanstieg (Kaltwasser ~11 °C → Dusche ~38 °C)
-const WH_PER_LITER_PER_K = 1.163 // Energie, um 1 L um 1 K zu erwärmen
-const EFFICIENT_FLOW_LPM = 8 // Referenz-Durchfluss eines Sparduschkopfes
+/** K Temperaturanstieg (Kaltwasser ~11 °C → Dusche ~38 °C). */
+export const DELTA_T = 27
+/** Kaltwassertemperatur, von der aus erwärmt wird (°C). */
+export const COLD_WATER_C = 11
+/** Energie, um 1 L um 1 K zu erwärmen (Wh). */
+export const WH_PER_LITER_PER_K = 1.163
+/** Referenz-Durchfluss eines Sparduschkopfes (L/min). */
+export const EFFICIENT_FLOW_LPM = 8
 
 export function rateFlow(flowLpm: number): MeasurementRating {
   if (flowLpm <= GOOD_MAX) return 'good'
@@ -61,11 +70,16 @@ export function rateFlow(flowLpm: number): MeasurementRating {
 /**
  * Geschätzte jährliche Warmwasserkosten in € für einen gegebenen Durchfluss.
  *
- * Duschminuten/Jahr = persons * Duschen/Tag * min/Dusche * Tage/Jahr.
- * Davon werden ~60 % als Warmwasser angesetzt; die Energie zum Erwärmen folgt
- * aus 1.16 Wh/(L·K) bei ΔT = 25 K. Die Kosten nutzen vereinfachend nur den
- * Strom-Arbeitspreis (Näherung – die tatsächliche Warmwasserquelle kann
- * abweichen).
+ * Duschminuten/Jahr = Personen × Duschen/Tag × Minuten/Dusche × Tage/Jahr.
+ * Davon die Liter (× Durchfluss), daraus die Energie über
+ * {@link WH_PER_LITER_PER_K} bei {@link DELTA_T}, mal dem Arbeitspreis der
+ * tatsächlichen Warmwasserquelle (`eurPerKwhHeat` in `hotWaterEnergy.ts`).
+ *
+ * **Es gibt keinen Warmwasser-Anteil in dieser Rechnung.** Die Duschminuten
+ * sind bereits vollständig Warmwasser – ein zusätzlicher Prozentsatz würde die
+ * Menge ein zweites Mal kürzen. (Bis September 2026 behauptete der Kommentar
+ * hier einen 60-%-Faktor und ΔT = 25 K; beides stand nie im Code. Wer die Zahl
+ * nachrechnen wollte, prüfte die falsche Formel.)
  */
 function yearlyCostForFlow(flowLpm: number, persons: number, eurPerKwh: number): number {
   const showerMinutesPerYear =

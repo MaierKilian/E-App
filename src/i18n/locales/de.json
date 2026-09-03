@@ -323,7 +323,11 @@
       "estimated": "geschätzt",
       "saveAndNext": "Speichern & weiter: {{room}}",
       "saveAndOverview": "Speichern & zur Übersicht",
-      "gateHint": "Einmal beantwortet – die Angabe landet in deinem Profil und lässt sich dort ändern."
+      "gateHint": "Einmal beantwortet – die Angabe landet in deinem Profil und lässt sich dort ändern.",
+      "calculation": {
+        "title": "So gerechnet",
+        "measured": "gemessen"
+      }
     },
     "showerhead": {
       "title": "Duschkopf-Test",
@@ -389,6 +393,16 @@
           "good": "Weiter so",
           "saver": "Sparaufsatz prüfen",
           "time": "Kürzer duschen"
+        },
+        "calculation": {
+          "formula": "Duschminuten pro Jahr = Personen × Duschen/Tag × Minuten/Dusche × 365. Mal Durchfluss ergibt die Liter, mal Temperaturhub mal Energie je Liter und Kelvin die kWh – mal dem Arbeitspreis deiner Warmwasserquelle die Kosten.",
+          "flow": "Durchfluss deines Duschkopfs",
+          "showers": "Duschen pro Person und Tag",
+          "minutes": "Dauer je Dusche",
+          "deltaT": "Erwärmung",
+          "energy": "Energie je Liter und Kelvin",
+          "reference": "Sparduschkopf als Vergleich",
+          "note": "Gemessen ist allein der Durchfluss. Duschhäufigkeit und -dauer sind Annahmen; sie sind so gewählt, dass sich rund 516 kWh pro Person und Jahr ergeben – der in der Literatur genannte Bereich für die Warmwasserbereitung liegt bei 500–600 kWh."
         }
       }
     },
@@ -790,6 +804,13 @@
           "medium": "Bis warmes Wasser kommt, läuft etwas Trinkwasser ungenutzt ab. Aufgefangen lässt es sich weiterverwenden.",
           "elevated": "Die Wartezeit ist lang – bei jeder Zapfung läuft spürbar Trinkwasser ungenutzt ab.",
           "high": "Sehr lange Wartezeit: Pro Zapfung geht viel Trinkwasser ungenutzt weg. Meist liegt es an einer langen oder ungedämmten Leitung."
+        },
+        "calculation": {
+          "formula": "Wartezeit × Durchfluss = ungenutzte Liter je Zapfung. Mal Zapfungen pro Person und Tag, mal Personen, mal 365 ergibt die Jahresmenge; mal dem Wasserpreis die Kosten.",
+          "seconds": "Wartezeit",
+          "flow": "Durchfluss der Entnahmestelle",
+          "draws": "Zapfungen pro Person und Tag",
+          "note": "Die Zapfungen pro Tag sind eine Modellannahme, keine Messung – kalibriert auf einen {{persons}}-Personen-Haushalt. Die belastbare Zahl ist die Menge je Zapfung; der Jahreswert ist eine Hochrechnung."
         }
       }
     },

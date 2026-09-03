@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next'
 import { MetricTiles } from '../MetricTiles'
 import { ResultHero } from '../ResultHero'
 import type { ResultProps } from '../runnerTypes'
+import { CalculationNote } from '../CalculationNote'
+import { CALIBRATION_PERSONS, FIXTURES, type FixtureType } from './hotWaterWait'
 
 /** Knapper Tipp-Chip. */
 function Chip({ label }: { label: string }) {
@@ -27,6 +29,14 @@ export function HotWaterWaitResult({ result }: ResultProps) {
   const yearlySaving = result.details?.yearlySaving ?? 0
   const fixture = result.roomKey
   const reuse = t('measurements.hot_water_wait.result.reuse', { returnObjects: true }) as string[]
+
+  // Der Durchfluss steht seit September 2026 im Ergebnis. Altergebnisse tragen
+  // ihn nicht und fallen auf den Richtwert der Entnahmestelle zurück – genau
+  // den, mit dem sie gerechnet wurden.
+  const fixtureMeta = fixture ? FIXTURES[fixture as FixtureType] : undefined
+  const flowLpm = result.details?.flowLpm ?? fixtureMeta?.flowLpm ?? 0
+  const flowMeasured = (result.details?.flowMeasured ?? 0) === 1
+  const drawsPerDay = fixtureMeta?.drawsPerPersonPerDay
 
   return (
     <div className="space-y-4">
@@ -58,6 +68,35 @@ export function HotWaterWaitResult({ result }: ResultProps) {
             estimated: true,
           },
         ]}
+      />
+
+      <CalculationNote
+        formula={t('measurements.hot_water_wait.result.calculation.formula')}
+        rows={[
+          {
+            label: t('measurements.hot_water_wait.result.calculation.seconds'),
+            value: `${nf(seconds)} s`,
+            measured: true,
+          },
+          {
+            label: t('measurements.hot_water_wait.result.calculation.flow'),
+            value: `${nf(flowLpm, 1)} l/min`,
+            // Der Unterschied, um den es in dieser Etappe geht: Kommt die Zahl
+            // aus dem Duschkopf-Check oder aus der Tabelle?
+            measured: flowMeasured,
+          },
+          ...(drawsPerDay !== undefined
+            ? [
+                {
+                  label: t('measurements.hot_water_wait.result.calculation.draws'),
+                  value: nf(drawsPerDay, 2),
+                },
+              ]
+            : []),
+        ]}
+        note={t('measurements.hot_water_wait.result.calculation.note', {
+          persons: CALIBRATION_PERSONS,
+        })}
       />
 
       {/* Beiläufige Ideen – bewusst zurückgenommen, damit sie die Kennzahlen
