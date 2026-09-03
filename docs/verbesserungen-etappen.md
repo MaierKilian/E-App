@@ -69,7 +69,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 5 | Handlungsplan im Bericht | 4.2b | M | 20 % | ✅ fertig | 2026-09-03 | `7011fec` |
 | 6 | Richtwerte mit Primärquellen | 4.1 | L | 30 % | offen ⚠️ | | |
 | 7 | HTW raus aus dem Fragebogen | 1.5 | S | 8 % | ✅ fertig | 2026-09-03 | `29ea4ec` |
-| 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | offen | | |
+| 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | ✅ fertig | 2026-09-03 | `5ac71ac` |
 | 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | ✅ fertig | 2026-09-03 | `fe7c714` |
 | 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | offen | | |
 | 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | offen 💬 | | |
@@ -747,13 +747,45 @@ deshalb gefährlicher als ein geschlossener.
 
 ### Fertig, wenn
 
-- Ein Keller mit 16 °C und 65 % wird nicht mehr als „zu feucht" gemeldet.
-- Ein Wohnzimmer mit 65 % wird weiterhin als „zu feucht" gemeldet.
-- Die Taupunkt-Funktion hat eigene Tests mit von Hand nachgerechneten Werten.
-- Der Check bleibt **einer**. Die Gesamtzahl der Checks steht weiter auf 9
-  (siehe 8.2).
-- Ein gespeichertes Keller-Ergebnis von vorgestern öffnet sich fehlerfrei.
-- Die Richtwert-Tabelle im Wissensbereich zeigt beide Bänder.
+- [x] Ein Keller mit 16 °C und 65 % wird nicht mehr als „zu feucht" gemeldet.
+- [x] Ein Wohnzimmer mit 65 % wird weiterhin als „zu feucht" gemeldet.
+- [x] Die Taupunkt-Funktion hat eigene Tests mit von Hand nachgerechneten
+  Werten (`tests/unit/dewPoint.test.ts`, neun Stück).
+- [x] Der Check bleibt **einer**, die Gesamtzahl steht weiter auf 9 – am
+  Katalog wurde nichts angefasst.
+- [x] Ein gespeichertes Ergebnis öffnet sich fehlerfrei und behält seine
+  Bewertung (siehe „Kompatibilität" unten).
+- [x] Die Richtwert-Tabelle zeigt beide Bänder und den Taupunkt-Zusammenhang,
+  weiter ohne eine einzige doppelt geführte Zahl.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **Kompatibilität – die Annahme des Plans stimmte nur halb.** Richtig war:
+  Der Run speichert nur Zahlen, keinen Status; die Bewertung entsteht beim
+  Anzeigen neu. Übersehen war, dass der Ergebnis-Schirm **nur das Ergebnis
+  bekommt, nicht den Raum** (`ResultProps` trägt allein `result`). Ohne das
+  angewandte Band könnte er einen Keller gar nicht als Keller bewerten.
+  Deshalb werden `humMin`/`humMax` mitgespeichert – genau wie
+  `bandMin`/`bandMax` bei der Temperatur, dieselbe seit je bestehende Lösung
+  für dasselbe Problem. Ein Altergebnis trägt sie nicht und fällt auf 40–60
+  zurück, also auf die Bewertung, mit der es entstanden ist; ein Test hält
+  fest, dass der Default genau diese Grenzen behält.
+- **Die Extremschwelle ist jetzt relativ zum Band.** Statt eines zweiten
+  Zahlenpaars (30 % / 70 %) gilt ein Abstand von 10 Prozentpunkten, analog zu
+  `TEMP_EXTREME_TOLERANCE`. Für den Wohnraum ergibt das exakt die bisherigen
+  Grenzen, für den Keller verschieben sie sich mit – eine Regel statt zweier
+  Tabellen, die auseinanderlaufen können.
+- **Nur Keller und Waschküche weichen ab.** Beide sind kühl und tragen
+  regelmäßig Feuchte ein. Ein eigenes Band je Raumtyp wäre eine Genauigkeit,
+  die die Sache nicht hergibt.
+- **Die Wandtemperatur ist eine Annahme, keine Messung** (12 °C, oberer Rand
+  der Erdreichtemperatur – die vorsichtigere Wahl, weil sie seltener warnt).
+  Besser wäre ein Infrarot-Thermometer an der Wand; das setzt der Fragebogen
+  nicht voraus. Steht so begründet in `dewPoint.ts`.
+- **`HUM_OPTIMAL_MIN`/`MAX` sind entfallen** – nach dem Umbau der
+  Richtwert-Tabelle ohne Verwender.
+- **Nicht belegt:** Der Hinweis im Ergebnis wurde nicht im Browser gesehen.
+  Geprüft sind Rechnung, Bewertung, Übersetzungen und der Produktions-Build.
 
 ---
 
