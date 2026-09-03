@@ -1560,7 +1560,11 @@
         "fridge": "Fridge",
         "freezer": "Freezer",
         "fridge_freezer": "Fridge-freezer"
-      }
+      },
+      "addAnother": "Another appliance",
+      "namePlaceholder": "Appliance {{n}}",
+      "nameLabel": "Appliance name",
+      "remove": "Remove appliance"
     },
     "fieldUsage": {
       "title": "What we use this for",

@@ -57,13 +57,60 @@ export function skippedMeasurements(data: Pick<OnboardingData, 'appliances' | 'a
   return out
 }
 
-/** Ein Gerät ergänzen oder – wenn schon vorhanden – wieder entfernen. */
-export function toggleAppliance(
+/**
+ * Kennung eines neu angelegten Geräts.
+ *
+ * Die Art steht vorn, damit die Kennung im Speicher lesbar bleibt; der Rest
+ * macht sie einmalig. **Bewusst nicht die kleinste freie Nummer:** Die würde
+ * nach dem Löschen wieder vergeben, und das nächste Gerät erbte das Ergebnis
+ * des gelöschten – genau der Fehler, den die Kennung verhindern soll.
+ */
+export function newApplianceId(kind: ApplianceKind): string {
+  const unique =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID().slice(0, 8)
+      : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+  return `${kind}-${unique}`
+}
+
+/** Ein weiteres Gerät dieser Art anlegen. */
+export function addAppliance(
   appliances: readonly ApplianceEntry[] | undefined,
   kind: ApplianceKind,
 ): ApplianceEntry[] {
-  const list = [...(appliances ?? [])]
-  const index = list.findIndex((a) => a.kind === kind)
-  if (index >= 0) return list.filter((a) => a.kind !== kind)
-  return [...list, { kind }]
+  return [...(appliances ?? []), { id: newApplianceId(kind), kind }]
+}
+
+/** Ein Gerät entfernen. Andere Geräte behalten ihre Kennung. */
+export function removeAppliance(
+  appliances: readonly ApplianceEntry[] | undefined,
+  id: string,
+): ApplianceEntry[] {
+  return (appliances ?? []).filter((a) => a.id !== id)
+}
+
+/** Ein Feld eines Geräts ändern; alles andere bleibt, wie es war. */
+export function updateAppliance(
+  appliances: readonly ApplianceEntry[] | undefined,
+  id: string,
+  patch: Partial<Omit<ApplianceEntry, 'id' | 'kind'>>,
+): ApplianceEntry[] {
+  return (appliances ?? []).map((a) => (a.id === id ? { ...a, ...patch } : a))
+}
+
+/**
+ * Die Geräte, die einen Check bedienen – in der Reihenfolge der Liste.
+ *
+ * Gegenstück zu `roomInstances()`: Was dort der Raum ist, ist hier das Gerät.
+ * Ein Kühl-Gefrier-Kombigerät erscheint in **beiden** Listen, weil es beide
+ * Checks bedient – gemessen werden an ihm zwei verschiedene Fächer.
+ *
+ * Die Reihenfolge ist die der Geräteliste und damit stabil: Ein gelöschtes
+ * Gerät verschiebt die übrigen nicht in ihrer Identität, nur in ihrer Position.
+ */
+export function applianceInstances(
+  appliances: readonly ApplianceEntry[] | undefined,
+  wanted: 'fridge' | 'freezer',
+): ApplianceEntry[] {
+  return (appliances ?? []).filter((a) => serves(a.kind, wanted))
 }

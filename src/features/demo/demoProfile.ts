@@ -154,7 +154,7 @@ const onboardingData: OnboardingData = {
   heatGeneratorYears: { gas_boiler: 2004 },
   // Kühl-Gefrier-Kombination in der Küche – bedient beide Checks, so wie die
   // Beispiel-Wohnung sie auch beide zeigt.
-  appliances: [{ kind: 'fridge_freezer', room: 'kitchen' }],
+  appliances: [{ id: 'fridge_freezer', kind: 'fridge_freezer', room: 'kitchen' }],
   appliancesAnswered: true,
   lastRenovationYear: '2000_2010',
   renovationItems: ['windows'],

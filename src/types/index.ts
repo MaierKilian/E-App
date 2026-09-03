@@ -79,9 +79,27 @@ export type RenovationItem =
 export type ApplianceKind = 'fridge' | 'freezer' | 'fridge_freezer'
 
 export interface ApplianceEntry {
+  /**
+   * Stabile Kennung, beim Anlegen vergeben und danach unveränderlich.
+   *
+   * **Bewusst kein Index.** Die Pro-Raum-Checks identifizieren über
+   * `type#index` – für Räume geht das gerade noch durch, für Geräte nicht:
+   * Löscht man den ersten von zwei Kühlschränken, rutschte `fridge#1` auf
+   * `fridge#0` und erbte das Ergebnis des gelöschten Geräts. Der Nutzer sähe
+   * eine Messung, die er an einem anderen Gerät gemacht hat.
+   *
+   * Bestandsgeräte tragen `id = kind` (siehe `migrateOnboardingData`): Weil je
+   * Art höchstens ein Eintrag möglich war, ist das eindeutig und kollisionsfrei.
+   */
+  id: string
   kind: ApplianceKind
   /** Wo es steht – speist die Raum-Zuordnung des Checks. */
   room?: RoomType
+  /**
+   * Frei wählbarer Name, nötig erst bei zwei Geräten derselben Art im selben
+   * Raum („Getränkekühlschrank"). Leer heißt: Raum und Art benennen es.
+   */
+  name?: string
 }
 
 export type BuildingType = 'apartment' | 'house'

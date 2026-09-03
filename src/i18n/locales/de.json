@@ -1770,7 +1770,11 @@
         "fridge": "Kühlschrank",
         "freezer": "Gefriergerät",
         "fridge_freezer": "Kühl-Gefrier-Kombination"
-      }
+      },
+      "addAnother": "Weiteres Gerät",
+      "namePlaceholder": "Gerät {{n}}",
+      "nameLabel": "Name des Geräts",
+      "remove": "Gerät entfernen"
     },
     "fieldUsage": {
       "title": "Wofür wir das nutzen",

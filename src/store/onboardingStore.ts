@@ -13,6 +13,7 @@ import {
   derivedLegacyFields,
   migrateLegacyRenovations,
 } from '@/features/onboarding/renovationProjection'
+import { newApplianceId } from '@/features/onboarding/appliances'
 
 /**
  * Migriert zusammengeführte Raumtypen aus älteren Profilen:
@@ -92,6 +93,32 @@ function withoutRetiredGoals(goals: UserGoal[] | undefined): UserGoal[] {
 }
 
 /**
+ * Bestandsgeräte bekommen ihre Kennung.
+ *
+ * `id = kind` ist für Altdaten eindeutig, deterministisch und kollisionsfrei:
+ * Bis zur Einführung der Kennung ließ `toggleAppliance` je Art höchstens einen
+ * Eintrag zu. Der Schlüssel eines Altgeräts ist damit derselbe wie der
+ * Schlüssel seines Altergebnisses – was die spätere Zuordnung der schon
+ * gespeicherten Messungen trägt.
+ *
+ * Doppelte Arten kann es in Altdaten nicht geben; käme trotzdem eine vor
+ * (von Hand bearbeiteter Speicher), bekäme die zweite eine eigene Kennung,
+ * statt die erste zu verdrängen.
+ */
+function withApplianceIds(appliances: ApplianceEntry[]): ApplianceEntry[] {
+  const seen = new Set<string>()
+  return appliances.map((entry) => {
+    if (entry.id && !seen.has(entry.id)) {
+      seen.add(entry.id)
+      return entry
+    }
+    const id = seen.has(entry.kind) ? newApplianceId(entry.kind) : entry.kind
+    seen.add(id)
+    return { ...entry, id }
+  })
+}
+
+/**
  * Bringt ein gespeichertes Profil auf den aktuellen Stand.
  *
  * Zwei Wege führen hier vorbei: der `persist`-Merge beim Start und der
@@ -114,6 +141,7 @@ export function migrateOnboardingData(stored: Partial<OnboardingData> | undefine
   }
   if (!data.heatGeneratorYears) data.heatGeneratorYears = {}
   if (!Array.isArray(data.appliances)) data.appliances = []
+  data.appliances = withApplianceIds(data.appliances)
   // Ein Altprofil hat die Frage nie gesehen – sie gilt als offen, nicht als
   // mit „keines" beantwortet. Sonst verschwänden beide Checks stillschweigend.
   if (typeof data.appliancesAnswered !== 'boolean') data.appliancesAnswered = false
