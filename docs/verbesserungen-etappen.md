@@ -62,8 +62,8 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 
 | # | Etappe | Punkte | Größe | ~Usage | Status | Abgeschlossen | Commit |
 |---|---|---|---|---|---|---|---|
-| 1 | Impressum und Datenschutzerklärung | 1.4 | M | 15 % | offen | | |
-| 2 | Einwilligung vor Analytics | 1.3 | M | 15 % | offen | | |
+| 1 | Impressum und Datenschutzerklärung | 1.4 | M | 15 % | ✅ fertig | 2026-09-03 | `05c2b14` |
+| 2 | Einwilligung vor Analytics | 1.3 | M | 15 % | ✅ fertig | 2026-09-03 | `05c2b14` |
 | 3 | Die Feld-Landkarte | 21.1 (neu) | M | 15 % | offen | | |
 | 4 | Haushalts-Steckbrief im Bericht | 4.2a, 21.1 | L | 30 % | offen | | |
 | 5 | Handlungsplan im Bericht | 4.2b | M | 20 % | offen | | |
@@ -264,6 +264,59 @@ liest nur, was der Nutzer selbst eingestellt hat.
 - Der Widerruf in den Einstellungen wirkt sofort.
 - Profil, Ablesungen und Messergebnisse funktionieren bei Ablehnung
   unverändert.
+
+---
+
+## Etappen 1 und 2 – übernommen statt neu gebaut (2026-09-03)
+
+**Die Arbeit lag schon fertig da.** Auf dem nie gemergten Branch
+`claude/sync-4skr8y` steht seit dem 23.08.2026 der Commit `8dca28f`
+„Impressum, Datenschutzerklärung und Einwilligung nach DSGVO/TDDDG" – er
+setzt beide Etappen um, mit genau dem Dateischnitt, den der Plan hier
+vorsieht (`LegalPage`-Gerüst, `ImprintPage`, `PrivacyPage`, Einwilligungs-
+Store). Der Etappenplan wurde gegen `main` geschrieben und konnte ihn deshalb
+nicht sehen; „Es gibt beides nicht" stimmte für `main`, nicht fürs Repository.
+
+Übernommen per Cherry-Pick, ein einziger Konflikt (`settingsStore.ts`):
+`analyticsEnabled` fällt weg wie im übernommenen Stand, die seither
+dazugekommenen Felder `pvPromptDismissed` und `plausibilityAccepted` bleiben.
+Typecheck, ESLint, 754 Tests und der Produktions-Build sind grün; die
+Übernahme bringt 17 Tests in `tests/unit/consent.test.ts` mit.
+
+**Abnahme Etappe 1:**
+
+- [x] Beide Seiten ohne Anmeldung erreichbar (`App.tsx` führt `/impressum` und
+      `/datenschutz` am `FirstVisitGate` vorbei), verlinkt aus Fußzeile,
+      Einstellungen, Landing Page und `/neu`.
+- [x] Platzhalter sichtbar: `operator.ts` ist leer, fehlende Pflichtfelder
+      markiert die Impressumsseite als „noch einzutragen".
+- [x] Alle sechs Verarbeitungen genannt, der Gemini-Zählerscan eingeschlossen.
+- [x] Kein Rechtstext behauptet etwas, das der Code nicht tut.
+- [ ] **Weicht ab: nur deutsch, nicht zweisprachig.** Der übernommene Stand
+      begründet das in `docs/legal.md` – die Rechtstexte sind die maßgebliche
+      Fassung, die Bedienelemente ringsum (Banner, Fußzeile, Einstellungen)
+      bleiben zweisprachig. Der Plan hier wollte beide Sprachen mit dem
+      Hinweis, dass im Streitfall die deutsche gilt. Beides ist vertretbar –
+      **Kilian entscheidet**, ob die englische Fassung nachgezogen wird.
+
+**Abnahme Etappe 2:**
+
+- [x] Analytics wird ohne Einwilligung gar nicht geladen: `lib/firebase.ts`
+      initialisiert nicht mehr beim Import, `track()` prüft
+      `hasAnalyticsConsent()` **vor** `loadAnalytics()`.
+- [x] Bestandsnutzer werden nicht stillschweigend als einwilligend behandelt:
+      `analyticsEnabled` wird beim Laden verworfen (Store-Version 3).
+- [x] Widerruf wirkt sofort und löscht die `_ga`-Cookies (`cookies.ts`).
+- [x] Ablehnen sperrt nichts; Profil, Ablesungen und Messergebnisse laufen
+      unverändert (sie fallen unter § 25 Abs. 2 Nr. 2).
+- [ ] **Im Browser noch zu prüfen:** dass in einem frischen Profil vor der
+      Entscheidung kein Analytics-Eintrag im Speicher und kein Aufruf an
+      `google-analytics.com` steht. Statisch ist der Weg dicht, der Beleg aus
+      den Entwicklertools fehlt.
+
+**Offen für Kilian:** Die Betreiberangaben in `src/features/legal/operator.ts`
+sind leer. `docs/legal.md` listet neun Punkte, die ein Mensch mit Zulassung
+prüfen sollte, bevor die App öffentlich beworben wird.
 
 ---
 
