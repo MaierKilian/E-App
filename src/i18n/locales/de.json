@@ -144,7 +144,8 @@
       "section": {
         "measurements": "Messungen",
         "monitoring": "Monitoring",
-        "profile": "Das ist dein Haushalt"
+        "profile": "Das ist dein Haushalt",
+        "actionPlan": "Was du als Nächstes tun kannst"
       },
       "measurements": {
         "title": "Messungen-Bericht",
@@ -220,7 +221,9 @@
         "metaReadings_other": "{{count}} Ablesungen",
         "basisMeasurements": "Messungen {{period}}",
         "basisReadings": "Ablesungen {{period}}",
-        "basisNote": "Euro-Beträge sind Hochrechnungen und stehen als Spanne. Gemessene Größen – Temperaturen, Watt, Liter, Zählerstände – stehen ohne Spanne."
+        "basisNote": "Euro-Beträge sind Hochrechnungen und stehen als Spanne. Gemessene Größen – Temperaturen, Watt, Liter, Zählerstände – stehen ohne Spanne.",
+        "metaActions_one": "{{count}} offene Empfehlung",
+        "metaActions_other": "{{count}} offene Empfehlungen"
       },
       "profile": {
         "title": "Das ist dein Haushalt",

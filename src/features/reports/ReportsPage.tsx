@@ -14,6 +14,8 @@ import { useWidgetOrderStore } from '@/store/widgetOrderStore'
 import { fmtPeriod } from './pdf/format'
 import { canSharePdf, deliverReport } from './pdf/deliver'
 import { buildTips } from '@/features/tips/buildTips'
+import { useTipContext } from '@/features/tips/useTipContext'
+import { useTipsStore } from '@/store/tipsStore'
 import { tipsByMeasurement } from '@/features/tips/tipsForReport'
 import { buildMeasurementsReportData } from './measurementsReportData'
 import { buildMonitoringReportData, suggestRangeDays, type RangeDays } from './monitoringReportData'
@@ -324,6 +326,21 @@ function ShareBar({
   const results = useMeasurementsStore((s) => s.results)
   const [status, setStatus] = useState<ExportStatus>('idle')
 
+  // Dieselbe Liste wie auf der Tipps-Seite: derselbe Kontext, dieselbe
+  // Reihenfolge, erledigte und ausgeblendete heraus. Ein Bericht, der eine
+  // abgehakte Maßnahme wieder als offen führt, wäre falsch.
+  const tipContext = useTipContext()
+  const doneIds = useTipsStore((s) => s.doneIds)
+  const dismissedIds = useTipsStore((s) => s.dismissedIds)
+  const allTips = useMemo(
+    () => buildTips(profile, results, tipContext),
+    [profile, results, tipContext],
+  )
+  const openTips = useMemo(
+    () => allTips.filter((tip) => !doneIds.includes(tip.id) && !dismissedIds.includes(tip.id)),
+    [allTips, doneIds, dismissedIds],
+  )
+
   // Auf dem Telefon ist das System-Teilen der natürliche Weg (Sichern, Mail,
   // Messenger und Vorschau in einem Schritt); sonst bleibt es beim Download.
   const shareable = useMemo(() => canSharePdf(), [])
@@ -348,7 +365,8 @@ function ShareBar({
         // führte sonst ein zweites, fast leeres Tipp-System. Ohne Zählerstand-
         // Kontext: Der Bericht ordnet Empfehlungen ihrer Messung zu, und der
         // Verbrauchstrend gehört zu keiner.
-        tipsByMeasurement: tipsByMeasurement(buildTips(profile, results), t, i18n.language),
+        tipsByMeasurement: tipsByMeasurement(allTips, t, i18n.language),
+        openTips,
       })
 
       const result = await deliverReport(report, t('report.pdf.title'))

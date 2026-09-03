@@ -18,6 +18,7 @@ import type { MeasurementResult, MeasurementRating } from '@/features/measuremen
 import type { EnergyType, MeterReading } from '@/store/readingsStore'
 import { resultSavingsEur } from '@/features/measurements/impact'
 import { isMeasuredSaving } from '@/features/measurements/savingsDisplay'
+import type { MeasurementCategory } from '@/features/measurements/catalog'
 import { DEFAULT_COMFORT_BAND } from '@/features/measurements/room_temperature/roomClimate'
 import { parseRoomKey, roomInstances } from '@/features/measurements/rooms'
 import {
@@ -261,21 +262,43 @@ export function isQuickWin(tip: Tip): boolean {
  * sachliche Reihenfolge, die besser wäre als die bisherige. Ohne Ziel ändert
  * sich damit nichts.
  */
-const GOAL_CATEGORY_BONUS: Record<UserGoal, Partial<Record<TipCategory, number>>> = {
+const GOAL_CATEGORY_BONUS: Record<UserGoal, Partial<Record<MeasurementCategory, number>>> = {
   save_costs: {},
-  reduce_co2: { heating: 2, electricity: 1 }, // Wärme trägt den größten CO₂-Hebel
-  improve_comfort: { heating: 2 }, // Raumklima und Zugluft zuerst
+  // Wärme trägt den größten CO₂-Hebel; Warmwasser wird meist mit demselben
+  // Erzeuger bereitet und steht deshalb gleichauf.
+  reduce_co2: { heating: 2, hot_water: 2, electricity: 1 },
+  // Raumklima und Zugluft zuerst, danach die Wartezeit auf warmes Wasser.
+  improve_comfort: { heating: 2, hot_water: 1 },
   curiosity: {},
 }
 
 /** Höchster Bonus über alle gewählten Ziele – Ziele addieren sich nicht. */
-function goalBonus(tip: Tip, goals: readonly UserGoal[] | undefined): number {
+/**
+ * Höchstes Gewicht eines Gewerks über alle gewählten Ziele – Ziele addieren
+ * sich nicht.
+ *
+ * Nimmt die Kategorie statt eines Tipps entgegen, weil auch die empfohlene
+ * **Mess**reihenfolge damit gewichtet wird (`orderedMeasurements` in
+ * `measurements/order.ts`). Zwei Gewichtungen für dieselbe Frage – „was ist
+ * diesem Nutzer wichtig?" – wären zwei Gelegenheiten, auseinanderzulaufen.
+ *
+ * `MeasurementCategory` ist die Obermenge: Sie kennt zusätzlich `hot_water`,
+ * das kein Tipp trägt.
+ */
+export function goalCategoryBonus(
+  category: MeasurementCategory,
+  goals: readonly UserGoal[] | undefined,
+): number {
   let best = 0
   for (const goal of goals ?? []) {
-    const bonus = GOAL_CATEGORY_BONUS[goal]?.[tip.category] ?? 0
+    const bonus = GOAL_CATEGORY_BONUS[goal]?.[category] ?? 0
     if (bonus > best) best = bonus
   }
   return best
+}
+
+function goalBonus(tip: Tip, goals: readonly UserGoal[] | undefined): number {
+  return goalCategoryBonus(tip.category, goals)
 }
 
 /**

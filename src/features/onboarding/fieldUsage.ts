@@ -126,9 +126,9 @@ export const FIELD_USAGE = {
     reason: 'Schnellstart oder vollständig – bestimmt, wie viel das Monitoring voraussetzen darf.',
   },
   goals: {
-    consumers: ['tips'],
+    consumers: ['tips', 'measurements', 'report'],
     reason:
-      'Gewichtet die Empfehlungen: Wer CO₂ senken will, sieht Wärme-Maßnahmen zuerst.',
+      'Gewichtet die Empfehlungen und die empfohlene Messreihenfolge: Wer CO₂ senken will, sieht Wärme-Maßnahmen und Wärme-Messungen zuerst. Der Handlungsplan im Bericht nennt die Ziele, nach denen er sortiert.',
     labelKey: 'onboarding.step8.labels.goals',
   },
   occupancyStatus: {

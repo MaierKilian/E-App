@@ -32,6 +32,22 @@ export function localizeParams(
   )
 }
 
+/**
+ * Der Titel eines Tipps, wie ihn auch die Tipps-Seite zeigt.
+ *
+ * Ein Tipp mit Raumbezug trägt den Raum im Titel: Ohne ihn stünden
+ * „Raumtemperatur senken" und „Räume nicht auskühlen lassen" unvermittelt
+ * nebeneinander und läsen sich wie ein Widerspruch, statt zwei verschiedene
+ * Räume zu meinen.
+ */
+export function tipTitle(tip: Tip, t: TFunction, language: string): string {
+  const textId = tip.textId ?? tip.id
+  const room = tip.room ? roomLabel(t, tip.room) : undefined
+  const params = { ...localizeParams(tip.params, language), room }
+  const title = t(`tips.items.${textId}.title`, params)
+  return room ? `${title} (${room})` : title
+}
+
 /** Baut `{ messId: [Empfehlungssatz, …] }` in der Reihenfolge der Tipp-Liste. */
 export function tipsByMeasurement(
   tips: Tip[],

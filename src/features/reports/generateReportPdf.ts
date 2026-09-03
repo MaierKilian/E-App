@@ -5,10 +5,12 @@ import type { ReportDocument } from './pdf/deliver'
 import type { ReportSections } from './reportTypes'
 import { fillMeasurements } from './generateMeasurementsPdf'
 import { fillProfile } from './generateProfilePdf'
+import { fillActionPlan } from './generateActionPlanPdf'
 import { fillMonitoring } from './generateMonitoringPdf'
 import type { MeasurementsReportData } from './measurementsReportData'
 import type { MonitoringReportData } from './monitoringReportData'
 import type { OnboardingData } from '@/types'
+import type { Tip } from '@/features/tips/buildTips'
 
 /**
  * Erzeugt den Energiebericht aus den gewählten Abschnitten.
@@ -40,6 +42,12 @@ export interface GenerateReportArgs {
    */
   profile: OnboardingData
   /**
+   * Die **offenen** Empfehlungen in der Reihenfolge der App – Grundlage des
+   * Handlungsplans. Erledigte und ausgeblendete sind schon heraus; der Bericht
+   * sortiert nicht selbst, sonst ordnete er anders als der Bildschirm.
+   */
+  openTips: Tip[]
+  /**
    * Die fertig formulierten Empfehlungen der App, je Messung gebündelt.
    * Der Bericht hatte bis dahin ein eigenes, zweites Tipp-System, das nur für
    * zwei der neun Messungen überhaupt Text hatte – bei den übrigen sieben blieb
@@ -49,7 +57,7 @@ export interface GenerateReportArgs {
 }
 
 export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
-  const { sections, t, language, measurements, monitoring, tipsByMeasurement, profile } = args
+  const { sections, t, language, measurements, monitoring, tipsByMeasurement, profile, openTips } = args
   const kit = new PdfKit()
   const objectName = args.objectName?.trim() || undefined
 
@@ -73,7 +81,7 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
 
   kit.gap(30)
   const total = countSections(sections)
-  const tocRows = buildToc(t, language, sections, measurements, monitoring)
+  const tocRows = buildToc(t, language, sections, measurements, monitoring, openTips.length)
   const tocSlots = kit.coverToc(t('report.pdf.cover.contents'), tocRows)
   kit.coverFoot(t('report.pdf.cover.basis'), basisLines(t, language, sections, measurements, monitoring))
 
@@ -111,6 +119,11 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
     fillMonitoring(kit, { t, language, data: monitoring, objectName }, false)
   }
 
+  // Der Handlungsplan steht am Ende: Er beantwortet „und jetzt?", und diese
+  // Frage stellt sich erst, wenn die Befunde gelesen sind.
+  chapter('report.pdf.section.actionPlan')
+  fillActionPlan(kit, { t, language, tips: openTips, goals: profile.goals })
+
   // Erst jetzt stehen die Seitenzahlen fest – sie wandern zurück auf Seite 1.
   kit.fillTocPages(
     tocSlots,
@@ -126,11 +139,12 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
 }
 
 /**
- * Anzahl der Kapitel. Der Steckbrief ist immer dabei und wird deshalb fest
- * mitgezählt – er ist kein wählbarer Abschnitt (siehe `ReportSections`).
+ * Anzahl der Kapitel. Steckbrief und Handlungsplan sind immer dabei und werden
+ * deshalb fest mitgezählt – beide sind keine wählbaren Abschnitte (siehe
+ * `ReportSections`).
  */
 function countSections(s: ReportSections): number {
-  return 1 + Number(s.measurements) + Number(s.monitoring)
+  return 2 + Number(s.measurements) + Number(s.monitoring)
 }
 
 /** Kopfzeile: welche Abschnitte dieser Bericht enthält. */
@@ -180,6 +194,7 @@ function buildToc(
   sections: ReportSections,
   measurements: MeasurementsReportData,
   monitoring: MonitoringReportData,
+  openTips: number,
 ): TocRow[] {
   const rows: TocRow[] = []
 
@@ -211,6 +226,13 @@ function buildToc(
     if (period) parts.push(period)
     rows.push({ n: rows.length + 1, title: t('report.pdf.section.monitoring'), meta: parts.join(' · ') })
   }
+
+  // Wie der Steckbrief immer dabei, deshalb ohne Bedingung.
+  rows.push({
+    n: rows.length + 1,
+    title: t('report.pdf.section.actionPlan'),
+    meta: openTips > 0 ? t('report.pdf.cover.metaActions', { count: openTips }) : undefined,
+  })
 
   return rows
 }

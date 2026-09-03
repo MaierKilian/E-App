@@ -4,6 +4,8 @@ import type { MeasurementResult } from './types'
 import { type MeasurementMeta } from './catalog'
 import { roomLabel, instanceKey } from './rooms'
 import { countableMeasurements, countingRooms, measurementProgress } from './progress'
+import { orderedMeasurements } from './order'
+import type { UserGoal } from '@/types'
 
 /** Ein gruppierter Schritt (eine Messung; bei Pro-Raum mit Raum-Fortschritt). */
 export interface MeasurementStep {
@@ -26,17 +28,20 @@ export interface MeasurementStep {
  * Raum-Fortschritt geführt (z. B. „Raumklima 2/4 Räume").
  *
  * Zählen und „erledigt?" kommen aus `progress.ts` – derselben Quelle, aus der
- * auch die Zuhause-Karte und die Gewerke-/Raum-Kacheln rechnen.
+ * auch die Zuhause-Karte und die Gewerke-/Raum-Kacheln rechnen. Die Reihenfolge
+ * kommt aus `order.ts` und gewichtet nach denselben Zielen wie die
+ * Empfehlungen; ohne Ziele bleibt es bei der Katalog-Reihenfolge.
  */
 export function buildSteps(
   rooms: RoomEntry[],
   results: Partial<Record<string, MeasurementResult>>,
   t: TFunction,
   skipped: readonly string[] = [],
+  goals: readonly UserGoal[] = [],
 ): MeasurementStep[] {
   const instances = countingRooms(rooms, skipped)
   const steps: MeasurementStep[] = []
-  for (const meta of countableMeasurements(instances, skipped)) {
+  for (const meta of orderedMeasurements(countableMeasurements(instances, skipped), goals)) {
     const { done, total } = measurementProgress(results, meta, instances)
     const next = meta.perRoom
       ? instances.find((inst) => !results[instanceKey(meta.id, inst.key)])
