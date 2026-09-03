@@ -71,7 +71,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 7 | HTW raus aus dem Fragebogen | 1.5 | S | 8 % | ✅ fertig | 2026-09-03 | `29ea4ec` |
 | 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | ✅ fertig | 2026-09-03 | `5ac71ac` |
 | 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | ✅ fertig | 2026-09-03 | `fe7c714` |
-| 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | offen | | |
+| 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | ✅ fertig | 2026-09-03 | `e06fa74` |
 | 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | offen 💬 | | |
 | 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | offen | | |
 | 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | offen | | |
@@ -901,14 +901,39 @@ Wer sie liest, um die Zahl zu prüfen, prüft die falsche Formel.
 
 ### Fertig, wenn
 
-- Ein Duschkopf-Ergebnis von 14 L/min verändert das Ergebnis des
-  Wartezeit-Checks für die Dusche nachweislich.
-- Ohne Duschkopf-Messung rechnet der Check wie bisher – keine stille
-  Verschlechterung für Nutzer, die den einen Check nicht gemacht haben.
-- Kein Kommentar im Warmwasser-Code beschreibt eine andere Rechnung als der
-  Code daneben. Beide Module einmal komplett durchgehen.
-- Der Aufklapper nennt jede Annahme, die in die Zahl eingeht.
-- Bestehende Ergebnisse beider Checks öffnen sich unverändert.
+- [x] Ein Duschkopf-Ergebnis von 14 L/min verändert das Ergebnis nachweislich
+  (Test: Faktor 14/9 in der Menge je Zapfung).
+- [x] Ohne Duschkopf-Messung rechnet der Check wie bisher – ein Test hält das
+  fest, ebenso dass unbrauchbare Werte (0, negativ, NaN) auf den Richtwert
+  zurückfallen.
+- [x] Beide Module komplett durchgegangen. Gefunden wurden **vier** Stellen,
+  nicht eine: der 60-%-Faktor und ΔT 25 K über `yearlyCostForFlow`, dazu im
+  selben Kommentar die überholte Behauptung, die Kosten nutzten „nur den
+  Strom-Arbeitspreis" (sie kommen längst aus `hotWaterEnergy.ts`), und im
+  Wartezeit-Modul „gemessen ist allein die Wartezeit" sowie „typischer
+  Durchfluss" – beides seit dieser Etappe nicht mehr wahr.
+- [x] Der Aufklapper nennt jede Annahme und kennzeichnet je Zeile, ob sie
+  gemessen oder angenommen ist.
+- [x] Bestehende Ergebnisse öffnen sich unverändert: Der Durchfluss steht neu
+  in den Details, Altergebnisse fallen auf den Richtwert der Entnahmestelle
+  zurück – den, mit dem sie gerechnet wurden.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **Der gemessene Durchfluss gilt nur an der Dusche.** Dort wurde gemessen;
+  ein Waschbecken mit dem Duschkopf-Wert zu rechnen wäre schlechter als der
+  Richtwert, nicht besser. Ein Test hält das für alle drei anderen
+  Entnahmestellen fest.
+- **Der Aufklapper klappt zu, nicht auf.** Die Zahl ist die Aussage, die
+  Herleitung die Fußnote. Offen gestellt drängt sie sich vor das Ergebnis.
+- **Ein Test bindet die Kalibrierung an die Rechnung.** Die im Aufklapper
+  genannten ~516 kWh je Person und Jahr müssen aus den exportierten Konstanten
+  folgen, sonst wird er rot. Damit kann der Fehler aus 13.2 – eine Beschreibung,
+  die von der Rechnung abdriftet – an dieser Stelle nicht wiederkommen.
+- **`CalculationNote` ist bewusst allgemein** (`measurements/CalculationNote.tsx`)
+  und nicht warmwasser-spezifisch: Dieselbe Frage – was ist gemessen, was
+  angenommen? – stellt sich bei Grundlast, Standby und Raumklima genauso.
+- **Nicht belegt:** Der Aufklapper wurde nicht im Browser gesehen.
 
 ---
 
