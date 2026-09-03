@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import type { RoomEntry } from '@/types'
+import type { ApplianceEntry, RoomEntry } from '@/types'
 import type { MeasurementResult } from './types'
 import { type MeasurementMeta } from './catalog'
 import { roomLabel, instanceKey } from './rooms'
@@ -38,11 +38,12 @@ export function buildSteps(
   t: TFunction,
   skipped: readonly string[] = [],
   goals: readonly UserGoal[] = [],
+  appliances: readonly ApplianceEntry[] = [],
 ): MeasurementStep[] {
   const instances = countingRooms(rooms, skipped)
   const steps: MeasurementStep[] = []
   for (const meta of orderedMeasurements(countableMeasurements(instances, skipped), goals)) {
-    const { done, total } = measurementProgress(results, meta, instances)
+    const { done, total } = measurementProgress(results, meta, instances, appliances)
     const next = meta.perRoom
       ? instances.find((inst) => !results[instanceKey(meta.id, inst.key)])
       : undefined

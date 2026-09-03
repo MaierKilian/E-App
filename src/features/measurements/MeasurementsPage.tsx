@@ -88,12 +88,13 @@ export function MeasurementsPage() {
   const rooms = useOnboardingStore((s) => s.data.rooms)
   // Dieselben Ziele, die auch die Empfehlungen sortieren (siehe `order.ts`).
   const goals = useOnboardingStore((s) => s.data.goals)
+  const appliances = useOnboardingStore((s) => s.data.appliances)
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
 
   // Ring und Schrittliste kommen aus derselben Rechnung wie die Zuhause-Karte
   // und die Gewerke-Kacheln (siehe `progress.ts`).
-  const steps = buildSteps(rooms, results, t, skipped, goals)
-  const { done, total } = catalogProgress(results, rooms, skipped)
+  const steps = buildSteps(rooms, results, t, skipped, goals, appliances)
+  const { done, total } = catalogProgress(results, rooms, skipped, appliances)
 
   const { savingsEur, co2Kg } = impactSummary(results, workPriceCt)
   // Anstoß, die Grundlast nach einer Maßnahme erneut zu messen – der einzige

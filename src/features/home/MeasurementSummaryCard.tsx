@@ -78,8 +78,9 @@ export function MeasurementSummaryCard() {
   const results = useMeasurementsStore((s) => s.results)
   const skipped = useSkippedKeys()
   const rooms = useOnboardingStore((s) => s.data.rooms)
+  const appliances = useOnboardingStore((s) => s.data.appliances)
 
-  const { done, total } = measurementProgress(results, rooms, skipped)
+  const { done, total } = measurementProgress(results, rooms, skipped, appliances)
   const recentAvailable = recentResults(results, MAX_RECENT)
   const visibleCount = useFitRecentCount(recentAvailable.length)
   const recent = recentAvailable.slice(0, visibleCount)

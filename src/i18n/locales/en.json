@@ -327,7 +327,11 @@
       "calculation": {
         "title": "How this is calculated",
         "measured": "measured"
-      }
+      },
+      "applianceChoose": "Which appliance are you measuring?",
+      "applianceChooseHint": "Each appliance gets its own result.",
+      "applianceDone": "measured",
+      "applianceOpen": "not yet measured"
     },
     "showerhead": {
       "title": "Showerhead Test",

@@ -36,6 +36,15 @@ export interface MeasurementMeta {
   /** True = Messung gilt fürs ganze Zuhause (ein Ergebnis, nicht je Raum). */
   wholeHome?: boolean
   /**
+   * True = Messung wird je Gerät einzeln durchgeführt (eigenes Ergebnis pro
+   * Kühl-/Gefriergerät).
+   *
+   * Das Gegenstück zu {@link MeasurementMeta.perRoom}: Dort ist der Raum die
+   * Instanz, hier das Gerät. Vier Geräte ergeben vier Messungen – vorher
+   * überschrieb das zweite Gerät das Ergebnis des ersten, ohne Warnung.
+   */
+  perAppliance?: boolean
+  /**
    * True = diese Messung beziffert eine Jahres-Ersparnis in Euro.
    *
    * Der Riegel gegen Geister-Beträge: Gespeicherte Ergebnisse werden nie
@@ -138,6 +147,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     // Ergebnis fürs ganze Zuhause – die zusätzliche Zuordnung ändert deshalb
     // nur, in welcher Raum-Kachel sie auftauchen, nicht die Zählung.
     rooms: ['kitchen', 'basement'],
+    perAppliance: true,
   },
   {
     id: 'freezer',
@@ -150,6 +160,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     // suchte man den Check bisher vergeblich, weil er auf der Küche festhing.
     rooms: ['kitchen', 'basement', 'utility_room'],
     yieldsSaving: true,
+    perAppliance: true,
   },
 ]
 

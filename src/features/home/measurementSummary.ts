@@ -1,7 +1,7 @@
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import { catalogProgress } from '@/features/measurements/progress'
 import type { MeasurementResult } from '@/features/measurements/types'
-import type { RoomEntry } from '@/types'
+import type { ApplianceEntry, RoomEntry } from '@/types'
 
 type Results = Partial<Record<string, MeasurementResult>>
 
@@ -26,8 +26,9 @@ export function measurementProgress(
   results: Results,
   rooms: RoomEntry[] = [],
   skipped: readonly string[] = [],
+  appliances: readonly ApplianceEntry[] = [],
 ): { done: number; total: number } {
-  return catalogProgress(results, rooms, skipped)
+  return catalogProgress(results, rooms, skipped, appliances)
 }
 
 /**

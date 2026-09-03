@@ -327,7 +327,11 @@
       "calculation": {
         "title": "So gerechnet",
         "measured": "gemessen"
-      }
+      },
+      "applianceChoose": "Welches Gerät misst du?",
+      "applianceChooseHint": "Jedes Gerät bekommt ein eigenes Ergebnis.",
+      "applianceDone": "gemessen",
+      "applianceOpen": "noch offen"
     },
     "showerhead": {
       "title": "Duschkopf-Test",

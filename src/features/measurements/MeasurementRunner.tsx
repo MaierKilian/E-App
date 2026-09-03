@@ -11,6 +11,10 @@ import { roomInstances, roomLabel, instanceKey, type RoomInstance } from './room
 import { displayableSavingEur } from './impact'
 import { RoomCreateSheet } from './RoomCreateSheet'
 import { FeedbackPrompt } from '@/features/feedback/FeedbackPrompt'
+import { applianceInstances } from '@/features/onboarding/appliances'
+import { applianceResult } from './progress'
+import { ApplianceChooser } from './ApplianceChooser'
+import { applianceLabel } from './applianceLabel'
 import type { RunnerPhase, RunOutcome } from './runnerTypes'
 import type { MeasurementResult } from './types'
 
@@ -51,6 +55,7 @@ export function MeasurementRunner() {
   const results = useMeasurementsStore((s) => s.results)
   const clearDraft = useMeasurementDraftStore((s) => s.clearDraft)
   const rooms = useOnboardingStore((s) => s.data.rooms)
+  const appliances = useOnboardingStore((s) => s.data.appliances)
 
   const meta = getMeasurementMeta(id)
   const mod = getMeasurementModule(id)
@@ -90,9 +95,25 @@ export function MeasurementRunner() {
     return <Navigate to="/measurements" replace />
   }
 
+  const devices = meta.perAppliance
+    ? applianceInstances(appliances, id as 'fridge' | 'freezer')
+    : []
+
   // Pro-Raum-Messung ohne gewählten Raum → Raum-Auswahl anzeigen.
   if (meta.perRoom && !roomKey) {
     return <RoomPicker id={id} />
+  }
+
+  // Geräte-Messung ohne gewähltes Gerät. Bei genau einem Gerät springt die
+  // Auswahl von selbst weiter – für den häufigen Fall bleibt der Ablauf damit
+  // derselbe wie vorher, nur landet das Ergebnis unter dem Geräteschlüssel.
+  // Ohne Gerät fällt es durch: Dann fragt der `ApplianceGate` zuerst, ob es
+  // überhaupt eines gibt.
+  if (meta.perAppliance && !roomKey && devices.length > 0) {
+    if (devices.length === 1) {
+      return <Navigate to={`/measurements/${id}?room=${encodeURIComponent(devices[0].id)}`} replace />
+    }
+    return <ApplianceChooser id={id} devices={devices} results={results} />
   }
 
   // Erfolgsmoment nach dem Speichern. Er wartet auf den Weiter-Knopf: Bis
@@ -113,6 +134,19 @@ export function MeasurementRunner() {
   const nextOpenRoom = meta.perRoom
     ? instances.find((inst) => inst.key !== roomKey && !results[instanceKey(id, inst.key)])
     : undefined
+
+  // Dasselbe für Geräte: Der Ergebnis-Schirm soll das nächste beim Namen
+  // nennen können, statt nur „weiter" zu sagen.
+  const nextOpenDevice = devices.find(
+    (device, i) => device.id !== roomKey && !applianceResult(results, id, device.id, i === 0),
+  )
+
+  /** Nächste offene Instanz – Raum oder Gerät – samt Beschriftung. */
+  const nextOpen = nextOpenRoom
+    ? { key: nextOpenRoom.key, label: roomLabel(t, nextOpenRoom) }
+    : nextOpenDevice
+      ? { key: nextOpenDevice.id, label: applianceLabel(t, nextOpenDevice, devices) }
+      : undefined
 
   function goToPhase(next: RunnerPhase) {
     const nextIndex = phases.indexOf(next)
@@ -140,7 +174,7 @@ export function MeasurementRunner() {
     // Wer nur einen Raum messen wollte, landete überraschend im nächsten; wer
     // alle messen wollte, wusste vorher nicht, wohin es geht. Jetzt steht die
     // Wahl auf dem Ergebnis-Schirm, und hier wird sie nur noch ausgeführt.
-    const goNext = target === 'nextRoom' && nextOpenRoom !== undefined
+    const goNext = target === 'nextRoom' && nextOpen !== undefined
     setJustSaved({
       // Nur ein belastbarer Betrag ueber der Anzeigeschwelle wird genannt – der
       // Schirm direkt nach dem Messen ist die sichtbarste Euro-Aussage der App.
@@ -149,9 +183,9 @@ export function MeasurementRunner() {
       // diesen Check gerade gelesen. Ohne das steht sie vor jedem einzelnen
       // Raum erneut da – und aus dem schnellen Durchlauf wird ein Hindernislauf.
       nextHref: goNext
-        ? `/measurements/${id}?room=${encodeURIComponent(nextOpenRoom!.key)}&begin=1`
+        ? `/measurements/${id}?room=${encodeURIComponent(nextOpen!.key)}&begin=1`
         : '/measurements',
-      nextRoomName: goNext ? roomLabel(t, nextOpenRoom!) : undefined,
+      nextRoomName: goNext ? nextOpen!.label : undefined,
     })
   }
 
@@ -244,13 +278,13 @@ export function MeasurementRunner() {
                 Raum über die Übersicht laufen. Der Knopf nennt den nächsten
                 Raum – „weiter" ohne Ziel ist vor einem Bildschirmwechsel eine
                 Zumutung. */}
-            {nextOpenRoom && (
+            {nextOpen && (
               <button
                 type="button"
                 onClick={() => handleSave(outcome.result, 'nextRoom')}
                 className="flex w-full items-center justify-center gap-1.5 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]"
               >
-                {t('measurements.common.saveAndNext', { room: roomLabel(t, nextOpenRoom) })}
+                {t('measurements.common.saveAndNext', { room: nextOpen.label })}
                 <ChevronRight className="h-4 w-4" />
               </button>
             )}
@@ -259,12 +293,12 @@ export function MeasurementRunner() {
                 type="button"
                 onClick={() => handleSave(outcome.result)}
                 className={`flex flex-1 items-center justify-center gap-1 rounded-2xl px-5 py-3 text-sm transition-[transform,opacity,colors] active:scale-[0.97] ${
-                  nextOpenRoom
+                  nextOpen
                     ? 'border border-border bg-surface/70 font-medium text-foreground hover:bg-surface-2'
                     : 'bg-primary font-semibold text-primary-foreground hover:opacity-90'
                 }`}
               >
-                {t(nextOpenRoom ? 'measurements.common.saveAndOverview' : 'measurements.common.save')}
+                {t(nextOpen ? 'measurements.common.saveAndOverview' : 'measurements.common.save')}
               </button>
               <button
                 type="button"

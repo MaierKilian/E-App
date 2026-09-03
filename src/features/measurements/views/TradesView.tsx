@@ -35,6 +35,7 @@ const CATEGORY_ICON: Record<MeasurementCategory, LucideIcon> = {
 export function TradesView({ results }: ViewProps) {
   const { t } = useTranslation()
   const rooms = useOnboardingStore((s) => s.data.rooms)
+  const appliances = useOnboardingStore((s) => s.data.appliances)
   const skipped = useSkippedKeys()
   const instances = countingRooms(rooms, skipped)
 
@@ -48,8 +49,13 @@ export function TradesView({ results }: ViewProps) {
       // Repräsentatives Ergebnis: das direkte oder das erste Raum-/Stellen-
       // Ergebnis – sonst bliebe die Kachel eines Pro-Raum-Checks leer.
       result: anyResultFor(results, meta.id),
-      done: isMeasurementDone(results, meta, instances),
-      rooms: meta.perRoom ? measurementProgress(results, meta, instances) : undefined,
+      done: isMeasurementDone(results, meta, instances, appliances),
+      // „2/4" auch bei Geräte-Checks: Die Kachel zeigt denselben Zwischenstand
+      // wie der Ring, statt nach der ersten Messung fertig auszusehen.
+      rooms:
+        meta.perRoom || meta.perAppliance
+          ? measurementProgress(results, meta, instances, appliances)
+          : undefined,
     })),
   })).filter((g) => g.items.length > 0)
 

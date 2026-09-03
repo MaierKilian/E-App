@@ -1,7 +1,8 @@
-import type { RoomEntry } from '@/types'
+import type { ApplianceEntry, RoomEntry } from '@/types'
 import type { MeasurementResult } from './types'
 import { MEASUREMENT_CATALOG, type MeasurementMeta } from './catalog'
 import { roomInstances, instanceKey, anyResultFor, type RoomInstance } from './rooms'
+import { applianceInstances } from '@/features/onboarding/appliances'
 
 export type Results = Partial<Record<string, MeasurementResult>>
 
@@ -36,6 +37,39 @@ export function countingRooms(
 }
 
 /**
+ * Das Ergebnis eines Geräts – neuer Schlüssel zuerst, Altergebnis als Rückfall.
+ *
+ * Vor Etappe 12b lag das Ergebnis unter `fridge` bzw. `freezer`, einmal je
+ * Haushalt. Solche Ergebnisse werden **nicht umgeschrieben** (Konvention
+ * „Gespeicherte Messergebnisse bleiben lesbar"), sondern gefunden: Sie zählen
+ * für das **erste** Gerät ihrer Art. Nur für das erste – sonst erbten zwei
+ * Kühlschränke dasselbe Altergebnis und der Fortschritt zählte eine Messung
+ * doppelt, die es nur einmal gab.
+ *
+ * Sobald das Gerät neu gemessen wird, gewinnt der neue Schlüssel.
+ */
+export function applianceResult(
+  results: Results,
+  measurementId: string,
+  applianceId: string,
+  isFirst: boolean,
+): MeasurementResult | undefined {
+  return results[instanceKey(measurementId, applianceId)] ?? (isFirst ? results[measurementId] : undefined)
+}
+
+/**
+ * Die Geräte, die für diesen Check zählen.
+ *
+ * Leer, wenn die Gerätefrage noch offen ist – dann verhält sich der Check wie
+ * vor Etappe 12b: ein Ergebnis, ein Nenner. Wer „keines" geantwortet hat, ist
+ * über `skippedMeasurements()` ohnehin schon aus Zähler und Nenner heraus.
+ */
+function countingAppliances(meta: MeasurementMeta, appliances: readonly ApplianceEntry[]): ApplianceEntry[] {
+  if (!meta.perAppliance) return []
+  return applianceInstances(appliances, meta.id as 'fridge' | 'freezer')
+}
+
+/**
  * Fortschritt einer einzelnen Messung als Ganzes.
  *
  * Pro-Raum-Checks zählen ihre Räume; alle anderen sind mit dem ersten Ergebnis
@@ -46,10 +80,18 @@ export function measurementProgress(
   results: Results,
   meta: MeasurementMeta,
   instances: RoomInstance[],
+  appliances: readonly ApplianceEntry[] = [],
 ): { done: number; total: number } {
   if (meta.perRoom) {
     const done = instances.filter((inst) => results[instanceKey(meta.id, inst.key)]).length
     return { done, total: instances.length }
+  }
+  const devices = countingAppliances(meta, appliances)
+  if (devices.length > 0) {
+    const done = devices.filter((device, i) =>
+      applianceResult(results, meta.id, device.id, i === 0),
+    ).length
+    return { done, total: devices.length }
   }
   return { done: anyResultFor(results, meta.id) ? 1 : 0, total: 1 }
 }
@@ -59,8 +101,9 @@ export function isMeasurementDone(
   results: Results,
   meta: MeasurementMeta,
   instances: RoomInstance[],
+  appliances: readonly ApplianceEntry[] = [],
 ): boolean {
-  const { done, total } = measurementProgress(results, meta, instances)
+  const { done, total } = measurementProgress(results, meta, instances, appliances)
   return total > 0 && done === total
 }
 
@@ -86,16 +129,23 @@ export function countableMeasurements(
 /**
  * Katalog-Fortschritt – die Zahl hinter dem Ring im Messungen-Kopf **und** auf
  * der Zuhause-Karte. Beide Ringe zeigen damit zwangsläufig dasselbe.
+ *
+ * Gezählt werden **Checks**, nicht Instanzen: Ein Pro-Raum-Check ist eine
+ * Einheit und gilt erst als erledigt, wenn alle zählenden Räume gemessen sind.
+ * Für Geräte-Checks gilt dasselbe – zwei Kühlschränke, von denen einer gemessen
+ * ist, machen den Check nicht fertig. Vorher meldete er sich nach der ersten
+ * Messung als erledigt, obwohl das zweite Gerät ungemessen war.
  */
 export function catalogProgress(
   results: Results,
   rooms: RoomEntry[],
   skipped: readonly string[] = [],
+  appliances: readonly ApplianceEntry[] = [],
 ): { done: number; total: number } {
   const instances = countingRooms(rooms, skipped)
   const countable = countableMeasurements(instances, skipped)
   return {
-    done: countable.filter((meta) => isMeasurementDone(results, meta, instances)).length,
+    done: countable.filter((meta) => isMeasurementDone(results, meta, instances, appliances)).length,
     total: countable.length,
   }
 }
