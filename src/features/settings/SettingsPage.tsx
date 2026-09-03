@@ -12,6 +12,9 @@ import {
   Info,
   ShieldCheck,
   BarChart3,
+  Cookie,
+  FileText,
+  Scale,
   MessageSquarePlus,
   GraduationCap,
   SlidersHorizontal,
@@ -26,7 +29,7 @@ import { AvatarPicker } from '@/components/AvatarPicker'
 import { Toggle } from '@/components/ui/Toggle'
 import { ThemePicker } from '@/components/ThemePicker'
 import { useLogout } from '@/features/auth/useLogout'
-import { syncAnalyticsConsent } from '@/features/analytics/analytics'
+import { useConsentStore, useAnalyticsConsent } from '@/features/legal/consent'
 import { ProfileSwitcher } from '@/features/profiles/ProfileSwitcher'
 import { SUPPORTED_LANGUAGES } from '@/i18n'
 import { APP_VERSION } from '@/app/version'
@@ -44,8 +47,9 @@ export function SettingsPage() {
   const navigate = useNavigate()
   const logoutAndLeave = useLogout()
   const demoMode = useSettingsStore((s) => s.demoMode)
-  const analyticsEnabled = useSettingsStore((s) => s.analyticsEnabled)
-  const setAnalyticsEnabled = useSettingsStore((s) => s.setAnalyticsEnabled)
+  const analyticsEnabled = useAnalyticsConsent()
+  const saveConsentChoice = useConsentStore((s) => s.saveChoice)
+  const openConsentSettings = useConsentStore((s) => s.openSettings)
   const user = useUser()
   const isAuthenticated = useIsAuthenticated()
   const accountAvatar = useAccountAvatarSrc()
@@ -57,9 +61,13 @@ export function SettingsPage() {
   // (angemeldet, nicht in der Demo) – sonst bliebe der Abschnitt leer.
   const showProfiles = !demoMode && isAuthenticated && profilesReady
 
+  /**
+   * Der Schalter IST die Einwilligung: Umlegen speichert eine neue, datierte
+   * Entscheidung im Consent-Store; `App.tsx` setzt sie daraufhin technisch um
+   * (Analytics laden bzw. abschalten und Cookies löschen).
+   */
   function handleAnalyticsToggle(next: boolean) {
-    setAnalyticsEnabled(next)
-    void syncAnalyticsConsent()
+    saveConsentChoice({ analytics: next })
   }
 
   return (
@@ -171,7 +179,7 @@ export function SettingsPage() {
         <SettingsRow icon={Trash2} title={t('settings.resetEntry')} to="/einstellungen/daten" danger />
       </SettingsSection>
 
-      {/* Datenschutz */}
+      {/* Datenschutz & Rechtliches */}
       <SettingsSection title={t('settings.privacy')} icon={ShieldCheck}>
         <SettingsRow
           icon={BarChart3}
@@ -185,6 +193,14 @@ export function SettingsPage() {
             />
           }
         />
+        <SettingsRow
+          icon={Cookie}
+          title={t('consent.settings')}
+          subtitle={t('consent.settingsHint')}
+          onClick={openConsentSettings}
+        />
+        <SettingsRow icon={FileText} title={t('legal.privacy')} to="/datenschutz" />
+        <SettingsRow icon={Scale} title={t('legal.imprint')} to="/impressum" />
       </SettingsSection>
 
       {/* Über */}

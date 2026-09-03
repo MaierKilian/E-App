@@ -2192,7 +2192,7 @@
     "about": "Über",
     "analytics": {
       "title": "Anonyme Nutzungsstatistik",
-      "desc": "Hilf uns mit anonymen Nutzungsdaten, die App zu verbessern. Keine persönlichen Inhalte, jederzeit abschaltbar."
+      "desc": "Hilf uns mit anonymen Nutzungsdaten, die App zu verbessern. Nur mit deiner Einwilligung, jederzeit widerrufbar."
     },
     "resetEntry": "Daten zurücksetzen",
     "data": {
@@ -2543,6 +2543,39 @@
       "ctaDemo": "Erst Beispiel ansehen",
       "signInPrompt": "Schon dabei?",
       "signIn": "Anmelden"
+    }
+  },
+  "legal": {
+    "imprint": "Impressum",
+    "privacy": "Datenschutz"
+  },
+  "consent": {
+    "accept": "Akzeptieren",
+    "reject": "Ablehnen",
+    "save": "Speichern",
+    "settings": "Cookie-Einstellungen",
+    "settingsHint": "Einwilligung jederzeit ändern oder widerrufen",
+    "manage": "Einwilligung verwalten",
+    "settingsTitle": "Cookie-Einstellungen",
+    "settingsIntro": "Entscheide selbst, was wir messen dürfen. Deine Wahl gilt sofort und lässt sich jederzeit ändern.",
+    "alwaysActive": "Immer aktiv",
+    "banner": {
+      "title": "Cookies und Statistik",
+      "text": "Technisch notwendige Speicherung nutzen wir immer – ohne sie funktioniert die App nicht. Zusätzlich würden wir gern anonym messen, wie die App genutzt wird (Google Analytics). Das passiert nur, wenn du zustimmst."
+    },
+    "categories": {
+      "necessary": {
+        "title": "Notwendig",
+        "desc": "Speichert deine Wohnungsdaten, Messungen, Sprache, Darstellung und – falls du angemeldet bist – deine Sitzung. Ohne diese Speicherung funktioniert die App nicht; sie ist deshalb einwilligungsfrei."
+      },
+      "analytics": {
+        "title": "Anonyme Nutzungsstatistik",
+        "desc": "Google Analytics zeigt uns, welche Bereiche genutzt werden und wo Nutzer abbrechen. Setzt Cookies (_ga) und überträgt Daten an Google. Deine Wohnungs- und Messdaten sind davon nicht betroffen."
+      }
+    },
+    "status": {
+      "granted": "Aktuell: Nutzungsstatistik erlaubt.",
+      "denied": "Aktuell: Nutzungsstatistik nicht erlaubt."
     }
   }
 }

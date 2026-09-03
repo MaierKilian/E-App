@@ -2192,7 +2192,7 @@
     "about": "About",
     "analytics": {
       "title": "Anonymous usage statistics",
-      "desc": "Help us improve the app with anonymous usage data. No personal content, can be turned off anytime."
+      "desc": "Help us improve the app with anonymous usage data. Only with your consent, revocable at any time."
     },
     "resetEntry": "Reset data",
     "data": {
@@ -2543,6 +2543,39 @@
       "ctaDemo": "See the example first",
       "signInPrompt": "Already have an account?",
       "signIn": "Sign in"
+    }
+  },
+  "legal": {
+    "imprint": "Legal notice",
+    "privacy": "Privacy policy"
+  },
+  "consent": {
+    "accept": "Accept",
+    "reject": "Decline",
+    "save": "Save",
+    "settings": "Cookie settings",
+    "settingsHint": "Change or withdraw your consent at any time",
+    "manage": "Manage consent",
+    "settingsTitle": "Cookie settings",
+    "settingsIntro": "You decide what we may measure. Your choice takes effect immediately and can be changed at any time.",
+    "alwaysActive": "Always active",
+    "banner": {
+      "title": "Cookies and statistics",
+      "text": "We always use strictly necessary storage – the app does not work without it. In addition, we would like to measure anonymously how the app is used (Google Analytics). That only happens if you agree."
+    },
+    "categories": {
+      "necessary": {
+        "title": "Necessary",
+        "desc": "Stores your home data, measurements, language, appearance and – if you are signed in – your session. The app does not work without this storage, so it does not require consent."
+      },
+      "analytics": {
+        "title": "Anonymous usage statistics",
+        "desc": "Google Analytics shows us which areas are used and where people drop off. Sets cookies (_ga) and transfers data to Google. Your home and measurement data are not affected."
+      }
+    },
+    "status": {
+      "granted": "Currently: usage statistics allowed.",
+      "denied": "Currently: usage statistics not allowed."
     }
   }
 }

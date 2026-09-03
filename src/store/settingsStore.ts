@@ -29,13 +29,6 @@ interface SettingsState {
   demoMode: boolean
   setDemoMode: (on: boolean) => void
   /**
-   * Einwilligung in die anonyme Nutzungsstatistik (Firebase Analytics).
-   * Standardmäßig aktiv; über die Einstellungen abschaltbar (DSGVO-Opt-out).
-   * Wird von `track()` ausgewertet, bevor ein Ereignis gesendet wird.
-   */
-  analyticsEnabled: boolean
-  setAnalyticsEnabled: (on: boolean) => void
-  /**
    * Wurde der Anstoß, die PV-Erzeugung zu erfassen, weggeklickt?
    *
    * Er erscheint, wenn im Profil eine PV-Anlage steht, aber noch kein einziger
@@ -55,6 +48,16 @@ interface SettingsState {
   acceptPlausibility: (key: string) => void
 }
 
+/*
+ * Hinweis: Die Einwilligung in die Nutzungsstatistik lag früher hier als
+ * `analyticsEnabled` (Opt-out, Standard „an"). Sie ist nach
+ * `features/legal/consent.ts` umgezogen und arbeitet jetzt als Opt-in – ohne
+ * ausdrückliche Einwilligung wird Analytics gar nicht erst geladen
+ * (§ 25 Abs. 1 TDDDG). Der alte Wert wird beim Laden verworfen (siehe
+ * `migrate`), damit ein früheres, stillschweigendes „an" nicht als
+ * Einwilligung weiterlebt.
+ */
+
 /**
  * Zentrale, dauerhaft gespeicherte App-Einstellungen (Theme, Einführungs-Status).
  * Persistiert in localStorage unter "eapp-settings" – wird auch vom Anti-Flicker-
@@ -70,8 +73,6 @@ export const useSettingsStore = create<SettingsState>()(
       setIntroSeen: (introSeen) => set({ introSeen }),
       demoMode: false,
       setDemoMode: (demoMode) => set({ demoMode }),
-      analyticsEnabled: true,
-      setAnalyticsEnabled: (analyticsEnabled) => set({ analyticsEnabled }),
       pvPromptDismissed: false,
       dismissPvPrompt: () => set({ pvPromptDismissed: true }),
       plausibilityAccepted: null,
@@ -82,12 +83,16 @@ export const useSettingsStore = create<SettingsState>()(
       // v2: Themes Ozean/Sepia/Hoher Kontrast entfernt. Ein gespeichertes,
       // nicht mehr vorhandenes Theme würde sonst auf die Standardfarben (hell)
       // durchfallen – daher hier auf das Geräte-Theme zurücksetzen.
-      version: 2,
+      // v3: `analyticsEnabled` entfernt – die Einwilligung liegt jetzt im
+      // Consent-Store und muss aktiv erteilt werden.
+      version: 3,
       migrate: (persisted) => {
-        const state = persisted as Partial<SettingsState> | undefined
-        if (state && !THEMES.includes(state.theme as Theme)) {
+        const state = persisted as (Partial<SettingsState> & Record<string, unknown>) | undefined
+        if (!state) return state as unknown as SettingsState
+        if (!THEMES.includes(state.theme as Theme)) {
           state.theme = systemTheme()
         }
+        delete state.analyticsEnabled
         return state as SettingsState
       },
     },

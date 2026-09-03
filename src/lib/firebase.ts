@@ -97,8 +97,36 @@ export const db = initializeFirestore(app, {
 // Callable Functions – gleiche Region wie die deployte Funktion (siehe functions/).
 export const functions = getFunctions(app, 'europe-west1')
 
-// Analytics nur dort initialisieren, wo es unterstützt wird (Browser, kein
-// SSR/Worker). Liefert das Analytics-Objekt – oder null, wenn nicht verfügbar.
-export const analyticsReady: Promise<Analytics | null> = isSupported().then(
-  (ok) => (ok ? getAnalytics(app) : null),
-)
+/** Mess-ID des Analytics-Datenstroms – u. a. für den Google-Opt-out-Schalter. */
+export const ANALYTICS_MEASUREMENT_ID = firebaseConfig.measurementId
+
+/**
+ * Analytics wird bewusst NICHT beim Laden der App initialisiert.
+ *
+ * Google Analytics setzt beim Start sofort seine `_ga`-Cookies – das ist nach
+ * § 25 Abs. 1 TDDDG ohne vorherige Einwilligung unzulässig. Deshalb liegt die
+ * Initialisierung hinter dieser Funktion, die ausschließlich
+ * `features/analytics/analytics.ts` aufruft, und zwar erst nach einer
+ * wirksamen Einwilligung.
+ *
+ * ⚠️ Nicht an anderer Stelle aufrufen und nicht durch ein eifriges
+ * `getAnalytics(app)` ersetzen – damit wäre die Einwilligung wirkungslos.
+ */
+let analyticsPromise: Promise<Analytics | null> | null = null
+
+export function loadAnalytics(): Promise<Analytics | null> {
+  if (!analyticsPromise) {
+    analyticsPromise = isSupported()
+      .then((ok) => (ok ? getAnalytics(app) : null))
+      .catch(() => null)
+  }
+  return analyticsPromise
+}
+
+/**
+ * Wurde Analytics in dieser Sitzung schon geladen? Nur dann muss beim Widerruf
+ * überhaupt etwas abgeschaltet werden.
+ */
+export function analyticsStarted(): boolean {
+  return analyticsPromise !== null
+}

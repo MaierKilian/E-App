@@ -20,6 +20,7 @@ import { Logo } from '@/components/ui/Logo'
 import { useSettingsStore } from '@/store/settingsStore'
 import { enterDemo } from '@/features/demo/enterDemo'
 import { track } from '@/features/analytics/analytics'
+import { LegalFooter } from '@/features/legal/LegalFooter'
 import { PreviewSection } from './PreviewSection'
 import { GuidedSection } from './GuidedSection'
 
@@ -204,6 +205,10 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
           </button>
         </p>
       </section>
+
+      {/* Pflichtlinks – auf der öffentlichen Landing Page besonders wichtig,
+          weil hier der Erst-Besuch beginnt (§ 5 DDG). */}
+      <LegalFooter className="mx-auto max-w-5xl" />
     </div>
   )
 }
