@@ -1,6 +1,17 @@
+import { H, PAD, W, sparklineOffsets } from './sparklineGeometry'
+
 interface SparklineProps {
   /** Datenpunkte, älteste zuerst. */
   values: number[]
+  /**
+   * ISO-Daten (`yyyy-mm-dd`) zu den Werten, in derselben Reihenfolge.
+   *
+   * Optional: Ohne sie stehen die Punkte gleichmäßig – richtig für die
+   * Beispielkurve der Ghost-Vorschau, die gar keine Daten hat. Mit ihnen
+   * bekommt die Kurve dieselbe Zeitachse wie das große Diagramm und der
+   * PDF-Verlauf, statt eine Woche und drei Monate gleich breit zu zeichnen.
+   */
+  dates?: string[]
   /** Linien-/Flächenfarbe (z. B. typ-eigener Akzent). */
   color: string
   className?: string
@@ -20,11 +31,7 @@ interface SparklineProps {
  * gestrichelt, nur etwas kräftiger: eine Ablesung ist mehr als keine, aber noch
  * kein Trend.
  */
-export function Sparkline({ values, color, className, height = 36 }: SparklineProps) {
-  const W = 100
-  const H = 36
-  const pad = 3
-
+export function Sparkline({ values, dates, color, className, height = 36 }: SparklineProps) {
   // Erst ab zwei Ablesungen gibt es eine Kurve zu zeichnen.
   const pts = values.length >= 2 ? values : []
   const singleReading = values.length === 1
@@ -36,14 +43,14 @@ export function Sparkline({ values, color, className, height = 36 }: SparklinePr
     const min = Math.min(...pts)
     const max = Math.max(...pts)
     const span = max - min || 1
-    const stepX = (W - pad * 2) / (pts.length - 1)
+    const offsets = sparklineOffsets(pts.length, dates)
     const coords = pts.map((v, i) => {
-      const x = pad + i * stepX
-      const y = pad + (H - pad * 2) * (1 - (v - min) / span)
+      const x = PAD + offsets[i]
+      const y = PAD + (H - PAD * 2) * (1 - (v - min) / span)
       return [x, y] as const
     })
     path = coords.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ')
-    area = `${path} L${(W - pad).toFixed(1)} ${H - pad} L${pad} ${H - pad} Z`
+    area = `${path} L${(W - PAD).toFixed(1)} ${H - PAD} L${PAD} ${H - PAD} Z`
   }
 
   return (
@@ -75,9 +82,9 @@ export function Sparkline({ values, color, className, height = 36 }: SparklinePr
         </>
       ) : (
         <line
-          x1={pad}
+          x1={PAD}
           y1={H / 2}
-          x2={W - pad}
+          x2={W - PAD}
           y2={H / 2}
           stroke={color}
           strokeWidth="2"

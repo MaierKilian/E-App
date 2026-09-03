@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useParams, useNavigate, useSearchParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ArrowLeft, Check, ChevronDown, ChevronRight, DoorOpen, Plus } from 'lucide-react'
@@ -19,16 +19,7 @@ interface SavedState {
   savings: number
   nextHref: string
   nextRoomName?: string
-  /**
-   * Der Nutzer wollte weitermessen. Dann fällt der Erfolgsmoment kürzer aus –
-   * wer sechs Räume abarbeitet, will keine sechs Konfetti-Momente.
-   */
-  continuing: boolean
 }
-
-/** Anzeigedauer des Erfolgs-Zwischenschritts (ms). */
-const SAVED_DELAY_MS = 1600
-const SAVED_DELAY_CONTINUING_MS = 700
 
 const PHASES: RunnerPhase[] = ['intro', 'run', 'result']
 
@@ -94,16 +85,6 @@ export function MeasurementRunner() {
     setJustSaved(null)
   }
 
-  // Erfolgs-Zwischenschritt: nach kurzer Anzeige automatisch weiter. Das Ziel
-  // hat der Nutzer auf dem Ergebnis-Schirm selbst gewählt (siehe `handleSave`),
-  // hier wird es nur noch angesteuert.
-  useEffect(() => {
-    if (!justSaved) return
-    const delay = justSaved.continuing ? SAVED_DELAY_CONTINUING_MS : SAVED_DELAY_MS
-    const tid = setTimeout(() => navigate(justSaved.nextHref), delay)
-    return () => clearTimeout(tid)
-  }, [justSaved, navigate])
-
   // Unbekannte oder (noch) nicht verfügbare Messung → zurück zur Übersicht.
   if (!meta || !meta.available || !mod) {
     return <Navigate to="/measurements" replace />
@@ -114,7 +95,10 @@ export function MeasurementRunner() {
     return <RoomPicker id={id} />
   }
 
-  // Erfolgsmoment nach dem Speichern.
+  // Erfolgsmoment nach dem Speichern. Er wartet auf den Weiter-Knopf: Bis
+  // September 2026 lief hier ein Timer (1600 ms, 700 ms beim Weitermachen)
+  // gegen den Knopf an und nahm den Schirm weg, bevor das Ergebnis gelesen
+  // war. Wer nichts tut, bleibt jetzt stehen.
   if (justSaved) {
     return <SavedInterstitial state={justSaved} onContinue={() => navigate(justSaved.nextHref)} />
   }
@@ -168,7 +152,6 @@ export function MeasurementRunner() {
         ? `/measurements/${id}?room=${encodeURIComponent(nextOpenRoom!.key)}&begin=1`
         : '/measurements',
       nextRoomName: goNext ? roomLabel(t, nextOpenRoom!) : undefined,
-      continuing: goNext,
     })
   }
 

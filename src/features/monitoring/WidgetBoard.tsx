@@ -371,6 +371,7 @@ function HeroMeter({ type, due, now, onAdd }: MeterProps & { onAdd: () => void }
   // fallende Kurve mit den Sprüngen der Lieferungen – der Trend darunter
   // rechnet dagegen auf der virtuellen Zählerreihe.
   const series = readings.map((r) => r.value)
+  const dates = readings.map((r) => r.date)
   const trend = consumptionTrend(counterSeries(readings, meterConfig))
   const range = meterRange(readings, meterConfig, { seasonal: isSeasonal(type) })
   const days = daysSinceLastReading(readings, now)
@@ -456,7 +457,7 @@ function HeroMeter({ type, due, now, onAdd }: MeterProps & { onAdd: () => void }
 
           <div className="mt-4">
             {series.length >= 2 ? (
-              <Sparkline values={series} color={meta.accent} height={48} />
+              <Sparkline values={series} dates={dates} color={meta.accent} height={48} />
             ) : (
               // Ghost-Vorschau: dezente Beispiel-Kurve zeigt, wie der Verlauf
               // aussehen wird, sobald zwei echte Ablesungen vorliegen.
@@ -499,6 +500,7 @@ function MeterTile({ type, due }: MeterProps) {
   const readings = sortByDate(readingsByType[type] ?? [])
   const latest = readings[readings.length - 1]
   const series = readings.map((r) => r.value)
+  const dates = readings.map((r) => r.date)
   const trend = consumptionTrend(counterSeries(readings, meterConfig))
   const range = meterRange(readings, meterConfig, { seasonal: isSeasonal(type) })
 
@@ -548,7 +550,7 @@ function MeterTile({ type, due }: MeterProps) {
 
       {series.length > 0 && (
         <div className="-mb-1 w-full">
-          <Sparkline values={series} color={meta.accent} height={28} />
+          <Sparkline values={series} dates={dates} color={meta.accent} height={28} />
         </div>
       )}
     </button>
