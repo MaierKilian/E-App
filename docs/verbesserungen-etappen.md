@@ -73,7 +73,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | ✅ fertig | 2026-09-03 | `fe7c714` |
 | 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | ✅ fertig | 2026-09-03 | `e06fa74` |
 | 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | offen 💬 | | |
-| 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | offen | | |
+| 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cc13d24` |
 | 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | offen | | |
 | 12c | Tipps, Bericht und Folgemessungen nachziehen | 18.2 | M | 18 % | offen | | |
 | 12d | Der Raum wird benutzt | 18.2 | M | 18 % | offen | | |
@@ -1016,16 +1016,35 @@ Feld, das zwei Geräte unterscheiden könnte.
 
 ### Fertig, wenn
 
-- Zwei Kühlschränke lassen sich eintragen, überstehen einen Neustart und den
-  Cloud-Sync, und behalten ihre Kennung, wenn eines gelöscht wird.
-- Ein Altprofil (ein Gerät je Art, ohne `id`) lädt aus localStorage **und** aus
-  der Cloud fehlerfrei und hat danach `id = kind`. Beides einzeln prüfen.
-- Ein Haushalt ohne Geräte verhält sich exakt wie vorher: Check fällt aus
-  Zähler und Nenner.
-- `applianceInstances` hat eigene Tests, auch für den Fall „ein
-  Kühl-Gefrier-Kombigerät bedient beide Checks".
-- Für den Nutzer, der genau ein Gerät je Art hat, sieht der Fragebogen aus wie
-  vorher.
+- [x] Zwei Kühlschränke lassen sich eintragen und behalten ihre Kennung, wenn
+  eines gelöscht wird. Zusätzlich geprüft: Eine gelöschte Kennung wird **nie
+  neu vergeben** – sonst erbte das nächste Gerät das Ergebnis des gelöschten.
+- [x] Ein Altprofil lädt aus localStorage **und** aus der Cloud fehlerfrei und
+  hat danach `id = kind`; beide Wege sind einzeln getestet. Der Cloud-Weg
+  zusätzlich auf Wiederholung: Ein zweiter Sync darf die Kennung nicht ändern.
+- [x] Ein Haushalt ohne Geräte verhält sich exakt wie vorher – Test auf
+  `skippedMeasurements`.
+- [x] `applianceInstances` hat eigene Tests, das Kombigerät eingeschlossen.
+- [x] Bei genau einem Gerät je Art sieht der Fragebogen aus wie vorher: Anzahl,
+  Namensfeld und Löschknopf erscheinen erst ab dem zweiten Gerät.
+
+### Unterwegs entschieden (2026-09-03)
+
+- **Eine gelöschte Kennung wird nie wiederverwendet.** Das Konzept begründet,
+  warum die Kennung kein Index sein darf; dieselbe Begründung schließt auch
+  „kleinste freie Nummer" aus, denn die würde nach dem Löschen erneut vergeben.
+  Neue Kennungen sind deshalb `kind-<zufällig>` – die Art vorn, damit der
+  gespeicherte Zustand lesbar bleibt.
+- **`updateAppliance` kam dazu**, im Plan nicht genannt. Raum und Name je Gerät
+  zu setzen braucht einen Weg, der die Kennung nicht anfasst; `setRoom` lief
+  vorher über `kind` und hätte bei zwei Geräten derselben Art beide getroffen.
+- **Die Migration verdrängt auch dann nichts**, wenn im Speicher wider Erwarten
+  zwei Geräte derselben Art stünden (von Hand bearbeiteter Zustand): Das zweite
+  bekommt eine eigene Kennung, statt die erste zu überschreiben.
+- **Nicht belegt:** Der umgebaute Picker wurde nicht im Browser gesehen.
+
+> **12b ist noch nicht angefangen.** Bis dahin gilt weiter ein Ergebnis je
+> Geräteart – `applianceInstances` ist gebaut, aber von niemandem benutzt.
 
 ---
 
