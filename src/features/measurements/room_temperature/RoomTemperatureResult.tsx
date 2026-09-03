@@ -6,10 +6,13 @@ import { ResultHero } from '../ResultHero'
 import type { ResultProps } from '../runnerTypes'
 import {
   rateTemperatureInBand,
-  rateHumidity,
+  rateHumidityInBand,
   DEFAULT_COMFORT_BAND,
+  DEFAULT_HUMIDITY_BAND,
+  HUMIDITY_BANDS,
   type DimensionStatus,
 } from './roomClimate'
+import { ASSUMED_BASEMENT_WALL_C, condensationRisk, dewPoint } from './dewPoint'
 
 /** Formatiert eine Zahl in der aktuellen Sprache. */
 function useNumberFormat() {
@@ -79,9 +82,24 @@ export function RoomTemperatureResult({ result }: ResultProps) {
 
   const hasHumidity = Number.isFinite(result.details?.humidity)
   const humidity = result.details?.humidity ?? 0
+  // Wie beim Komfortband: Das angewandte Band steht im Ergebnis. Ein Ergebnis
+  // von vor dieser Änderung trägt es nicht und fällt auf den Wohnraum-Wert
+  // zurück – genau die Bewertung, mit der es damals entstanden ist.
+  const humBand = {
+    min: result.details?.humMin ?? DEFAULT_HUMIDITY_BAND.min,
+    max: result.details?.humMax ?? DEFAULT_HUMIDITY_BAND.max,
+  }
   const humidityStatus: DimensionStatus | undefined = hasHumidity
-    ? rateHumidity(humidity)
+    ? rateHumidityInBand(humidity, humBand)
     : undefined
+
+  // Der Kellerhinweis hängt am angewandten Band, nicht am Raumnamen: Der
+  // Ergebnis-Schirm kennt den Raum nicht, wohl aber das Band, das nur Keller
+  // und Waschküche tragen.
+  const isBasementBand = humBand.max === HUMIDITY_BANDS.basement?.max
+  const showDewPointHint =
+    hasHumidity && isBasementBand && condensationRisk(temp, humidity)
+  const dewPointC = showDewPointHint ? dewPoint(temp, humidity) : undefined
 
   const draftIndex = result.details?.draft ?? 0
   const draftLevel = DRAFT_LEVELS[draftIndex] ?? 'none'
@@ -117,6 +135,33 @@ export function RoomTemperatureResult({ result }: ResultProps) {
           status={t(`measurements.room_temperature.result.draftStatus.${draftLevel}`)}
         />
       </ul>
+
+      {/* Der eigentliche Befund im Keller: nicht die Prozentzahl, sondern dass
+          diese Luft an der kalten Wand kondensiert. Steht deshalb als eigener
+          Hinweis und nicht als Statuszeile zwischen den anderen. */}
+      {showDewPointHint && (
+        <div className="glass rounded-3xl p-5">
+          <div className="flex gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <Droplets className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-foreground">
+                {t('measurements.room_temperature.result.dewPoint.title')}
+              </p>
+              <p className="mt-1 text-sm text-muted">
+                {t('measurements.room_temperature.result.dewPoint.text', {
+                  dewPoint: fmt(dewPointC ?? 0, 1),
+                  wall: fmt(ASSUMED_BASEMENT_WALL_C),
+                })}
+              </p>
+              <p className="mt-2 text-sm text-foreground">
+                {t('measurements.room_temperature.result.dewPoint.rule')}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {hasSaving && (
         <div className="glass rounded-3xl p-5">

@@ -12,8 +12,12 @@ import {
   comfortBand,
   displaySavingEur,
   rateTemperature,
+  rateHumidity,
+  humidityBand,
   COMFORT_BANDS,
   DEFAULT_COMFORT_BAND,
+  DEFAULT_HUMIDITY_BAND,
+  HUMIDITY_BANDS,
   MIN_DISPLAY_EUR,
   SAVING_REFERENCE_TEMP,
 } from '@/features/measurements/room_temperature/roomClimate'
@@ -163,5 +167,68 @@ describe('Raumklima – raumtypabhängiges Komfortband', () => {
       expect(saving.deltaT, type).toBe(0)
       expect(saving.yearlySaving, type).toBeUndefined()
     }
+  })
+})
+
+// Die Luftfeuchte war bis September 2026 als einzige Dimension raumblind: Ein
+// Keller mit 65 % wurde als „zu feucht" gemeldet, obwohl das dort unauffällig
+// ist – und der Fall, auf den es im Keller ankommt, stand nirgends (siehe
+// `dewPoint.test.ts`).
+describe('Raumklima – raumtypabhängiges Feuchte-Band', () => {
+  it('meldet 65 % im Keller nicht mehr als zu feucht', () => {
+    expect(rateHumidity(65, 'basement')).toBe('optimal')
+  })
+
+  it('meldet 65 % im Wohnzimmer weiterhin als zu feucht', () => {
+    expect(rateHumidity(65, 'living_room')).toBe('tooHumid')
+    expect(rateHumidity(65)).toBe('tooHumid')
+  })
+
+  it('gilt auch für die Waschküche – kühl und mit ständigem Feuchte-Eintrag', () => {
+    expect(rateHumidity(63, 'utility_room')).toBe('optimal')
+  })
+
+  it('meldet zu trocken weiterhin, im Keller aber erst früher', () => {
+    expect(rateHumidity(45, 'basement')).toBe('tooDry')
+    expect(rateHumidity(45, 'living_room')).toBe('optimal')
+  })
+
+  it('lässt gespeicherte Ergebnisse gültig bleiben', () => {
+    // Ergebnisse werden nie migriert (siehe CLAUDE.md). Ein Ergebnis von vor
+    // dieser Änderung trägt kein `humMin`/`humMax` und fällt im Ergebnis-Schirm
+    // auf dieses Band zurück – es muss deshalb genau den alten Grenzen 40/60
+    // entsprechen, sonst bewertete sich ein Altergebnis beim Öffnen um.
+    expect(DEFAULT_HUMIDITY_BAND).toEqual({ min: 40, max: 60 })
+  })
+
+  it('fällt ohne Raumbezug auf das Wohnraum-Band zurück', () => {
+    expect(humidityBand(undefined)).toEqual(DEFAULT_HUMIDITY_BAND)
+    expect(humidityBand('bedroom')).toEqual(DEFAULT_HUMIDITY_BAND)
+    expect(humidityBand('basement')).toEqual(HUMIDITY_BANDS.basement)
+  })
+
+  it('führt das angewandte Band im Ergebnis mit – wie das Komfortband', () => {
+    const keller = calcRoomClimate({
+      temperature: 16,
+      humidity: 65,
+      draft: 'none',
+      roomType: 'basement',
+    })
+    expect(keller.humidityBand).toEqual(HUMIDITY_BANDS.basement)
+    expect(keller.humidityStatus).toBe('optimal')
+    expect(keller.rating).toBe('good')
+  })
+
+  it('verschiebt die Extremschwelle mit dem Band, statt sie fest zu setzen', () => {
+    // Wohnraum: unverändert ab über 70 % „high". Keller: erst ab über 75 %.
+    const wohnen = (humidity: number) =>
+      calcRoomClimate({ temperature: 21, humidity, draft: 'none', roomType: 'living_room' }).rating
+    expect(wohnen(69)).toBe('medium')
+    expect(wohnen(71)).toBe('high')
+
+    const keller = (humidity: number) =>
+      calcRoomClimate({ temperature: 16, humidity, draft: 'none', roomType: 'basement' }).rating
+    expect(keller(74)).toBe('medium')
+    expect(keller(76)).toBe('high')
   })
 })

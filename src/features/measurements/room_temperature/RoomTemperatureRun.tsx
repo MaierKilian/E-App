@@ -55,7 +55,14 @@ export function RoomTemperatureRun({ onEvaluate, roomKey }: RunProps) {
       bandMin: calc.band.min,
       bandMax: calc.band.max,
     }
-    if (humidityOn) details.humidity = humidity
+    if (humidityOn) {
+      details.humidity = humidity
+      // Das angewandte Feuchte-Band wird mitgespeichert, wie das Komfortband:
+      // Der Ergebnis-Schirm bekommt nur das Ergebnis, nicht den Raum – ohne
+      // diese beiden Zahlen könnte er einen Keller nicht als Keller bewerten.
+      details.humMin = calc.humidityBand.min
+      details.humMax = calc.humidityBand.max
+    }
 
     // Anteilige Heiz-Einsparung dieses Raums (nur sinnvoll, wenn zu warm).
     const profile = useOnboardingStore.getState().data

@@ -588,6 +588,11 @@
           "context": "{{percent}} % weniger Heizenergie bei {{delta}} °C über {{reference}} °C – anteilig für diesen Raum. Grober Orientierungswert (≈6 % je °C), keine Prognose.",
           "estimated": "grobe Schätzung",
           "cta": "Heizverbrauch & Preis eintragen"
+        },
+        "dewPoint": {
+          "title": "Achtung beim Lüften",
+          "text": "Diese Luft kondensiert an einer {{wall}} °C kalten Kellerwand – ihr Taupunkt liegt bei {{dewPoint}} °C. Schimmel entsteht nicht durch eine Prozentzahl, sondern genau hier.",
+          "rule": "Im Sommer nachts oder früh morgens lüften, nicht mittags: Warme Außenluft bringt mehr Feuchte herein, als sie hinausträgt."
         }
       }
     },

@@ -588,6 +588,11 @@
           "context": "{{percent}}% less heating energy at {{delta}} °C above {{reference}} °C – proportional for this room. Rough guide value (≈6% per °C), not a forecast.",
           "estimated": "rough estimate",
           "cta": "Add heating usage & price"
+        },
+        "dewPoint": {
+          "title": "Careful when airing out",
+          "text": "This air condenses on a basement wall at {{wall}} °C – its dew point is {{dewPoint}} °C. Mould is not caused by a percentage, but by exactly this.",
+          "rule": "In summer, air out at night or early morning, not at midday: warm outside air brings in more moisture than it carries away."
         }
       }
     },

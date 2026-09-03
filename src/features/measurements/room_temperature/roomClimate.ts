@@ -69,10 +69,51 @@ export function comfortBand(roomType?: RoomType): ComfortBand {
 const TEMP_EXTREME_TOLERANCE = 3
 
 // Schwellenwerte Luftfeuchte (%).
-export const HUM_OPTIMAL_MIN = 40
-export const HUM_OPTIMAL_MAX = 60
-const HUM_EXTREME_LOW = 30
-const HUM_EXTREME_HIGH = 70
+//
+// Wie beim Komfortband hängt der gesunde Bereich vom Raumtyp ab: Ein Keller
+// mit 65 % ist unauffällig, ein Wohnzimmer mit 65 % nicht. Ein einheitliches
+// Band meldete jeden normalen Keller als „zu feucht" – und übersah zugleich
+// den Fall, auf den es dort ankommt (siehe `dewPoint.ts`).
+export interface HumidityBand {
+  /** Untere Grenze des gesunden Bereichs (% rel. Feuchte). */
+  min: number
+  /** Obere Grenze des gesunden Bereichs (% rel. Feuchte). */
+  max: number
+}
+
+/** Band für Wohnräume – und für Messungen ohne Raumbezug. */
+export const DEFAULT_HUMIDITY_BAND: HumidityBand = { min: 40, max: 60 }
+
+/**
+ * Feuchte-Band je Raumtyp.
+ *
+ * Nur Keller und Waschküche weichen ab: Beide sind kühl, beide tragen
+ * regelmäßig Feuchte ein (Erdreich, Wäsche), und in beiden ist ein höherer
+ * Wert normal statt auffällig. Alle übrigen Räume behalten den Wohnraum-Wert –
+ * ein eigenes Band je Raumtyp wäre eine Genauigkeit, die die Sache nicht
+ * hergibt.
+ */
+export const HUMIDITY_BANDS: Partial<Record<RoomType, HumidityBand>> = {
+  basement: { min: 50, max: 65 },
+  utility_room: { min: 50, max: 65 },
+}
+
+/** Feuchte-Band eines Raumtyps; ohne Raumbezug gilt {@link DEFAULT_HUMIDITY_BAND}. */
+export function humidityBand(roomType?: RoomType): HumidityBand {
+  return (roomType && HUMIDITY_BANDS[roomType]) || DEFAULT_HUMIDITY_BAND
+}
+
+/**
+ * Ab diesem Abstand vom Feuchte-Band gilt die Abweichung als deutlich
+ * (Rating „high") – analog zu {@link TEMP_EXTREME_TOLERANCE}.
+ *
+ * Bewusst relativ statt als zweites Zahlenpaar: Für den Wohnraum ergibt das
+ * genau die bisherigen Grenzen (30 % / 70 %), für den Keller verschieben sie
+ * sich mit dem Band. Eine Regel statt zweier Tabellen, die auseinanderlaufen
+ * können.
+ */
+const HUM_EXTREME_TOLERANCE = 10
+
 
 export interface RoomClimateInput {
   /** Raumtemperatur in °C. */
@@ -89,6 +130,8 @@ export interface RoomClimateResult {
   rating: MeasurementRating
   /** Angewandtes Komfortband (für Anzeige und Ersparnis-Bezug). */
   band: ComfortBand
+  /** Angewandtes Feuchte-Band – wird wie `band` mitgespeichert. */
+  humidityBand: HumidityBand
   /** Status der Temperatur (immer erfasst). */
   temperatureStatus: DimensionStatus
   /** Status der Luftfeuchte (nur wenn erfasst). */
@@ -108,9 +151,14 @@ export function rateTemperatureInBand(temp: number, band: ComfortBand): Dimensio
   return 'optimal'
 }
 
-export function rateHumidity(humidity: number): DimensionStatus {
-  if (humidity < HUM_OPTIMAL_MIN) return 'tooDry'
-  if (humidity > HUM_OPTIMAL_MAX) return 'tooHumid'
+export function rateHumidity(humidity: number, roomType?: RoomType): DimensionStatus {
+  return rateHumidityInBand(humidity, humidityBand(roomType))
+}
+
+/** Wie {@link rateHumidity}, aber gegen ein bereits bekanntes Band. */
+export function rateHumidityInBand(humidity: number, band: HumidityBand): DimensionStatus {
+  if (humidity < band.min) return 'tooDry'
+  if (humidity > band.max) return 'tooHumid'
   return 'optimal'
 }
 
@@ -120,8 +168,11 @@ export function calcRoomClimate(input: RoomClimateInput): RoomClimateResult {
   const tempStatus = rateTemperatureInBand(temp, band)
   const tempOptimal = tempStatus === 'optimal'
 
+  const humBand = humidityBand(input.roomType)
   const hasHumidity = Number.isFinite(input.humidity)
-  const humStatus = hasHumidity ? rateHumidity(input.humidity as number) : undefined
+  const humStatus = hasHumidity
+    ? rateHumidityInBand(input.humidity as number, humBand)
+    : undefined
   const humOptimal = humStatus === 'optimal'
 
   const draftStatus: DimensionStatus | undefined =
@@ -136,8 +187,8 @@ export function calcRoomClimate(input: RoomClimateInput): RoomClimateResult {
     temp < band.min - TEMP_EXTREME_TOLERANCE || temp > band.max + TEMP_EXTREME_TOLERANCE
   const extremeHum =
     hasHumidity &&
-    ((input.humidity as number) < HUM_EXTREME_LOW ||
-      (input.humidity as number) > HUM_EXTREME_HIGH)
+    ((input.humidity as number) < humBand.min - HUM_EXTREME_TOLERANCE ||
+      (input.humidity as number) > humBand.max + HUM_EXTREME_TOLERANCE)
   const strongDraft = input.draft === 'strong'
 
   let rating: MeasurementRating
@@ -156,6 +207,7 @@ export function calcRoomClimate(input: RoomClimateInput): RoomClimateResult {
   return {
     rating,
     band,
+    humidityBand: humBand,
     temperatureStatus: tempStatus,
     humidityStatus: humStatus,
     draftStatus,

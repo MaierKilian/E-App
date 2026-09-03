@@ -25,9 +25,10 @@ import {
 } from '@/features/measurements/freezer/freezer'
 import {
   COMFORT_BANDS,
-  HUM_OPTIMAL_MIN,
-  HUM_OPTIMAL_MAX,
+  DEFAULT_HUMIDITY_BAND,
+  HUMIDITY_BANDS,
 } from '@/features/measurements/room_temperature/roomClimate'
+import { ASSUMED_BASEMENT_WALL_C } from '@/features/measurements/room_temperature/dewPoint'
 import {
   DISTANCE_TARGET_CM,
   DISTANCE_BLOCKED_CM,
@@ -117,7 +118,12 @@ export const MEASUREMENT_THRESHOLDS: Partial<Record<MeasurementId, ThresholdTabl
         range: between(COMFORT_BANDS.basement.min, COMFORT_BANDS.basement.max, '°C'),
       },
     ],
-    note: `Luftfeuchte: ${HUM_OPTIMAL_MIN}–${HUM_OPTIMAL_MAX} % sind der gesunde Bereich.`,
+    note:
+      `Luftfeuchte: ${between(DEFAULT_HUMIDITY_BAND.min, DEFAULT_HUMIDITY_BAND.max, '%')} in Wohnräumen, ` +
+      `${between(HUMIDITY_BANDS.basement!.min, HUMIDITY_BANDS.basement!.max, '%')} in Keller und ` +
+      `Waschküche – dort ist ein höherer Wert normal. Entscheidend ist im Keller ohnehin nicht die ` +
+      `Prozentzahl, sondern der Taupunkt: Liegt er über der Wandtemperatur (rund ` +
+      `${ASSUMED_BASEMENT_WALL_C} °C am Erdreich), schlägt sich Wasser an der Wand nieder.`,
   },
   furniture_spacing: {
     quantity: 'Abstand vor dem Heizkörper',
