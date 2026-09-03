@@ -143,7 +143,8 @@
       "footnote": "Created with the E-App",
       "section": {
         "measurements": "Measurements",
-        "monitoring": "Monitoring"
+        "monitoring": "Monitoring",
+        "profile": "Your household"
       },
       "measurements": {
         "title": "Measurements report",
@@ -220,6 +221,21 @@
         "basisMeasurements": "Measured {{period}}",
         "basisReadings": "Readings {{period}}",
         "basisNote": "Euro amounts are projections and shown as a range. Measured quantities - temperatures, watts, litres, meter readings - are shown without one."
+      },
+      "profile": {
+        "title": "Your household",
+        "intro": "So the figures on the following pages can be placed in context: the property in question.",
+        "missing": "not specified",
+        "yes": "Yes",
+        "no": "No",
+        "building": "Building",
+        "household": "Household",
+        "systems": "Building services",
+        "renovations": "Renovations",
+        "rooms": "Rooms",
+        "instruments": "Measuring devices available",
+        "renovationState": "Status",
+        "renovationNever": "Never renovated"
       }
     },
     "overview": {

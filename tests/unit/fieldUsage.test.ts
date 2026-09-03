@@ -14,26 +14,20 @@ import { FIELD_USAGE, fieldsFor, fieldsWithoutConsumer } from '@/features/onboar
 import { migrateOnboardingData } from '@/store/onboardingStore'
 
 /**
- * Der Stand vom 03.09.2026: 15 Felder ohne Abnehmer, `profileImage`
- * mitgezählt (ein Bild braucht keinen Verwerter, steht aber in derselben
- * Tabelle).
+ * Stand nach Etappe 4 (03.09.2026): noch fünf Felder ohne Abnehmer. Vorher
+ * waren es 15 – der Haushalts-Steckbrief im Bericht hat zehn davon
+ * angeschlossen.
+ *
+ * Was übrig ist, ist bewusst übrig: ein Bild, zwei aus `renovations`
+ * abgeleitete Felder und zwei rein steuernde. Die Begründung steht je Feld in
+ * `fieldUsage.ts`.
  *
  * **Diese Liste ist eine Schuld, keine Sollvorgabe.** Sie soll kürzer werden.
  */
 const OHNE_ABNEHMER = [
   'profileImage',
   'roomsCount',
-  'buildingType',
   'locationMode',
-  'postalCode',
-  'occupancyStatus',
-  'floors',
-  'windowAge',
-  'hasExtraFireplace',
-  'ventilationType',
-  'insulationState',
-  'smartHomeDevices',
-  'renovations',
   'lastRenovationYear',
   'renovationItems',
 ]

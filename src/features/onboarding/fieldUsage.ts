@@ -72,9 +72,9 @@ export const FIELD_USAGE = {
     labelKey: 'onboarding.step8.labels.buildingYear',
   },
   buildingType: {
-    consumers: [],
+    consumers: ['report'],
     reason:
-      'Wohnung oder Haus. Noch ohne Abnehmer – die Kennwerte rechnen bislang je m², nicht je Gebäudeart.',
+      'Wohnung oder Haus. Der Steckbrief im Bericht nennt den Gebäudetyp – ohne ihn sind Verbrauchszahlen je m² nicht einzuordnen.',
     labelKey: 'onboarding.step8.labels.buildingType',
   },
   livingArea: {
@@ -112,9 +112,9 @@ export const FIELD_USAGE = {
       'Wie der Standort angegeben wurde. Ohne Abnehmer, solange der Standort selbst keinen hat.',
   },
   postalCode: {
-    consumers: [],
+    consumers: ['report'],
     reason:
-      'Vorgesehen für Klimadaten (Heizgradtage) und regionale Preise. Beides gibt es noch nicht – bis dahin ohne Abnehmer.',
+      'Im Steckbrief des Berichts, bewusst auf zwei Stellen gekürzt. Für Klimadaten und regionale Preise wäre sie zusätzlich brauchbar, beides gibt es noch nicht.',
     labelKey: 'onboarding.step8.labels.postalCode',
   },
   completed: {
@@ -132,20 +132,21 @@ export const FIELD_USAGE = {
     labelKey: 'onboarding.step8.labels.goals',
   },
   occupancyStatus: {
-    consumers: [],
+    consumers: ['report'],
     reason:
-      'Mieter oder Eigentümer. Sollte entscheiden, welche Maßnahmen überhaupt in Frage kommen – eine neue Heizung ist für Mieter keine Empfehlung. Die Empfehlungen lesen die Angabe bislang nicht.',
+      'Mieter oder Eigentümer, im Steckbrief des Berichts. Dass die Empfehlungen die Angabe lesen – eine neue Heizung ist für Mieter keine Empfehlung – steht weiter aus.',
     labelKey: 'onboarding.step8.labels.occupancyStatus',
   },
   floors: {
-    consumers: [],
-    reason: 'Geschosszahl. Noch ohne Abnehmer; vorgesehen für die Hüllflächen-Abschätzung.',
+    consumers: ['report'],
+    reason:
+      'Geschosszahl, im Steckbrief des Berichts. Für die Hüllflächen-Abschätzung wäre sie zusätzlich brauchbar, dort wird sie noch nicht gelesen.',
     labelKey: 'onboarding.step8.labels.floors',
   },
   windowAge: {
-    consumers: [],
+    consumers: ['report'],
     reason:
-      'Fensteralter. Fließt in `estimateEnvelope()`, das aber nur der Fragebogen selbst aufruft – die Frage wertet sich selbst aus, das zählt nicht.',
+      'Fensteralter, im Steckbrief des Berichts. In `estimateEnvelope()` fließt es zusätzlich ein, das aber nur der Fragebogen selbst aufruft.',
     labelKey: 'onboarding.step8.labels.windowAge',
   },
   hasPV: {
@@ -154,33 +155,33 @@ export const FIELD_USAGE = {
     labelKey: 'onboarding.step8.labels.hasPV',
   },
   hasExtraFireplace: {
-    consumers: [],
+    consumers: ['report'],
     reason:
-      'Zusätzlicher Kamin oder Ofen. Ohne Abnehmer – ein zweiter Wärmeerzeuger verschiebt die Verbrauchs-Einordnung, gerechnet wird das noch nicht.',
+      'Zusätzlicher Kamin oder Ofen, im Steckbrief des Berichts. Dass er die Verbrauchs-Einordnung verschiebt, wird noch nicht gerechnet.',
     labelKey: 'onboarding.step8.labels.hasExtraFireplace',
   },
   ventilationType: {
-    consumers: [],
+    consumers: ['report'],
     reason:
-      'Lüftungsart. Ohne Abnehmer – relevant für Lüftungsverluste und den Raumklima-Check, angeschlossen ist beides nicht.',
+      'Lüftungsart, im Steckbrief des Berichts. Für Lüftungsverluste und den Raumklima-Check wäre sie zusätzlich brauchbar, dort wird sie noch nicht gelesen.',
     labelKey: 'onboarding.step8.labels.ventilationType',
   },
   insulationState: {
-    consumers: [],
+    consumers: ['report'],
     reason:
-      'Dämmzustand. Fließt wie `windowAge` nur in die Selbstauswertung des Fragebogens.',
+      'Dämmzustand als Selbsteinschätzung, im Steckbrief des Berichts.',
     labelKey: 'onboarding.step8.labels.insulationState',
   },
   smartHomeDevices: {
-    consumers: [],
+    consumers: ['report'],
     reason:
-      'Vorhandene Smart-Home-Geräte. Ohne Abnehmer – vorgesehen war, Empfehlungen für schon Vorhandenes zu unterdrücken.',
+      'Vorhandene Smart-Home-Geräte, im Steckbrief des Berichts. Dass die Empfehlungen schon Vorhandenes unterdrücken, steht weiter aus.',
     labelKey: 'onboarding.step8.labels.smartHomeDevices',
   },
   renovations: {
-    consumers: [],
+    consumers: ['report'],
     reason:
-      'Sanierungs-Ereignisse. Sie füttern `estimateEnvelope()`, das nur im Fragebogen selbst benutzt wird; das Baujahr des Wärmeerzeugers erreicht über `heatGeneratorYears` einen Tipp, die übrigen Ereignisse niemanden.',
+      'Der Sanierungs-Log steht chronologisch im Steckbrief des Berichts, mit dem ausdrücklichen Unterschied zwischen „nie saniert" und „nicht beantwortet".',
     labelKey: 'onboarding.fieldUsage.labels.renovations',
   },
   heatGeneratorYears: {

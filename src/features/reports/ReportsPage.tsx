@@ -341,6 +341,7 @@ function ShareBar({
         t,
         language: i18n.language,
         objectName: profile.profileName,
+        profile,
         measurements,
         monitoring,
         // Dieselben Empfehlungen wie im Tipps-Bereich der App – der Bericht

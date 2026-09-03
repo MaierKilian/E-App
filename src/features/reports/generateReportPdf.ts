@@ -4,9 +4,11 @@ import { currencyFmt, fmtCur, fmtCurRange, fmtDate, fmtDateShort, numberFmt, rep
 import type { ReportDocument } from './pdf/deliver'
 import type { ReportSections } from './reportTypes'
 import { fillMeasurements } from './generateMeasurementsPdf'
+import { fillProfile } from './generateProfilePdf'
 import { fillMonitoring } from './generateMonitoringPdf'
 import type { MeasurementsReportData } from './measurementsReportData'
 import type { MonitoringReportData } from './monitoringReportData'
+import type { OnboardingData } from '@/types'
 
 /**
  * Erzeugt den Energiebericht aus den gewählten Abschnitten.
@@ -30,6 +32,14 @@ export interface GenerateReportArgs {
   measurements: MeasurementsReportData
   monitoring: MonitoringReportData
   /**
+   * Das Profil für den Steckbrief, der den Bericht eröffnet.
+   *
+   * Kein wählbarer Abschnitt: Ein Bericht ohne sein Objekt ist kein Bericht,
+   * sondern eine Zahlenliste. Deshalb steht er auch nicht in
+   * {@link ReportSections}.
+   */
+  profile: OnboardingData
+  /**
    * Die fertig formulierten Empfehlungen der App, je Messung gebündelt.
    * Der Bericht hatte bis dahin ein eigenes, zweites Tipp-System, das nur für
    * zwei der neun Messungen überhaupt Text hatte – bei den übrigen sieben blieb
@@ -39,7 +49,7 @@ export interface GenerateReportArgs {
 }
 
 export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
-  const { sections, t, language, measurements, monitoring, tipsByMeasurement } = args
+  const { sections, t, language, measurements, monitoring, tipsByMeasurement, profile } = args
   const kit = new PdfKit()
   const objectName = args.objectName?.trim() || undefined
 
@@ -83,6 +93,10 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
     })
   }
 
+  // Der Steckbrief eröffnet, weil alles danach sich auf ihn bezieht.
+  chapter('report.pdf.section.profile')
+  fillProfile(kit, { t, language, data: profile })
+
   if (sections.measurements) {
     chapter('report.pdf.section.measurements')
     fillMeasurements(
@@ -111,9 +125,12 @@ export function generateReportPdf(args: GenerateReportArgs): ReportDocument {
   return { doc: kit.doc, fileName: reportFileName(t('report.pdf.fileLabel'), objectName) }
 }
 
-/** Anzahl aktiver Abschnitte. */
+/**
+ * Anzahl der Kapitel. Der Steckbrief ist immer dabei und wird deshalb fest
+ * mitgezählt – er ist kein wählbarer Abschnitt (siehe `ReportSections`).
+ */
 function countSections(s: ReportSections): number {
-  return Number(s.measurements) + Number(s.monitoring)
+  return 1 + Number(s.measurements) + Number(s.monitoring)
 }
 
 /** Kopfzeile: welche Abschnitte dieser Bericht enthält. */
@@ -165,6 +182,9 @@ function buildToc(
   monitoring: MonitoringReportData,
 ): TocRow[] {
   const rows: TocRow[] = []
+
+  // Immer dabei, deshalb ohne Bedingung und an erster Stelle.
+  rows.push({ n: 1, title: t('report.pdf.section.profile') })
 
   if (sections.measurements) {
     const parts = [

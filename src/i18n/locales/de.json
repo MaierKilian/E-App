@@ -143,7 +143,8 @@
       "footnote": "Erstellt mit der E-App",
       "section": {
         "measurements": "Messungen",
-        "monitoring": "Monitoring"
+        "monitoring": "Monitoring",
+        "profile": "Das ist dein Haushalt"
       },
       "measurements": {
         "title": "Messungen-Bericht",
@@ -220,6 +221,21 @@
         "basisMeasurements": "Messungen {{period}}",
         "basisReadings": "Ablesungen {{period}}",
         "basisNote": "Euro-Beträge sind Hochrechnungen und stehen als Spanne. Gemessene Größen – Temperaturen, Watt, Liter, Zählerstände – stehen ohne Spanne."
+      },
+      "profile": {
+        "title": "Das ist dein Haushalt",
+        "intro": "Damit sich die Zahlen auf den folgenden Seiten einordnen lassen: das Objekt, um das es geht.",
+        "missing": "nicht angegeben",
+        "yes": "Ja",
+        "no": "Nein",
+        "building": "Gebäude",
+        "household": "Haushalt",
+        "systems": "Anlagentechnik",
+        "renovations": "Sanierungen",
+        "rooms": "Räume",
+        "instruments": "Vorhandene Messgeräte",
+        "renovationState": "Stand",
+        "renovationNever": "Nie saniert"
       }
     },
     "overview": {
