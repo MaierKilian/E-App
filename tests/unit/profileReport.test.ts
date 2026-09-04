@@ -73,12 +73,19 @@ describe('Haushalts-Steckbrief', () => {
     expect(fmtRow(t, null)).toBe('nicht angegeben')
   })
 
-  it('unterscheidet „nie saniert" von „nicht beantwortet"', () => {
+  it('zeigt „nie saniert", lässt das Kapitel bei „nie gefragt" aber weg', () => {
+    // Seit dem Wegfall des Schritts „Gebäudehülle & Modernisierung" (04.09.2026)
+    // wird der Sanierungs-Log nicht mehr erhoben. Ein Bestandsprofil, das
+    // ausdrücklich „nie saniert" gewählt hat, behält seine Antwort im Bericht.
     const nie = buildProfileReportData({ ...leer, renovations: [] }, t, 'de').at(-1)!
+    expect(nie.title).toBe('Sanierungen')
     expect(nie.rows).toEqual([['Stand', 'Nie saniert']])
 
-    const unbeantwortet = buildProfileReportData({ ...leer, renovations: null }, t, 'de').at(-1)!
-    expect(unbeantwortet.rows).toEqual([['Stand', null]])
+    // `null` heißt jetzt „nie gefragt", nicht „Frage offen gelassen". Ein
+    // Kapitel, das dem Leser eine Lücke vorhält, die niemand schließen kann,
+    // gehört nicht in den Bericht.
+    const nieGefragt = buildProfileReportData({ ...leer, renovations: null }, t, 'de')
+    expect(nieGefragt.map((b) => b.title)).not.toContain('Sanierungen')
   })
 
   it('listet Sanierungen chronologisch', () => {

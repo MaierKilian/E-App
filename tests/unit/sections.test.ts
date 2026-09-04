@@ -85,7 +85,7 @@ describe('Registry ist widerspruchsfrei', () => {
     // hat; hier die Gegenrichtung – eine id ohne Registry-Eintrag.
     const ids: SectionId[] = [
       'home', 'rooms', 'heating', 'prices',
-      'building', 'equipment', 'location', 'review',
+      'equipment', 'location', 'review',
     ]
     expect(ONBOARDING_SECTIONS.map((s) => s.id).sort()).toEqual([...ids].sort())
   })
@@ -186,14 +186,19 @@ describe('Kein Feld ist verlorengegangen', () => {
   // mehr in dieser Liste: Die Angabe ist im August 2026 entfallen, weil sie
   // erhoben, aber nie verrechnet wurde. Sie ist nicht verlorengegangen,
   // sondern abgeschafft.
+  //
+  // Aus demselben Grund fehlen seit dem 04.09.2026 `windowAge`,
+  // `insulationState`, `ventilationType` und `renovations`: Mit dem Schritt
+  // „Gebäudehülle & Modernisierung" ist die letzte Frage entfallen, die sie
+  // gestellt hat. Ihre gesamte Wirkung waren Zeilen im PDF-Steckbrief, und dort
+  // stehen sie weiterhin – für Profile, die noch einen Wert tragen.
   const ERHOBEN = [
     'profileName', 'profileImage', 'personsCount', 'goals', 'occupancyStatus',
-    'buildingYear', 'buildingType', 'livingArea', 'floors', 'windowAge',
+    'buildingYear', 'buildingType', 'livingArea', 'floors',
     'rooms', 'heatTransfer', 'roomAreas',
     'heatGenerators', 'hotWaterType',
-    'ventilationType', 'insulationState',
     'instruments',
-    'renovations', 'postalCode',
+    'postalCode',
   ]
 
   it('führt jede vorher erhobene Angabe weiter', () => {

@@ -146,7 +146,7 @@ export const FIELD_USAGE = {
   windowAge: {
     consumers: ['report'],
     reason:
-      'Fensteralter, im Steckbrief des Berichts. In `estimateEnvelope()` fließt es zusätzlich ein, das aber nur der Fragebogen selbst aufruft.',
+      'Fensteralter. Wird seit dem Wegfall des Schritts „Gebäudehülle" nicht mehr erhoben; im Steckbrief des Berichts erscheint es nur noch, wenn ein Bestandsprofil einen Wert trägt.',
     labelKey: 'onboarding.step8.labels.windowAge',
   },
   hasPV: {
@@ -163,13 +163,13 @@ export const FIELD_USAGE = {
   ventilationType: {
     consumers: ['report'],
     reason:
-      'Lüftungsart, im Steckbrief des Berichts. Für Lüftungsverluste und den Raumklima-Check wäre sie zusätzlich brauchbar, dort wird sie noch nicht gelesen.',
+      'Lüftungsart. Wird nicht mehr erhoben (Schritt „Gebäudehülle" entfallen); im Steckbrief nur noch bei Bestandsprofilen. Für Lüftungsverluste wäre sie brauchbar gewesen – gelesen hat sie dort nie jemand.',
     labelKey: 'onboarding.step8.labels.ventilationType',
   },
   insulationState: {
     consumers: ['report'],
     reason:
-      'Dämmzustand als Selbsteinschätzung, im Steckbrief des Berichts.',
+      'Dämmzustand als Selbsteinschätzung. Wird nicht mehr erhoben (Schritt „Gebäudehülle" entfallen); im Steckbrief nur noch bei Bestandsprofilen.',
     labelKey: 'onboarding.step8.labels.insulationState',
   },
   smartHomeDevices: {
@@ -181,7 +181,7 @@ export const FIELD_USAGE = {
   renovations: {
     consumers: ['report'],
     reason:
-      'Der Sanierungs-Log steht chronologisch im Steckbrief des Berichts, mit dem ausdrücklichen Unterschied zwischen „nie saniert" und „nicht beantwortet".',
+      'Der Sanierungs-Log steht chronologisch im Steckbrief des Berichts. Erhoben wird er nicht mehr (Schritt „Gebäudehülle" entfallen), deshalb bekommt nur noch ein Bestandsprofil dieses Kapitel.',
     labelKey: 'onboarding.fieldUsage.labels.renovations',
   },
   heatGeneratorYears: {

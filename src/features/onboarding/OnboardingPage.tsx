@@ -15,12 +15,10 @@ import {
 } from './sections'
 import { Step0Mode } from './steps/Step0Mode'
 import { Step1Profile } from './steps/Step1Profile'
-import { Step2Building } from './steps/Step2Building'
 import { Step3Rooms } from './steps/Step3Rooms'
 import { Step4Heating } from './steps/Step4Heating'
 import { Step6Instruments } from './steps/Step6Instruments'
 import { Step7Location } from './steps/Step7Location'
-import { StepRenovationLog } from './steps/StepRenovationLog'
 import { StepPrices } from './steps/StepPrices'
 import { Step8Review } from './steps/Step8Review'
 import { Card } from '@/components/ui/Card'
@@ -54,16 +52,6 @@ const SECTION_BODIES: Record<SectionId, (p: StepContentProps) => ReactNode> = {
     <Step4Heating data={data} onChange={onChange} detailed={detailed} />
   ),
   prices: ({ data }) => <StepPrices data={data} />,
-  // Hülle und Modernisierung in einem Schritt: Das Fensteralter und „Fenster
-  // saniert" sind dieselbe Frage und standen vorher in zwei Schritten.
-  building: ({ data, onChange }) => (
-    <>
-      <Step2Building data={data} onChange={onChange} />
-      <div className="mt-6 border-t border-border pt-6">
-        <StepRenovationLog data={data} />
-      </div>
-    </>
-  ),
   equipment: ({ data, onChange, detailed }) => (
     <Step6Instruments data={data} onChange={onChange} detailed={detailed} />
   ),

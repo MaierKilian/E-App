@@ -262,6 +262,38 @@ anzeigen (`details.temperature`), bekommt sie aber nur noch aus Altergebnissen.
 Zwei Wege: Eingabe nachrüsten (dann wird der Info-Text wahr) oder die
 Temperatur aus dem Info-Tab streichen. Kilians Entscheidung.
 
+### 17. Fragebogen-Schritt „Gebäudehülle & Modernisierung" ohne Wirkung
+**Kategorie:** Problem · **Bereich:** `sections.ts`, `Step2Building`,
+`StepRenovationLog`
+**Status:** ✅ Umgesetzt (04.09.) – Schritt aus der App genommen, Code unter
+`archiv/onboarding-gebaeudehuelle/` erhalten.
+
+Aufgefallen bei einer Durchsicht aller `OnboardingData`-Felder gegen ihre
+tatsächlichen Lesestellen. Schritt 5 von 8 stellte vier Pflichtfragen –
+Fensteralter, Dämmzustand, Lüftungstyp und den Sanierungs-Log. Keines der vier
+Felder (`windowAge`, `insulationState`, `ventilationType`, `renovations`) wurde
+von einer Messung, einem Tipp oder einer Monitoring-Rechnung gelesen; ihre
+gesamte Wirkung waren vier Zeilen im PDF-Steckbrief. Die Effizienz-Einordnung,
+die der Schritt aus den Sanierungen zeichnete (`estimateEnvelope()`), sah nur,
+wer gerade in diesem Schritt stand – sie floss in nichts ein, was der Nutzer
+später wiederfand.
+
+Vier Pflichtfragen für vier PDF-Zeilen: der schlechteste Tausch im Fragebogen.
+Der vollständige Weg geht jetzt über sieben statt acht Schritte.
+
+Zwei Dinge sind bewusst geblieben:
+
+- **Das Heizungs-Baujahr.** `StepRenovationLog` hat es nur angezeigt; erfasst
+  wird es im Heizungs-Schritt. Der Tipp „Heizung prüfen/tauschen lassen"
+  (`boilerAgeYears`) ist darum unberührt.
+- **Die Felder selbst** in `OnboardingData`, Migration und Cloud-Sync.
+  Bestandsprofile tragen echte Werte. Der Steckbrief zeigt sie weiter – aber
+  nur bei vorhandenem Wert, statt einer Zeile „nicht angegeben" zu einer Frage,
+  die niemand mehr gestellt bekommt.
+
+Nicht angefasst: Die i18n-Schlüssel bleiben stehen (der Bericht braucht einen
+Teil davon, der Rest hält das Archiv wiederherstellbar).
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen

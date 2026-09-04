@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import type { OnboardingData } from '@/types'
+import type { OnboardingData, RenovationEvent } from '@/types'
 
 /**
  * Der Haushalts-Steckbrief: was der Bericht über das Objekt selbst sagt.
@@ -74,6 +74,16 @@ function yesNo(t: TFunction, on: boolean): string {
   return on ? t('report.pdf.profile.yes') : t('report.pdf.profile.no')
 }
 
+/** `'unknown'` ist keine Antwort – für eine nicht mehr gestellte Frage erst recht nicht. */
+function known(v: string | null | undefined): string | null {
+  return v && v !== 'unknown' ? v : null
+}
+
+/** Behält nur die Zeilen einer abgeschafften Frage, die tatsächlich einen Wert tragen. */
+function retired(rows: ProfileRow[]): ProfileRow[] {
+  return rows.filter(([, v]) => v !== null)
+}
+
 export function buildProfileReportData(
   data: OnboardingData,
   t: TFunction,
@@ -87,15 +97,25 @@ export function buildProfileReportData(
     [t('onboarding.step8.labels.buildingYear'), year(data.buildingYear)],
     [t('onboarding.step8.labels.livingArea'), quantity(data.livingArea, 'm²', language)],
     [t('onboarding.step8.labels.floors'), quantity(data.floors, '', language)],
-    [
-      t('onboarding.step8.labels.insulationState'),
-      opt('onboarding.step5.insulationOptions', data.insulationState),
-    ],
-    [t('onboarding.step8.labels.windowAge'), opt('onboarding.step2.windowAgeOptions', data.windowAge)],
-    [
-      t('onboarding.step8.labels.ventilationType'),
-      opt('onboarding.step5.ventilationOptions', data.ventilationType),
-    ],
+    // Dämmzustand, Fensteralter und Lüftung werden seit dem Wegfall des
+    // Schritts „Gebäudehülle & Modernisierung" nicht mehr erhoben. Sie stehen
+    // weiter im Steckbrief, wenn ein Bestandsprofil sie trägt – aber nicht
+    // mehr als Zeile „nicht angegeben": Das läse sich wie eine Lücke, die der
+    // Nutzer schließen könnte, und genau das kann er nicht mehr.
+    ...retired([
+      [
+        t('onboarding.step8.labels.insulationState'),
+        opt('onboarding.step5.insulationOptions', known(data.insulationState)),
+      ],
+      [
+        t('onboarding.step8.labels.windowAge'),
+        opt('onboarding.step2.windowAgeOptions', known(data.windowAge)),
+      ],
+      [
+        t('onboarding.step8.labels.ventilationType'),
+        opt('onboarding.step5.ventilationOptions', known(data.ventilationType)),
+      ],
+    ]),
   ]
 
   const household: ProfileRow[] = [
@@ -146,25 +166,29 @@ export function buildProfileReportData(
     { title: t('report.pdf.profile.building'), rows: building },
     { title: t('report.pdf.profile.household'), rows: household },
     { title: t('report.pdf.profile.systems'), rows: systems },
-    { title: t('report.pdf.profile.renovations'), rows: renovationRows(data, t) },
+    // Der Sanierungs-Log wird nicht mehr erhoben (siehe oben). Ein
+    // Bestandsprofil behält seinen Block; ein neues bekommt ihn gar nicht mehr,
+    // statt eines Kapitels, das nur „nicht beantwortet" sagt.
+    ...(data.renovations === null
+      ? []
+      : [{ title: t('report.pdf.profile.renovations'), rows: renovationRows(data.renovations, t) }]),
   ]
 }
 
 /**
  * Sanierungen als Ereignis-Log, chronologisch.
  *
- * Der Unterschied zwischen `[]` und `null` steht ausdrücklich im Bericht:
- * „nie saniert" ist eine Antwort, „nicht beantwortet" ist keine. Für einen
- * Berater sind das zwei völlig verschiedene Lagen.
+ * Nimmt nur noch die beantworteten Fälle: „nie saniert" (`[]`) ist eine
+ * Antwort und bekommt ihre Zeile. „Nicht beantwortet" (`null`) hat seit dem
+ * Wegfall des Schritts „Gebäudehülle" keinen Adressaten mehr – die Frage wird
+ * nicht gestellt, also kann der Bericht sie dem Leser auch nicht als offene
+ * Lücke vorhalten. Der Aufrufer lässt das Kapitel dann ganz weg.
  */
-function renovationRows(data: OnboardingData, t: TFunction): ProfileRow[] {
-  if (data.renovations === null) {
-    return [[t('report.pdf.profile.renovationState'), null]]
-  }
-  if (data.renovations.length === 0) {
+function renovationRows(renovations: readonly RenovationEvent[], t: TFunction): ProfileRow[] {
+  if (renovations.length === 0) {
     return [[t('report.pdf.profile.renovationState'), t('report.pdf.profile.renovationNever')]]
   }
-  return [...data.renovations]
+  return [...renovations]
     .sort((a, b) => a.year - b.year)
     .map((event) => [
       String(event.year),

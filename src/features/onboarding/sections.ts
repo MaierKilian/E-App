@@ -1,4 +1,4 @@
-import { Home, DoorOpen, Flame, Layers, Gauge, MapPin, Wallet, ClipboardCheck } from 'lucide-react'
+import { Home, DoorOpen, Flame, Gauge, MapPin, Wallet, ClipboardCheck } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { OnboardingData } from '@/types'
 
@@ -30,7 +30,6 @@ export type SectionId =
   | 'rooms'
   | 'heating'
   | 'prices'
-  | 'building'
   | 'equipment'
   | 'location'
   | 'review'
@@ -82,6 +81,24 @@ function optional(id: string, answered: (d: OnboardingData) => boolean): Section
  *
  * Der Schnellstart ist eine Teilmenge (`quick`), kein eigener Flow: Zuhause,
  * Heizung, Preise, Übersicht.
+ *
+ * **Entfallen am 04.09.2026: „Gebäudehülle & Modernisierung"** (ehemals
+ * Schritt 5 von 8). Der Schritt stellte vier Pflichtfragen – Fensteralter,
+ * Dämmzustand, Lüftungstyp und den Sanierungs-Log –, deren gesamte Wirkung
+ * eine Handvoll Zeilen im PDF-Steckbrief war: Keine Messung, kein Tipp und
+ * keine Monitoring-Rechnung hat je eines dieser Felder gelesen. Die
+ * Effizienz-Einordnung, die der Schritt daraus zeichnete, sah nur, wer gerade
+ * in ihm stand.
+ *
+ * Das Heizungs-Baujahr, das den Tipp „Heizung prüfen/tauschen lassen" trägt,
+ * war nie hier zu Hause – es wird im Heizungs-Schritt erfasst und bleibt
+ * unberührt.
+ *
+ * Die Felder (`windowAge`, `insulationState`, `ventilationType`,
+ * `renovations`) bleiben in `OnboardingData` und im Bericht: Bestandsprofile
+ * tragen echte Werte, die nicht verschwinden sollen. Neu befüllen lassen sie
+ * sich nicht mehr. Der Code der beiden Schritte liegt unter
+ * `archiv/onboarding-gebaeudehuelle/`.
  */
 export const ONBOARDING_SECTIONS: OnboardingSection[] = [
   {
@@ -140,20 +157,6 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
     // behalten sinnvolle Standardwerte. Damit hat dieser Abschnitt keine
     // Pflichtangabe – `stateOf` zählt ihn als erledigt, sobald er besucht wurde.
     fields: [],
-  },
-  {
-    id: 'building',
-    titleKey: 'onboarding.sectionTitles.building',
-    icon: Layers,
-    quick: false,
-    fields: [
-      field('windowAge', (d) => d.windowAge !== 'unknown'),
-      field('insulationState', (d) => d.insulationState !== 'unknown'),
-      field('ventilationType', (d) => d.ventilationType !== 'unknown'),
-      // Beantwortet ist die Frage, sobald ein Ereignis erfasst ist ODER der
-      // Nutzer ausdrücklich „nie saniert“ gewählt hat (leere Liste).
-      field('renovations', (d) => d.renovations !== null),
-    ],
   },
   {
     id: 'equipment',

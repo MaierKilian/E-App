@@ -126,22 +126,6 @@ export function Step8Review({ data }: Props) {
     .map((d) => t(`onboarding.step6.smartHomeOptions.${d}`))
     .join(', ')
 
-  // Die Übersicht zeigt, was eingetragen wurde: jedes Jahr mit seinen
-  // Maßnahmen. Vorher stand hier die abgeleitete Spanne – wer 2005 eingetragen
-  // hatte, las „2000–2010" und hielt seine Angabe für verlorengegangen.
-  const renovationRows = (data.renovations ?? []).map((event) => ({
-    id: event.id,
-    label: event.estimated
-      ? t('onboarding.renovationLog.aboutYear', { year: event.year })
-      : String(event.year),
-    value:
-      event.items.length > 0
-        ? event.items
-            .map((i) => t(`onboarding.step7renovation.renovationItemOptions.${i}`))
-            .join(', ')
-        : t('onboarding.renovationLog.noItems'),
-  }))
-
   const isDetailed = data.mode === 'detailed'
 
   // Verbrauchspreise (zentral aus dem Tarif-Store; je nach Profil relevante Träger).
@@ -192,13 +176,7 @@ export function Step8Review({ data }: Props) {
           value={`${data.livingArea} m²`}
         />
         {isDetailed && (
-          <>
-            <ReviewRow label={t('onboarding.step8.labels.floors')} value={data.floors} />
-            <ReviewRow
-              label={t('onboarding.step8.labels.windowAge')}
-              value={t(`onboarding.step2.windowAgeOptions.${data.windowAge}`)}
-            />
-          </>
+          <ReviewRow label={t('onboarding.step8.labels.floors')} value={data.floors} />
         )}
       </ReviewSection>
 
@@ -234,18 +212,6 @@ export function Step8Review({ data }: Props) {
       {data.rooms.length > 0 && (
         <ReviewSection title={t('onboarding.step8.sections.heatTransfer')}>
           <p className="text-sm text-foreground">{heatTransferSummary || '—'}</p>
-          {isDetailed && (
-            <>
-              <ReviewRow
-                label={t('onboarding.step8.labels.ventilationType')}
-                value={t(`onboarding.step5.ventilationOptions.${data.ventilationType}`)}
-              />
-              <ReviewRow
-                label={t('onboarding.step8.labels.insulationState')}
-                value={t(`onboarding.step5.insulationOptions.${data.insulationState}`)}
-              />
-            </>
-          )}
         </ReviewSection>
       )}
 
@@ -261,23 +227,6 @@ export function Step8Review({ data }: Props) {
                 />
               )}
             </>
-          )}
-        </ReviewSection>
-      )}
-
-      {isDetailed && (
-        <ReviewSection title={t('onboarding.step8.sections.renovation')}>
-          {renovationRows.length > 0 ? (
-            renovationRows.map((row) => (
-              <ReviewRow key={row.id} label={row.label} value={row.value} />
-            ))
-          ) : (
-            <ReviewRow
-              label={t('onboarding.step8.labels.lastRenovationYear')}
-              value={t(
-                `onboarding.step7renovation.renovationYearOptions.${data.lastRenovationYear}`,
-              )}
-            />
           )}
         </ReviewSection>
       )}
