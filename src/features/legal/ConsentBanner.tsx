@@ -39,7 +39,7 @@ export function ConsentBanner() {
     <div
       // Über der unteren Navigationsleiste (z-20), damit beides bedienbar
       // bleibt; auf Desktop schwebt die Karte unten rechts.
-      className="fixed inset-x-0 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30 px-3 md:bottom-4 md:left-auto md:right-4 md:px-0"
+      className="fixed inset-x-0 bottom-[var(--floating-bottom)] z-30 px-3 md:left-auto md:right-4 md:px-0"
       role="dialog"
       aria-modal="false"
       aria-labelledby="consent-banner-title"

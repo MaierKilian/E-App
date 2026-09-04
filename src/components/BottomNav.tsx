@@ -39,7 +39,9 @@ export function BottomNav() {
 
   return (
     <nav className="glass-bar md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-border/60 pb-[env(safe-area-inset-bottom)]">
-      <div className="grid grid-cols-5">
+      {/* Feste Höhe aus --bottom-nav-h: schwebende Elemente rechnen ihren
+          Abstand über --floating-bottom aus derselben Zahl (siehe index.css). */}
+      <div className="grid h-[var(--bottom-nav-h)] grid-cols-5">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const showDot =
@@ -76,7 +78,7 @@ export function BottomNav() {
           )
 
           const baseClass =
-            'flex flex-col items-center gap-0.5 py-2 text-[11px] transition-colors'
+            'flex flex-col items-center justify-center gap-0.5 text-[11px] transition-colors'
 
           if (item.id === 'onboarding' && isEditingSection) {
             return (

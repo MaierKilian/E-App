@@ -153,6 +153,28 @@
   --chart-4: #7dd3fc;
 }
 
+/*
+ * Maße der unteren Leiste – eine Zahl, an einer Stelle.
+ *
+ * Die mobile Navigationsleiste (BottomNav) setzt ihre Höhe aus
+ * `--bottom-nav-h`; alles, was unten schwebt (Cookie-Banner,
+ * Cookie-Wiedereinstieg), rechnet seinen Abstand über `--floating-bottom`
+ * daraus. Vorher stand die Höhe als Literal („4.75rem") in jeder schwebenden
+ * Komponente – wich sie von der echten Leistenhöhe ab, überlappten die
+ * Elemente die Navigation.
+ */
+:root {
+  --bottom-nav-h: 4.25rem;
+  --floating-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 0.75rem);
+}
+
+/* Ab md gibt es keine untere Navigationsleiste mehr. */
+@media (min-width: 768px) {
+  :root {
+    --floating-bottom: 1rem;
+  }
+}
+
 html {
   -webkit-text-size-adjust: 100%;
 }
@@ -397,9 +419,17 @@ body {
   backdrop-filter: blur(30px) saturate(190%);
 }
 
-/* Schwebende Glass-Leiste (Pill) – etwas Abstand vom Rand, runde Form. */
+/*
+ * Schwebende Glass-Leiste (Pill) – etwas Abstand vom Rand, runde Form.
+ *
+ * Bewusst **ohne** `position`: Diese Datei liegt außerhalb der Tailwind-Layer
+ * und würde damit jedes Utility überstimmen – ein `position: relative` hier
+ * machte `fixed`/`absolute` an der Klasse wirkungslos (der Cookie-Knopf hing
+ * dadurch im Textfluss statt über der Navigationsleiste). Den Bezugsrahmen für
+ * das ::before-Overlay stellt bereits `transform: translateZ(0)` weiter unten
+ * her, dafür braucht es kein eigenes `position`.
+ */
 .glass-floating {
-  position: relative;
   background-color: color-mix(in srgb, var(--surface) 66%, transparent);
   background-image: linear-gradient(
     160deg,

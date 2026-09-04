@@ -10,6 +10,15 @@ import { useConsentStore, useNeedsConsent } from './consent'
  * (unten rechts), damit der Widerruf genauso leicht erreichbar bleibt wie die
  * ursprüngliche Erteilung (Art. 7 Abs. 3 Satz 4 DSGVO), ohne bis zur
  * Datenschutzerklärung oder Fußzeile scrollen zu müssen.
+ *
+ * Auf dem Handy steht nur das Cookie-Symbol: Die ausgeschriebene Frage
+ * („Möchtest du deine Cookie-Einstellungen ändern?") ergab eine Leiste über
+ * fast die ganze Bildschirmbreite, die dauerhaft über den Inhalt und die
+ * Navigationsleiste lief. Der zugängliche Name bleibt derselbe Satz
+ * (`aria-label`/`title`), die Trefferfläche mit 2.75rem über der 44-px-Marke –
+ * für Screenreader und Tastatur ändert sich also nichts. Ab `md` (keine
+ * Navigationsleiste, viel freier Rand) steht die Beschriftung wieder dabei,
+ * dort aber als Handlungsaufforderung („Cookie-Einstellungen") statt als Frage.
  */
 export function ConsentReopenButton() {
   const { t } = useTranslation()
@@ -25,10 +34,12 @@ export function ConsentReopenButton() {
       onClick={openSettings}
       aria-label={t('consent.reopen')}
       title={t('consent.reopen')}
-      className="glass-floating focus-ring fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-3 z-30 flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium text-muted shadow-md transition-colors hover:text-foreground md:bottom-4 md:right-4"
+      // Abstand nach unten aus --floating-bottom, damit er sich nie mit der
+      // BottomNav überschneidet (gemeinsame Maßzahl, siehe index.css).
+      className="glass-floating focus-ring fixed bottom-[var(--floating-bottom)] right-3 z-30 flex h-11 w-11 items-center justify-center rounded-full text-muted shadow-md transition-colors hover:text-foreground md:h-auto md:w-auto md:gap-1.5 md:px-3 md:py-2 md:text-xs md:font-medium md:right-4"
     >
-      <Cookie className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-      {t('consent.reopen')}
+      <Cookie className="h-4 w-4 shrink-0 md:h-3.5 md:w-3.5" aria-hidden="true" />
+      <span className="hidden md:inline">{t('consent.settings')}</span>
     </button>
   )
 }

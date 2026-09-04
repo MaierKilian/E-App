@@ -217,6 +217,35 @@ selbst unten rechts mitlaufen – als kleiner Button „Möchtest du deine
 Cookie-Einstellungen ändern?". Abschnitt 9 der Datenschutzerklärung
 entsprechend umschreiben (neue Methode statt aktuellem Verweis).
 
+### 11. Cookie-Wiedereinstieg überlappt die Navigationsleiste
+**Kategorie:** Bug · **Bereich:** `ConsentReopenButton`, `.glass-floating`
+**Status:** ✅ Umgesetzt – Ursache war nicht die Position, sondern dass es gar
+keine gab: `.glass-floating` in `index.css` setzte `position: relative`. Die
+Datei liegt außerhalb der Tailwind-Layer und überstimmt damit jedes Utility,
+also blieb das `fixed` am Knopf wirkungslos – er stand im Textfluss am Ende der
+Seite und schob sich mit `right-3` sogar noch nach links aus dem Bild. Drei
+Änderungen:
+
+- `.glass-floating` setzt kein `position` mehr. Den Bezugsrahmen für das
+  ::before-Overlay stellt das dort ohnehin gesetzte `transform: translateZ(0)`
+  her. Nebenbei behoben: der Entdeck-Hinweis am Feedback-Knopf
+  (`FeedbackButton`, `absolute right-0 top-11`) war aus demselben Grund nicht
+  positioniert.
+- Neue CSS-Variablen `--bottom-nav-h` (Höhe der mobilen Navigationsleiste) und
+  `--floating-bottom` (Abstand für alles, was unten schwebt). Die `BottomNav`
+  setzt ihre Höhe daraus, Cookie-Hinweis und Wiedereinstieg ihren Abstand –
+  vorher stand „4.75rem" als Literal in jeder schwebenden Komponente und konnte
+  von der echten Leistenhöhe abweichen.
+- Auf dem Handy zeigt der Wiedereinstieg nur noch das Cookie-Symbol (runder
+  Knopf, 2.75rem, also über der 44-px-Marke). Die ausgeschriebene Frage ergab
+  eine Leiste über fast die volle Bildschirmbreite. Der zugängliche Name bleibt
+  derselbe Satz (`aria-label`/`title`); ab `md` steht die Beschriftung wieder
+  dabei, dort als „Cookie-Einstellungen" statt als Frage.
+
+Gemessen (393 × 760, Chromium): Knopf 44 × 44 px, 12 px vom rechten Rand,
+Unterkante 11 px über der Navigationsleiste; Cookie-Hinweis endet an derselben
+Kante. Auf 1280 px breit: 16 px Abstand zu beiden Rändern, mit Beschriftung.
+
 ### 3. Dritter Button im Cookie-Banner für erweiterte Einstellungen
 **Kategorie:** Verbesserung · **Bereich:** `ConsentBanner`
 **Status:** ✅ Umgesetzt – „Cookie-Einstellungen" ist jetzt ein eigener Button
