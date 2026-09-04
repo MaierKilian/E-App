@@ -1,5 +1,5 @@
 import { doc, onSnapshot } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { getDb } from '@/lib/firebase'
 import { useAuthStore } from '@/store/authStore'
 import { useProfilesStore } from '@/store/profilesStore'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -152,7 +152,7 @@ async function activateProfile(pid: string) {
 
   // 2. Live-Listener: Änderungen aus der Cloud übernehmen (andere Geräte/Bewohner).
   snapshotUnsub = onSnapshot(
-    doc(db, 'profiles', pid),
+    doc(getDb(), 'profiles', pid),
     (snap) => {
       // Eigene, noch nicht bestätigte Schreibvorgänge nicht doppelt einspielen.
       if (snap.metadata.hasPendingWrites) return

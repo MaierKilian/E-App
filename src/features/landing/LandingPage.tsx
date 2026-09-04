@@ -23,6 +23,7 @@ import { track } from '@/features/analytics/analytics'
 import { LegalFooter } from '@/features/legal/LegalFooter'
 import { PreviewSection } from './PreviewSection'
 import { GuidedSection } from './GuidedSection'
+import { LandingPickers } from './LandingPickers'
 
 /**
  * Öffentliche Landing Page (Route „/") für Erst-Besucher.
@@ -79,21 +80,25 @@ export function LandingPage({ preview = false }: { preview?: boolean }) {
     <div className="relative min-h-[100dvh] text-foreground">
       <div className="app-backdrop" aria-hidden="true" />
 
-      {/* Schlanke Topbar */}
-      <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-5 py-4">
+      {/* Schlanke Topbar: Logo · Sprache/Design mittig · Anmelden. Sprache und
+          Design sind sonst erst nach der Anmeldung erreichbar – hier soll ein
+          Erstbesucher sie schon vor der Entscheidung fürs Konto einstellen
+          können. */}
+      <header className="mx-auto flex w-full max-w-5xl items-center justify-between gap-2 px-5 py-4">
         {/* Logo führt wie in der App zurück zum Zuhause-Bereich. */}
         <button
           type="button"
           onClick={() => startOnboarding('logo')}
-          className="focus-ring flex items-center gap-2 rounded-lg font-semibold"
+          className="focus-ring flex shrink-0 items-center gap-2 rounded-lg font-semibold"
         >
           <Logo className="h-6 w-6" />
-          <span>E-App</span>
+          <span className="hidden sm:inline">E-App</span>
         </button>
+        <LandingPickers />
         <button
           type="button"
           onClick={goToLogin}
-          className="focus-ring rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
+          className="focus-ring shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium text-muted transition-colors hover:text-foreground"
         >
           {t('landing.nav.signIn')}
         </button>

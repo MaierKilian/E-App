@@ -1,5 +1,5 @@
 import { doc, onSnapshot, setDoc, deleteField } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { getDb } from '@/lib/firebase'
 import { useAuthStore } from '@/store/authStore'
 import { useAccountAvatarStore } from '@/store/accountAvatarStore'
 
@@ -22,7 +22,7 @@ import { useAccountAvatarStore } from '@/store/accountAvatarStore'
 
 /** Dokument-Referenz auf das Nutzerkonto. */
 function userRef(uid: string) {
-  return doc(db, 'users', uid)
+  return doc(getDb(), 'users', uid)
 }
 
 let currentUid: string | null = null

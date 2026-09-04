@@ -59,3 +59,16 @@ export async function deliverReport(
   report.doc.save(report.fileName)
   return 'downloaded'
 }
+
+/**
+ * Lädt den Bericht direkt herunter, unabhängig vom System-Teilen.
+ *
+ * `canSharePdf()` meldet unter Windows auch am Desktop-Browser `true`, weil
+ * Windows eine systemweite Freigabeleiste für Dateien hat – die aber keine
+ * zuverlässige „Speichern"-Option zeigt, nur Ziel-Apps (Mail, Messenger …).
+ * Wo `deliverReport()` deshalb auf Teilen setzt, bleibt so ein direkter,
+ * unmittelbarer Download-Weg erreichbar.
+ */
+export function downloadReport(report: ReportDocument): void {
+  report.doc.save(report.fileName)
+}

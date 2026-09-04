@@ -69,14 +69,18 @@ export function ConsentBanner() {
           </button>
         </div>
 
+        {/* Erweiterte Einstellungen genauso greifbar wie die beiden Optionen
+            darüber – kein blasser Link, sondern ein eigener Button über die
+            volle gemeinsame Breite. */}
+        <button
+          type="button"
+          onClick={openSettings}
+          className="focus-ring mt-2 w-full rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-surface-2"
+        >
+          {t('consent.settings')}
+        </button>
+
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
-          <button
-            type="button"
-            onClick={openSettings}
-            className="focus-ring rounded font-medium underline underline-offset-2 transition-colors hover:text-foreground"
-          >
-            {t('consent.settings')}
-          </button>
           <Link
             to="/datenschutz"
             className="focus-ring rounded underline underline-offset-2 transition-colors hover:text-foreground"

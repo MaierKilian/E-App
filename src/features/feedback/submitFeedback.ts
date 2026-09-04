@@ -1,6 +1,6 @@
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { signInAnonymously } from 'firebase/auth'
-import { auth, db } from '@/lib/firebase'
+import { auth, getDb } from '@/lib/firebase'
 import { useSettingsStore } from '@/store/settingsStore'
 import type { FeedbackSource } from '@/store/feedbackStore'
 import { APP_VERSION } from '@/app/version'
@@ -84,7 +84,7 @@ export async function submitFeedback(input: FeedbackInput): Promise<void> {
   const user = await ensureWriteAccess()
   const settings = useSettingsStore.getState()
 
-  await addDoc(collection(db, 'feedback'), {
+  await addDoc(collection(getDb(), 'feedback'), {
     // Was der Nutzer gesagt hat.
     sentiment: input.sentiment,
     category: input.category,
@@ -146,7 +146,7 @@ export async function submitExitFeedback(input: {
   const user = await ensureWriteAccess()
   const settings = useSettingsStore.getState()
 
-  await addDoc(collection(db, 'feedback'), {
+  await addDoc(collection(getDb(), 'feedback'), {
     sentiment: EXIT_SENTIMENT[input.reason],
     category: null,
     text: input.text.trim().slice(0, FEEDBACK_TEXT_LIMIT),

@@ -219,10 +219,13 @@ describe('Möbel-Abstand – gemessener Abstand', () => {
 
   it('wertet knapp darunter als teilweise', () => {
     expect(answerFromDistance(DISTANCE_TARGET_CM - 1)).toBe(1)
-    expect(answerFromDistance(DISTANCE_BLOCKED_CM)).toBe(1)
+    expect(answerFromDistance(DISTANCE_BLOCKED_CM + 1)).toBe(1)
   })
 
-  it('wertet unterhalb der Blockadegrenze als blockiert', () => {
+  it('wertet bis einschließlich der Blockadegrenze als blockiert', () => {
+    // <= statt <: 5 cm selbst zählt schon als blockiert, sonst wurde ein
+    // Abstand an der Grenze genauso bewertet wie 29 cm (siehe Test unten).
+    expect(answerFromDistance(DISTANCE_BLOCKED_CM)).toBe(2)
     expect(answerFromDistance(DISTANCE_BLOCKED_CM - 1)).toBe(2)
     expect(answerFromDistance(DISTANCE_MIN_CM)).toBe(2)
   })
@@ -269,6 +272,10 @@ describe('Möbel-Abstand – gemessener Abstand', () => {
 
     expect(rate(DISTANCE_TARGET_CM)).toBe('good')
     expect(rate(DISTANCE_TARGET_CM - 1)).toBe('medium')
+    // Genau die Grenze: Vorher identisch zu 16 cm bewertet ("medium", generisch
+    // als "Gut" beschriftet) - obwohl an dieser Grenze laut Hinweistext die
+    // Luftzufuhr bereits praktisch unterbunden ist.
+    expect(rate(DISTANCE_BLOCKED_CM)).toBe('elevated')
     expect(rate(DISTANCE_BLOCKED_CM - 1)).toBe('elevated')
     expect(rate(0)).toBe('elevated')
   })

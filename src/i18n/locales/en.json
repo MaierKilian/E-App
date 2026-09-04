@@ -106,6 +106,7 @@
       "exportError": "Export failed. Please try again.",
       "share": "Share PDF",
       "shareDone": "PDF shared.",
+      "downloadSecondary": "Download directly",
       "sections": "Contents",
       "emptyHint": "A report needs at least one measurement or one meter reading."
     },
@@ -816,6 +817,8 @@
       "result": {
         "secondsUnit": "sec",
         "explanation": "In that time roughly {{liters}} L of drinking water ran off unused.",
+        "explanationUnknown": "Drinking water ran off unused during that time – how much hasn't been measured for this tap yet.",
+        "unknownValue": "–",
         "perDraw": "per draw",
         "perYear": "per year",
         "savingYear": "Water cost/year",
@@ -2438,6 +2441,10 @@
         "title": "Catch the run-off water",
         "reason": "It takes {{seconds}} s for hot water to arrive – about {{liters}} L runs off unused every time, roughly {{litersPerYear}} L over a year. Put a watering can or bucket underneath: for plants, cleaning or the toilet."
       },
+      "hot_water_wait_unknown": {
+        "title": "Catch the run-off water",
+        "reason": "It takes {{seconds}} s for hot water to arrive – cold water runs off unused during that time. The exact amount hasn't been measured for this tap yet. Put a watering can or bucket underneath: for plants, cleaning or the toilet."
+      },
       "fridge": {
         "title": "Turn the fridge up",
         "reason": "{{temp}} °C is colder than needed. Turn the dial down one notch – 7 °C is plenty, andeach degree warmer saves around 6 % electricity."
@@ -2648,6 +2655,7 @@
     "save": "Save",
     "settings": "Cookie settings",
     "settingsHint": "Change or withdraw your consent at any time",
+    "reopen": "Want to change your cookie settings?",
     "manage": "Manage consent",
     "settingsTitle": "Cookie settings",
     "settingsIntro": "You decide what we may measure. Your choice takes effect immediately and can be changed at any time.",
