@@ -27,6 +27,7 @@ import { Card } from '@/components/ui/Card'
 import { HomeDashboard } from '@/features/home/HomeDashboard'
 import { PageHeader } from '@/components/ui/PageHeader'
 import type { OnboardingData } from '@/types'
+import { BottomBar } from '@/components/BottomBar'
 
 interface StepContentProps {
   data: OnboardingData
@@ -102,9 +103,9 @@ function SectionBody({
  */
 function ActionBar({ children }: { children: React.ReactNode }) {
   return (
-    <div className="glass-bar fixed inset-x-0 z-30 border-t border-border/60 bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]">
+    <BottomBar>
       <div className="max-w-3xl mx-auto px-4 py-3 flex items-center gap-3">{children}</div>
-    </div>
+    </BottomBar>
   )
 }
 

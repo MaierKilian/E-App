@@ -20,6 +20,7 @@ import { tipsByMeasurement } from '@/features/tips/tipsForReport'
 import { buildMeasurementsReportData } from './measurementsReportData'
 import { buildMonitoringReportData, suggestRangeDays, type RangeDays } from './monitoringReportData'
 import type { ReportSections } from './reportTypes'
+import { BottomBar } from '@/components/BottomBar'
 
 /**
  * Berichte: ein Energiebericht als PDF, zusammengesetzt aus den gewählten
@@ -418,7 +419,7 @@ function ShareBar({
   }
 
   return (
-    <div className="glass-bar fixed inset-x-0 z-30 border-t border-border/60 bottom-[calc(4rem+env(safe-area-inset-bottom))] md:bottom-0 md:pb-[env(safe-area-inset-bottom)]">
+    <BottomBar>
       <div className="mx-auto max-w-3xl px-4 py-3">
         {status === 'error' && (
           <p
@@ -470,7 +471,7 @@ function ShareBar({
           )}
         </div>
       </div>
-    </div>
+    </BottomBar>
   )
 }
 

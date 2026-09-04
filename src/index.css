@@ -154,24 +154,40 @@
 }
 
 /*
- * Maße der unteren Leiste – eine Zahl, an einer Stelle.
+ * Maße des unteren Bildschirmrands – jede Zahl an genau einer Stelle.
  *
- * Die mobile Navigationsleiste (BottomNav) setzt ihre Höhe aus
- * `--bottom-nav-h`; alles, was unten schwebt (Cookie-Banner,
- * Cookie-Wiedereinstieg), rechnet seinen Abstand über `--floating-bottom`
- * daraus. Vorher stand die Höhe als Literal („4.75rem") in jeder schwebenden
- * Komponente – wich sie von der echten Leistenhöhe ab, überlappten die
- * Elemente die Navigation.
+ * Unten stapeln sich bis zu drei Ebenen: die mobile Navigationsleiste
+ * (BottomNav), darüber eine feste Aktionsleiste mancher Seiten (BottomBar,
+ * z. B. „PDF teilen" oder „Weiter" im Fragebogen) und darüber alles
+ * Schwebende (Cookie-Hinweis, Cookie-Wiedereinstieg).
+ *
+ * - `--bottom-nav-h`   Höhe der Navigationsleiste ohne Safe-Area. Die BottomNav
+ *                      setzt ihre Höhe daraus.
+ * - `--bottom-nav-total` Dasselbe inklusive Safe-Area – die Oberkante der
+ *                      Navigationsleiste. Darauf setzt die BottomBar auf.
+ * - `--bottom-bar-h`   Höhe der Aktionsleiste, falls eine da ist. Die BottomBar
+ *                      misst sich selbst und schreibt den Wert hierher; ohne
+ *                      Aktionsleiste bleibt es 0px.
+ * - `--floating-bottom` Abstand für alles Schwebende – über allem, was darunter
+ *                      liegt.
+ *
+ * Vorher standen diese Höhen als Literale („4.75rem", „4rem") in jeder
+ * Komponente. Wichen sie voneinander ab, überlappten die Ebenen einander.
  */
 :root {
   --bottom-nav-h: 4.25rem;
-  --floating-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom) + 0.75rem);
+  --bottom-nav-total: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom));
+  --bottom-bar-h: 0px;
+  --floating-gap: 0.75rem;
+  --floating-bottom: calc(var(--bottom-nav-total) + var(--bottom-bar-h) + var(--floating-gap));
 }
 
-/* Ab md gibt es keine untere Navigationsleiste mehr. */
+/* Ab md gibt es keine untere Navigationsleiste mehr; die Aktionsleiste sitzt
+   dann direkt am unteren Rand. */
 @media (min-width: 768px) {
   :root {
-    --floating-bottom: 1rem;
+    --bottom-nav-total: 0px;
+    --floating-gap: 1rem;
   }
 }
 

@@ -246,6 +246,27 @@ Gemessen (393 × 760, Chromium): Knopf 44 × 44 px, 12 px vom rechten Rand,
 Unterkante 11 px über der Navigationsleiste; Cookie-Hinweis endet an derselben
 Kante. Auf 1280 px breit: 16 px Abstand zu beiden Rändern, mit Beschriftung.
 
+### 12. Cookie-Symbol verdeckt den „PDF teilen"-Knopf
+**Kategorie:** Bug · **Bereich:** `BottomBar`, `ConsentReopenButton`
+**Status:** ✅ Umgesetzt – Nachtrag zu #11. Der Wiedereinstieg wich zwar der
+Navigationsleiste aus, nicht aber der festen Aktionsleiste, die auf den
+Berichten („PDF teilen") und im Fragebogen („Weiter") darüber liegt. Beide
+Leisten waren als kopierter Klassen-String in den Seiten aufgebaut und
+rechneten mit `4rem` statt der echten Leistenhöhe – sie überlappten die
+Navigationsleiste ihrerseits um vier Pixel.
+
+Neue Komponente `components/BottomBar.tsx` für beide Leisten. Sie sitzt auf
+`--bottom-nav-total` auf und misst sich selbst per `ResizeObserver` nach
+`--bottom-bar-h`, worüber `--floating-bottom` das Schwebende nach oben schiebt.
+Gemessen statt angenommen, weil die Berichte-Leiste über dem Knopf Status- und
+Fehlerzeilen einblendet und dabei wächst.
+
+Gemessen (393 × 760, Chromium): Berichte 12 px Abstand zur Leiste, Fragebogen
+12 px; Leiste künstlich um 60 px erhöht → Knopf wandert um exakt 60 px mit und
+nach dem Zurücksetzen zurück; auf einer Seite ohne Aktionsleiste steht
+`--bottom-bar-h` wieder auf `0px`. Desktop (1280 px): Leiste am unteren Rand,
+Knopf 16 px darüber.
+
 ### 3. Dritter Button im Cookie-Banner für erweiterte Einstellungen
 **Kategorie:** Verbesserung · **Bereich:** `ConsentBanner`
 **Status:** ✅ Umgesetzt – „Cookie-Einstellungen" ist jetzt ein eigener Button
