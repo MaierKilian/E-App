@@ -58,6 +58,26 @@ Routenwechsel), nicht nur für die Rechtsseiten.
 
 ---
 
+## Landing Page
+
+### 5. Sprache und Theme auf der Landing Page nicht einstellbar
+**Kategorie:** Verbesserung · **Bereich:** `LandingPage.tsx`
+
+Bestätigt: Beide Bausteine existieren bereits (`ThemePicker` in
+`src/components/ThemePicker.tsx`, Sprachumschaltung in `SettingsPage.tsx`),
+aber nur hinter der Anmeldung erreichbar. Ein Erstbesucher kann auf der
+Startseite weder Sprache noch Farbschema wechseln.
+
+Kilians Vorschlag: zwei Dropdown-Buttons oben mittig zwischen Logo/„E-App"
+und „Anmelden" – funktioniert laut ihm sowohl im Browser als auch mobil.
+
+**Zu klären beim Beheben:** Wiederverwendung von `ThemePicker` prüfen (ist er
+für einen schmalen Header-Slot gebaut oder für die Einstellungsseite
+dimensioniert?) und ob die Sprachumschaltung schon als eigenständige
+Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
+
+---
+
 ## Offene Fragen für Kilian
 
 - Bei #1: Reicht ein Gate wie bei Analytics, oder muss die Cache-Strategie
