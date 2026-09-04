@@ -8,38 +8,112 @@
    - Commits die im aktuellen Branch sind, aber nicht in `main` (eigene Arbeit)
 3. Kurze Zusammenfassung der Änderungen ausgeben (was wurde geändert, welche Dateien betroffen)
 4. Falls `main` neue Commits hat: `git merge origin/main` anbieten oder automatisch ausführen
-5. `docs/verbesserungen-etappen.md` überfliegen und den Arbeitsstand mit einer
-   Zeile nennen: welche Etappe ist als Nächstes dran, welche Größe und welcher
-   Usage-Anteil.
-6. **Nach Usage-Stand und Zeit bis zum Reset fragen** – und daraus eine
-   Etappen-Kombination für heute vorschlagen (Faustregeln in der Tabelle
-   „Was in mein Fenster passt" im Tracker). Ein Vorschlag, keine Entscheidung.
-   Dann auf Kilians Auswahl warten und mit `/verbesserung <Nummer>` starten.
+5. `docs/gefundene-probleme.md` überfliegen und den Stand mit einer Zeile
+   nennen: wie viele Punkte offen sind und welche Fragen an Kilian warten
+   (siehe „Offene Fragen" am Dateiende).
+6. Fragen, ob neue Beobachtungen aus der Nutzung gesammelt werden sollen
+   (dann nur sammeln/kategorisieren, nicht am Code ändern – siehe
+   „Abgeschlossene Vorhaben → Verbesserungen aus der Sammelliste"), oder ob
+   an einem bestehenden Punkt aus der Liste weitergearbeitet werden soll.
 
-## Laufendes Vorhaben: Verbesserungen aus der Sammelliste
+## Abgeschlossene Vorhaben
 
-Die gemeldeten Punkte aus `weitere_Verbesserungen_der_Eapp.txt` sind bis auf
-elf abgearbeitet. Diese elf plus ein neu aufgenommener (21.1 – jede Angabe des
-Fragebogens braucht einen Abnehmer) sind in 15 Etappen gefasst.
+### Verbesserungen aus der Sammelliste + Live-Test-Runde (2026-09-04)
 
-- **Arbeitsstand (Wie weit):** `docs/verbesserungen-etappen.md` – 15 Etappen,
-  jede einzeln lauffähig und deploybar, bewusst unterschiedlich groß (S/M/L)
-  mit geschätztem Usage-Anteil, damit sich nach verbleibendem Fenster
-  entscheiden lässt, was noch reinpasst
-- **Teil-Konzept:** `docs/geraete-concept.md` – das Warum hinter den Etappen
-  12a bis 12d (ein Ergebnis je Kühl-/Gefriergerät)
-- **Bearbeiten mit:** `/verbesserung` (nächste offene), `/verbesserung 3`
-  (gezielt), `/verbesserung status` (nur berichten)
-- **Zwei Etappen brauchen einen Menschen:** Etappe 6 (Primärquellen) verlangt,
-  dass Kilian am PC die Links durchklickt – in dieser Umgebung lassen sie sich
-  finden, aber nicht öffnen. Etappe 11 (Duschkopf-Empfehlung) beginnt mit
-  einem Textvorschlag zur Abstimmung, nicht mit Code.
-- Zwei Etappen betreffen Rechtstexte (Impressum, Datenschutzerklärung,
+Die gemeldeten Punkte aus `weitere_Verbesserungen_der_Eapp.txt` liefen in 15
+Etappen; direkt im Anschluss kam eine zweite Runde aus Kilians Live-Test der
+deployten App dazu.
+
+- **Etappen:** `docs/verbesserungen-etappen.md` – alle 15 fertig,
+  `/verbesserung status` berichtet den Stand.
+- **Live-Test-Befunde:** `docs/gefundene-probleme.md` – laufende Sammlung.
+  Arbeitsweise: erst sammeln, kategorisieren (Bug/Problem/Verbesserung) und
+  in die Datei eintragen, **ohne** Code zu ändern; erst wenn Kilian ausdrücklich
+  „umsetzen" sagt, wird gebaut. Am 04.09. wurden auf diesen Wunsch hin acht von
+  zehn gemeldeten Punkten direkt umgesetzt.
+- Zwei Etappen betrafen Rechtstexte (Impressum, Datenschutzerklärung,
   Einwilligung vor Analytics). Sie sind nach bestem Wissen aufgebaut und
   benennen die tatsächlichen Verarbeitungen – **eine juristische Prüfung
   ersetzen sie nicht.**
 
-## Abgeschlossene Vorhaben
+**Was sich dadurch in der App konkret geändert hat:**
+
+*Rechtliches & Datenschutz*
+- Impressum und Datenschutzerklärung neu (`/impressum`, `/datenschutz`) –
+  gab es vorher gar nicht.
+- Cookie-Einwilligung vor Google Analytics – Analytics lädt jetzt erst nach
+  Zustimmung, vorher startete es automatisch beim App-Start.
+- Firestore-Datenspeicherung startet nicht mehr automatisch beim App-Start,
+  sondern erst bei echtem Bedarf (Anmeldung/Sync) – vorher legte die App
+  schon vor jeder Cookie-Entscheidung einen Gerätespeicher an.
+- Cookie-Banner: „Cookie-Einstellungen" ist jetzt ein eigener, gleich
+  prominenter Button statt eines kleinen Links.
+- Neuer, dauerhaft sichtbarer Button zum Wiedereinstieg in die
+  Cookie-Einstellungen (unten rechts, wie der Cookie-Hinweis selbst).
+
+*Fragebogen*
+- Neuer Abschluss-Bildschirm „Wofür wir das nutzen" – zeigt für jede Angabe,
+  wo sie in der App landet.
+- Studienziel „HTW" aus der Zielauswahl entfernt (Lerninhalte bleiben über
+  den Wissensbereich erreichbar).
+
+*Messungen*
+- Kellerklima wird nach Keller-Maßstäben bewertet (Taupunkt-Berechnung statt
+  Wohnraum-Prozentwert).
+- Warmwasser-Wartezeit nutzt den tatsächlich gemessenen Duschkopf-Durchfluss
+  statt eines Pauschalwerts, mit aufklappbarer „So gerechnet"-Übersicht;
+  zusätzlich behoben: ältere Ergebnisse ohne diesen Messwert zeigten
+  fälschlich „0 Liter" statt „nicht gemessen".
+- Duschkopf-Ergebnistexte neu formuliert – Wassermenge vor Euro-Betrag, keine
+  Kaufempfehlung mehr, Hinweis dass „Eco"/„sparsam" keine geschützten Begriffe
+  sind.
+- Möbelabstand-Zielwert von 10 auf 30 cm angehoben (belegt); zusätzlich
+  behoben, dass Abstände bis 5 cm fälschlich als „Gut" statt kritisch
+  bewertet wurden.
+- Mehrere Geräte gleicher Art (z. B. zwei Kühlschränke) lassen sich einzeln
+  erfassen, benennen und getrennt messen – vorher überschrieb ein zweites
+  Gerät automatisch das Ergebnis des ersten.
+- Kühlschrank/Gefriergerät nutzt die gemessene Raumtemperatur aus dem
+  Raumklima-Check desselben Raums, wenn vorhanden.
+- Kein automatisches Weiterspringen mehr nach „Speichern & Fertig" bei
+  Grundlast, Standby, LED, Duschkopf, Kühl- und Gefrierschrank.
+- Kleines Verlaufsdiagramm im Monitoring zeigt echte zeitliche Abstände
+  zwischen Ablesungen.
+- Halten der +/- Buttons bei Zahleneingaben zählt automatisch und
+  beschleunigt weiter.
+
+*Bericht (PDF)*
+- Neues Kapitel „Haushalts-Steckbrief" zu Beginn: Gebäude, Haushalt,
+  Anlagentechnik, Sanierungshistorie.
+- Neues Kapitel „Handlungsplan": offene Tipps nach Aufwand gruppiert, nach
+  eigenen Zielen sortiert.
+- Jede Bewertung zeigt den Vergleichs-Richtwert daneben, plus
+  Quellenverzeichnis am Ende.
+- Zusätzlicher direkter Download-Button (bisher am PC teils nur „teilen").
+
+*Bedienung allgemein*
+- Sprache und Design schon auf der Landing Page einstellbar, nicht erst nach
+  der Anmeldung.
+- Seite springt bei jedem Seitenwechsel an den Anfang (vorher blieb die
+  Scroll-Position z. B. zwischen Impressum/Datenschutz stehen).
+
+Konventionen, die dabei entstanden sind und weiter gelten:
+
+- **Jedes `OnboardingData`-Feld braucht einen Abnehmer.**
+  `src/features/onboarding/fieldUsage.ts` deckt jedes Feld ab, ein Test hält
+  die Liste der Felder ohne Abnehmer exakt fest – ein neues Feld ohne Eintrag
+  lässt Typecheck und Test rot werden.
+- **Jeder Richtwert nennt seine Herkunft.** `ThresholdOrigin` in
+  `measurementThresholds.ts` ist `'reference'` (belegte Quelle), `'own'`
+  (Richtwert der E-App, begründet) oder `'pending'` (noch offen) – nie
+  unmarkiert.
+
+Offen geblieben: Drei Richtwerte ohne belegte Quelle (Warmwasser-Wartezeit-,
+Grundlast- und Standby-Schwellen, verdeckte Heizkörperfläche bei
+Fußbodenheizung, Details in Etappe 6 des Trackers). Die Raumzuordnung bei der
+Warmwasser-Wartezeit (mehrere Bäder/Entnahmestellen) wartet auf Kilians
+Entscheidung zur Auswahl-Struktur – siehe „Offene Fragen" in
+`docs/gefundene-probleme.md`.
 
 ### Wissen-Ausbau (2026-08-31)
 
