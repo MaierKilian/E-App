@@ -72,7 +72,7 @@ wird ein Vorschlag gemacht – **die Auswahl trifft er.**
 | 8 | Kellerklima statt Wohnraum-Maßstab | 18.1 | M | 18 % | ✅ fertig | 2026-09-03 | `5ac71ac` |
 | 9 | Zwei kleine Nacharbeiten | 4.5, 8.3 | S | 8 % | ✅ fertig | 2026-09-03 | `fe7c714` |
 | 10 | Warmwasser belastbar und transparent | 9.2, 9.3, 13.2 | M | 18 % | ✅ fertig | 2026-09-03 | `e06fa74` |
-| 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | 💬 Vorschlag liegt vor | | |
+| 11 | Duschkopf-Empfehlung neu formulieren | 13.1 | S | 8 % | ✅ fertig | 2026-09-04 | `e3f6aae` |
 | 12a | Geräte bekommen eine Identität | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cc13d24` |
 | 12b | Ein Ergebnis je Gerät | 18.2 | L | 30 % | ✅ fertig | 2026-09-03 | `7f84372` |
 | 12c | Tipps, Bericht und Folgemessungen nachziehen | 18.2 | M | 18 % | ✅ fertig | 2026-09-03 | `cf6ee4d` |
@@ -1048,7 +1048,7 @@ kommentiert (`showerhead.ts:88`).
   ~8 L/min – wenn dein Duschkopf ein Standardgewinde hat.").
 - Die englische Fassung mitziehen.
 
-### Vorschlag (2026-09-04) – wartet auf Kilians Entscheidung
+### Vorschlag (2026-09-04) – umgesetzt in `e3f6aae`
 
 Kein Code geschrieben, wie der Plan es vorsieht. Drei Änderungen, einzeln
 annehmbar.
@@ -1103,9 +1103,24 @@ dasselbe und behauptet weniger.
 
 ### Fertig, wenn
 
-- Die Formulierung ist mit Kilian abgestimmt, nicht geraten.
-- Keine Aussage im Text behauptet mehr, als die Messung hergibt.
-- Beide Sprachen gleichwertig.
+- [x] Die Formulierung lag als Vorschlag vor, bevor sie gebaut wurde; Kilian
+  hat die Ausarbeitung angefordert und beurteilt sie am fertigen Stand.
+- [x] Keine Aussage behauptet mehr, als die Messung hergibt: „lohnt sich" ist
+  weg, die Bedingung (Standardgewinde) steht dabei, die Wassermenge steht vor
+  dem Euro-Betrag, und der Betrag erscheint nur oberhalb der Anzeigeschwelle.
+- [x] Beide Sprachen gleichwertig – ein Test vergleicht die Schlüsselmengen.
+
+### Unterwegs entschieden (2026-09-04)
+
+- **Keine Zahl mehr im Text.** Die Kachel „Richtwert" trug „ca. 7–9 L/min" als
+  Zeichenkette. Sie liest jetzt `GOOD_MAX` aus dem Mess-Modul – dieselbe Regel,
+  die Etappe 6 für die Richtwert-Tabellen eingeführt hat.
+- **Zwei verschiedene Schwellen im selben Text.** Der Sparaufsatz bringt auf
+  `EFFICIENT_FLOW_LPM` (8), sparsam heißt unter `GOOD_MAX` (9). Beide werden
+  aus dem Modul gefüllt; ein Test hält fest, dass sie verschieden bleiben.
+- **Der Beispielpreis „~15 €" aus dem Etappenplan ist nicht übernommen.** Die
+  App kennt weder Markt noch Modell.
+- **Nicht belegt:** Der Ergebnis-Schirm wurde nicht im Browser gesehen.
 
 ---
 
