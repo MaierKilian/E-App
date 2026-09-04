@@ -54,19 +54,45 @@ const GEN_TO_SOURCE: Partial<Record<HeatGeneratorType, HotWaterSource>> = {
 }
 
 /**
- * Voreingestellte Warmwasserquelle aus dem Profil: bei „wie Heizung" der
- * Heizträger, sonst (separates System / unbekannt) elektrisch
- * (Boiler/Durchlauferhitzer). Nur ein Vorschlag – im Test wählbar.
+ * Voreingestellte Warmwasserquelle aus dem Profil. Nur ein Vorschlag – im Test
+ * wählbar.
+ *
+ * „Wie Heizung" und „teilweise kombiniert" nehmen den Heizträger. **„Nicht
+ * bekannt" ebenfalls**: Vorher landete diese Antwort pauschal bei „elektrisch",
+ * auch wenn ein Gaskessel im Profil stand. Das ist die teuerste aller Quellen –
+ * je nutzbarer Kilowattstunde die teuerste der fünf –, und die Ersparnis
+ * des Duschkopf-Tests hing direkt daran. Wer die Frage nicht beantworten kann,
+ * bekam so den unwahrscheinlichsten Fall unterstellt und eine Zahl, die um ein
+ * Vielfaches danebenlag. Der Wärmeerzeuger im Haus ist der bessere Anhaltspunkt.
+ *
+ * Elektrisch bleibt, was es immer war: die Antwort für ein wirklich eigenes
+ * Gerät – und der Rückfall, wenn kein Wärmeerzeuger etwas hergibt.
  */
 export function defaultHotWaterSource(
   hotWaterType: HotWaterType,
   heatGenerators: HeatGeneratorType[],
 ): HotWaterSource {
-  if (hotWaterType === 'same_as_heating' || hotWaterType === 'partially_combined') {
+  if (hotWaterType !== 'separate_system') {
     for (const gen of heatGenerators ?? []) {
       const mapped = GEN_TO_SOURCE[gen]
       if (mapped) return mapped
     }
   }
   return 'electric'
+}
+
+/**
+ * Kam die Vorbelegung aus einer Angabe des Nutzers – oder ist sie ein Rückfall?
+ *
+ * Der Duschkopf-Check zeigt das an. Die Warmwasserfrage wirkt genau hier, und
+ * zwar kräftig; ohne diesen Hinweis war ihre einzige sichtbare Folge ein
+ * vorausgewähltes Chip, dem niemand ansieht, woher es kommt.
+ */
+export function hotWaterSourceFromProfile(
+  hotWaterType: HotWaterType,
+  heatGenerators: HeatGeneratorType[],
+): boolean {
+  if (hotWaterType === 'separate_system') return true
+  if (hotWaterType === 'unknown') return false
+  return (heatGenerators ?? []).some((gen) => GEN_TO_SOURCE[gen] !== undefined)
 }

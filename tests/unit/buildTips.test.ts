@@ -580,6 +580,7 @@ describe('Jeder Tipp ist beschriftet', () => {
   const CASES: OnboardingData[] = [
     RICH,
     { ...RICH, hasPV: 'planned' } as unknown as OnboardingData,
+    { ...RICH, hotWaterType: 'separate_system' } as unknown as OnboardingData,
   ]
 
   it('hat zu jedem Tipp Titel und Begründung in beiden Sprachen', () => {
@@ -619,5 +620,39 @@ describe('Jeder Tipp ist beschriftet', () => {
     // verlinkten Tipp erzeugt – und würde genau den Fehler durchlassen, für den
     // er geschrieben wurde.
     expect(geprueft).toBeGreaterThan(0)
+  })
+})
+
+describe('Warmwasser-Quelle', () => {
+  // Die Frage nach der Warmwasserbereitung war nie folgenlos – sie setzt den
+  // €/kWh-Preis des Duschkopf-Checks. Sichtbar war das nur nicht: ein
+  // vorausgewähltes Chip mitten im Check. Der Tipp zieht die Folgerung, die
+  // vorher niemand zog.
+  const withHotWater = (hotWaterType: string) =>
+    ({ ...PROFILE, hotWaterType }) as unknown as OnboardingData
+
+  it('führt bei eigenem Warmwassergerät in den Duschkopf-Test', () => {
+    const tip = buildTips(withHotWater('separate_system'), {}).find(
+      (t) => t.id === 'hot_water_electric',
+    )
+    expect(tip?.linkTo).toBe('/measurements/showerhead')
+    expect(tip?.costEur).toBe(0)
+  })
+
+  it('tritt ab, sobald der Duschkopf gemessen ist', () => {
+    // Sonst stünde neben dem gemessenen Ergebnis noch die Empfehlung, es zu
+    // messen.
+    const tips = buildTips(withHotWater('separate_system'), {
+      showerhead: result({ id: 'showerhead', rating: 'good', primaryValue: 7, unit: 'L/min' }),
+    })
+    expect(tips.map((t) => t.id)).not.toContain('hot_water_electric')
+  })
+
+  it('schweigt bei Warmwasser über die Heizung', () => {
+    for (const type of ['same_as_heating', 'partially_combined', 'unknown']) {
+      expect(buildTips(withHotWater(type), {}).map((t) => t.id)).not.toContain(
+        'hot_water_electric',
+      )
+    }
   })
 })

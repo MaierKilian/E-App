@@ -9,6 +9,7 @@ import {
   HOT_WATER_SOURCES,
   eurPerKwhHeat,
   defaultHotWaterSource,
+  hotWaterSourceFromProfile,
   type HotWaterSource,
 } from './hotWaterEnergy'
 import type { RunProps } from '../runnerTypes'
@@ -29,10 +30,13 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
 
   const [liters, setLiters] = useState(DEFAULT_LITERS)
   const [seconds, setSeconds] = useState(0)
-  const [source, setSource] = useState<HotWaterSource>(() =>
-    defaultHotWaterSource(profile.hotWaterType, profile.heatGenerators),
-  )
+  const profileSource = defaultHotWaterSource(profile.hotWaterType, profile.heatGenerators)
+  const [source, setSource] = useState<HotWaterSource>(profileSource)
   const eurPerKwh = eurPerKwhHeat(source, tariff)
+  // Der Hinweis steht nur, solange die Vorbelegung unveraendert ist: Sobald der
+  // Nutzer selbst waehlt, waere "aus deinem Profil" schlicht falsch.
+  const showProfileHint =
+    source === profileSource && hotWaterSourceFromProfile(profile.hotWaterType, profile.heatGenerators)
 
   const canEvaluate = liters > 0 && seconds > 0
 
@@ -127,6 +131,18 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
         <span className="font-medium text-foreground">
           {t('measurements.showerhead.run.sourceLabel')}
         </span>
+        {/* Woher die Vorauswahl kommt. Die Warmwasserfrage aus dem Fragebogen
+            entscheidet hier ueber den €/kWh-Preis, und elektrisch ist die
+            teuerste der Quellen. Ohne diesen Satz war das die einzige
+            Stelle, an der die Frage wirkt, und zugleich unsichtbar. */}
+        {showProfileHint && (
+          <p className="mt-1 text-xs leading-snug text-muted">
+            {t('measurements.showerhead.run.sourceFromProfile', {
+              source: t(`measurements.showerhead.run.sources.${profileSource}`),
+              hotWater: t(`onboarding.step4.hotWaterOptions.${profile.hotWaterType}`),
+            })}
+          </p>
+        )}
         <div className="mt-3 flex flex-wrap gap-2">
           {HOT_WATER_SOURCES.map((s) => (
             <SelectChip

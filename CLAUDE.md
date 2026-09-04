@@ -68,6 +68,9 @@ deployten App dazu.
   die Mittagsstunden zu legen (Eigenverbrauch statt Einspeisung), „geplant" rät,
   vor der Auslegung die eigene Grundlast zu messen. Den Erzeugungszähler im
   Monitoring schaltete sie schon vorher frei.
+- Die Warmwasser-Angabe wirkt sichtbar: Der Duschkopf-Check nennt die Herkunft
+  seiner Vorbelegung, „Nicht bekannt" rät auf den Wärmeerzeuger statt pauschal
+  auf Strom, und „Separates System" trägt eine eigene Empfehlung.
 
 *Messungen*
 - Kellerklima wird nach Keller-Maßstäben bewertet (Taupunkt-Berechnung statt

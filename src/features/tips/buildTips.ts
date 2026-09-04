@@ -792,6 +792,25 @@ export function buildTips(
     })
   }
 
+  // Elektrisch erzeugtes Warmwasser ist die teuerste Art, es zu erzeugen: je
+  // nutzbarer Kilowattstunde die teuerste der fuenf Quellen (siehe
+  // `eurPerKwhHeat`) – mit den Standardpreisen der App gut das Zweieinhalbfache
+  // von Gas und rund das Vierfache von Pellets.
+  // Damit wiegt beim Duschen jeder gesparte Liter hier am schwersten – das ist
+  // die Folgerung aus der Warmwasserfrage, die dem Nutzer bisher niemand
+  // gezogen hat. Der Tipp fuehrt in den Duschkopf-Check und tritt ab, sobald der
+  // gemacht ist: Dann traegt dessen eigener Tipp die gemessene Zahl.
+  if (data.hotWaterType === 'separate_system' && !results['showerhead']) {
+    tips.push({
+      id: 'hot_water_electric',
+      icon: Droplets,
+      category: 'water',
+      effortMinutes: 5,
+      costEur: 0,
+      linkTo: '/measurements/showerhead',
+    })
+  }
+
   // --- Photovoltaik ---------------------------------------------------------
   // Die PV-Angabe legte bisher nur den Erzeugungszaehler aufs Monitoring-Board.
   // Das beantwortet „wie viel erzeuge ich", nicht „was mache ich damit" – und

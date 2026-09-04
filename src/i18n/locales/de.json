@@ -396,7 +396,8 @@
           "heat_pump": "Wärmepumpe",
           "oil": "Öl",
           "pellets": "Pellets"
-        }
+        },
+        "sourceFromProfile": "Vorbelegt aus deinem Profil („{{hotWater}}“): {{source}}. Der Preis je Kilowattstunde hängt daran – elektrisch ist die teuerste der Quellen."
       },
       "result": {
         "flowUnit": "L/min",
@@ -2564,6 +2565,11 @@
         "title": "Vor der Auslegung: eigene Grundlast messen",
         "reason": "Wie groß deine Anlage sinnvollerweise wird, hängt weniger vom Dach ab als davon, wie viel Strom im Haus überhaupt bleiben kann. Die Grundlast ist dafür die nützlichste Zahl – miss sie, bevor du Angebote vergleichst. Der Check dauert nur ein paar Minuten und läuft über eine Nacht.",
         "action": "Zum Grundlast-Check"
+      },
+      "hot_water_electric": {
+        "title": "Warmwasser aus dem eigenen Gerät – die teuerste Kilowattstunde im Haus",
+        "reason": "Du erzeugst dein Warmwasser über ein eigenes Gerät, also in aller Regel elektrisch. Je nutzbarer Kilowattstunde ist das die teuerste aller Quellen – gut zweieinhalbmal so teuer wie Gas. Dieselbe Dusche kostet dich damit deutlich mehr als in einem Haus mit Gastherme, und genau deshalb lohnt der Duschkopf-Test bei dir mehr als bei den meisten.",
+        "action": "Zum Duschkopf-Test"
       }
     },
     "potentialLabel": "Deine Empfehlungen",

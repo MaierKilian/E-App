@@ -439,6 +439,47 @@ irgendwohin führt, braucht in beiden Sprachen eine Beschriftung – mit einer
 Zeile, die den Test rot werden lässt, wenn er gar keinen verlinkten Tipp mehr
 zu prüfen findet.
 
+### 21. Warmwasser-Frage – die folgenreichste Angabe, die man ihr nicht ansah
+**Kategorie:** Verbesserung · **Bereich:** `hotWaterEnergy.ts`, `ShowerheadRun`,
+`buildTips.ts`
+**Status:** ✅ Umgesetzt (04.09.).
+
+Kilians Frage: „Hat die Angabe der Warmwasseraufbereitung irgendeinen weiteren
+Sinn? Ich möchte tote Enden im Fragebogen vermeiden."
+
+**Sie ist kein totes Ende – im Gegenteil.** `hotWaterType` setzt im
+Duschkopf-Check den Preis je nutzbarer Kilowattstunde
+(`defaultHotWaterSource` → `eurPerKwhHeat`). Mit den Standardpreisen der App
+kostet elektrisch erzeugte Wärme 0,354 €/kWh, Gas 0,133 €/kWh: Dieselbe Dusche
+ergibt je nach Antwort eine gut zweieinhalbmal so hohe Zahl. Von allen Feldern
+des Fragebogens hat kaum eines eine so kräftige Wirkung.
+
+**Warum es sich trotzdem wie ein totes Ende anfühlt:** Diese Wirkung war
+unsichtbar. Sie bestand aus einem vorausgewählten Chip mitten im Duschkopf-Check
+– und niemand sieht einem Chip an, dass er aus dem Fragebogen stammt. Drei
+Dinge sind deshalb dazugekommen:
+
+1. **Die Vorbelegung sagt jetzt, woher sie kommt.** Über den Quellen-Chips steht
+   „Vorbelegt aus deinem Profil („Wie Heizung"): Gas." – aber nur, solange die
+   Auswahl unverändert ist und tatsächlich auf einer Angabe beruht.
+2. **„Nicht bekannt" rät besser.** Bisher landete diese Antwort pauschal bei
+   „elektrisch", auch wenn ein Gaskessel im Profil stand – der teuersten aller
+   Quellen. Wer die Frage nicht beantworten konnte, bekam damit den
+   unwahrscheinlichsten Fall unterstellt und eine Ersparnis, die um ein
+   Mehrfaches danebenlag. Jetzt folgt sie dem Wärmeerzeuger und fällt nur ohne
+   verwertbaren Erzeuger auf elektrisch zurück. Der Hinweis aus (1) bleibt in
+   diesem Fall bewusst aus: Geraten ist nicht angegeben.
+3. **Ein Tipp zieht die Folgerung.** Bei „Separates System" – also in aller Regel
+   elektrisch – steht jetzt in den Empfehlungen, dass hier die teuerste
+   Kilowattstunde des Hauses erzeugt wird und der Duschkopf-Test deshalb mehr
+   bringt als anderswo. Der Tipp führt dorthin und tritt ab, sobald gemessen ist.
+
+**Beim Nachrechnen korrigiert:** Die erste Fassung der Texte behauptete „grob
+das Vierfache von Gas". Gegen die Standardpreise der App gerechnet sind es 2,65
+– das Vierfache trifft auf Pellets zu, nicht auf Gas. Die Texte sagen jetzt „die
+teuerste aller Quellen" und, wo eine Zahl steht, „gut zweieinhalbmal so teuer
+wie Gas"; ein Test hält beides an der Rechnung fest.
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
