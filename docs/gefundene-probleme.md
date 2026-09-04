@@ -136,6 +136,33 @@ voraus, dass zu jedem Raumtyp die plausiblen Entnahmestellen bekannt sind
 raumspezifischen Fragenzuordnung, die es beim Möbel-Abstands-Check schon gibt
 (`ROOM_PRIMARY_KEY` in `furnitureSpacing.ts`).
 
+### 10. Bericht am PC nur „teilen", kein direkter Download
+**Kategorie:** Bug · **Bereich:** `src/features/reports/pdf/deliver.ts`
+
+Bestätigt anhand der Screenshots (Windows-Share-Dialog ohne erkennbare
+„Speichern unter"-Option) und des Codes. `canSharePdf()`
+(`deliver.ts:30`) prüft nur `navigator.canShare({ files: [...] })` – das ist
+unter Windows in Chrome/Edge **auch am Desktop** `true`, weil Windows eine
+systemweite Freigabe-Leiste für Dateien hat. Die App nimmt das als Signal
+„Gerät kann teilen" und ruft `navigator.share(...)` auf (`deliverReport()`,
+Zeile 51), **ohne** dass die Windows-Freigabeleiste zuverlässig eine
+„Speichern"/Download-Option anbietet – sie zeigt nur Apps wie Teams, Outlook,
+WhatsApp. Der Kommentar im Code (Zeile 6–9) geht erkennbar von „Teilen nur
+aufs Handy sinnvoll, sonst Download-Rückfall" aus, aber die Prüfung selbst
+erkennt „Desktop" nicht, sondern nur „Datei-Teilen technisch möglich" – und
+das ist unter Windows-Desktop-Browsern eben auch der Fall.
+
+Kilians Wunsch: einen direkten Download muss es unabhängig vom
+Teilen-Ergebnis geben, nicht nur den (auf diesem System unzuverlässigen)
+Umweg über die Systemfreigabe.
+
+**Zu klären beim Beheben:** Denkbare Ansätze – (a) `canSharePdf()` zusätzlich
+auf mobile Geräte eingrenzen (z. B. `navigator.userAgentData?.mobile` bzw.
+bestehende Mobile-Erkennung, falls im Projekt schon vorhanden), oder (b) auf
+dem Ergebnis-Screen grundsätzlich zwei getrennte Aktionen anbieten
+(„Teilen" **und** „Herunterladen" nebeneinander) statt einer Automatik, die
+sich pro Plattform für eine von beiden entscheidet.
+
 ---
 
 ## Cookie-Banner & Rechtsseiten
