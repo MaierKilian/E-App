@@ -62,6 +62,12 @@ deployten App dazu.
   laufen. Die Abfrage hatte eine einzige Wirkung (ein vorangehakter Schalter im
   Möbelabstand-Check) und stellte 24 Bauarten zur Wahl, die keine Zeile Code
   gelesen hat.
+- Frage nach zusätzlichem Kamin/Ofen entfernt – sie hatte keine einzige
+  funktionale Lesestelle.
+- Die PV-Angabe trägt jetzt auch Empfehlungen: „Ja" rät, große Verbraucher in
+  die Mittagsstunden zu legen (Eigenverbrauch statt Einspeisung), „geplant" rät,
+  vor der Auslegung die eigene Grundlast zu messen. Den Erzeugungszähler im
+  Monitoring schaltete sie schon vorher frei.
 
 *Messungen*
 - Kellerklima wird nach Keller-Maßstäben bewertet (Taupunkt-Berechnung statt

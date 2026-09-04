@@ -149,15 +149,15 @@ export const FIELD_USAGE = {
     labelKey: 'onboarding.step8.labels.windowAge',
   },
   hasPV: {
-    consumers: ['monitoring'],
-    reason: 'Schaltet die Erfassung der PV-Erzeugung frei und stößt sie an, wenn noch nichts erfasst wurde.',
+    consumers: ['monitoring', 'tips'],
+    reason:
+      'Legt den Erzeugungszähler aufs Board und erinnert daran, ihn zu füllen. „Ja" trägt zusätzlich die Empfehlung, große Verbraucher in die Mittagsstunden zu legen; „geplant" die, vor der Auslegung Grundlast und Standby zu messen.',
     labelKey: 'onboarding.step8.labels.hasPV',
   },
   hasExtraFireplace: {
     consumers: ['report'],
     reason:
-      'Zusätzlicher Kamin oder Ofen, im Steckbrief des Berichts. Dass er die Verbrauchs-Einordnung verschiebt, wird noch nicht gerechnet.',
-    labelKey: 'onboarding.step8.labels.hasExtraFireplace',
+      'Zusätzlicher Kamin oder Ofen. Wird nicht mehr gefragt – die Angabe verschob keine Rechnung, ihre gesamte Wirkung war eine Zeile im Steckbrief. Ein Bestandsprofil, das „ja" gesagt hat, behält sie dort.',
   },
   ventilationType: {
     consumers: ['report'],

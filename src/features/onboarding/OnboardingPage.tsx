@@ -48,9 +48,7 @@ const SECTION_BODIES: Record<SectionId, (p: StepContentProps) => ReactNode> = {
     <Step1Profile data={data} onChange={onChange} detailed={detailed} />
   ),
   rooms: ({ data, onChange }) => <Step3Rooms data={data} onChange={onChange} />,
-  heating: ({ data, onChange, detailed }) => (
-    <Step4Heating data={data} onChange={onChange} detailed={detailed} />
-  ),
+  heating: ({ data, onChange }) => <Step4Heating data={data} onChange={onChange} />,
   prices: ({ data }) => <StepPrices data={data} />,
   equipment: ({ data, onChange, detailed }) => (
     <Step6Instruments data={data} onChange={onChange} detailed={detailed} />

@@ -12,6 +12,7 @@ import {
   TrendingUp,
   Wind,
   Flame,
+  Sun,
 } from 'lucide-react'
 import type { ApplianceEntry, OnboardingData, RoomType, UserGoal } from '@/types'
 import type { MeasurementResult, MeasurementRating } from '@/features/measurements/types'
@@ -788,6 +789,38 @@ export function buildTips(
       effortMinutes: 240,
       costEur: 8000,
       params: { years: boilerAge },
+    })
+  }
+
+  // --- Photovoltaik ---------------------------------------------------------
+  // Die PV-Angabe legte bisher nur den Erzeugungszaehler aufs Monitoring-Board.
+  // Das beantwortet „wie viel erzeuge ich", nicht „was mache ich damit" – und
+  // genau dort liegt der Hebel: Selbst verbrauchter Strom ist so viel wert wie
+  // der Bezugspreis, eingespeister nur so viel wie die Verguetung. Die ist seit
+  // Jahren die kleinere Zahl, oft um ein Mehrfaches. Verschieben statt
+  // verzichten – deshalb kostenlos und in Minuten getan.
+  if (data.hasPV === 'yes') {
+    tips.push({
+      id: 'pv_self_consumption',
+      icon: Sun,
+      category: 'electricity',
+      effortMinutes: 5,
+      costEur: 0,
+    })
+  }
+
+  // „Geplant" war bis hierher die einzige Antwort ohne jede Folge. Vor der
+  // Auslegung ist die eigene Grundlast die nuetzlichste Zahl, die es gibt: Sie
+  // sagt, welcher Teil der Erzeugung ueberhaupt im Haus bleiben kann. Der Tipp
+  // fuehrt deshalb in den Grundlast-Check, nicht zu einem Angebotsvergleich.
+  if (data.hasPV === 'planned' && !results['base_load']) {
+    tips.push({
+      id: 'pv_planned_base_load',
+      icon: Sun,
+      category: 'electricity',
+      effortMinutes: 20,
+      costEur: 0,
+      linkTo: '/measurements/base_load',
     })
   }
 

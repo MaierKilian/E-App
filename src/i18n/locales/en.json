@@ -2555,6 +2555,15 @@
       "old_boiler": {
         "title": "Consider replacing the boiler",
         "reason": "Your boiler is about {{years}} years old. Replacing it is the single biggest lever in your home – such measures usually qualify for public funding, which is worth checking."
+      },
+      "pv_self_consumption": {
+        "title": "Move big loads into the sunny hours",
+        "reason": "Electricity you use yourself is worth what you would otherwise pay for it – electricity you feed in only earns the feed-in tariff, which is considerably lower. Use the delayed start on your dishwasher and washing machine to run them around midday, charge the car and your batteries then, and heat hot water at noon. This is not about using less, it is about shifting when."
+      },
+      "pv_planned_base_load": {
+        "title": "Before sizing the system: measure your base load",
+        "reason": "How large your system should sensibly be depends less on the roof than on how much electricity can stay in the house at all. Base load is the most useful number for that – measure it before you compare quotes. The check takes a few minutes and runs overnight.",
+        "action": "Go to the base load check"
       }
     },
     "potentialLabel": "Your recommendations",

@@ -17,13 +17,12 @@ import type { LucideIcon } from 'lucide-react'
 import { OptionChip } from '@/components/ui/OptionChip'
 import { Slider } from '@/components/ui/Slider'
 import { Field } from '@/components/ui/Field'
-// OptionChip wird nur noch für die PV/Kamin-Felder verwendet
+// OptionChip wird nur noch für das PV-Feld verwendet
 import type { OnboardingData, HeatGeneratorType, HotWaterType } from '@/types'
 
 interface Props {
   data: OnboardingData
   onChange: (partial: Partial<OnboardingData>) => void
-  detailed?: boolean
 }
 
 const HEAT_GENERATORS: HeatGeneratorType[] = [
@@ -66,7 +65,7 @@ const PV_ICONS: Record<PVOption, LucideIcon> = {
   planned: CalendarClock,
 }
 
-export function Step4Heating({ data, onChange, detailed = false }: Props) {
+export function Step4Heating({ data, onChange }: Props) {
   const { t } = useTranslation()
   const currentYear = new Date().getFullYear()
   const yearMin = data.buildingYear > 0 ? data.buildingYear : 1850
@@ -218,26 +217,6 @@ export function Step4Heating({ data, onChange, detailed = false }: Props) {
         </div>
       </Field>
 
-      {detailed && (
-        <>
-          <Field title={t('onboarding.step4.hasExtraFireplace')} info={t('info.fireplace')}>
-            <div className="flex gap-2">
-              <OptionChip
-                icon={Check}
-                label={t('onboarding.step4.yes')}
-                selected={data.hasExtraFireplace === true}
-                onClick={() => onChange({ hasExtraFireplace: true })}
-              />
-              <OptionChip
-                icon={X}
-                label={t('onboarding.step4.no')}
-                selected={data.hasExtraFireplace === false}
-                onClick={() => onChange({ hasExtraFireplace: false })}
-              />
-            </div>
-          </Field>
-        </>
-      )}
     </div>
   )
 }

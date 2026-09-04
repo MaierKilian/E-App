@@ -2555,6 +2555,15 @@
       "old_boiler": {
         "title": "Heizungstausch prüfen",
         "reason": "Deine Heizung ist rund {{years}} Jahre alt. Beim Austausch liegt der größte Einzelhebel deines Hauses – für solche Maßnahmen gibt es in der Regel staatliche Förderung, das ist prüfenswert."
+      },
+      "pv_self_consumption": {
+        "title": "Große Verbraucher in die Sonnenstunden legen",
+        "reason": "Strom, den du selbst verbrauchst, ist so viel wert wie der Preis, den du sonst dafür zahlst – eingespeister bringt dir nur die Vergütung, und die ist deutlich niedriger. Stell Spül- und Waschmaschine per Startzeitvorwahl auf die Mittagsstunden, lade E-Auto und Akkus dann, und heize Warmwasser um die Mittagszeit auf. Es geht nicht ums Sparen, sondern ums Verschieben."
+      },
+      "pv_planned_base_load": {
+        "title": "Vor der Auslegung: eigene Grundlast messen",
+        "reason": "Wie groß deine Anlage sinnvollerweise wird, hängt weniger vom Dach ab als davon, wie viel Strom im Haus überhaupt bleiben kann. Die Grundlast ist dafür die nützlichste Zahl – miss sie, bevor du Angebote vergleichst. Der Check dauert nur ein paar Minuten und läuft über eine Nacht.",
+        "action": "Zum Grundlast-Check"
       }
     },
     "potentialLabel": "Deine Empfehlungen",

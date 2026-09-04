@@ -9,6 +9,8 @@ import { describe, expect, it } from 'vitest'
 import { buildTips, sortingGoals } from '@/features/tips/buildTips'
 import type { MeasurementResult } from '@/features/measurements/types'
 import type { OnboardingData } from '@/types'
+import de from '@/i18n/locales/de.json'
+import en from '@/i18n/locales/en.json'
 
 const NOW = '2026-08-19T08:00:00.000Z'
 
@@ -500,5 +502,122 @@ describe('Ziele bestimmen die Reihenfolge – innerhalb der Gruppen', () => {
     // Deckung – für dieses Ziel ist die €-Sortierung die Voreinstellung.
     expect(sortingGoals(['save_costs', 'curiosity'])).toEqual([])
     expect(sortingGoals(['save_costs', 'improve_comfort'])).toEqual(['improve_comfort'])
+  })
+})
+
+describe('Photovoltaik-Angabe', () => {
+  // Die Frage „Gibt es eine PV-Anlage?" legte bisher nur den Erzeugungszähler
+  // aufs Monitoring-Board. Sie beantwortete damit, wie viel erzeugt wird – nicht,
+  // was man damit tun soll. „Geplant" hatte gar keine Folge.
+  const withPv = (hasPV: 'yes' | 'no' | 'planned') =>
+    ({ ...PROFILE, hasPV }) as unknown as OnboardingData
+
+  it('rät bei vorhandener Anlage, große Verbraucher zu verschieben', () => {
+    const tip = buildTips(withPv('yes'), {}).find((t) => t.id === 'pv_self_consumption')
+    // Nichts zu kaufen, in Minuten getan: Der Tipp gehört zu den
+    // Sofortmaßnahmen, nicht hinter eine Anschaffung.
+    expect(tip?.costEur).toBe(0)
+    expect(tip?.effortMinutes).toBeLessThanOrEqual(15)
+  })
+
+  it('führt bei geplanter Anlage in den Grundlast-Check', () => {
+    const tip = buildTips(withPv('planned'), {}).find((t) => t.id === 'pv_planned_base_load')
+    expect(tip?.linkTo).toBe('/measurements/base_load')
+  })
+
+  it('lässt den Grundlast-Rat weg, sobald die Grundlast gemessen ist', () => {
+    // Sonst empfiehlt die App eine Messung, die schon im Profil steht.
+    const tips = buildTips(withPv('planned'), {
+      base_load: result({ id: 'base_load', rating: 'good', primaryValue: 90, unit: 'W' }),
+    })
+    expect(tips.map((t) => t.id)).not.toContain('pv_planned_base_load')
+  })
+
+  it('schweigt ohne Anlage – die Angabe „nein" ist keine Empfehlung', () => {
+    const ids = buildTips(withPv('no'), {}).map((t) => t.id)
+    expect(ids).not.toContain('pv_self_consumption')
+    expect(ids).not.toContain('pv_planned_base_load')
+  })
+
+  it('verwechselt die beiden Fälle nicht', () => {
+    // „Ja" bekommt den Verschiebe-Rat, „geplant" den Mess-Rat – nie umgekehrt.
+    expect(buildTips(withPv('yes'), {}).map((t) => t.id)).not.toContain('pv_planned_base_load')
+    expect(buildTips(withPv('planned'), {}).map((t) => t.id)).not.toContain(
+      'pv_self_consumption',
+    )
+  })
+})
+
+describe('Kamin/Ofen', () => {
+  it('ist keine Frage mehr – die Angabe trägt keinen Tipp', () => {
+    // Festgehalten, damit die Angabe nicht unbemerkt wieder erhoben wird: Sie
+    // verschob keine Rechnung, ihre gesamte Wirkung war eine Zeile im Bericht.
+    const withFireplace = { ...PROFILE, hasExtraFireplace: true } as unknown as OnboardingData
+    expect(buildTips(withFireplace, {})).toEqual([])
+  })
+})
+
+describe('Jeder Tipp ist beschriftet', () => {
+  // Der Anlass: Ein neuer Tipp mit `linkTo` ging ohne `action`-Text live und
+  // zeigte dem Nutzer den rohen i18n-Schlüssel als Knopfbeschriftung. Titel und
+  // Begründung fallen beim Testen auf – die Beschriftung eines Links erst, wenn
+  // jemand genau diesen Tipp vor sich hat.
+  const LOCALES = { de, en } as unknown as Record<string, Record<string, unknown>>
+
+  function text(locale: Record<string, unknown>, textId: string, part: string): unknown {
+    const items = (locale.tips as Record<string, Record<string, Record<string, unknown>>>).items
+    return items?.[textId]?.[part]
+  }
+
+  /** Ein Profil und Ergebnisse, die möglichst viele Tipps auf einmal auslösen. */
+  const RICH = {
+    ...PROFILE,
+    hasPV: 'yes',
+    heatGenerators: ['gas_boiler'],
+    heatGeneratorYears: { gas_boiler: new Date().getFullYear() - 30 },
+  } as unknown as OnboardingData
+
+  const CASES: OnboardingData[] = [
+    RICH,
+    { ...RICH, hasPV: 'planned' } as unknown as OnboardingData,
+  ]
+
+  it('hat zu jedem Tipp Titel und Begründung in beiden Sprachen', () => {
+    const fehlend: string[] = []
+    for (const profile of CASES) {
+      for (const tip of buildTips(profile, {})) {
+        const textId = tip.textId ?? tip.id
+        for (const [name, locale] of Object.entries(LOCALES)) {
+          for (const part of ['title', 'reason']) {
+            if (typeof text(locale, textId, part) !== 'string') {
+              fehlend.push(`${name}: tips.items.${textId}.${part}`)
+            }
+          }
+        }
+      }
+    }
+    expect([...new Set(fehlend)]).toEqual([])
+  })
+
+  it('beschriftet jeden Tipp, der irgendwohin führt', () => {
+    const fehlend: string[] = []
+    let geprueft = 0
+    for (const profile of CASES) {
+      for (const tip of buildTips(profile, {})) {
+        if (!tip.linkTo) continue
+        geprueft++
+        const textId = tip.textId ?? tip.id
+        for (const [name, locale] of Object.entries(LOCALES)) {
+          if (typeof text(locale, textId, 'action') !== 'string') {
+            fehlend.push(`${name}: tips.items.${textId}.action`)
+          }
+        }
+      }
+    }
+    expect([...new Set(fehlend)]).toEqual([])
+    // Ohne diese Zeile wäre der Test still grün, sobald kein Fall mehr einen
+    // verlinkten Tipp erzeugt – und würde genau den Fehler durchlassen, für den
+    // er geschrieben wurde.
+    expect(geprueft).toBeGreaterThan(0)
   })
 })

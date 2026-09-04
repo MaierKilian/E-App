@@ -195,18 +195,14 @@ export function Step8Review({ data }: Props) {
           label={t('onboarding.step8.labels.hotWater')}
           value={t(`onboarding.step4.hotWaterOptions.${data.hotWaterType}`)}
         />
-        {isDetailed && (
-          <>
-            <ReviewRow
-              label={t('onboarding.step8.labels.hasPV')}
-              value={t(`onboarding.step4.pvOptions.${data.hasPV}`)}
-            />
-            <ReviewRow
-              label={t('onboarding.step8.labels.hasExtraFireplace')}
-              value={data.hasExtraFireplace ? t('onboarding.step4.yes') : t('onboarding.step4.no')}
-            />
-          </>
-        )}
+        {/* PV steht bewusst ohne `isDetailed`: Die Frage wird im Schnellstart
+            genauso gestellt (Abschnitt „heating" ist `quick: true`), also muss
+            die Antwort auch dort in der Zusammenfassung stehen. Der Kamin, der
+            hier danebenstand, wird nicht mehr gefragt. */}
+        <ReviewRow
+          label={t('onboarding.step8.labels.hasPV')}
+          value={t(`onboarding.step4.pvOptions.${data.hasPV}`)}
+        />
       </ReviewSection>
 
       {data.rooms.length > 0 && (

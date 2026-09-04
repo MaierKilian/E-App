@@ -146,7 +146,16 @@ export function buildProfileReportData(
   const systems: ProfileRow[] = [
     [t('onboarding.step8.labels.heatGenerators'), list(generators)],
     [t('onboarding.step8.labels.hotWater'), opt('onboarding.step4.hotWaterOptions', data.hotWaterType)],
-    [t('onboarding.step8.labels.hasExtraFireplace'), yesNo(t, data.hasExtraFireplace)],
+    // Der Kamin wird nicht mehr gefragt. Anders als bei den übrigen
+    // abgeschafften Angaben ist der Standardwert hier `false` – ein „Nein" ist
+    // von „nie gefragt" nicht zu unterscheiden. Deshalb bleibt nur das „Ja"
+    // eines Bestandsprofils stehen, das eine echte Angabe war.
+    ...retired([
+      [
+        t('onboarding.step8.labels.hasExtraFireplace'),
+        data.hasExtraFireplace ? yesNo(t, true) : null,
+      ],
+    ]),
     [t('onboarding.step8.labels.hasPV'), opt('onboarding.step4.pvOptions', data.hasPV)],
     [
       t('onboarding.step8.labels.smartHomeDevices'),

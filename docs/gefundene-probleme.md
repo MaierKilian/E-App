@@ -379,6 +379,66 @@ Sprachen.
   als Angaben, die ein neues Profil nie macht. Derselbe Fall, den #18 für
   `instruments` gerade behoben hat.
 
+### 19. Frage nach Kamin/Ofen ohne Wirkung
+**Kategorie:** Problem · **Bereich:** `Step4Heating`, `fieldUsage.ts`,
+`profileReportData.ts`
+**Status:** ✅ Umgesetzt (04.09.) – Frage entfernt.
+
+Kilians Befund: „Entferne die Frage ob ein Kamin/Ofen vorhanden ist, das ist
+unnötig." Nachgeprüft und bestätigt: `hasExtraFireplace` hatte **keine einzige**
+funktionale Lesestelle. Die gesamte Wirkung waren zwei Anzeigen des soeben
+Eingegebenen – eine Zeile in der Zusammenfassung und eine im PDF-Steckbrief.
+Der eigene `fieldUsage`-Eintrag sagte das sogar: „Dass er die
+Verbrauchs-Einordnung verschiebt, wird noch nicht gerechnet."
+
+Das Feld bleibt in `OnboardingData` (wie bei #17 und #18). Ein Unterschied zu
+den bisherigen Fällen entscheidet dabei über die Steckbrief-Zeile: Der
+Standardwert ist `false`, ein „Nein" ist also von „nie gefragt" nicht zu
+unterscheiden. Deshalb steht die Zeile nur noch dort, wo ein Bestandsprofil
+„ja" gesagt hat – das war eine echte Angabe.
+
+Nebenbei behoben: Die PV-Antwort stand in der Abschluss-Zusammenfassung hinter
+`isDetailed`, obwohl die Frage im Schnellstart genauso gestellt wird (der
+Abschnitt „Heizung" ist `quick: true`). Wer den Schnellstart nahm, beantwortete
+sie und fand sie in der Zusammenfassung nicht wieder.
+
+### 20. Photovoltaik-Frage – halb angeschlossen
+**Kategorie:** Verbesserung · **Bereich:** `buildTips.ts`, `fieldUsage.ts`
+**Status:** ✅ Umgesetzt (04.09.).
+
+Kilians Frage: „Hat die Photovoltaik-Frage einen tieferen Sinn? Oder bewirkt
+sie etwas?" – mit dem Vorschlag, Tipps zum Verbrauch bei Sonnenschein
+auszusprechen oder im Monitoring einen Solarstrom-Zähler einzublenden.
+
+**Der zweite Teil existierte bereits.** `energyConfig.ts` legt bei
+`hasPV === 'yes'` den Erzeugungszähler aufs Monitoring-Board
+(`suggestedEnergyTypes`), und `MonitoringPage` zeigt eine Erinnerung, solange
+noch kein Erzeugungswert erfasst ist. Anders als Kamin (#19) oder Messgeräte
+(#18) war die Frage also kein totes Ende – aber ein halbes.
+
+**Was fehlte, ist der erste Teil.** Die Angabe beantwortete „wie viel erzeuge
+ich", nicht „was mache ich damit" – und dort liegt der eigentliche Hebel:
+Selbst verbrauchter Strom ist so viel wert wie der Bezugspreis, eingespeister
+nur so viel wie die Einspeisevergütung, und die ist seit Jahren die deutlich
+kleinere Zahl. Neuer Tipp bei `hasPV === 'yes'`: große Verbraucher
+(Spül-/Waschmaschine per Startzeitvorwahl, E-Auto, Warmwasser) in die
+Mittagsstunden legen. Kostenlos, in Minuten getan – er landet damit bei den
+Sofortmaßnahmen.
+
+**Und „Geplant" war bis dahin die einzige Antwort ganz ohne Folge.** Sie
+bekommt jetzt den Tipp, vor dem Angebotsvergleich die eigene Grundlast zu
+messen: Wie groß die Anlage sinnvollerweise wird, hängt weniger vom Dach ab als
+davon, wie viel Strom im Haus überhaupt bleiben kann. Der Tipp führt in den
+Grundlast-Check und verschwindet, sobald der gemacht ist.
+
+**Dabei gefunden und behoben:** Der neue Link-Tipp ging zunächst ohne
+`action`-Text live – auf dem Knopf stand der rohe i18n-Schlüssel
+`tips.items.pv_planned_base_load.action`. Aufgefallen ist das erst beim Ansehen
+der Seite im Browser, nicht im Test. Es gibt jetzt einen: Jeder Tipp, der
+irgendwohin führt, braucht in beiden Sprachen eine Beschriftung – mit einer
+Zeile, die den Test rot werden lässt, wenn er gar keinen verlinkten Tipp mehr
+zu prüfen findet.
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
