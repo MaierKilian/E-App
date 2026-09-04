@@ -27,6 +27,53 @@ gleiche Absicherung.
 (z. B. wenn sie sich als rein lokaler Cache ohne Netzwerkkontakt lesen lässt).
 Erst prüfen, dann entscheiden.
 
+### 6. Abstände bis 5 cm werden als „Gut" angezeigt
+**Kategorie:** Bug · **Bereich:** `src/features/measurements/furniture_spacing/furnitureSpacing.ts`
+
+Bestätigt anhand der Screenshots (4 cm, 5 cm, 16 cm) und des Codes.
+`answerFromDistance()` unterscheidet nur drei Stufen: `< 5 cm` → „blockiert"
+(Antwort 2), `5–29 cm` → „teilweise" (Antwort 1), `≥ 30 cm` → „frei"
+(Antwort 0). **5 cm und 16 cm ergeben also exakt dieselbe Antwortstufe** –
+keine Unterscheidung innerhalb der 5–30-cm-Spanne.
+
+Zusätzlich verstärkt: In `rateFurniture()` geht diese eine Antwort nur mit
+ihrem Gewicht (1 von max. 3) in eine **Gesamt-Ratio über alle drei Fragen**
+ein (inkl. `cover`, `valve`, die hier meist „nein" sind, macht `maxScore`
+gerne 10). Bei nur dieser einen Teilantwort bleibt die Ratio (~0.1) unter der
+`elevated`-Schwelle (0.25) und landet bei Rating `medium`. Und `medium` wird
+in der generischen Skala (`measurements.ratings.medium`, `de.json` Zeile 286)
+mit **„Gut"** beschriftet – obwohl bei 5 cm laut eigenem Hinweistext („Unter
+5 cm ist die Luftzufuhr praktisch unterbunden") konkreter Handlungsbedarf
+besteht. Die App-eigene, feinere Beschriftung
+(`measurements.furniture_spacing.result.ratings.medium` = „Kleinigkeit") wird
+nur auf der Detailseite verwendet, in der Verlaufsliste dagegen die generische
+(„Gut") – das verschärft den Eindruck zusätzlich.
+
+**Zu klären beim Beheben:** Wahrscheinlich zwei Teile: (a) `answerFromDistance`
+feiner staffeln, mindestens eine eigene Stufe für „an oder nahe der 5-cm-Grenze"
+statt einer Stufe für die gesamte 5–30-cm-Spanne; (b) prüfen, ob `≤ 5 cm`
+(nicht nur `< 5 cm`) schon als blockiert zählen soll, da der Hinweistext exakt
+diese Grenze nennt.
+
+### 7. Weiterzählen bei gedrückt gehaltenem Stepper-Button
+**Kategorie:** Verbesserung · **Bereich:** `src/components/ui/Stepper.tsx`
+(gemeinsame Komponente)
+
+Die wiederverwendete `Stepper`-Komponente (+/- Buttons für Zahleneingaben)
+reagiert nur auf einzelne Klicks (`onClick`), kein Press-and-Hold. Betrifft
+alle fünf aktuellen Einsatzstellen: `Step1Profile.tsx`, `Step3Rooms.tsx`,
+`RoomTemperatureRun.tsx`, `FurnitureSpacingRun.tsx`, `FridgeRun.tsx` – da die
+Komponente zentral ist, wirkt eine Änderung dort für alle gleichzeitig.
+
+Kilians Wunsch: Klicken und Halten soll automatisch weiterzählen, um größere
+Werteingaben zu erleichtern (Beispiel-Screenshot: Abstand von 0 auf 16 cm
+hochklicken).
+
+**Zu klären beim Beheben:** Übliches Muster wäre ein Timer, der nach kurzer
+initialer Verzögerung startet und sich beschleunigt (z. B. erst langsam, nach
+~1 s schneller) – reine Wiederholung im Klick-Intervall ohne Beschleunigung
+könnte bei großen Wertebereichen (z. B. 0–60 cm) immer noch mühsam sein.
+
 ---
 
 ## Cookie-Banner & Rechtsseiten
