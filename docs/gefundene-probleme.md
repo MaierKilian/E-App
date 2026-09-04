@@ -74,6 +74,41 @@ initialer Verzögerung startet und sich beschleunigt (z. B. erst langsam, nach
 ~1 s schneller) – reine Wiederholung im Klick-Intervall ohne Beschleunigung
 könnte bei großen Wertebereichen (z. B. 0–60 cm) immer noch mühsam sein.
 
+### 8. Tipp „Vorlaufwasser auffangen" zeigt „rund 0 L" bei einem Altergebnis
+**Kategorie:** Bug · **Bereich:** `src/features/tips/buildTips.ts` /
+`src/features/measurements/hot_water_wait/`
+
+Bestätigt anhand des Screenshots (24 s, „vor 33 Tagen gemessen", 0 L je
+Zapfung, 0 L im Jahr) und des Codes. Seit gestern (Commit `e06fa74`,
+03.09.2026) speichert der Warmwasser-Wartezeit-Check `litersPerDraw` und
+`litersPerYear` in `details`. Diese konkrete Messung ist aber „vor 33 Tagen"
+entstanden – **lange bevor** es diese Felder gab. `buildTips.ts` liest sie mit
+`worst.details?.litersPerDraw ?? 0` (Zeile 586) – fehlt das Feld, wird daraus
+still eine **echte Zahl „0"** statt eines fehlenden Werts, und genau die
+erscheint im Tipptext.
+
+Verstößt gegen die Projekt-Konvention „Gespeicherte Messergebnisse bleiben
+lesbar" (CLAUDE.md) – die verlangt, bei geändertem Kodier-Format beide
+Varianten zu lesen, nicht die alte stillschweigend als 0 zu interpretieren.
+
+Kilians Vorschlag geht weiter als nur den Altbestand zu reparieren: Auch bei
+einer **neuen** Messung ist der Durchfluss nur an der Dusche tatsächlich
+gemessen (`measuredShowerFlowLpm`, siehe Punkt „Was gemessen ist und was
+nicht" im Code-Kommentar von `hotWaterWait.ts`). Bei Badewanne, Küche und
+Waschbecken ist die Literzahl schon heute ein Richtwert, keine Messung für
+„dieses konkrete Objekt". Sein Wunsch: Solange für die gewählte Entnahmestelle
+kein eigener Durchfluss-Test vorliegt, nur den Fakt („hier läuft Wasser
+ungenutzt weg") ohne konkrete Literangabe zeigen, statt einer Zahl, die auf
+einem generischen Richtwert beruht.
+
+**Zu klären beim Beheben:** Zwei Teile, ggf. unterschiedlich dringlich –
+(a) das akute Anzeigen von „0 L" bei fehlenden Altbestand-Feldern beheben
+(kein Auffang-Tipp mit Zahl ohne Datengrundlage), und (b) grundsätzliche
+Entscheidung, ob Richtwert-Literzahlen (nicht nur bei Dusche) generell durch
+einen qualitativen Text ersetzt werden, solange kein echter Durchfluss-Test
+für die jeweilige Entnahmestelle existiert – das wäre eine Verhaltensänderung
+über den reinen Bugfix hinaus.
+
 ---
 
 ## Cookie-Banner & Rechtsseiten
@@ -130,3 +165,7 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
 - Bei #1: Reicht ein Gate wie bei Analytics, oder muss die Cache-Strategie
   grundsätzlich anders aufgesetzt werden (z. B. Firestore erst bei Login
   initialisieren statt beim App-Start)?
+- Bei #8: Nur den akuten Anzeigefehler (0 L bei Altbestand) beheben, oder
+  grundsätzlich auf qualitativen Text ohne Literzahl umstellen, solange für
+  Badewanne/Küche/Waschbecken kein echter Durchfluss-Test existiert (nicht
+  nur Dusche)?
