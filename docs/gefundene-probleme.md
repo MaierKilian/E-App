@@ -3,8 +3,8 @@
 > Sammelt Kilians Testbefunde, kategorisiert (Bug / Problem / Verbesserung) und
 > grob priorisiert. **Update 04.09.2026:** Auf Kilians Wunsch wurde direkt so
 > viel wie möglich umgesetzt (Branch `claude/beheben-gefundene-probleme`) –
-> Status je Punkt unten. Offen blieb nur Punkt 9, der eine eigene
-> UX-Entscheidung braucht.
+> Status je Punkt unten. Offen blieben Punkt 9 und Punkt 18, die je eine
+> eigene UX-Entscheidung brauchen.
 
 ## Hoch – rechtlich/funktional kritisch
 
@@ -294,6 +294,51 @@ Zwei Dinge sind bewusst geblieben:
 Nicht angefasst: Die i18n-Schlüssel bleiben stehen (der Bericht braucht einen
 Teil davon, der Rest hält das Archiv wiederherstellbar).
 
+### 18. Messgeräte-Abfrage ohne Wirkung – Vorschlag: Info-Seite statt Auswahl
+**Kategorie:** Problem (+ Verbesserungsvorschlag) · **Bereich:**
+`Step6Instruments`, `instrumentOptions.ts`, `fieldUsage.ts`, Wissensbereich
+**Status:** 🔍 Nur gesammelt – wartet auf Kilians Entscheidung zu den
+Rückfragen unten.
+
+Kilians Befund aus dem Live-Test: Die Frage „Welche Messgeräte sind
+vorhanden?" in Schritt 5 („Ausstattung") wirkt folgenlos, ebenso die
+Sonderantworten „Keines" und „Nicht bekannt".
+
+**Nachgeprüft – der Befund stimmt weitgehend.** `data.instruments` hat genau
+eine funktionale Lesestelle in der ganzen App:
+
+- `FurnitureSpacingRun.tsx:59` – steht ein `distance_meter` im Profil, ist im
+  Möbelabstand-Check der optionale Messschritt vorangehakt. Sonst nicht. Der
+  Check läuft in beiden Fällen vollständig.
+
+Alles Weitere ist reine Wiedergabe des Eingegebenen: die Zusammenfassung in
+`Step8Review`, eine Zeile im PDF-Steckbrief (`profileReportData.ts:160`) und
+der Fortschrittsbalken (`sections.ts:167` zählt den Abschnitt erst als
+erledigt, wenn irgendetwas gewählt ist – auch „Nicht bekannt").
+
+Schärfer noch bei den Untertypen: **`modelTypes` hat keine einzige
+Lesestelle.** Die fünf Typ-Listen (Quecksilberthermometer, Ultraschall-
+Distanzmesser, Strommesszange …) werden erfasst, gespeichert, in der
+Zusammenfassung angezeigt – und von keiner Rechnung, keinem Check und keinem
+Tipp je gelesen. Es ist derselbe Tausch wie bei #17, nur ungünstiger: fünf
+Geräte × bis zu fünf Untertypen für eine Steckbrief-Zeile.
+
+Dazu kommt, dass der Eintrag in `fieldUsage.ts:103` mehr verspricht, als der
+Code hält – „entscheidet, welche Checks angeboten werden" trifft nicht zu:
+kein Check ist durch ein fehlendes Gerät gesperrt oder ausgeblendet. Auch der
+Abschluss-Bildschirm „Wofür wir das nutzen" gibt diesen Satz an den Nutzer
+weiter.
+
+**Kilians Vorschlag:** die Abfrage durch eine Info-Seite ersetzen, die zeigt,
+welche Messgeräte man für die App braucht, wofür genau, und welche Bauarten es
+davon jeweils gibt. Fachlich schlüssig – die Information fließt dann in die
+Richtung, in der sie tatsächlich Wert hat: Die App weiß, was ihre Checks
+brauchen; der Nutzer weiß es nicht. Das vorhandene Material (fünf Geräte, 24
+Untertypen) ist dafür bereits geschrieben und würde weiterverwendet statt
+gelöscht.
+
+Offene Punkte dazu in „Offene Fragen für Kilian".
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
@@ -437,6 +482,18 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   nur Dusche)? Wäre eine bewusste Verhaltensänderung, keine reine Korrektur.
 - Bei #15: Temperatur-Eingabe im Gefrierschrank-Check nachrüsten (dann stimmt
   der Info-Tab) oder die Temperatur aus dem Info-Tab streichen?
+- Bei #18 (a): Wo soll die Info-Seite leben – als vierter Bereich im
+  Wissensbereich („Messgeräte" neben FAQ/Glossar/Mess-Hintergründe), als
+  Abschnitt je Messung in den Mess-Hintergründen, oder als reine Infoseite
+  an Ort und Stelle im Fragebogen-Schritt (ohne Auswahl)?
+- Bei #18 (b): Soll die Messgeräte-Frage ganz raus, oder eine einzige
+  Ja/Nein-Frage je Gerät bleiben (ohne Untertypen)? Ganz raus kostet den
+  vorangehakten Messschritt im Möbelabstand-Check und die Steckbrief-Zeile
+  im PDF.
+- Bei #18 (c): Was passiert mit den Daten bestehender Profile – `instruments`
+  wie bei #17 als Feld behalten und im Steckbrief nur bei vorhandenem Wert
+  zeigen, oder samt Migration entfernen?
+
 - Bei #9: Welche Auswahl-Struktur für die Raumzuordnung – zweistufig
   (erst Raum, dann Entnahmestelle) oder eine kombinierte Liste je
   Rauminstanz? Bis zur Entscheidung bleibt der bestehende Datenverlust bei
