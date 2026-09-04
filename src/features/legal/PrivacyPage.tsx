@@ -247,6 +247,13 @@ export function PrivacyPage() {
           DSGVO. Trotz dieser Garantien lässt sich ein Zugriff US-amerikanischer
           Behörden nicht vollständig ausschließen.
         </p>
+        <p>
+          Du musst dafür nicht hierher zurückkommen: Sobald du einmal
+          entschieden hast, blendet die App unten rechts einen kleinen,
+          dauerhaft sichtbaren Button „Möchtest du deine Cookie-Einstellungen
+          ändern?" ein – ein Klick öffnet denselben Dialog wie beim ersten
+          Besuch. Alternativ geht es auch direkt hier:
+        </p>
         <div className="flex flex-wrap items-center gap-3 pt-1">
           <button
             type="button"

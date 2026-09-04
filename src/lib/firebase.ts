@@ -78,22 +78,40 @@ export const authDomainIsFirstParty =
 
 export const app = initializeApp(firebaseConfig)
 export const auth = getAuth(app)
+
 /**
- * Firestore mit persistentem Offline-Cache (IndexedDB).
+ * Firestore mit persistentem Offline-Cache (IndexedDB) – lazy statt beim
+ * Modul-Import.
  *
- * Ohne ihn geht jeder Lesezugriff beim Start ans Netz – auf dem Handy bei
- * schwachem Empfang der Grund, warum die Wohnungsliste hinterherhinkt. Mit
- * Cache beantwortet Firestore aus der lokalen Kopie und gleicht im Hintergrund
- * ab. `persistentMultipleTabManager` erlaubt mehrere offene Tabs; ohne ihn
- * bekäme nur der erste Tab den Cache.
+ * `initializeFirestore()` legt beim ersten Aufruf sofort eine IndexedDB-
+ * Datenbank auf dem Gerät an. Läge dieser Aufruf wie zuvor auf Modulebene,
+ * geschähe das bei jedem Seitenaufruf, bevor React rendert und bevor der
+ * Cookie-Hinweis überhaupt eine Entscheidung eingesammelt hat – auch bei
+ * einem Besucher, der sich nie anmeldet. Das ist mit § 25 Abs. 2 Nr. 2 TDDDG
+ * („unbedingt erforderlich für einen vom Nutzer ausdrücklich gewünschten
+ * Dienst") vor jeder Interaktion nicht zu begründen.
  *
- * Ist IndexedDB nicht verfügbar (privates Fenster, alter Browser), fällt
- * Firestore selbsttätig auf den reinen Speicher-Cache zurück – das ist genau
- * das bisherige Verhalten, es geht also nichts verloren.
+ * `getDb()` verschiebt die Initialisierung auf den ersten tatsächlichen
+ * Zugriff. Alle Firestore-Aufrufe im Projekt stehen bereits ausschließlich in
+ * Funktionen, die nur für einen angemeldeten Nutzer laufen (Cloud-Sync,
+ * Profilbild-Sync, Wohnprofile, Feedback) – ein anonymer Erstbesucher löst
+ * keinen davon aus. Ohne Anmeldung/Aktion bleibt der Gerätespeicher also
+ * unberührt.
+ *
+ * Cache-Verhalten unverändert: `persistentMultipleTabManager` erlaubt
+ * mehrere offene Tabs; ist IndexedDB nicht verfügbar (privates Fenster, alter
+ * Browser), fällt Firestore selbsttätig auf den reinen Speicher-Cache zurück.
  */
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
-})
+let dbInstance: ReturnType<typeof initializeFirestore> | null = null
+
+export function getDb() {
+  if (!dbInstance) {
+    dbInstance = initializeFirestore(app, {
+      localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+    })
+  }
+  return dbInstance
+}
 // Callable Functions – gleiche Region wie die deployte Funktion (siehe functions/).
 export const functions = getFunctions(app, 'europe-west1')
 

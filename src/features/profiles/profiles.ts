@@ -13,7 +13,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
+import { getDb } from '@/lib/firebase'
 import type { ProfileMeta, ProfileRole } from '@/store/profilesStore'
 import { metaFromState } from '@/features/sync/stores'
 
@@ -63,7 +63,7 @@ export interface ProfileMember {
 
 /** Erzeugt eine zufällige, nicht erratbare Dokument-ID. */
 function randomId(): string {
-  return doc(collection(db, COLLECTION)).id
+  return doc(collection(getDb(), COLLECTION)).id
 }
 
 /** Wandelt ein Firestore-Dokument in die leichte Anzeige-Info um. */
@@ -81,7 +81,7 @@ function toMeta(id: string, data: ProfileDoc, uid: string): ProfileMeta {
 
 /** Alle Profile des Nutzers – neueste zuerst. */
 export async function listProfiles(uid: string): Promise<ProfileMeta[]> {
-  const q = query(collection(db, COLLECTION), where('memberUids', 'array-contains', uid))
+  const q = query(collection(getDb(), COLLECTION), where('memberUids', 'array-contains', uid))
   const snap = await getDocs(q)
   const metas = snap.docs.map((d) => toMeta(d.id, d.data() as ProfileDoc, uid))
   return metas.sort((a, b) => b.updatedAt - a.updatedAt)
@@ -105,7 +105,7 @@ export async function createProfile(
     updatedAt: now,
     state,
   }
-  await setDoc(doc(db, COLLECTION, id), data)
+  await setDoc(doc(getDb(), COLLECTION, id), data)
   return {
     id,
     name: meta.name,
@@ -125,7 +125,7 @@ export async function createProfile(
  */
 export async function writeProfileState(id: string, state: Record<string, unknown>) {
   const meta = metaFromState(state)
-  await updateDoc(doc(db, COLLECTION, id), { meta, updatedAt: Date.now(), state })
+  await updateDoc(doc(getDb(), COLLECTION, id), { meta, updatedAt: Date.now(), state })
 }
 
 /** Lädt ein einzelnes Profil-Dokument (oder null, wenn nicht existent/kein Zugriff). */
@@ -135,7 +135,7 @@ export async function getProfile(id: string): Promise<{
   ownerUid?: string
   members?: ProfileMember[]
 } | null> {
-  const snap = await getDoc(doc(db, COLLECTION, id))
+  const snap = await getDoc(doc(getDb(), COLLECTION, id))
   if (!snap.exists()) return null
   const data = snap.data() as ProfileDoc
   const members: ProfileMember[] = (data.memberUids ?? []).map((uid) => ({
@@ -148,7 +148,7 @@ export async function getProfile(id: string): Promise<{
 
 /** Löscht ein Profil (nur der Besitzer darf das laut Sicherheitsregeln). */
 export async function deleteProfile(id: string) {
-  await deleteDoc(doc(db, COLLECTION, id))
+  await deleteDoc(doc(getDb(), COLLECTION, id))
 }
 
 /**
@@ -158,7 +158,7 @@ export async function deleteProfile(id: string) {
  */
 export async function readLegacyState(uid: string): Promise<Record<string, unknown> | null> {
   try {
-    const snap = await getDoc(doc(db, 'users', uid))
+    const snap = await getDoc(doc(getDb(), 'users', uid))
     if (!snap.exists()) return null
     const state = snap.data()?.state
     return state && typeof state === 'object' ? (state as Record<string, unknown>) : null
@@ -176,7 +176,7 @@ export async function readLegacyState(uid: string): Promise<Record<string, unkno
  * falls noch keine existiert. Nur der Besitzer darf das (Sicherheitsregeln).
  */
 export async function getOrCreateInvite(pid: string, uid: string): Promise<string> {
-  const invitesRef = collection(db, COLLECTION, pid, 'invites')
+  const invitesRef = collection(getDb(), COLLECTION, pid, 'invites')
   const snap = await getDocs(query(invitesRef, where('active', '==', true), limit(1)))
   if (!snap.empty) return snap.docs[0].id
 
@@ -195,7 +195,7 @@ export async function getOrCreateInvite(pid: string, uid: string): Promise<strin
  * Damit wird der alte Einladungslink sofort ungültig.
  */
 export async function rotateInvite(pid: string, uid: string): Promise<string> {
-  const invitesRef = collection(db, COLLECTION, pid, 'invites')
+  const invitesRef = collection(getDb(), COLLECTION, pid, 'invites')
   const snap = await getDocs(query(invitesRef, where('active', '==', true)))
   await Promise.all(snap.docs.map((d) => updateDoc(d.ref, { active: false })))
   return getOrCreateInvite(pid, uid)
@@ -226,7 +226,7 @@ export async function joinProfile(
   uid: string,
   displayName?: string,
 ) {
-  await updateDoc(doc(db, COLLECTION, pid), {
+  await updateDoc(doc(getDb(), COLLECTION, pid), {
     memberUids: arrayUnion(uid),
     [`roles.${uid}`]: 'editor',
     [`memberNames.${uid}`]: displayName ?? '',
@@ -239,7 +239,7 @@ export async function joinProfile(
  * (Mitglied entfernen) als auch vom Mitglied selbst (Wohnung verlassen) genutzt.
  */
 export async function removeMember(pid: string, memberUid: string) {
-  await updateDoc(doc(db, COLLECTION, pid), {
+  await updateDoc(doc(getDb(), COLLECTION, pid), {
     memberUids: arrayRemove(memberUid),
     [`roles.${memberUid}`]: deleteField(),
     [`memberNames.${memberUid}`]: deleteField(),
@@ -252,7 +252,7 @@ export async function removeMember(pid: string, memberUid: string) {
  * das (Sicherheitsregeln). Die Mitgliederliste selbst bleibt unverändert.
  */
 export async function transferOwnership(pid: string, newOwnerUid: string, oldOwnerUid: string) {
-  await updateDoc(doc(db, COLLECTION, pid), {
+  await updateDoc(doc(getDb(), COLLECTION, pid), {
     ownerUid: newOwnerUid,
     [`roles.${newOwnerUid}`]: 'owner',
     [`roles.${oldOwnerUid}`]: 'editor',

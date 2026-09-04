@@ -24,10 +24,17 @@ export function HotWaterWaitResult({ result }: ResultProps) {
     new Intl.NumberFormat(i18n.language, { minimumFractionDigits: d, maximumFractionDigits: d }).format(v)
 
   const seconds = result.details?.seconds ?? result.primaryValue ?? 0
+  // `litersPerDraw`/`litersPerYear` gibt es erst seit dem gemessenen Durchfluss
+  // (September 2026). Ein Altergebnis ohne diese Felder liefert `undefined` –
+  // ein `?? 0` wuerde daraus eine erfundene Nullmenge machen, statt zu zeigen,
+  // dass dafuer schlicht keine Datengrundlage besteht.
+  const hasQuantity =
+    result.details?.litersPerDraw !== undefined && result.details?.litersPerYear !== undefined
   const litersPerDraw = result.details?.litersPerDraw ?? 0
   const litersPerYear = result.details?.litersPerYear ?? 0
   const yearlySaving = result.details?.yearlySaving ?? 0
   const fixture = result.roomKey
+  const unknown = t('measurements.hot_water_wait.result.unknownValue')
   const reuse = t('measurements.hot_water_wait.result.reuse', { returnObjects: true }) as string[]
 
   // Der Durchfluss steht seit September 2026 im Ergebnis. Altergebnisse tragen
@@ -45,9 +52,12 @@ export function HotWaterWaitResult({ result }: ResultProps) {
         eyebrow={fixture ? t(`measurements.hot_water_wait.fixtures.${fixture}`) : undefined}
         value={nf(seconds)}
         unit={t('measurements.hot_water_wait.result.secondsUnit')}
-        summary={t('measurements.hot_water_wait.result.explanation', {
-          liters: nf(litersPerDraw, 1),
-        })}
+        summary={t(
+          hasQuantity
+            ? 'measurements.hot_water_wait.result.explanation'
+            : 'measurements.hot_water_wait.result.explanationUnknown',
+          { liters: nf(litersPerDraw, 1) },
+        )}
       />
 
       {/* Gemessen und hochgerechnet sichtbar getrennt. */}
@@ -55,16 +65,16 @@ export function HotWaterWaitResult({ result }: ResultProps) {
         metrics={[
           {
             label: t('measurements.hot_water_wait.result.perDraw'),
-            value: `${nf(litersPerDraw, 1)} L`,
+            value: hasQuantity ? `${nf(litersPerDraw, 1)} L` : unknown,
           },
           {
             label: t('measurements.hot_water_wait.result.perYear'),
-            value: `${nf(litersPerYear)} L`,
+            value: hasQuantity ? `${nf(litersPerYear)} L` : unknown,
             estimated: true,
           },
           {
             label: t('measurements.hot_water_wait.result.savingYear'),
-            value: `≈ ${nf(yearlySaving)} €`,
+            value: hasQuantity ? `≈ ${nf(yearlySaving)} €` : unknown,
             estimated: true,
           },
         ]}

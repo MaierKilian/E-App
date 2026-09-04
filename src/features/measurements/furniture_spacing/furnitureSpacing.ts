@@ -148,7 +148,11 @@ export const DISTANCE_DEFAULT_CM = 30
  */
 export function answerFromDistance(distanceCm: number): FurnitureAnswer {
   if (!Number.isFinite(distanceCm)) return 0
-  if (distanceCm < DISTANCE_BLOCKED_CM) return 2
+  // <= statt <: Der Hinweistext nennt „unter 5 cm" als Grenze der freien
+  // Luftzufuhr, aber bis einschließlich 5 cm wurde bisher genauso bewertet wie
+  // 29 cm (beides Stufe „teilweise") – ohne erkennbaren Handlungsbedarf in der
+  // Anzeige. 5 cm zählt deshalb schon als blockiert.
+  if (distanceCm <= DISTANCE_BLOCKED_CM) return 2
   if (distanceCm < DISTANCE_TARGET_CM) return 1
   return 0
 }

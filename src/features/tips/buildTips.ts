@@ -583,6 +583,14 @@ export function buildTips(
     // ("19 s ... 3,5 L") – Zahlen, die zusammen nie gemessen wurden.
     const worst = hotWaterRs.reduce((a, b) => (resultSavingsEur(b) > resultSavingsEur(a) ? b : a))
     const seconds = Math.round(Math.max(0, worst.primaryValue))
+    // `litersPerDraw`/`litersPerYear` gibt es erst seit dem gemessenen
+    // Durchfluss (September 2026). Ein Altergebnis ohne diese Felder liefert
+    // hier `undefined`, nicht 0 – ein `?? 0` wuerde daraus eine erfundene,
+    // falsche Nullmenge im Tipptext machen. Ohne Datengrundlage bleibt der
+    // Tipp qualitativ (siehe `textId` unten).
+    const hasQuantity = hotWaterRs.some(
+      (r) => r.details?.litersPerDraw !== undefined && r.details?.litersPerYear !== undefined,
+    )
     const liters = Math.round(Math.max(0, worst.details?.litersPerDraw ?? 0) * 10) / 10
     // Jahresmenge ueber alle gemessenen Stellen – die gemessene Groesse, die
     // auch dann traegt, wenn der Euro-Betrag unter der Anzeigeschwelle liegt.
@@ -591,6 +599,8 @@ export function buildTips(
     )
     tips.push({
       id: 'hot_water_wait',
+      // Altergebnis ohne Literangabe: eigener Text ohne erfundene Zahlen.
+      textId: hasQuantity ? undefined : 'hot_water_wait_unknown',
       source: sourceFor(results, 'hot_water_wait'),
       icon: Hourglass,
       category: 'water',
@@ -598,7 +608,7 @@ export function buildTips(
       // keine Messung. Die Jahresmenge dagegen folgt aus der gestoppten
       // Wartezeit und dem Durchfluss der Entnahmestelle.
       quantity:
-        litersPerYear > 0
+        hasQuantity && litersPerYear > 0
           ? { key: 'tips.quantity.waterWasted', params: { liters: litersPerYear } }
           : undefined,
       effortMinutes: 1,

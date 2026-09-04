@@ -1,13 +1,22 @@
 # Gefundene Probleme – Sammlung vom 04.09.2026
 
-> **Arbeitsdokument, noch nichts umgesetzt.** Sammelt Kilians Testbefunde,
-> kategorisiert (Bug / Problem / Verbesserung) und grob priorisiert. Wird erst
-> nach gemeinsamer Sichtung in Etappen überführt.
+> Sammelt Kilians Testbefunde, kategorisiert (Bug / Problem / Verbesserung) und
+> grob priorisiert. **Update 04.09.2026:** Auf Kilians Wunsch wurde direkt so
+> viel wie möglich umgesetzt (Branch `claude/beheben-gefundene-probleme`) –
+> Status je Punkt unten. Offen blieb nur Punkt 9, der eine eigene
+> UX-Entscheidung braucht.
 
 ## Hoch – rechtlich/funktional kritisch
 
 ### 1. Firestore-Speicherung startet vor der Consent-Entscheidung
 **Kategorie:** Bug · **Bereich:** Einwilligung / `src/lib/firebase.ts`
+**Status:** ✅ Umgesetzt – `initializeFirestore()` läuft jetzt lazy über
+`getDb()`, ausgelöst erst vom ersten echten Firestore-Zugriff. Geprüft: Jede
+Aufrufstelle (Cloud-Sync, Profilbild-Sync, Wohnprofile, Feedback) läuft
+ausschließlich für einen angemeldeten Nutzer – ein anonymer Erstbesucher löst
+keine davon aus. Damit war die „Offene Frage" unten beantwortet: Ein Gate wie
+bei Analytics reicht, eine grundsätzlich andere Cache-Strategie war nicht
+nötig.
 
 `initializeFirestore(app, { localCache: persistentLocalCache(...) })` läuft
 auf Modulebene – sobald `firebase.ts` importiert wird, also bei jedem
@@ -29,6 +38,11 @@ Erst prüfen, dann entscheiden.
 
 ### 6. Abstände bis 5 cm werden als „Gut" angezeigt
 **Kategorie:** Bug · **Bereich:** `src/features/measurements/furniture_spacing/furnitureSpacing.ts`
+**Status:** ✅ Umgesetzt – `answerFromDistance` wertet jetzt `<= 5 cm` (statt
+`< 5 cm`) als blockiert. 5 cm ergibt dadurch dieselbe Antwortstufe wie 4 cm
+(„Ja") statt wie 16 cm („Teilweise") und landet in der Gesamtbewertung bei
+„elevated" („Teilweise blockiert") statt bei „medium" (generisch „Gut").
+Tests ergänzt/angepasst.
 
 Bestätigt anhand der Screenshots (4 cm, 5 cm, 16 cm) und des Codes.
 `answerFromDistance()` unterscheidet nur drei Stufen: `< 5 cm` → „blockiert"
@@ -58,6 +72,10 @@ diese Grenze nennt.
 ### 7. Weiterzählen bei gedrückt gehaltenem Stepper-Button
 **Kategorie:** Verbesserung · **Bereich:** `src/components/ui/Stepper.tsx`
 (gemeinsame Komponente)
+**Status:** ✅ Umgesetzt – Klicken und Halten (Pointer-Events, Maus/Touch)
+löst nach 400 ms automatisches Weiterzählen aus, das sich mit jedem Schritt
+beschleunigt (220 ms → min. 50 ms Intervall). Ein normaler kurzer Klick macht
+weiterhin genau einen Schritt. Wirkt für alle fünf Einsatzstellen.
 
 Die wiederverwendete `Stepper`-Komponente (+/- Buttons für Zahleneingaben)
 reagiert nur auf einzelne Klicks (`onClick`), kein Press-and-Hold. Betrifft
@@ -77,6 +95,15 @@ könnte bei großen Wertebereichen (z. B. 0–60 cm) immer noch mühsam sein.
 ### 8. Tipp „Vorlaufwasser auffangen" zeigt „rund 0 L" bei einem Altergebnis
 **Kategorie:** Bug · **Bereich:** `src/features/tips/buildTips.ts` /
 `src/features/measurements/hot_water_wait/`
+**Status:** ⚠️ Teilweise umgesetzt – Teil (a): `buildTips.ts` und
+`HotWaterWaitResult.tsx` prüfen jetzt explizit, ob `litersPerDraw`/
+`litersPerYear` überhaupt vorhanden sind, statt fehlende Felder mit `?? 0` in
+eine erfundene Nullmenge zu verwandeln. Fehlt die Datengrundlage (Altergebnis),
+zeigen Tipp und Ergebnis-Seite einen eigenen Text ohne Literzahl
+(`hot_water_wait_unknown`, „–" statt „0,0 L"). Teil (b) – Richtwert-Liter
+generell durch qualitativen Text ersetzen, solange kein echter
+Durchfluss-Test je Entnahmestelle existiert – bleibt offen, siehe „Offene
+Fragen" (Verhaltensänderung über den Bugfix hinaus, Kilians Entscheidung).
 
 Bestätigt anhand des Screenshots (24 s, „vor 33 Tagen gemessen", 0 L je
 Zapfung, 0 L im Jahr) und des Codes. Seit gestern (Commit `e06fa74`,
@@ -112,6 +139,12 @@ für die jeweilige Entnahmestelle existiert – das wäre eine Verhaltensänderu
 ### 9. Warmwasser-Wartezeit ohne Raumzuordnung – Erweiterungspotenzial
 **Kategorie:** Verbesserung · **Bereich:**
 `src/features/measurements/hot_water_wait/`
+**Status:** ⏸️ Zurückgestellt – bewusst nicht direkt umgesetzt. Anders als die
+übrigen Punkte braucht das hier eine echte UX-Entscheidung (zweistufige
+Auswahl erst Raum, dann Entnahmestelle? kombinierte Liste je Rauminstanz?),
+nicht nur einen Bugfix – das sollte nicht ungefragt entschieden werden. Der
+zugrundeliegende Datenverlust bei mehreren gleichartigen Entnahmestellen
+(zweites Waschbecken überschreibt das erste) besteht weiterhin.
 
 Bestätigt: „Wo misst du?" bietet nur die vier festen Entnahmestellen Dusche,
 Badewanne, Küche, Waschbecken (`FIXTURE_ORDER` in `hotWaterWait.ts`) – ohne
@@ -138,6 +171,10 @@ raumspezifischen Fragenzuordnung, die es beim Möbel-Abstands-Check schon gibt
 
 ### 10. Bericht am PC nur „teilen", kein direkter Download
 **Kategorie:** Bug · **Bereich:** `src/features/reports/pdf/deliver.ts`
+**Status:** ✅ Umgesetzt – Ansatz (b): Wo `canSharePdf()` zutrifft, steht jetzt
+zusätzlich ein zweiter, eigener Download-Button neben „Teilen" (neue Funktion
+`downloadReport()`), statt sich auf eine plattformabhängige Automatik zu
+verlassen. Der bestehende Teilen-Weg bleibt unverändert.
 
 Bestätigt anhand der Screenshots (Windows-Share-Dialog ohne erkennbare
 „Speichern unter"-Option) und des Codes. `canSharePdf()`
@@ -169,6 +206,11 @@ sich pro Plattform für eine von beiden entscheidet.
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
 **Kategorie:** Verbesserung · **Bereich:** Datenschutzerklärung Abschnitt 9
+**Status:** ✅ Umgesetzt – neuer, dauerhaft eingeblendeter Button unten rechts
+(`ConsentReopenButton`, wie der Cookie-Hinweis positioniert), Text „Möchtest
+du deine Cookie-Einstellungen ändern?", erscheint erst nach einer getroffenen
+Entscheidung. Abschnitt 9 der Datenschutzerklärung beschreibt die neue
+Methode zusätzlich zum bisherigen Button.
 
 Der Button zum erneuten Festlegen der Präferenzen soll wie der Cookie-Hinweis
 selbst unten rechts mitlaufen – als kleiner Button „Möchtest du deine
@@ -177,6 +219,9 @@ entsprechend umschreiben (neue Methode statt aktuellem Verweis).
 
 ### 3. Dritter Button im Cookie-Banner für erweiterte Einstellungen
 **Kategorie:** Verbesserung · **Bereich:** `ConsentBanner`
+**Status:** ✅ Umgesetzt – „Cookie-Einstellungen" ist jetzt ein eigener Button
+in derselben Optik wie „Ablehnen"/„Akzeptieren", direkt darunter über deren
+volle gemeinsame Breite.
 
 „Cookie-Einstellungen" (aktuell ein Link) soll ein Button werden, gleich
 prominent wie „Ablehnen" und „Akzeptieren", platziert direkt darunter über
@@ -184,6 +229,9 @@ die volle gemeinsame Breite beider Buttons.
 
 ### 4. Scroll-Position bleibt beim Routenwechsel stehen
 **Kategorie:** Bug · **Bereich:** allgemein, nicht auf Rechtsseiten beschränkt
+**Status:** ✅ Umgesetzt – neue `ScrollToTop`-Komponente in `App.tsx`, springt
+bei jedem Pfadwechsel (nicht bei reinem Suchparameter-Wechsel) an den
+Seitenanfang. Allgemeine Lösung, nicht auf die Rechtsseiten beschränkt.
 
 Bestätigt: Keine Stelle im Projekt behandelt Scroll-Restoration; React Router
 tut das nicht automatisch. Wechselt man die Seite, bleibt der Scroll-Y-Wert
@@ -198,6 +246,11 @@ Routenwechsel), nicht nur für die Rechtsseiten.
 
 ### 5. Sprache und Theme auf der Landing Page nicht einstellbar
 **Kategorie:** Verbesserung · **Bereich:** `LandingPage.tsx`
+**Status:** ✅ Umgesetzt – neue `LandingPickers`-Komponente, zwei kompakte
+Dropdown-Buttons mittig in der Topbar zwischen Logo und „Anmelden".
+Wiederverwendet `ThemePicker compact` (dieselbe Komponente wie im
+Konto-Popover, für einen schmalen Slot bereits gebaut); die Sprachauswahl
+ist neu (bisher nur inline in `SettingsPage.tsx`).
 
 Bestätigt: Beide Bausteine existieren bereits (`ThemePicker` in
 `src/components/ThemePicker.tsx`, Sprachumschaltung in `SettingsPage.tsx`),
@@ -216,10 +269,11 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
 
 ## Offene Fragen für Kilian
 
-- Bei #1: Reicht ein Gate wie bei Analytics, oder muss die Cache-Strategie
-  grundsätzlich anders aufgesetzt werden (z. B. Firestore erst bei Login
-  initialisieren statt beim App-Start)?
-- Bei #8: Nur den akuten Anzeigefehler (0 L bei Altbestand) beheben, oder
-  grundsätzlich auf qualitativen Text ohne Literzahl umstellen, solange für
+- Bei #8 (b): Über den umgesetzten Bugfix hinaus – grundsätzlich auf
+  qualitativen Text ohne Literzahl umstellen, solange für
   Badewanne/Küche/Waschbecken kein echter Durchfluss-Test existiert (nicht
-  nur Dusche)?
+  nur Dusche)? Wäre eine bewusste Verhaltensänderung, keine reine Korrektur.
+- Bei #9: Welche Auswahl-Struktur für die Raumzuordnung – zweistufig
+  (erst Raum, dann Entnahmestelle) oder eine kombinierte Liste je
+  Rauminstanz? Bis zur Entscheidung bleibt der bestehende Datenverlust bei
+  mehreren gleichartigen Entnahmestellen (z. B. zwei Waschbecken) bestehen.

@@ -25,10 +25,29 @@ import { LandingPage } from '@/features/landing/LandingPage'
 import { ImprintPage } from '@/features/legal/ImprintPage'
 import { PrivacyPage } from '@/features/legal/PrivacyPage'
 import { ConsentBanner } from '@/features/legal/ConsentBanner'
+import { ConsentReopenButton } from '@/features/legal/ConsentReopenButton'
 import { ConsentSettings } from '@/features/legal/ConsentSettings'
 import { useConsentStore } from '@/features/legal/consent'
 import { useSettingsStore } from '@/store/settingsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
+
+/**
+ * Springt bei jedem Routenwechsel an den Seitenanfang.
+ *
+ * React Router setzt die Scroll-Position von sich aus nicht zurück – ohne
+ * das hier bleibt sie stehen, wo die vorige Seite endete (am auffälligsten
+ * zwischen unterschiedlich langen Seiten, z. B. Impressum ↔ Datenschutz).
+ * Reagiert bewusst nur auf den Pfad, nicht auf Suchparameter: Ein Filter oder
+ * eine Seitenzahl auf derselben Ansicht soll den Nutzer nicht nach oben
+ * reißen. Muss innerhalb des Routers stehen (nutzt useLocation).
+ */
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
 
 /**
  * Meldet jeden Seitenwechsel als Analytics-Ereignis „page_view".
@@ -118,6 +137,7 @@ export function App() {
   return (
     <>
       <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+        <ScrollToTop />
         <RouteTracker />
         <DemoLoader />
         <FirstVisitGate />
@@ -153,6 +173,7 @@ export function App() {
         {/* Einwilligung: Hinweis und Detail-Fenster liegen im Router, weil
             beide auf Impressum/Datenschutz verlinken. */}
         <ConsentBanner />
+        <ConsentReopenButton />
         <ConsentSettings />
       </BrowserRouter>
       <SplashScreen />

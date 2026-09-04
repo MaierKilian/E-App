@@ -106,6 +106,7 @@
       "exportError": "Export fehlgeschlagen. Bitte erneut versuchen.",
       "share": "PDF teilen",
       "shareDone": "PDF geteilt.",
+      "downloadSecondary": "Direkt herunterladen",
       "sections": "Inhalt",
       "emptyHint": "Für einen Bericht braucht es mindestens eine Messung oder eine Ablesung."
     },
@@ -816,6 +817,8 @@
       "result": {
         "secondsUnit": "Sek.",
         "explanation": "In dieser Zeit flossen rund {{liters}} L Trinkwasser ungenutzt ab.",
+        "explanationUnknown": "In dieser Zeit floss Trinkwasser ungenutzt ab – wie viel, wurde für diese Entnahmestelle noch nicht gemessen.",
+        "unknownValue": "–",
         "perDraw": "pro Zapfung",
         "perYear": "pro Jahr",
         "savingYear": "Wasserkosten/Jahr",
@@ -2438,6 +2441,10 @@
         "title": "Vorlaufwasser auffangen",
         "reason": "Es dauert {{seconds}} s, bis warmes Wasser kommt – rund {{liters}} L laufen jedes Mal ungenutzt weg, über das Jahr etwa {{litersPerYear}} L. Stell eine Gießkanne oder einen Eimer darunter: für Pflanzen, zum Putzen oder für die Toilette."
       },
+      "hot_water_wait_unknown": {
+        "title": "Vorlaufwasser auffangen",
+        "reason": "Es dauert {{seconds}} s, bis warmes Wasser kommt – in dieser Zeit läuft kaltes Wasser ungenutzt ab. Wie viel genau, ist für diese Entnahmestelle noch nicht gemessen. Stell eine Gießkanne oder einen Eimer darunter: für Pflanzen, zum Putzen oder für die Toilette."
+      },
       "fridge": {
         "title": "Kühlschrank wärmer stellen",
         "reason": "{{temp}} °C ist kälter als nötig. Dreh den Regler eine Stufe zurück – 7 °C reichen, und jedes Grad wärmer spart rund 6 % Strom."
@@ -2648,6 +2655,7 @@
     "save": "Speichern",
     "settings": "Cookie-Einstellungen",
     "settingsHint": "Einwilligung jederzeit ändern oder widerrufen",
+    "reopen": "Möchtest du deine Cookie-Einstellungen ändern?",
     "manage": "Einwilligung verwalten",
     "settingsTitle": "Cookie-Einstellungen",
     "settingsIntro": "Entscheide selbst, was wir messen dürfen. Deine Wahl gilt sofort und lässt sich jederzeit ändern.",

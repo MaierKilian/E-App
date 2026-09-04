@@ -12,7 +12,7 @@ import { useReportSettingsStore } from '@/store/reportSettingsStore'
 import { boardEnergyTypes } from '@/features/monitoring/energyConfig'
 import { useWidgetOrderStore } from '@/store/widgetOrderStore'
 import { fmtPeriod } from './pdf/format'
-import { canSharePdf, deliverReport } from './pdf/deliver'
+import { canSharePdf, deliverReport, downloadReport } from './pdf/deliver'
 import { buildTips } from '@/features/tips/buildTips'
 import { useTipContext } from '@/features/tips/useTipContext'
 import { useTipsStore } from '@/store/tipsStore'
@@ -353,27 +353,31 @@ function ShareBar({
   const resetTimer = useRef<number | undefined>(undefined)
   useEffect(() => () => window.clearTimeout(resetTimer.current), [])
 
+  /** Baut das PDF neu – Grundlage für beide Aktionen (Teilen und Download). */
+  const buildReport = async () => {
+    const { generateReportPdf } = await import('./generateReportPdf')
+    return generateReportPdf({
+      sections,
+      t,
+      language: i18n.language,
+      objectName: profile.profileName,
+      profile,
+      measurements,
+      monitoring,
+      // Dieselben Empfehlungen wie im Tipps-Bereich der App – der Bericht
+      // führte sonst ein zweites, fast leeres Tipp-System. Ohne Zählerstand-
+      // Kontext: Der Bericht ordnet Empfehlungen ihrer Messung zu, und der
+      // Verbrauchstrend gehört zu keiner.
+      tipsByMeasurement: tipsByMeasurement(allTips, t, i18n.language),
+      openTips,
+    })
+  }
+
   const handleExport = async () => {
     window.clearTimeout(resetTimer.current)
     setStatus('busy')
     try {
-      const { generateReportPdf } = await import('./generateReportPdf')
-      const report = generateReportPdf({
-        sections,
-        t,
-        language: i18n.language,
-        objectName: profile.profileName,
-        profile,
-        measurements,
-        monitoring,
-        // Dieselben Empfehlungen wie im Tipps-Bereich der App – der Bericht
-        // führte sonst ein zweites, fast leeres Tipp-System. Ohne Zählerstand-
-        // Kontext: Der Bericht ordnet Empfehlungen ihrer Messung zu, und der
-        // Verbrauchstrend gehört zu keiner.
-        tipsByMeasurement: tipsByMeasurement(allTips, t, i18n.language),
-        openTips,
-      })
-
+      const report = await buildReport()
       const result = await deliverReport(report, t('report.pdf.title'))
       // Abbruch im System-Teilen-Dialog ist kein Fehler und kein Erfolg.
       if (result === 'cancelled') {
@@ -386,6 +390,29 @@ function ShareBar({
       // Ohne sichtbare Meldung würde die Schaltfläche einfach wieder aktiv und
       // der Nutzer stünde ohne PDF und ohne Erklärung da.
       console.error('[reports] PDF-Export fehlgeschlagen', error)
+      setStatus('error')
+    }
+  }
+
+  /**
+   * Direkter Download, unabhängig vom System-Teilen.
+   *
+   * `canSharePdf()` meldet unter Windows auch am Desktop-Browser `true` (die
+   * systemweite Freigabeleiste kann Dateien technisch entgegennehmen) – zeigt
+   * dort aber keine zuverlässige „Speichern"-Option, nur Ziel-Apps. Wo der
+   * primäre Button deshalb „Teilen" anbietet, bleibt dieser zweite Button ein
+   * garantierter, unmittelbarer Download-Weg.
+   */
+  const handleDownload = async () => {
+    window.clearTimeout(resetTimer.current)
+    setStatus('busy')
+    try {
+      const report = await buildReport()
+      downloadReport(report)
+      setStatus('done')
+      resetTimer.current = window.setTimeout(() => setStatus('idle'), 4000)
+    } catch (error) {
+      console.error('[reports] PDF-Download fehlgeschlagen', error)
       setStatus('error')
     }
   }
@@ -414,17 +441,34 @@ function ShareBar({
             {t(status === 'shared' ? 'report.builder.shareDone' : 'report.builder.exportDone')}
           </p>
         )}
-        <button
-          type="button"
-          onClick={handleExport}
-          disabled={status === 'busy' || !canExport}
-          className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-base font-semibold text-primary-foreground shadow-[0_4px_14px_color-mix(in_srgb,var(--primary)_35%,transparent)] transition-[transform,background-color] duration-200 active:scale-[0.98] disabled:opacity-60"
-        >
-          {shareable ? <Share2 className="w-5 h-5" /> : <Download className="w-5 h-5" />}
-          {status === 'busy'
-            ? t('report.builder.exporting')
-            : t(shareable ? 'report.builder.share' : 'report.builder.export')}
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={status === 'busy' || !canExport}
+            className="focus-ring flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-5 py-3.5 text-base font-semibold text-primary-foreground shadow-[0_4px_14px_color-mix(in_srgb,var(--primary)_35%,transparent)] transition-[transform,background-color] duration-200 active:scale-[0.98] disabled:opacity-60"
+          >
+            {shareable ? <Share2 className="w-5 h-5" /> : <Download className="w-5 h-5" />}
+            {status === 'busy'
+              ? t('report.builder.exporting')
+              : t(shareable ? 'report.builder.share' : 'report.builder.export')}
+          </button>
+          {/* Teilen kann technisch möglich sein, ohne dass die Systemleiste
+              eine echte Speichern-Option zeigt (z. B. Windows-Desktop) – ein
+              direkter Download bleibt deshalb zusätzlich erreichbar. */}
+          {shareable && (
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={status === 'busy' || !canExport}
+              aria-label={t('report.builder.downloadSecondary')}
+              title={t('report.builder.downloadSecondary')}
+              className="focus-ring glass flex shrink-0 items-center justify-center rounded-2xl px-4 py-3.5 text-foreground transition-transform duration-200 active:scale-[0.98] disabled:opacity-60"
+            >
+              <Download className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
