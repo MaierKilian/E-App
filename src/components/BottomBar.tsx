@@ -14,10 +14,9 @@ let owner: HTMLElement | null = null
  * Feste Aktionsleiste am unteren Bildschirmrand (Glass-Stil).
  *
  * Sitzt auf der mobilen Navigationsleiste auf (`--bottom-nav-total`) und meldet
- * ihre eigene Höhe an `--bottom-bar-h`. Nur dadurch weichen der Cookie-Hinweis
- * und der Cookie-Wiedereinstieg nach oben aus, statt die Leiste zu verdecken –
- * beide rechnen ihren Abstand über `--floating-bottom` daraus (siehe
- * index.css).
+ * ihre eigene Höhe an `--bottom-bar-h`. Nur dadurch weicht der Cookie-Hinweis
+ * nach oben aus, statt die Leiste zu verdecken – er rechnet seinen Abstand über
+ * `--floating-bottom` daraus (siehe index.css).
  *
  * Die Höhe wird gemessen und nicht angenommen, weil sie sich im Betrieb ändert:
  * Die Berichte-Leiste blendet über dem Knopf Status- und Fehlerzeilen ein.

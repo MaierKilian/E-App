@@ -25,7 +25,6 @@ import { LandingPage } from '@/features/landing/LandingPage'
 import { ImprintPage } from '@/features/legal/ImprintPage'
 import { PrivacyPage } from '@/features/legal/PrivacyPage'
 import { ConsentBanner } from '@/features/legal/ConsentBanner'
-import { ConsentReopenButton } from '@/features/legal/ConsentReopenButton'
 import { ConsentSettings } from '@/features/legal/ConsentSettings'
 import { useConsentStore } from '@/features/legal/consent'
 import { useSettingsStore } from '@/store/settingsStore'
@@ -173,7 +172,6 @@ export function App() {
         {/* Einwilligung: Hinweis und Detail-Fenster liegen im Router, weil
             beide auf Impressum/Datenschutz verlinken. */}
         <ConsentBanner />
-        <ConsentReopenButton />
         <ConsentSettings />
       </BrowserRouter>
       <SplashScreen />

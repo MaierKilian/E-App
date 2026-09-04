@@ -159,7 +159,7 @@
  * Unten stapeln sich bis zu drei Ebenen: die mobile Navigationsleiste
  * (BottomNav), darüber eine feste Aktionsleiste mancher Seiten (BottomBar,
  * z. B. „PDF teilen" oder „Weiter" im Fragebogen) und darüber alles
- * Schwebende (Cookie-Hinweis, Cookie-Wiedereinstieg).
+ * Schwebende (heute nur der Cookie-Hinweis).
  *
  * - `--bottom-nav-h`   Höhe der Navigationsleiste ohne Safe-Area. Die BottomNav
  *                      setzt ihre Höhe daraus.

@@ -206,11 +206,11 @@ sich pro Plattform für eine von beiden entscheidet.
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
 **Kategorie:** Verbesserung · **Bereich:** Datenschutzerklärung Abschnitt 9
-**Status:** ✅ Umgesetzt – neuer, dauerhaft eingeblendeter Button unten rechts
-(`ConsentReopenButton`, wie der Cookie-Hinweis positioniert), Text „Möchtest
-du deine Cookie-Einstellungen ändern?", erscheint erst nach einer getroffenen
-Entscheidung. Abschnitt 9 der Datenschutzerklärung beschreibt die neue
-Methode zusätzlich zum bisherigen Button.
+**Status:** ↩️ Zurückgenommen (04.09.) – siehe #13. Der Button war umgesetzt
+(`ConsentReopenButton`, unten rechts, Text „Möchtest du deine
+Cookie-Einstellungen ändern?"), Kilian hat ihn nach dem Live-Test wieder
+entfernen lassen: Der Fußzeilen-Link leistet dasselbe, ohne dauerhaft im Bild
+zu stehen.
 
 Der Button zum erneuten Festlegen der Präferenzen soll wie der Cookie-Hinweis
 selbst unten rechts mitlaufen – als kleiner Button „Möchtest du deine
@@ -266,6 +266,26 @@ Gemessen (393 × 760, Chromium): Berichte 12 px Abstand zur Leiste, Fragebogen
 nach dem Zurücksetzen zurück; auf einer Seite ohne Aktionsleiste steht
 `--bottom-bar-h` wieder auf `0px`. Desktop (1280 px): Leiste am unteren Rand,
 Knopf 16 px darüber.
+
+### 13. Schwebender Cookie-Knopf wieder entfernt
+**Kategorie:** Verbesserung · **Bereich:** `ConsentReopenButton` (entfällt)
+**Status:** ✅ Umgesetzt – nimmt #2 zurück. Der dauerhaft schwebende Knopf muss
+nicht sein: „Cookie-Einstellungen" steht am Fuß jeder Seite (`LegalFooter` im
+App-Grundgerüst) und zusätzlich in den Einstellungen.
+
+Rechtlich bleibt der Widerruf damit genauso leicht wie die Erteilung
+(Art. 7 Abs. 3 Satz 4 DSGVO): ein dauerhaft erreichbarer Einstieg auf jeder
+Seite, ohne Umweg über die Datenschutzerklärung. Das ist die Begründung, die
+im `ConsentBanner` ohnehin schon steht.
+
+Entfernt: `ConsentReopenButton.tsx`, seine Einbindung in `App.tsx` und der
+Textbaustein `consent.reopen` (deutsch und englisch). Abschnitt 9 der
+Datenschutzerklärung nennt jetzt Fußzeile und Einstellungen statt des
+schwebenden Knopfes.
+
+`--floating-bottom` und die `BottomBar` bleiben: Der Cookie-Hinweis vor der
+ersten Entscheidung schwebt weiterhin unten und muss der Navigations- und der
+Aktionsleiste weiter ausweichen (#11, #12).
 
 ### 3. Dritter Button im Cookie-Banner für erweiterte Einstellungen
 **Kategorie:** Verbesserung · **Bereich:** `ConsentBanner`
