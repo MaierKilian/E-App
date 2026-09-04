@@ -1,7 +1,7 @@
 import { Droplet, Snowflake, Plug, Thermometer, Hourglass, Sofa, Gauge, Lightbulb } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { MeasurementId } from './types'
-import type { RoomType } from '@/types'
+import type { InstrumentType, RoomType } from '@/types'
 
 /** Gewerk-Kategorie einer Messung (für die „Gewerke"-Ansicht). */
 export type MeasurementCategory = 'heating' | 'hot_water' | 'electricity' | 'water'
@@ -16,6 +16,18 @@ export const CATEGORY_COLOR: Record<MeasurementCategory, string> = {
   hot_water: '#3b82f6',
   electricity: '#eab308',
   water: '#06b6d4',
+}
+
+/**
+ * Ein Messgerät, das eine Messung voraussetzt.
+ *
+ * `required: false` heißt: Der Check läuft auch ohne vollständig durch, das
+ * Gerät schaltet nur einen zusätzlichen, genaueren Schritt frei (z. B. der
+ * Zollstock im Möbelabstand-Check).
+ */
+export interface InstrumentNeed {
+  type: InstrumentType
+  required: boolean
 }
 
 export interface MeasurementMeta {
@@ -59,6 +71,16 @@ export interface MeasurementMeta {
    * `furniture_spacing` und `fridge` (qualitativer Befund).
    */
   yieldsSaving?: boolean
+  /**
+   * Welche Messgeräte diese Messung braucht.
+   *
+   * Die einzige Stelle, an der dieser Zusammenhang steht: Der Fragebogen führt
+   * daraus die Geräte-Übersicht („Was du zum Messen brauchst") her, statt sie
+   * abzuschreiben. Wer eine Messung ergänzt oder ihr einen Eingabeschritt
+   * nimmt, pflegt ihn hier – ein Test hält fest, dass jede verfügbare Messung
+   * eine Angabe trägt, „braucht keins" eingeschlossen (leeres Array).
+   */
+  instruments: InstrumentNeed[]
 }
 
 /**
@@ -76,6 +98,9 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     estimatedMinutes: 5,
     rooms: ['bathroom'],
     yieldsSaving: true,
+    // Gemessen wird mit Messbecher und Stoppuhr – die Stoppuhr bringt die App
+    // mit. Kein Gerät aus der Geräteliste.
+    instruments: [],
   },
   {
     id: 'hot_water_wait',
@@ -86,6 +111,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     estimatedMinutes: 2,
     rooms: ['bathroom', 'kitchen'],
     yieldsSaving: true,
+    instruments: [],
   },
   {
     id: 'room_temperature',
@@ -96,6 +122,13 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     estimatedMinutes: 5,
     perRoom: true,
     yieldsSaving: true,
+    // Die Temperatur ist die Messung; die Luftfeuchte ist der optionale
+    // Zusatzschritt, aus dem der Taupunkt und damit die Schimmelwarnung
+    // entsteht (`humidityOn` in `RoomTemperatureRun`).
+    instruments: [
+      { type: 'temperature_sensor', required: true },
+      { type: 'humidity_sensor', required: false },
+    ],
   },
   {
     id: 'furniture_spacing',
@@ -105,6 +138,9 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'heating',
     estimatedMinutes: 2,
     perRoom: true,
+    // Der Check kommt mit geschätzten Antworten aus; ein Messgerät ersetzt die
+    // Schätzung durch einen Zahlenwert (`measureOn`).
+    instruments: [{ type: 'distance_meter', required: false }],
   },
   {
     id: 'lighting',
@@ -116,6 +152,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     // Ein Ergebnis fuer die ganze Wohnung: Der Check fragt alle Raeume auf einem
     // Schirm ab, statt den Nutzer einzeln durch sie hindurchzufuehren.
     wholeHome: true,
+    instruments: [],
   },
   {
     id: 'base_load',
@@ -125,6 +162,9 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'electricity',
     estimatedMinutes: 5,
     wholeHome: true,
+    // Abgelesen wird der Stromzähler des Hauses, nicht ein eigenes Gerät –
+    // deshalb Pflicht, aber ohne Anschaffung.
+    instruments: [{ type: 'power_meter', required: true }],
   },
   {
     id: 'standby',
@@ -135,6 +175,8 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     estimatedMinutes: 12,
     wholeHome: true,
     yieldsSaving: true,
+    // Ohne Steckdosen-Energiemessgerät gibt es keine Wattzahl einzugeben.
+    instruments: [{ type: 'power_meter', required: true }],
   },
   {
     id: 'fridge',
@@ -148,6 +190,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     // nur, in welcher Raum-Kachel sie auftauchen, nicht die Zählung.
     rooms: ['kitchen', 'basement'],
     perAppliance: true,
+    instruments: [{ type: 'temperature_sensor', required: true }],
   },
   {
     id: 'freezer',
@@ -161,6 +204,10 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     rooms: ['kitchen', 'basement', 'utility_room'],
     yieldsSaving: true,
     perAppliance: true,
+    // Bewusst leer: Der Check schätzt die Vereisung mit dem Auge. Eine
+    // Temperatur-Eingabe gibt es hier nicht (siehe Punkt 15 in
+    // `docs/gefundene-probleme.md`) – der Info-Tab verspricht sie zu Unrecht.
+    instruments: [],
   },
 ]
 

@@ -156,10 +156,15 @@ export function buildProfileReportData(
           .map((d) => t(`onboarding.step6.smartHomeOptions.${d}`)),
       ),
     ],
-    [
-      t('report.pdf.profile.instruments'),
-      list(data.instruments.map((i) => t(`onboarding.step6.instruments.${i.type}`))),
-    ],
+    // Die Messgeräte werden nicht mehr erhoben (siehe „Gebäudehülle" oben,
+    // gleiche Begründung): Ein neues Profil bekommt die Zeile gar nicht, statt
+    // ein „nicht angegeben" zu einer Frage zu zeigen, die niemand gestellt hat.
+    ...retired([
+      [
+        t('report.pdf.profile.instruments'),
+        list(data.instruments.map((i) => t(`onboarding.step6.instruments.${i.type}`))),
+      ],
+    ]),
   ]
 
   return [

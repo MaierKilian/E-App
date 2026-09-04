@@ -26,7 +26,10 @@ const CONSUMERS: FieldConsumer[] = ['measurements', 'monitoring', 'tips', 'repor
  * paar Wochen tatsächlich etwas erklärt – sagt sie etwas.
  *
  * Felder ohne `labelKey` fehlen hier absichtlich: `completed` und `mode` sind
- * innerer Zustand, keine beantwortete Frage.
+ * innerer Zustand, keine beantwortete Frage – und `instruments` ist eine Frage,
+ * die nicht mehr gestellt wird. „Wofür wir das nutzen" soll erklären, wozu die
+ * eigenen Antworten dienen; eine Zeile zu einer Angabe, die der Nutzer nie
+ * gemacht hat, tut das Gegenteil.
  */
 export function FieldUsageSummary() {
   const { t } = useTranslation()

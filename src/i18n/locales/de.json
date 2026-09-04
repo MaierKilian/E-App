@@ -89,7 +89,7 @@
     "hotWater": "Wird das Warmwasser über die Heizung erzeugt oder durch ein eigenes Gerät?",
     "pv": "Eine PV-Anlage liefert eigenen Strom und verändert die Energiebilanz.",
     "fireplace": "Ein zusätzlicher Kamin/Ofen trägt zur Raumwärme bei und sollte erfasst werden.",
-    "instruments": "Wähle vorhandene Geräte – pro Gerät kannst du Typ und passende Empfehlungen sehen.",
+    "instruments": "Diese Übersicht ist Auskunft, keine Frage – die App leitet sie daraus ab, was ihre Checks tatsächlich verlangen. Du musst hier nichts auswählen.",
     "smartHome": "Smarte Geräte können Verbrauchsdaten liefern und die Auswertung verbessern.",
     "renovation": "Renovierungen verbessern den Dämmstandard und senken den Energiebedarf.",
     "location": "Mit der Postleitzahl können später regionale Klima- und Wetterdaten einfließen.",
@@ -1633,6 +1633,67 @@
         "smart_meter": "Smarter Stromzähler",
         "smart_plugs": "Smarte Steckdosen",
         "none": "Keine"
+      },
+      "guide": {
+        "title": "Was du zum Messen brauchst",
+        "intro": "Viele Checks laufen ganz ohne Anschaffung. Hier steht, wofür die übrigen ein Gerät brauchen – und welche Bauart dafür taugt.",
+        "roles": {
+          "required": "Nötig",
+          "optional": "Optional",
+          "unused": "Zurzeit ungenutzt"
+        },
+        "requiredFor": "Nötig für:",
+        "optionalFor": "Genauer bei:",
+        "unusedNoteGeneric": "Zurzeit liest kein Check diesen Wert.",
+        "unusedNote": {
+          "co2_sensor": "Zurzeit liest kein Check den CO₂-Wert. Fürs Lüften ist er trotzdem der ehrlichste Anzeiger – die Grundlagen dazu stehen im Wissensbereich."
+        },
+        "variantsToggle_one": "1 Bauart",
+        "variantsToggle_other": "{{count}} Bauarten",
+        "variantNotes": {
+          "temperature_sensor": {
+            "room_thermometer": "Der Standardfall für den Raumklima-Check. Ob analog oder digital, ist egal.",
+            "room_thermostat": "Zeigt oft die Ist-Temperatur an. Taugt, solange er nicht direkt über dem Heizkörper oder in der Sonne sitzt.",
+            "mercury_thermometer": "Genau, aber seit 2009 nicht mehr im Verkauf. Geht eines zu Bruch, gehört es in den Sondermüll, nicht in den Hausmüll.",
+            "infrared_surface": "Misst Oberflächen, nicht die Raumluft – gut für kalte Wände, ungeeignet für den Raumklima-Check.",
+            "digital_thermometer": "Mit Funkfühler und Speicher praktisch, wenn du mehrere Räume nacheinander misst."
+          },
+          "humidity_sensor": {
+            "analog_hygrometer": "Günstig, wird aber über die Jahre ungenau. Für eine grobe Einordnung reicht es.",
+            "digital_hygrometer": "Der unkomplizierte Standard für den Feuchte-Schritt im Raumklima-Check.",
+            "thermo_hygrometer": "Temperatur und Feuchte in einem Gerät – deckt den Raumklima-Check allein ab.",
+            "data_logger": "Zeichnet über Tage auf und zeigt damit die Feuchtespitzen nach Duschen oder Kochen, die eine Einzelmessung verpasst.",
+            "smart_sensor": "Sensor aus dem Smart-Home-System; die Werte stehen meist in der Hersteller-App."
+          },
+          "distance_meter": {
+            "folding_rule": "Reicht völlig – gemessen werden Zentimeter, keine Millimeter.",
+            "ruler": "Für den engen Spalt hinter dem Heizkörper oft handlicher als der Zollstock.",
+            "tape_measure": "Praktisch dort, wo man nicht gerade herankommt, weil es sich um Ecken führen lässt.",
+            "laser_distance": "Schnell und mit einer Hand bedienbar; unter etwa 20 cm oft ungenauer als der Zollstock.",
+            "ultrasonic": "Misst über eine Fläche statt über einen Punkt – hinter Möbeln liegt er dadurch leicht daneben."
+          },
+          "power_meter": {
+            "plug_meter": "Das Gerät für den Standby-Check: zwischen Steckdose und Gerät stecken, Watt ablesen. Kostet wenige Euro, viele Verbraucherzentralen und Stadtwerke verleihen es kostenlos.",
+            "clamp_meter": "Misst am Kabel, ohne es zu trennen – für den Standby-Check unnötig aufwendig.",
+            "multimeter": "Kann Strom messen, verlangt dafür aber einen aufgetrennten Stromkreis. Für den Standby-Check nicht gedacht.",
+            "electricity_meter": "Der Zähler im Haus – ihn brauchst du für den Grundlast-Check. Du kannst ihn abfotografieren, die App liest den Stand aus."
+          },
+          "co2_sensor": {
+            "portable_monitor": "Tragbar, damit für den Vergleich mehrerer Räume geeignet.",
+            "stationary_monitor": "Bleibt an einem Ort und zeichnet meist den Tagesverlauf auf.",
+            "traffic_light": "Zeigt Grün/Gelb/Rot statt eines ppm-Werts – als Erinnerung ans Lüften gedacht.",
+            "smart_sensor": "CO₂-Sensor aus dem Smart-Home-System; die Werte stehen in der Hersteller-App."
+          }
+        },
+        "household": {
+          "title": "Außerdem, aus dem Haushalt",
+          "items": [
+            "Ein Messbecher oder ein Eimer mit 5-Liter-Marke – nur damit geht der Duschkopf-Test.",
+            "Eine Stoppuhr brauchst du nicht: Die App bringt eine mit.",
+            "Dein Handy: Den Zählerstand kannst du abfotografieren, die App liest ihn aus."
+          ]
+        },
+        "noGear": "Ganz ohne Messgerät:"
       }
     },
     "step7renovation": {

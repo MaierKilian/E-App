@@ -101,10 +101,9 @@ export const FIELD_USAGE = {
     labelKey: 'onboarding.step8.labels.hotWater',
   },
   instruments: {
-    consumers: ['measurements'],
+    consumers: ['measurements', 'report'],
     reason:
-      'Welche Messgeräte vorhanden sind, entscheidet, welche Checks angeboten werden.',
-    labelKey: 'onboarding.fieldUsage.labels.instruments',
+      'Vorhandene Messgeräte. Wird nicht mehr erhoben – an der Stelle der Frage steht die Übersicht „Was du zum Messen brauchst". Ein Bestandsprofil trägt weiter Werte: Sie haken die optionale Abstandsmessung im Möbelabstand-Check vor und stehen im Steckbrief des Berichts.',
   },
   locationMode: {
     consumers: [],

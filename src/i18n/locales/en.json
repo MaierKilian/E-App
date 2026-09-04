@@ -89,7 +89,7 @@
     "hotWater": "Is the hot water produced by the heating system or by a separate device?",
     "pv": "A PV system supplies your own electricity and changes the energy balance.",
     "fireplace": "An additional fireplace/stove adds room heat and should be recorded.",
-    "instruments": "Select the devices you own – per device you can pick a type and see recommendations.",
+    "instruments": "This overview is information, not a question – the app derives it from what its checks actually require. There is nothing to select here.",
     "smartHome": "Smart devices can provide consumption data and improve the analysis.",
     "renovation": "Renovations improve the insulation standard and reduce the energy demand.",
     "location": "Your postal code lets regional climate and weather data flow in later.",
@@ -1423,6 +1423,67 @@
         "smart_meter": "Smart electricity meter",
         "smart_plugs": "Smart plugs",
         "none": "None"
+      },
+      "guide": {
+        "title": "What you need in order to measure",
+        "intro": "Many checks run without buying anything at all. Here is what the others need a device for – and which kind will do.",
+        "roles": {
+          "required": "Needed",
+          "optional": "Optional",
+          "unused": "Currently unused"
+        },
+        "requiredFor": "Needed for:",
+        "optionalFor": "More precise in:",
+        "unusedNoteGeneric": "No check currently reads this value.",
+        "unusedNote": {
+          "co2_sensor": "No check currently reads the CO₂ value. It is still the most honest indicator of when to air a room – the basics are in the knowledge section."
+        },
+        "variantsToggle_one": "1 kind",
+        "variantsToggle_other": "{{count}} kinds",
+        "variantNotes": {
+          "temperature_sensor": {
+            "room_thermometer": "The standard case for the room climate check. Analogue or digital makes no difference.",
+            "room_thermostat": "Often shows the actual temperature. Fine as long as it does not sit right above the radiator or in the sun.",
+            "mercury_thermometer": "Accurate, but off the market since 2009. If one breaks, it belongs in hazardous waste, not the bin.",
+            "infrared_surface": "Measures surfaces, not room air – good for cold walls, unsuitable for the room climate check.",
+            "digital_thermometer": "With a wireless probe and memory it is handy when you measure several rooms in a row."
+          },
+          "humidity_sensor": {
+            "analog_hygrometer": "Cheap, but drifts over the years. Good enough for a rough reading.",
+            "digital_hygrometer": "The straightforward standard for the humidity step of the room climate check.",
+            "thermo_hygrometer": "Temperature and humidity in one device – covers the room climate check on its own.",
+            "data_logger": "Records over days and so catches the humidity peaks after showering or cooking that a single reading misses.",
+            "smart_sensor": "A sensor from your smart home system; the readings are usually in the manufacturer's app."
+          },
+          "distance_meter": {
+            "folding_rule": "Perfectly sufficient – what is measured are centimetres, not millimetres.",
+            "ruler": "Often easier than a folding rule in the narrow gap behind a radiator.",
+            "tape_measure": "Useful where you cannot reach straight on, because it bends around corners.",
+            "laser_distance": "Fast and one-handed; below roughly 20 cm often less accurate than a folding rule.",
+            "ultrasonic": "Measures across an area rather than a point – behind furniture it is easily off."
+          },
+          "power_meter": {
+            "plug_meter": "The device for the standby check: plug it between socket and appliance, read the watts. It costs a few euros, and many consumer advice centres and utilities lend one for free.",
+            "clamp_meter": "Measures at the cable without cutting it – needlessly elaborate for the standby check.",
+            "multimeter": "Can measure current, but needs an opened circuit to do so. Not meant for the standby check.",
+            "electricity_meter": "The meter in your building – you need it for the base load check. You can photograph it and the app reads the value."
+          },
+          "co2_sensor": {
+            "portable_monitor": "Portable, so suited to comparing several rooms.",
+            "stationary_monitor": "Stays in one place and usually records the course of the day.",
+            "traffic_light": "Shows green/amber/red instead of a ppm value – meant as a reminder to air the room.",
+            "smart_sensor": "A CO₂ sensor from your smart home system; readings are in the manufacturer's app."
+          }
+        },
+        "household": {
+          "title": "Also, from around the house",
+          "items": [
+            "A measuring jug or a bucket with a 5-litre mark – the showerhead test needs one.",
+            "You do not need a stopwatch: the app brings its own.",
+            "Your phone: you can photograph the meter and the app reads the value."
+          ]
+        },
+        "noGear": "No device at all:"
       }
     },
     "step7renovation": {

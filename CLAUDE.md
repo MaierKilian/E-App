@@ -56,6 +56,12 @@ deployten App dazu.
   wo sie in der App landet.
 - Studienziel „HTW" aus der Zielauswahl entfernt (Lerninhalte bleiben über
   den Wissensbereich erreichbar).
+- Schritt „Ausstattung": Die Abfrage der vorhandenen Messgeräte ist der
+  Übersicht „Was du zum Messen brauchst" gewichen – je Gerät, wofür die App es
+  verlangt, welche Bauarten taugen und welche Checks ganz ohne Anschaffung
+  laufen. Die Abfrage hatte eine einzige Wirkung (ein vorangehakter Schalter im
+  Möbelabstand-Check) und stellte 24 Bauarten zur Wahl, die keine Zeile Code
+  gelesen hat.
 
 *Messungen*
 - Kellerklima wird nach Keller-Maßstäben bewertet (Taupunkt-Berechnung statt
@@ -107,6 +113,12 @@ Konventionen, die dabei entstanden sind und weiter gelten:
   `measurementThresholds.ts` ist `'reference'` (belegte Quelle), `'own'`
   (Richtwert der E-App, begründet) oder `'pending'` (noch offen) – nie
   unmarkiert.
+- **Jede Messung nennt ihre Messgeräte.** `MeasurementMeta.instruments`
+  (`measurements/catalog.ts`) ist Pflicht – ein leeres Array ist die gültige
+  Aussage „braucht keins". Die Geräte-Übersicht im Fragebogen wird daraus
+  hergeleitet (`measurements/instrumentNeeds.ts` dreht die Zuordnung um), nie
+  danebengeschrieben: Nimmt ein Check seinen Mess-Schritt weg, verschwindet er
+  dort von selbst.
 
 Offen geblieben: Drei Richtwerte ohne belegte Quelle (Warmwasser-Wartezeit-,
 Grundlast- und Standby-Schwellen, verdeckte Heizkörperfläche bei

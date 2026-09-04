@@ -3,8 +3,8 @@
 > Sammelt Kilians Testbefunde, kategorisiert (Bug / Problem / Verbesserung) und
 > grob priorisiert. **Update 04.09.2026:** Auf Kilians Wunsch wurde direkt so
 > viel wie möglich umgesetzt (Branch `claude/beheben-gefundene-probleme`) –
-> Status je Punkt unten. Offen blieben Punkt 9 und Punkt 18, die je eine
-> eigene UX-Entscheidung brauchen.
+> Status je Punkt unten. Offen blieb nur Punkt 9, der eine eigene
+> UX-Entscheidung braucht.
 
 ## Hoch – rechtlich/funktional kritisch
 
@@ -297,8 +297,9 @@ Teil davon, der Rest hält das Archiv wiederherstellbar).
 ### 18. Messgeräte-Abfrage ohne Wirkung – Vorschlag: Info-Seite statt Auswahl
 **Kategorie:** Problem (+ Verbesserungsvorschlag) · **Bereich:**
 `Step6Instruments`, `instrumentOptions.ts`, `fieldUsage.ts`, Wissensbereich
-**Status:** 🔍 Nur gesammelt – wartet auf Kilians Entscheidung zu den
-Rückfragen unten.
+**Status:** ✅ Umgesetzt (04.09.) – Kilians Entscheidung: Die Info ersetzt die
+Auswahl **an Ort und Stelle** im Fragebogen, damit jeder sie beim Anlegen der
+Wohnung zu sehen bekommt.
 
 Kilians Befund aus dem Live-Test: Die Frage „Welche Messgeräte sind
 vorhanden?" in Schritt 5 („Ausstattung") wirkt folgenlos, ebenso die
@@ -337,7 +338,46 @@ brauchen; der Nutzer weiß es nicht. Das vorhandene Material (fünf Geräte, 24
 Untertypen) ist dafür bereits geschrieben und würde weiterverwendet statt
 gelöscht.
 
-Offene Punkte dazu in „Offene Fragen für Kilian".
+**Was gebaut wurde.** An der Stelle der Frage steht jetzt „Was du zum Messen
+brauchst": je Gerät ein Abzeichen (*Nötig* / *Optional* / *Zurzeit ungenutzt*),
+darunter die Checks, die es verlangen, und aufklappbar die Bauarten – jede mit
+einem Satz dazu, wofür sie taugt und wofür nicht (das Infrarot-Thermometer misst
+Wände, nicht Raumluft; der Laser-Messer ist unter 20 cm ungenauer als der
+Zollstock). Dazu zwei Blöcke, die es vorher nirgends gab: die Haushaltsmittel,
+die kein Gerät sind, aber über Checks entscheiden (Messbecher für den
+Duschkopf-Test; die Stoppuhr bringt die App mit; der Zählerstand lässt sich
+abfotografieren), und die Liste der Checks, die **ganz ohne** Anschaffung
+laufen – zurzeit fünf von neun.
+
+**Der Inhalt ist abgeleitet, nicht abgeschrieben.** `MeasurementMeta` trägt neu
+ein Pflichtfeld `instruments`; die Übersicht dreht diese Zuordnung in
+`instrumentNeeds.ts` um („je Gerät, wofür"). Damit kann die Seite nicht falsch
+werden: Nimmt ein Check seinen Mess-Schritt weg – wie der Gefrierschrank-Check
+es mit der Strommessung getan hat –, verschwindet er hier von selbst. Ein Test
+hält die Kopplung fest und verlangt zu jeder Bauart einen Erklärtext in beiden
+Sprachen.
+
+**Was dabei entschieden wurde**, ohne eigene Rückfrage:
+
+- **Die Auswahl ist ganz entfallen**, „Keines"/„Nicht bekannt" eingeschlossen.
+  Beides zählte nur für den Fortschrittsbalken.
+- **Das Feld `instruments` bleibt** – wie bei #17. Ein Bestandsprofil trägt
+  echte Werte: Sie haken die optionale Abstandsmessung im Möbelabstand-Check
+  weiterhin vor und stehen im Steckbrief. Ein neues Profil bekommt die
+  Steckbrief-Zeile gar nicht mehr, statt „nicht angegeben" zu einer Frage zu
+  zeigen, die niemand gestellt hat.
+- **Aus „Wofür wir das nutzen" ist `instruments` verschwunden** (kein
+  `labelKey` mehr). Der Bildschirm soll erklären, wozu die *eigenen Antworten*
+  dienen – eine Zeile zu einer nie gestellten Frage tut das Gegenteil.
+
+**Zwei Nebenbefunde**, beide nicht angefasst:
+
+- Der CO₂-Sensor steht jetzt sichtbar als „Zurzeit ungenutzt" in der Übersicht.
+  Das ist die ehrliche Auskunft, aber keine Dauerlösung – siehe „Offene Fragen".
+- `windowAge`, `insulationState`, `ventilationType` und `renovations` behielten
+  bei #17 ihren `labelKey` und stehen deshalb weiter in „Wofür wir das nutzen" –
+  als Angaben, die ein neues Profil nie macht. Derselbe Fall, den #18 für
+  `instruments` gerade behoben hat.
 
 ## Cookie-Banner & Rechtsseiten
 
@@ -482,17 +522,16 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   nur Dusche)? Wäre eine bewusste Verhaltensänderung, keine reine Korrektur.
 - Bei #15: Temperatur-Eingabe im Gefrierschrank-Check nachrüsten (dann stimmt
   der Info-Tab) oder die Temperatur aus dem Info-Tab streichen?
-- Bei #18 (a): Wo soll die Info-Seite leben – als vierter Bereich im
-  Wissensbereich („Messgeräte" neben FAQ/Glossar/Mess-Hintergründe), als
-  Abschnitt je Messung in den Mess-Hintergründen, oder als reine Infoseite
-  an Ort und Stelle im Fragebogen-Schritt (ohne Auswahl)?
-- Bei #18 (b): Soll die Messgeräte-Frage ganz raus, oder eine einzige
-  Ja/Nein-Frage je Gerät bleiben (ohne Untertypen)? Ganz raus kostet den
-  vorangehakten Messschritt im Möbelabstand-Check und die Steckbrief-Zeile
-  im PDF.
-- Bei #18 (c): Was passiert mit den Daten bestehender Profile – `instruments`
-  wie bei #17 als Feld behalten und im Steckbrief nur bei vorhandenem Wert
-  zeigen, oder samt Migration entfernen?
+- Bei #18: Der CO₂-Sensor steht in der neuen Übersicht als „Zurzeit ungenutzt".
+  Soll er dort ganz verschwinden – oder ist ein CO₂-/Lüftungs-Check geplant,
+  der ihn anschließt? Solange keins von beidem entschieden ist, bleibt er die
+  einzige Zeile der Seite, die dem Nutzer nichts zu tun gibt.
+- Bei #18: Soll die Übersicht zusätzlich im Wissensbereich stehen? Im
+  Fragebogen sieht sie jeder genau einmal – beim Anlegen der Wohnung. Wer sie
+  Wochen später vor dem Standby-Check wiederfinden will, hat dafür keinen Weg.
+- Bei #17 (Nachtrag aus #18): Sollen `windowAge`, `insulationState`,
+  `ventilationType` und `renovations` aus „Wofür wir das nutzen" verschwinden?
+  Sie stehen dort als Angaben, die ein neues Profil nie macht.
 
 - Bei #9: Welche Auswahl-Struktur für die Raumzuordnung – zweistufig
   (erst Raum, dann Entnahmestelle) oder eine kombinierte Liste je

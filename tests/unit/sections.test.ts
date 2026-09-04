@@ -192,12 +192,17 @@ describe('Kein Feld ist verlorengegangen', () => {
   // „Gebäudehülle & Modernisierung" ist die letzte Frage entfallen, die sie
   // gestellt hat. Ihre gesamte Wirkung waren Zeilen im PDF-Steckbrief, und dort
   // stehen sie weiterhin – für Profile, die noch einen Wert tragen.
+  //
+  // Ebenfalls seit dem 04.09.2026 fehlt `instruments`: Die Abfrage der
+  // vorhandenen Messgeräte ist der Übersicht „Was du zum Messen brauchst"
+  // gewichen. Sie hatte eine einzige Wirkung – einen vorangehakten Schalter im
+  // Möbelabstand-Check – und stellte 24 Bauarten zur Wahl, die keine Zeile Code
+  // je gelesen hat.
   const ERHOBEN = [
     'profileName', 'profileImage', 'personsCount', 'goals', 'occupancyStatus',
     'buildingYear', 'buildingType', 'livingArea', 'floors',
     'rooms', 'heatTransfer', 'roomAreas',
     'heatGenerators', 'hotWaterType',
-    'instruments',
     'postalCode',
   ]
 

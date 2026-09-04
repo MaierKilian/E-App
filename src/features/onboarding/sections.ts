@@ -164,8 +164,12 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
     icon: Gauge,
     quick: false,
     fields: [
-      field('instruments', (d) => d.instruments.length > 0),
-      // Beantwortet ist die Frage auch mit „wir haben keines" – erst dann
+      // Die Messgeräte-Frage ist hier entfallen: Sie zählte für den Fortschritt,
+      // ohne etwas zu bewirken – an ihrer Stelle steht jetzt die Übersicht
+      // „Was du zum Messen brauchst" (Punkt 18 in `docs/gefundene-probleme.md`).
+      // Eine Auskunft hat keinen Ausfüllstand.
+      //
+      // Beantwortet ist die Geräte-Frage auch mit „wir haben keines" – erst dann
       // fallen Kühl- und Gefrier-Check aus der Fortschrittszählung.
       field('appliances', (d) => d.appliancesAnswered),
     ],
