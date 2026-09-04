@@ -109,6 +109,33 @@ einen qualitativen Text ersetzt werden, solange kein echter Durchfluss-Test
 für die jeweilige Entnahmestelle existiert – das wäre eine Verhaltensänderung
 über den reinen Bugfix hinaus.
 
+### 9. Warmwasser-Wartezeit ohne Raumzuordnung – Erweiterungspotenzial
+**Kategorie:** Verbesserung · **Bereich:**
+`src/features/measurements/hot_water_wait/`
+
+Bestätigt: „Wo misst du?" bietet nur die vier festen Entnahmestellen Dusche,
+Badewanne, Küche, Waschbecken (`FIXTURE_ORDER` in `hotWaterWait.ts`) – ohne
+Raumbezug. Kilians Punkt: Ein Haushalt kann mehrere Bäder haben, und ein Bad
+kann Waschbecken, Wanne und Dusche gleichzeitig enthalten – die App fragt
+aber nur den Stellentyp ab, nicht welches Bad gemeint ist.
+
+Technisch mehr als nur eine fehlende Auswahl: `HotWaterWaitRun.tsx` setzt
+`roomKey: fixture` (Zeile 52) – die Entnahmestelle selbst wird als Raum-
+Schlüssel benutzt. Andere raumbezogene Checks (z. B. `furniture_spacing`,
+`room_temperature`) nutzen dort echte Rauminstanzen wie `bathroom#0` /
+`bathroom#1` (`roomInstances()` in `rooms.ts`). Bei zwei Bädern speichert der
+Warmwasser-Check das Waschbecken-Ergebnis beider Bäder unter demselben
+Schlüssel `hot_water_wait@washbasin` – **das zweite überschreibt das erste
+kommentarlos**, nicht nur eine fehlende Detailtiefe, sondern echter
+Datenverlust bei mehreren gleichartigen Entnahmestellen.
+
+**Zu klären beim Beheben:** Auswahl vermutlich zweistufig (erst Raum, dann
+Entnahmestelle im Raum) oder eine kombinierte Liste je Rauminstanz. Setzt
+voraus, dass zu jedem Raumtyp die plausiblen Entnahmestellen bekannt sind
+(Bad: alle vier, Küche: nur „Küche", ggf. Gäste-WC etc.) – ähnlich der
+raumspezifischen Fragenzuordnung, die es beim Möbel-Abstands-Check schon gibt
+(`ROOM_PRIMARY_KEY` in `furnitureSpacing.ts`).
+
 ---
 
 ## Cookie-Banner & Rechtsseiten
