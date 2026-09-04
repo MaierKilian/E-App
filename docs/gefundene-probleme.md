@@ -202,6 +202,33 @@ sich pro Plattform für eine von beiden entscheidet.
 
 ---
 
+### 16. „Optimal eingestellt" und „Sparpotenzial 12 %" gleichzeitig
+**Kategorie:** Bug · **Bereich:** `fridge.ts`, `FridgeResult`
+**Status:** ✅ Umgesetzt – bei 5,0 °C stand im Ergebnis „Sehr gut · Optimal
+eingestellt – sparsam und sicher · Weiter so" und direkt darunter „Mögliches
+Sparpotenzial ≈ 12 %". Beides zugleich kann nicht stimmen.
+
+Ursache: `calcFridgeSaving` rechnete das Potenzial immer bis zur
+Referenztemperatur von 7 °C hoch (`0,06 × (7 − gemessen)`), ohne den Status zu
+beachten. Im guten Band 5–7 °C ergab das 0–12 %. Der Code widersprach damit
+seiner eigenen Dokumentation – im Kommentar an `savingPct` stand bereits „0 bei
+… ‚optimal' (nichts zu holen)" – und dem Rest der App: Die Empfehlungsliste
+legt erst unter 5 °C einen Tipp an (`FRIDGE_COLD_C` in `buildTips`), der
+Ergebnis-Schirm aber zeigte schon ab 6,9 °C einen Kasten.
+
+Behoben an zwei Stellen: `calcFridgeSaving` rechnet nur noch bei „zu kalt", und
+`FridgeResult` blendet den Kasten nur bei „zu kalt" ein. Die zweite Bedingung
+ist nicht doppelt gemoppelt, sondern deckt **Altergebnisse** ab: Die tragen ein
+bis 7 °C hochgerechnetes `savingPct` in den Details und werden nicht migriert.
+
+Neue Testdatei `tests/unit/fridge.test.ts` – für `fridge.ts` gab es bis dahin
+keine Tests. Sie hält den Gleichlauf fest: Was als „optimal" bewertet wird, hat
+kein Potenzial, und die Grenze deckt sich mit der Schwelle der
+Empfehlungsliste.
+
+Nachgemessen im Browser über das ganze Band: 3 °C → 24 %, 4 °C → 18 %,
+5/6/7 °C → kein Kasten, 8/9 °C → kein Kasten.
+
 ### 14. „Mit Strommessgerät gemessen" im Gefrierschrank-Check
 **Kategorie:** Verbesserung · **Bereich:** `FreezerRun`, `freezer.ts`
 **Status:** ✅ Umgesetzt – die optionale Vorher/Nachher-Messung ist raus. Sie

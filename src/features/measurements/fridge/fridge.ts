@@ -49,20 +49,29 @@ export interface FridgeSaving {
   status: FridgeStatus
   /**
    * Geschätztes Stromsparpotenzial als Anteil (0,06 = 6 %), wenn die Stufe bis
-   * zur empfohlenen Temperatur angepasst wird. 0 bei „zu warm" (dort ist
-   * Kälterstellen die richtige Richtung, das erhöht den Verbrauch) oder
-   * „optimal" (nichts zu holen).
+   * zur empfohlenen Temperatur angepasst wird. **Nur bei „zu kalt" > 0** – bei
+   * „zu warm" ist Kälterstellen die richtige Richtung (das erhöht den
+   * Verbrauch), bei „optimal" ist nichts zu holen.
    */
   savingPct: number
 }
 
-/** Ermittelt Bewertung und Stromsparpotenzial aus der Innentemperatur. */
+/**
+ * Ermittelt Bewertung und Stromsparpotenzial aus der Innentemperatur.
+ *
+ * Ein Potenzial gibt es **nur bei „zu kalt"**. Bis September 2026 rechnete die
+ * Funktion bis 7 °C hoch, egal wie die Temperatur bewertet war – wer 5,0 °C maß,
+ * bekam „Sehr gut · Optimal eingestellt · Weiter so" und direkt darunter
+ * „Mögliches Sparpotenzial ≈ 12 %". Das widerspricht sich, und es widersprach
+ * auch dem Rest der App: Das gute Band ist 5–7 °C, und die Empfehlungsliste
+ * legt erst unter 5 °C einen Tipp an (`FRIDGE_COLD_C` in `buildTips`).
+ */
 export function calcFridgeSaving(tempBefore: number): FridgeSaving {
   const temp = Number.isFinite(tempBefore) ? tempBefore : REFERENCE_TEMP
   const rating = rateFridge(temp)
   const status = fridgeStatus(temp)
   // Erwärmung vom aktuellen (zu kalten) Wert bis zur Empfehlung.
-  const warmupDegrees = Math.max(0, REFERENCE_TEMP - temp)
+  const warmupDegrees = status === 'tooCold' ? Math.max(0, REFERENCE_TEMP - temp) : 0
   const savingPct = PERCENT_PER_DEGREE * warmupDegrees
   return { rating, status, savingPct }
 }

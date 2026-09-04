@@ -30,9 +30,9 @@ function Chip({ label }: { label: string }) {
 /**
  * Ergebnis-Phase des Kühlschrank-Checks: Hero mit Temperatur + Bewertung,
  * Status-Satz (zu kalt/optimal/zu warm), Tipp-Chip und – je nach Lage – entweder
- * das geschätzte Sparpotenzial (Erstmessung) oder, bei einer Folgemessung nach
- * angepasster Stufe, was der Vergleich zur vorherigen Messung tatsächlich
- * gebracht hat.
+ * das geschätzte Sparpotenzial (Erstmessung, **nur wenn zu kalt**) oder, bei
+ * einer Folgemessung nach angepasster Stufe, was der Vergleich zur vorherigen
+ * Messung tatsächlich gebracht hat.
  */
 export function FridgeResult({ result }: ResultProps) {
   // Standort des Geraets: Die Umgebungstemperatur wird **live** hergeleitet und
@@ -106,7 +106,10 @@ export function FridgeResult({ result }: ResultProps) {
         </div>
       )}
 
-      {!change && savingPct > 0 && (
+      {/* Nur bei „zu kalt". Der Gleichlauf mit `status` gilt auch für
+          Altergebnisse: Die haben ein `savingPct` bis 7 °C gespeichert, das im
+          guten Band dem „Weiter so" darüber widersprach. */}
+      {!change && status === 'tooCold' && savingPct > 0 && (
         <div className="glass rounded-3xl p-5">
           <p className="text-xs uppercase tracking-wide text-muted">
             {t('measurements.fridge.result.savingTitle')}
