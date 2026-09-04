@@ -7,10 +7,12 @@ import {
   COLD_WATER_C,
   DELTA_T,
   EFFICIENT_FLOW_LPM,
+  GOOD_MAX,
   MINUTES_PER_SHOWER,
   SHOWERS_PER_PERSON_PER_DAY,
   WH_PER_LITER_PER_K,
 } from './showerhead'
+import { displaySavingEur } from '../savingsDisplay'
 
 /** Formatiert eine Zahl in der aktuellen Sprache. */
 function useNumberFormat() {
@@ -52,9 +54,15 @@ export function ShowerheadResult({ result }: ResultProps) {
   const flow = result.primaryValue
   const liters = result.details?.liters ?? 0
   const seconds = result.details?.seconds ?? 0
-  const yearlySaving = result.details?.yearlySaving ?? 0
   const isGood = result.rating === 'good'
-  const showSaving = !isGood && yearlySaving > 0
+
+  // Die Wassermenge folgt direkt aus der Messung; der Euro-Betrag läuft
+  // zusätzlich über Warmwasseranteil, Temperaturhub und Preis. Deshalb steht
+  // die Menge vorn und der Betrag dahinter – und der Betrag nur, wenn er über
+  // der Anzeigeschwelle liegt, wie überall sonst in der App auch.
+  const litersSaved = result.details?.litersSavedPerYear ?? 0
+  const showSaving = !isGood && litersSaved > 0
+  const savingEur = displaySavingEur(result.details?.yearlySaving)
 
   return (
     <div className="space-y-4">
@@ -62,7 +70,13 @@ export function ShowerheadResult({ result }: ResultProps) {
         rating={result.rating}
         value={fmt(flow, 1)}
         unit={t('measurements.showerhead.result.flowUnit')}
-        summary={t(`measurements.showerhead.result.summary.${result.rating}`)}
+        // „Ein Sparaufsatz lohnt sich" war eine Kaufempfehlung ohne Kenntnis
+        // von Preis und Einbausituation. Der Text nennt jetzt den gemessenen
+        // Wert und die Bedingung, unter der die Maßnahme greift.
+        summary={t(`measurements.showerhead.result.summary.${result.rating}`, {
+          flow: fmt(flow, 1),
+          target: fmt(EFFICIENT_FLOW_LPM),
+        })}
       />
 
       <div className="grid grid-cols-3 gap-2">
@@ -76,7 +90,9 @@ export function ShowerheadResult({ result }: ResultProps) {
         />
         <MiniTile
           label={t('measurements.showerhead.result.mini.reference')}
-          value={t('measurements.showerhead.result.referenceValue')}
+          // Aus dem Mess-Modul, nicht als Text: dieselbe Grenze, nach der auch
+          // bewertet wird (siehe Etappe 6 – keine Zahl steht doppelt).
+          value={t('measurements.showerhead.result.referenceUpTo', { value: fmt(GOOD_MAX) })}
         />
       </div>
 
@@ -97,8 +113,17 @@ export function ShowerheadResult({ result }: ResultProps) {
             <>
               <p className="text-sm font-semibold text-primary">
                 {t('measurements.showerhead.result.savingLabel', {
-                  value: t('measurements.showerhead.result.perYear', { value: fmt(yearlySaving) }),
+                  liters: fmt(litersSaved),
                 })}
+                {savingEur !== undefined && (
+                  <span className="ml-1 font-medium text-muted">
+                    {t('measurements.showerhead.result.savingMoney', {
+                      value: t('measurements.showerhead.result.perYear', {
+                        value: fmt(savingEur),
+                      }),
+                    })}
+                  </span>
+                )}
               </p>
               <p className="text-xs text-muted">
                 {t('measurements.showerhead.result.sourceNote', {
@@ -109,6 +134,12 @@ export function ShowerheadResult({ result }: ResultProps) {
               </p>
             </>
           )}
+          {/* Kilians Fund aus der Quellenprüfung – und die Begründung dieses
+              Checks überhaupt: Man muss messen, weil das Etikett nichts
+              garantiert. */}
+          <p className="text-xs leading-relaxed text-muted">
+            {t('measurements.showerhead.result.buyingNote', { target: fmt(GOOD_MAX) })}
+          </p>
         </div>
       )}
 

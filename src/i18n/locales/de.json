@@ -400,23 +400,22 @@
       "result": {
         "flowUnit": "L/min",
         "perYear": "{{value}} €/Jahr",
-        "savingLabel": "Ersparnis ≈ {{value}}",
+        "savingLabel": "Rund {{liters}} Liter Warmwasser im Jahr",
         "sourceNote": "Geschätzt für Warmwasser per {{source}}. Genauer mit hinterlegtem Preis.",
         "mini": {
           "liters": "Füllmenge",
           "seconds": "Zeit",
           "reference": "Richtwert"
         },
-        "referenceValue": "ca. 7–9 L/min",
         "saveName": "Messung 1",
         "summary": {
           "good": "Sehr sparsam – dein Duschkopf verbraucht wenig Wasser.",
-          "medium": "Mittlerer Verbrauch – hier ist noch Sparpotenzial.",
-          "high": "Hoher Verbrauch – ein Sparaufsatz lohnt sich."
+          "medium": "{{flow}} L/min – im Mittelfeld. Ein Sparaufsatz brächte noch etwas; spürbarer ist bei diesem Wert die Duschdauer.",
+          "high": "{{flow}} L/min – gut das Doppelte einer Sparbrause. Ein Sparaufsatz bringt dich auf rund {{target}} L/min, wenn dein Duschkopf ein Standardgewinde hat (½ Zoll, der Normalfall)."
         },
         "chips": {
           "good": "Weiter so",
-          "saver": "Sparaufsatz prüfen",
+          "saver": "Gewinde prüfen, dann Sparaufsatz",
           "time": "Kürzer duschen"
         },
         "calculation": {
@@ -428,7 +427,10 @@
           "energy": "Energie je Liter und Kelvin",
           "reference": "Sparduschkopf als Vergleich",
           "note": "Gemessen ist allein der Durchfluss. Duschhäufigkeit und -dauer sind Annahmen; sie sind so gewählt, dass sich rund 516 kWh pro Person und Jahr ergeben – der in der Literatur genannte Bereich für die Warmwasserbereitung liegt bei 500–600 kWh."
-        }
+        },
+        "savingMoney": "das sind etwa {{value}}",
+        "buyingNote": "Beim Kauf: „Eco\" und „sparsam\" sind keine geschützten Begriffe – ein so beworbener Duschkopf kann trotzdem 15 L/min haben. Entscheidend ist die angegebene Durchflussmenge; unter {{target}} L/min gilt als sparsam.",
+        "referenceUpTo": "bis {{value}} L/min"
       }
     },
     "fridge": {

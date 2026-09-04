@@ -400,24 +400,23 @@
       "result": {
         "flowUnit": "L/min",
         "perYear": "€{{value}}/year",
-        "savingLabel": "Savings ≈ {{value}}",
+        "savingLabel": "Around {{liters}} litres of hot water a year",
         "sourceNote": "Estimated for hot water via {{source}}. More accurate with your price set.",
         "mini": {
           "liters": "Fill volume",
           "seconds": "Time",
           "reference": "Reference"
         },
-        "referenceValue": "approx. 7–9 L/min",
         "saveName": "Measurement 1",
         "summary": {
-          "good": "Very efficient – your showerhead uses little water.",
-          "medium": "Medium usage – there's still savings potential.",
-          "high": "High usage – a water-saving insert pays off."
+          "good": "Very economical – your shower head uses little water.",
+          "medium": "{{flow}} L/min – mid-range. A flow restrictor would still help; at this level the shower duration matters more.",
+          "high": "{{flow}} L/min – roughly twice that of a water-saving head. A flow restrictor brings you to about {{target}} L/min, provided your shower head has a standard thread (½ inch, the usual case)."
         },
         "chips": {
           "good": "Keep it up",
-          "saver": "Check a saving insert",
-          "time": "Shower shorter"
+          "saver": "Check the thread, then fit a restrictor",
+          "time": "Shower for less time"
         },
         "calculation": {
           "formula": "Shower minutes per year = occupants × showers/day × minutes/shower × 365. Times the flow rate gives litres; times the temperature rise and the energy per litre and kelvin gives kWh – times your hot water source's unit price gives the cost.",
@@ -428,7 +427,10 @@
           "energy": "Energy per litre and kelvin",
           "reference": "Water-saving head for comparison",
           "note": "Only the flow rate is measured. Shower frequency and duration are assumptions, chosen so the result lands at roughly 516 kWh per person per year – the range cited in the literature for domestic hot water is 500–600 kWh."
-        }
+        },
+        "savingMoney": "roughly {{value}}",
+        "buyingNote": "When buying: \"eco\" and \"water-saving\" are not protected terms – a head marketed that way can still deliver 15 L/min. What counts is the stated flow rate; below {{target}} L/min is considered economical.",
+        "referenceUpTo": "up to {{value}} L/min"
       }
     },
     "fridge": {
