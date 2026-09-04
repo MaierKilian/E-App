@@ -682,11 +682,6 @@
         },
         "noFrostHint": "Top – eisfrei läuft die Truhe effizient, nichts weiter zu tun.",
         "severityLabel": "Wie stark ist die Vereisung?",
-        "energyToggle": "Mit Strommessgerät gemessen",
-        "energyHint": "Energiekostenmessgerät vor dem Abtauen einige Stunden laufen lassen (kWh + Stunden ablesen), abtauen, danach erneut messen.",
-        "before": "Vor dem Abtauen",
-        "after": "Nach dem Abtauen",
-        "hoursUnit": "Std.",
         "tempToggle": "Temperatur gemessen",
         "tempUnit": "°C"
       },

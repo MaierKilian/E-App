@@ -24,11 +24,12 @@ function Chip({ label }: { label: string }) {
  * Vorher stand dort ein geschätzter Euro-Betrag ohne Währungszeichen („≈ 8"
  * über „vermeidbar/Jahr"), der aus einem angenommenen Jahresverbrauch und einem
  * angenommenen Strompreis entstand und beim Standardpreis für alle dasselbe
- * ergab. Die Wirkung des Abtauens steht jetzt als Anteil am Verbrauch darunter;
- * ein Euro-Betrag erscheint nur nach einer echten Vorher/Nachher-Messung.
+ * ergab. Die Wirkung des Abtauens steht jetzt als Anteil am Verbrauch darunter.
  *
  * Ältere Ergebnisse tragen den Vereisungsgrad in einem anderen Format – siehe
- * `readFrostStage`.
+ * `readFrostStage` – und manche zusätzlich eine echte Vorher/Nachher-Messung
+ * (`method: 2`). Diese Eingabe gibt es im Check nicht mehr, gespeicherte
+ * Ergebnisse behalten sie aber und werden weiter als Messung ausgewiesen.
  */
 export function FreezerResult({ result }: ResultProps) {
   // Standort des Geraets: Die Umgebungstemperatur wird **live** hergeleitet und
@@ -48,6 +49,7 @@ export function FreezerResult({ result }: ResultProps) {
   // Alte Ergebnisse führten den Anteil nicht mit; dort bleibt die Zeile leer,
   // statt einen Wert zu erfinden.
   const extraPercent = result.details?.extraPercent
+  // Nur noch aus Altergebnissen: Der Check erhebt keine Strommessung mehr.
   const measured = (result.details?.method ?? 0) === 2
 
   const hasTemp = Number.isFinite(result.details?.temperature)

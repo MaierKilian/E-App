@@ -682,11 +682,6 @@
         },
         "noFrostHint": "Great – ice-free means it runs efficiently, nothing to do.",
         "severityLabel": "How heavy is the ice?",
-        "energyToggle": "Measured with a power meter",
-        "energyHint": "Run an energy-cost meter for a few hours before defrosting (read kWh + hours), defrost, then measure again.",
-        "before": "Before defrosting",
-        "after": "After defrosting",
-        "hoursUnit": "h",
         "tempToggle": "Temperature measured",
         "tempUnit": "°C"
       },

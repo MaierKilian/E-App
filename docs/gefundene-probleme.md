@@ -202,6 +202,39 @@ sich pro Plattform für eine von beiden entscheidet.
 
 ---
 
+### 14. „Mit Strommessgerät gemessen" im Gefrierschrank-Check
+**Kategorie:** Verbesserung · **Bereich:** `FreezerRun`, `freezer.ts`
+**Status:** ✅ Umgesetzt – die optionale Vorher/Nachher-Messung ist raus. Sie
+passte nicht in diesen Check: Sie verlangte, das Energiekostenmessgerät
+stundenlang vor dem Abtauen laufen zu lassen, abzutauen und danach erneut zu
+messen – ein Vorgang über Tage, abgefragt in einem Bildschirm, den man in einem
+Zug ausfüllt. Der Check fragt jetzt nur noch: vereist? und wenn ja, wie stark?
+
+Mitgegangen ist alles, was dadurch tot war: der Rechenzweig `'measured'` in
+`calcFreezerSaving` samt `FreezerEnergy`, `avoidableCost` und `workPriceCt`,
+das Hilfsmodul `energyMeter.ts` (einziger Nutzer war der Gefrierschrank) und die
+Textbausteine `energyToggle`, `energyHint`, `before`, `after`, `hoursUnit`.
+
+**Gespeicherte Ergebnisse bleiben lesbar** (Konvention aus CLAUDE.md): Alte
+Ergebnisse tragen weiter `method: 2` und einen Euro-Betrag; `FreezerResult`
+liest beides unverändert und weist sie weiter als Messung aus. Nur neu erhobene
+Ergebnisse können das nicht mehr enthalten.
+
+### 15. Info-Tab verspricht eine Temperaturmessung, die es nicht gibt
+**Kategorie:** Problem · **Bereich:** `measurements.freezer.intro`, `FreezerRun`
+**Status:** 🔍 Nur gesammelt – beim Aufräumen von #14 aufgefallen, nicht
+angefasst.
+
+Der Info-Tab des Gefrierschrank-Checks nennt als dritten Schritt „Optional
+Temperatur messen", und zwei der fünf Detail-Tipps erklären, wie man das
+Thermometer legt und warum −18 °C sinnvoll sind. Im Messen-Tab gibt es dafür
+aber kein Feld – der Textbaustein `measurements.freezer.run.tempToggle`
+existiert, wird jedoch nirgends verwendet. `FreezerResult` kann eine Temperatur
+anzeigen (`details.temperature`), bekommt sie aber nur noch aus Altergebnissen.
+
+Zwei Wege: Eingabe nachrüsten (dann wird der Info-Text wahr) oder die
+Temperatur aus dem Info-Tab streichen. Kilians Entscheidung.
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
@@ -343,6 +376,8 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   qualitativen Text ohne Literzahl umstellen, solange für
   Badewanne/Küche/Waschbecken kein echter Durchfluss-Test existiert (nicht
   nur Dusche)? Wäre eine bewusste Verhaltensänderung, keine reine Korrektur.
+- Bei #15: Temperatur-Eingabe im Gefrierschrank-Check nachrüsten (dann stimmt
+  der Info-Tab) oder die Temperatur aus dem Info-Tab streichen?
 - Bei #9: Welche Auswahl-Struktur für die Raumzuordnung – zweistufig
   (erst Raum, dann Entnahmestelle) oder eine kombinierte Liste je
   Rauminstanz? Bis zur Entscheidung bleibt der bestehende Datenverlust bei

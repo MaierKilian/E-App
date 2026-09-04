@@ -1,13 +1,13 @@
 import type { MeasurementRating } from '../types'
-import { annualKwhFromPeriod } from '../energyMeter'
 
 /**
  * Reine Berechnungslogik für den Gefriertruhen-Check.
  *
  * Ablauf: Zuerst wird gefragt, ob die Truhe vereist ist. Falls ja, wie stark.
- * Wer ein Energiekostenmessgerät hat, kann zusätzlich vor und nach dem Abtauen
- * messen – daraus ergibt sich die tatsächlich erreichte Einsparung statt einer
- * Schätzung.
+ * Mehr fragt der Check nicht. Bis September 2026 konnte man zusätzlich mit
+ * einem Energiekostenmessgerät vor und nach dem Abtauen messen; das verlangte
+ * einen Vorgang über mehrere Tage in einem Bildschirm, den man in einem Zug
+ * ausfüllt, und ist entfallen.
  *
  * **Die Antwort des Checks ist eine Empfehlung, keine Zahl.** Bis August 2026
  * war der Hauptwert ein geschätzter Euro-Betrag, der auf zwei Annahmen beruhte:
@@ -16,7 +16,7 @@ import { annualKwhFromPeriod } from '../energyMeter'
  * zwei Zahlen heraus (8 € bzw. 21 €) – im Ergebnis-Schirm ohne Währungszeichen
  * dargestellt und damit vollends unverständlich. Jetzt sagt der Check, was zu
  * tun ist (siehe {@link DefrostAdvice}), und beziffert die Wirkung als Anteil
- * am Verbrauch. Ein Euro-Betrag entsteht nur noch aus einer echten Messung.
+ * am Verbrauch – ohne Euro-Betrag.
  *
  * Quellen zur Vereisung: ~1 cm Eis → +10–15 %, dick/lange nicht abgetaut bis
  * +50 % Mehrverbrauch (Verivox, BUND Hessen, klimaaktiv).
@@ -137,26 +137,20 @@ export function freezerTempStatus(temp: number): FreezerTempStatus {
   return 'optimal'
 }
 
-/** Wie die Wirkung ermittelt wurde. */
-export type FreezerMethod = 'measured' | 'estimate' | 'none'
-
-/** Vorher/Nachher-Energie aus dem Energiekostenmessgerät (kWh über Stunden). */
-export interface FreezerEnergy {
-  beforeKwh: number
-  beforeHours: number
-  afterKwh: number
-  afterHours: number
-}
+/**
+ * Wie die Wirkung ermittelt wurde.
+ *
+ * `'measured'` gibt es nicht mehr – neue Ergebnisse tragen nur noch die
+ * Schätzung. **Gespeicherte** Ergebnisse führen dafür weiter `method: 2`, und
+ * die Ergebnis-Ansicht liest das auch weiterhin (siehe `FreezerResult`).
+ */
+export type FreezerMethod = 'estimate' | 'none'
 
 export interface FreezerSavingInput {
   /** Vereisungsgrad; 'none' = nicht vereist. */
   stage: FrostStage
-  /** Optionale echte Strommessung vor/nach dem Abtauen. */
-  energy?: Partial<FreezerEnergy>
   /** Innentemperatur in °C (nur wenn erfasst). */
   temperature?: number
-  /** Arbeitspreis Strom in ct/kWh – nur für die gemessene Variante nötig. */
-  workPriceCt: number
 }
 
 export interface FreezerSaving {
@@ -164,33 +158,21 @@ export interface FreezerSaving {
   method: FreezerMethod
   advice: DefrostAdvice
   /**
-   * Wirkung des Abtauens als Anteil des Verbrauchs in Prozent – geschätzt aus
-   * der Stufe oder aus der Messung errechnet. Tritt an die Stelle des früheren
-   * Euro-Betrags: ein Anteil braucht weder Jahresverbrauch noch Strompreis und
-   * behauptet damit nur, was der Check wirklich weiß.
+   * Wirkung des Abtauens als Anteil des Verbrauchs in Prozent, geschätzt aus
+   * der Stufe. Tritt an die Stelle des früheren Euro-Betrags: ein Anteil
+   * braucht weder Jahresverbrauch noch Strompreis und behauptet damit nur, was
+   * der Check wirklich weiß.
    */
   extraPercent: number
-  /**
-   * Vermeidbare Jahreskosten in €. **Nur bei echter Messung gesetzt** – eine
-   * Schätzung über einen angenommenen Jahresverbrauch mal einem angenommenen
-   * Preis ist keine Zahl, die man jemandem hinstellt.
-   */
-  avoidableCost?: number
   temperatureStatus?: FreezerTempStatus
-}
-
-function energyComplete(e?: Partial<FreezerEnergy>): e is FreezerEnergy {
-  return (
-    !!e &&
-    [e.beforeKwh, e.beforeHours, e.afterKwh, e.afterHours].every(
-      (v) => Number.isFinite(v) && (v as number) > 0,
-    )
-  )
 }
 
 /**
  * Wertet den Check aus: Empfehlung, Bewertung und die Wirkung des Abtauens.
- * Echte Messung schlägt Schätzung.
+ *
+ * Bewusst **ohne Euro-Betrag**: Eine Schätzung über einen angenommenen
+ * Jahresverbrauch mal einem angenommenen Preis ist keine Zahl, die man jemandem
+ * hinstellt, und eine echte Messung erhebt der Check nicht mehr.
  */
 export function calcFreezerSaving(input: FreezerSavingInput): FreezerSaving {
   const stage = input.stage
@@ -201,22 +183,6 @@ export function calcFreezerSaving(input: FreezerSavingInput): FreezerSaving {
 
   if (stage === 'none') {
     return { rating, method: 'none', advice, extraPercent: 0, temperatureStatus }
-  }
-
-  if (energyComplete(input.energy)) {
-    const e = input.energy
-    const before = annualKwhFromPeriod(e.beforeKwh, e.beforeHours)
-    const after = annualKwhFromPeriod(e.afterKwh, e.afterHours)
-    const savedKwh = Math.max(0, before - after)
-    const price = Number.isFinite(input.workPriceCt) ? Math.max(0, input.workPriceCt) : 0
-    return {
-      rating,
-      method: 'measured',
-      advice,
-      extraPercent: before > 0 ? Math.round((savedKwh / before) * 100) : 0,
-      avoidableCost: Math.round((savedKwh * price) / 100),
-      temperatureStatus,
-    }
   }
 
   return {

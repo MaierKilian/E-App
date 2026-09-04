@@ -1,5 +1,5 @@
 // Gefrierschrank-Check: Stufen statt "leicht/stark", Empfehlung statt Zahl,
-// Euro-Betrag nur aus einer echten Messung.
+// kein Euro-Betrag.
 
 import { describe, expect, it } from 'vitest'
 import {
@@ -58,65 +58,37 @@ describe('readFrostStage – gespeicherte Ergebnisse bleiben lesbar', () => {
 })
 
 describe('calcFreezerSaving', () => {
-  const PRICE = 35
-
   it('empfiehlt bei eisfrei nichts und beziffert nichts', () => {
-    const c = calcFreezerSaving({ stage: 'none', workPriceCt: PRICE })
+    const c = calcFreezerSaving({ stage: 'none' })
     expect(c.advice).toBe('notNeeded')
+    expect(c.method).toBe('none')
     expect(c.extraPercent).toBe(0)
-    expect(c.avoidableCost).toBeUndefined()
   })
 
   it('schätzt die Wirkung als Anteil, nicht als Euro-Betrag', () => {
     // Der frühere Euro-Betrag beruhte auf einem angenommenen Jahresverbrauch
     // mal einem angenommenen Preis – beim Standardpreis kam für alle dasselbe
     // heraus (8 € bzw. 21 €). Ein Anteil braucht beide Annahmen nicht.
-    const thin = calcFreezerSaving({ stage: 'thin', workPriceCt: PRICE })
+    const thin = calcFreezerSaving({ stage: 'thin' })
     expect(thin.method).toBe('estimate')
     expect(thin.extraPercent).toBe(12)
-    expect(thin.avoidableCost).toBeUndefined()
 
-    const thick = calcFreezerSaving({ stage: 'thick', workPriceCt: PRICE })
+    const thick = calcFreezerSaving({ stage: 'thick' })
     expect(thick.extraPercent).toBe(30)
-    expect(thick.avoidableCost).toBeUndefined()
   })
 
   it('staffelt die geschätzte Wirkung nach Stufe', () => {
     const percent = (s: 'spots' | 'thin' | 'thick') =>
-      calcFreezerSaving({ stage: s, workPriceCt: PRICE }).extraPercent
+      calcFreezerSaving({ stage: s }).extraPercent
     expect(percent('spots')).toBeLessThan(percent('thin'))
     expect(percent('thin')).toBeLessThan(percent('thick'))
   })
 
-  it('rechnet aus einer echten Messung Anteil UND Euro-Betrag', () => {
-    // Vorher 1 kWh in 10 h, nachher 0,8 kWh in 10 h → 20 % weniger.
-    const c = calcFreezerSaving({
-      stage: 'thick',
-      energy: { beforeKwh: 1, beforeHours: 10, afterKwh: 0.8, afterHours: 10 },
-      workPriceCt: PRICE,
-    })
-    expect(c.method).toBe('measured')
-    expect(c.extraPercent).toBe(20)
-    expect(c.avoidableCost).toBeGreaterThan(0)
-  })
-
-  it('fällt bei unvollständiger Messung auf die Schätzung zurück', () => {
-    const c = calcFreezerSaving({
-      stage: 'thin',
-      energy: { beforeKwh: 1, beforeHours: 10 },
-      workPriceCt: PRICE,
-    })
-    expect(c.method).toBe('estimate')
-    expect(c.avoidableCost).toBeUndefined()
-  })
-
-  it('meldet keinen negativen Wert, wenn nach dem Abtauen mehr gemessen wurde', () => {
-    const c = calcFreezerSaving({
-      stage: 'thin',
-      energy: { beforeKwh: 0.8, beforeHours: 10, afterKwh: 1, afterHours: 10 },
-      workPriceCt: PRICE,
-    })
-    expect(c.extraPercent).toBe(0)
-    expect(c.avoidableCost).toBe(0)
+  it('liefert bei jeder Stufe eine Schätzung – der Check misst nicht mehr', () => {
+    // Die optionale Vorher/Nachher-Messung mit dem Energiekostenmessgerät ist
+    // entfallen; es gibt keinen Weg mehr, der 'measured' ergäbe.
+    for (const s of FROST_STAGES) {
+      expect(calcFreezerSaving({ stage: s }).method).toBe('estimate')
+    }
   })
 })

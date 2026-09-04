@@ -1,54 +1,29 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useTariffStore } from '@/store/tariffStore'
 import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftStore'
 import { SelectChip } from '@/components/ui/SelectChip'
 import { instanceKey } from '../rooms'
-import { DecimalField } from '@/components/ui/DecimalField'
 import { calcFreezerSaving, stageCode, readFrostStage, FROST_STAGES } from './freezer'
 import type { FrostStage } from './freezer'
 import type { RunProps } from '../runnerTypes'
 
-/** Kompaktes Zahlen-Eingabefeld mit Einheit. */
-function NumField({
-  value,
-  onChange,
-  unit,
-  placeholder,
-}: {
-  value: number | undefined
-  onChange: (v: number | undefined) => void
-  unit: string
-  placeholder?: string
-}) {
-  return (
-    <label className="flex items-center gap-1.5 text-xs text-muted">
-      <DecimalField
-        value={value}
-        placeholder={placeholder}
-        onChange={onChange}
-        className="focus-ring w-20 rounded-lg border border-border bg-surface px-2 py-1.5 text-center text-sm text-foreground"
-      />
-      {unit}
-    </label>
-  )
-}
-
 /**
- * Geführter Gefriertruhen-Check: vereist? → falls ja, wie stark → optional eine
- * echte Strommessung vor/nach dem Abtauen.
+ * Geführter Gefriertruhen-Check: vereist? → falls ja, wie stark.
  *
  * Der Vereisungsgrad wird in drei Stufen erhoben statt in zwei: „leicht oder
  * stark" ließ zwischen ein paar Millimetern und einer flächigen Eisschicht
  * keinen Unterschied zu, obwohl das den halben Effekt ausmacht.
  *
- * Die frühere Eingabe „Jahresverbrauch laut Label" ist entfallen – sie floss
- * nur in den geschätzten Euro-Betrag ein, den es nicht mehr gibt.
+ * Zwei frühere Eingaben sind entfallen: „Jahresverbrauch laut Label" (floss nur
+ * in den geschätzten Euro-Betrag ein, den es nicht mehr gibt) und die optionale
+ * Vorher/Nachher-Messung mit dem Energiekostenmessgerät. Letztere passte nicht
+ * in diesen Check: Sie verlangte, das Gerät stundenlang vor dem Abtauen laufen
+ * zu lassen, abzutauen und danach erneut zu messen – ein Vorgang über Tage, der
+ * in einem Bildschirm abgefragt wurde, den man in einem Zug ausfüllt.
  * Eingaben werden zwischengespeichert (App schließen & später weitermachen).
  */
 export function FreezerRun({ onEvaluate, roomKey }: RunProps) {
   const { t } = useTranslation()
-  const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
   const setDraft = useMeasurementDraftStore((s) => s.setDraft)
   const key = instanceKey('freezer', roomKey)
   const d = readDraft(key)
@@ -61,40 +36,26 @@ export function FreezerRun({ onEvaluate, roomKey }: RunProps) {
     const stored = readFrostStage(d)
     return stored === 'none' ? 'thin' : stored
   })
-  const [energyOn, setEnergyOn] = useState((d.energyOn ?? 0) === 1)
-  const [beforeKwh, setBeforeKwh] = useState<number | undefined>(d.beforeKwh)
-  const [beforeHours, setBeforeHours] = useState<number | undefined>(d.beforeHours)
-  const [afterKwh, setAfterKwh] = useState<number | undefined>(d.afterKwh)
-  const [afterHours, setAfterHours] = useState<number | undefined>(d.afterHours)
 
   useEffect(() => {
     setDraft(key, {
       ...(iced !== undefined ? { iced: iced ? 1 : 0 } : {}),
       frostStage: stageCode(stage),
-      energyOn: energyOn ? 1 : 0,
-      ...(beforeKwh !== undefined ? { beforeKwh } : {}),
-      ...(beforeHours !== undefined ? { beforeHours } : {}),
-      ...(afterKwh !== undefined ? { afterKwh } : {}),
-      ...(afterHours !== undefined ? { afterHours } : {}),
     })
-  }, [key, setDraft, iced, stage, energyOn, beforeKwh, beforeHours, afterKwh, afterHours])
+  }, [key, setDraft, iced, stage])
 
   const effectiveStage: FrostStage = iced === true ? stage : 'none'
-  const energy = energyOn ? { beforeKwh, beforeHours, afterKwh, afterHours } : undefined
-  const calc = calcFreezerSaving({ stage: effectiveStage, energy, workPriceCt })
+  const calc = calcFreezerSaving({ stage: effectiveStage })
 
   function handleEvaluate() {
     const details: Record<string, number> = {
       iced: iced ? 1 : 0,
       frostStage: stageCode(effectiveStage),
       extraPercent: calc.extraPercent,
-      method: calc.method === 'measured' ? 2 : calc.method === 'estimate' ? 1 : 0,
-      // Nur eine echte Messung liefert einen Euro-Betrag; die Empfehlungsliste
-      // zeigt ihn ausschließlich dann (siehe buildTips).
-      savingEstimated: calc.method === 'measured' ? 0 : 1,
-      ...(calc.avoidableCost !== undefined
-        ? { avoidableCost: calc.avoidableCost, yearlySaving: calc.avoidableCost }
-        : {}),
+      method: calc.method === 'estimate' ? 1 : 0,
+      // Der Anteil ist eine Schätzung aus der Stufe, kein gemessener Wert – die
+      // Empfehlungsliste stellt dafür keinen Euro-Betrag hin (siehe buildTips).
+      savingEstimated: 1,
     }
     onEvaluate({
       result: {
@@ -114,7 +75,7 @@ export function FreezerRun({ onEvaluate, roomKey }: RunProps) {
 
   return (
     <div className="space-y-4">
-      {/* 1 · Vereist? */}
+      {/* Vereist? */}
       <div className="glass rounded-3xl p-5">
         <span className="font-medium text-foreground">{t('measurements.freezer.run.icedLabel')}</span>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -126,77 +87,39 @@ export function FreezerRun({ onEvaluate, roomKey }: RunProps) {
         )}
       </div>
 
+      {/* Vereisungsgrad in Stufen – untereinander, weil die Beschreibungen zu
+          lang für nebeneinander liegende Chips sind. */}
       {iced === true && (
-        <>
-          {/* 2 · Vereisungsgrad in Stufen – untereinander, weil die
-                 Beschreibungen zu lang für nebeneinander liegende Chips sind. */}
-          <div className="glass rounded-3xl p-5">
-            <span className="font-medium text-foreground">
-              {t('measurements.freezer.run.severityLabel')}
-            </span>
-            <div className="mt-3 space-y-2">
-              {FROST_STAGES.map((s) => {
-                const selected = stage === s
-                return (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setStage(s)}
-                    aria-pressed={selected}
-                    className={`focus-ring block w-full rounded-2xl border px-4 py-3 text-left transition-colors ${
-                      selected
-                        ? 'border-primary bg-primary/10'
-                        : 'border-border bg-surface/70 hover:bg-surface-2'
-                    }`}
-                  >
-                    <span className="block text-sm font-semibold text-foreground">
-                      {t(`measurements.freezer.run.frostOptions.${s}.title`)}
-                    </span>
-                    <span className="mt-0.5 block text-xs leading-relaxed text-muted">
-                      {t(`measurements.freezer.run.frostOptions.${s}.hint`)}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
+        <div className="glass rounded-3xl p-5">
+          <span className="font-medium text-foreground">
+            {t('measurements.freezer.run.severityLabel')}
+          </span>
+          <div className="mt-3 space-y-2">
+            {FROST_STAGES.map((s) => {
+              const selected = stage === s
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStage(s)}
+                  aria-pressed={selected}
+                  className={`focus-ring block w-full rounded-2xl border px-4 py-3 text-left transition-colors ${
+                    selected
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border bg-surface/70 hover:bg-surface-2'
+                  }`}
+                >
+                  <span className="block text-sm font-semibold text-foreground">
+                    {t(`measurements.freezer.run.frostOptions.${s}.title`)}
+                  </span>
+                  <span className="mt-0.5 block text-xs leading-relaxed text-muted">
+                    {t(`measurements.freezer.run.frostOptions.${s}.hint`)}
+                  </span>
+                </button>
+              )
+            })}
           </div>
-
-          {/* 3 · Echte Strommessung (optional) */}
-          <div className="glass rounded-3xl p-5">
-            <label className="flex cursor-pointer items-center justify-between gap-3">
-              <span className="font-medium text-foreground">{t('measurements.freezer.run.energyToggle')}</span>
-              <input
-                type="checkbox"
-                checked={energyOn}
-                onChange={(e) => setEnergyOn(e.target.checked)}
-                className="h-5 w-5 accent-[var(--primary)]"
-              />
-            </label>
-            {energyOn && (
-              <div className="mt-3 space-y-3">
-                <p className="text-xs leading-relaxed text-muted">{t('measurements.freezer.run.energyHint')}</p>
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                    {t('measurements.freezer.run.before')}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <NumField value={beforeKwh} onChange={setBeforeKwh} unit="kWh" />
-                    <NumField value={beforeHours} onChange={setBeforeHours} unit={t('measurements.freezer.run.hoursUnit')} />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-                    {t('measurements.freezer.run.after')}
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <NumField value={afterKwh} onChange={setAfterKwh} unit="kWh" />
-                    <NumField value={afterHours} onChange={setAfterHours} unit={t('measurements.freezer.run.hoursUnit')} />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </>
+        </div>
       )}
 
       <button
