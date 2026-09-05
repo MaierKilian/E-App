@@ -113,6 +113,16 @@ export type HeatGeneratorType =
   | 'wood_stove'
   | 'pellets'
   | 'solar_thermal'
+  /**
+   * Direktstrom: Infrarotheizplatten, Konvektoren, Nachtspeicher.
+   *
+   * Kam mit den neuen Wärmeübergaben dazu. Wer nur mit Infrarotplatten heizt,
+   * konnte vorher keinen Erzeuger angeben – und ohne Erzeuger fehlt die
+   * Grundlage für Heizkosten und Einsparungen. Die Raum-Angabe allein schließt
+   * diese Lücke nicht: Sie sagt, *wie* die Wärme in den Raum kommt, nicht
+   * *woher* sie stammt.
+   */
+  | 'electric_direct'
   | 'unknown'
 
 export type HotWaterType =
@@ -121,7 +131,20 @@ export type HotWaterType =
   | 'partially_combined'
   | 'unknown'
 
-export type HeatTransferType = 'radiator' | 'underfloor'
+/**
+ * Wie die Wärme in den Raum kommt.
+ *
+ * `stove` (Kachel-/Einzelofen) ist fachlich streng genommen ein Wärme*erzeuger*
+ * und kein Übergabesystem – er erzeugt die Wärme im Raum, statt sie zu
+ * verteilen. Er steht hier trotzdem, weil der Nutzer ihn als „das, was den Raum
+ * warm macht" erlebt und die Frage genau danach fragt. Bewusste Entscheidung
+ * für die Nutzersicht gegen die Fachsystematik.
+ *
+ * `none` ist eine echte Antwort, keine Lücke: Für Keller, Dachboden und
+ * Treppenhaus war vorher **jede** mögliche Antwort falsch, und die Angabe war
+ * Pflicht. Sie nimmt den Möbelabstand-Check aus dem Raum.
+ */
+export type HeatTransferType = 'radiator' | 'underfloor' | 'infrared' | 'stove' | 'none'
 
 export type RoomType =
   | 'living_room'

@@ -1,6 +1,6 @@
 import type { ApplianceEntry, RoomEntry } from '@/types'
 import type { MeasurementResult } from './types'
-import { MEASUREMENT_CATALOG, type MeasurementMeta } from './catalog'
+import { MEASUREMENT_CATALOG, roomsForMeasurement, type MeasurementMeta } from './catalog'
 import { roomInstances, instanceKey, anyResultFor, type RoomInstance } from './rooms'
 import { applianceInstances } from '@/features/onboarding/appliances'
 
@@ -83,8 +83,12 @@ export function measurementProgress(
   appliances: readonly ApplianceEntry[] = [],
 ): { done: number; total: number } {
   if (meta.perRoom) {
-    const done = instances.filter((inst) => results[instanceKey(meta.id, inst.key)]).length
-    return { done, total: instances.length }
+    // Nicht alle Räume zählen für jede Messung: Der Möbelabstand-Check entfällt
+    // in unbeheizten Räumen, sonst stünde er dort als Aufgabe, die niemand
+    // erledigen kann.
+    const relevant = roomsForMeasurement(meta, instances)
+    const done = relevant.filter((inst) => results[instanceKey(meta.id, inst.key)]).length
+    return { done, total: relevant.length }
   }
   const devices = countingAppliances(meta, appliances)
   if (devices.length > 0) {
@@ -122,7 +126,8 @@ export function countableMeasurements(
 ): MeasurementMeta[] {
   const set = new Set(skipped)
   return MEASUREMENT_CATALOG.filter(
-    (m) => m.available && !set.has(m.id) && (!m.perRoom || instances.length > 0),
+    (m) =>
+      m.available && !set.has(m.id) && (!m.perRoom || roomsForMeasurement(m, instances).length > 0),
   )
 }
 

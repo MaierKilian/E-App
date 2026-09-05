@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Flame, Grip, Ruler } from 'lucide-react'
+import { Flame, Grip, RadioTower, Ruler, Snowflake, Trees } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
+import type { HeatTransferType } from '@/types'
 import { Stepper } from '@/components/ui/Stepper'
 import { parseRoomKey, roomHeatTransfer } from '../rooms'
 import {
@@ -11,6 +12,7 @@ import {
   rateFurniture,
   supportsCoverage,
   supportsDistance,
+  TRANSFER_CODES,
   COVER_DEFAULT_PCT,
   COVER_MAX_PCT,
   COVER_MIN_PCT,
@@ -35,6 +37,26 @@ const OPTIONS: { labelKey: string; value: FurnitureAnswer }[] = [
  * Durchführung: je nach Wärmeübergabe des Raums (Heizkörper / Fußbodenheizung)
  * werden passende Ja/Teilweise/Nein-Fragen gestellt und qualitativ bewertet.
  */
+/**
+ * Symbol je Wärmeübergabe – dasselbe im Fragebogen wie im Check, damit die
+ * Antwort wiedererkennbar bleibt.
+ */
+const TRANSFER_ICONS: Record<HeatTransferType, typeof Flame> = {
+  radiator: Flame,
+  underfloor: Grip,
+  infrared: RadioTower,
+  stove: Trees,
+  none: Snowflake,
+}
+
+const TRANSFER_OPTIONS: HeatTransferType[] = [
+  'radiator',
+  'underfloor',
+  'infrared',
+  'stove',
+  'none',
+]
+
 export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
   const { t } = useTranslation()
   const rooms = useOnboardingStore((s) => s.data.rooms)
@@ -48,8 +70,8 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
   // Schnellstart), erhebt der Check sie selbst, statt Heizkörper zu unterstellen.
   const transfer = roomHeatTransfer(rooms, roomKey)
   const underfloor = transfer === 'underfloor'
-  const keys = questionKeys(underfloor, roomType)
-  const HeadIcon = underfloor ? Grip : Flame
+  const keys = questionKeys(transfer, roomType)
+  const HeadIcon = TRANSFER_ICONS[transfer ?? 'radiator']
 
   const [answers, setAnswers] = useState<FurnitureAnswers>({})
   // Abstandsmessung ist optional; vorbelegt, wenn im Profil ein Messgerät steht.
@@ -88,6 +110,9 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
     const details: Record<string, number> = {
       issues: calc.issues,
       score: calc.score,
+      // Beide Formate: `transfer` ist die Angabe, `underfloor` hält ein
+      // Altergebnis-Leser bei Laune (siehe `decodeTransfer`).
+      transfer: TRANSFER_CODES[transfer ?? 'radiator'],
       underfloor: underfloor ? 1 : 0,
     }
     for (const k of keys) details[`ans_${k}`] = effectiveAnswers[k] as FurnitureAnswer
@@ -122,9 +147,12 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
             room: roomType ? t(`onboarding.step3.roomTypes.${roomType}`) : '',
           })}
         </p>
+        {/* Fünf Antworten seit dem 05.09.2026: Infrarotplatten und ein
+            Kachelofen kamen dazu, und „unbeheizt" war vorher nicht sagbar –
+            in einem unbeheizten Keller war jede der zwei Antworten falsch. */}
         <div className="mt-4 grid grid-cols-2 gap-2.5">
-          {(['radiator', 'underfloor'] as const).map((option) => {
-            const Icon = option === 'underfloor' ? Grip : Flame
+          {TRANSFER_OPTIONS.map((option) => {
+            const Icon = TRANSFER_ICONS[option]
             return (
               <button
                 key={option}
@@ -147,9 +175,7 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
     <div className="space-y-4">
       <div className="flex items-center gap-2 px-1 text-sm font-medium text-muted">
         <HeadIcon className="h-4 w-4 text-primary" />
-        {underfloor
-          ? t('measurements.furniture_spacing.run.underfloorTitle')
-          : t('measurements.furniture_spacing.run.radiatorTitle')}
+        {t(`measurements.furniture_spacing.run.headings.${transfer}`)}
       </div>
 
       {keys.map((key: FindingKey) => (

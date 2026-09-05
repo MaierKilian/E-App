@@ -855,7 +855,7 @@
         "details": [
           "Covered heat surfaces do not lose the heat – they release it delayed and unevenly.",
           "The cost is indirect: an enclosed thermostat reads trapped heat, shuts off too early, and the room gets turned up by hand.",
-          "Leave roughly 10 cm of air in front of radiators so air can flow in from below.",
+          "Leave roughly 30 cm of air in front of radiators so air can flow in from below.",
           "If you have a folding rule at hand, enter the distance directly – the check then derives its rating from it.",
           "Sofas, cabinets, long curtains or casings in front of them slow heat output.",
           "With underfloor heating, large furniture without legs and thick rugs impede output – the system then needs a higher flow temperature.",
@@ -874,7 +874,13 @@
           "carpet": "Is a large, thick rug lying on the heated surface?",
           "thermostat": "Is the room thermostat covered by furniture, a curtain or pictures?",
           "builtin": "Is the radiator built over by fitted units, a worktop or a plinth panel?",
-          "towels": "Are towels or laundry hanging over the radiator?"
+          "towels": "Are towels or laundry hanging over the radiator?",
+          "ir_furniture": "Is a large piece of furniture (wardrobe, shelf, sofa) in the panel’s radiation path?",
+          "ir_cover": "Is the panel covered by a curtain, laundry or a shelf?",
+          "ir_sensor": "Is the thermostat or sensor hidden behind furniture, a curtain or pictures?",
+          "stove_furniture": "Is furniture standing close to the stove (less than a hand’s width of air)?",
+          "stove_cover": "Is anything placed on or hanging over the stove (laundry, blankets, a tray)?",
+          "stove_air": "Are the stove’s air grilles or convection openings blocked?"
         },
         "options": {
           "no": "No",
@@ -912,7 +918,14 @@
         "transferHint": "The questions depend on it. This applies to every “{{room}}” and can be changed in your profile.",
         "coverToggle": "Estimate the covered area",
         "coverUnit": "%",
-        "coverHint": "A rough estimate: how much of the heated floor sits under furniture with no air gap? From about {{target}} % onwards you lose noticeable heating surface."
+        "coverHint": "A rough estimate: how much of the heated floor sits under furniture with no air gap? From about {{target}} % onwards you lose noticeable heating surface.",
+        "headings": {
+          "radiator": "Around the radiator",
+          "underfloor": "On the heated floor area",
+          "infrared": "In front of the infrared panel",
+          "stove": "Around the stove",
+          "none": "Unheated room"
+        }
       },
       "result": {
         "ratings": {
@@ -930,7 +943,6 @@
         "findingsTitle": "Findings",
         "allClear": "Nothing blocks the heat surface and the temperature sensor works freely. Worth a quick check whenever you rearrange furniture.",
         "mechanismTitle": "Why this matters",
-        "mechanism": "The heat is not lost – the radiator sits inside the building envelope and releases almost all of it into the room. It costs energy in three other ways: the temperature sensor reads the trapped heat, shuts off too early, the room stays cool and gets turned up by hand. On an external wall the trapped heat raises the wall temperature and with it the loss to the outside. And a higher flow temperature is needed for the same output.",
         "findings": {
           "valve": {
             "partly": "Thermostatic valve partly enclosed",
@@ -948,7 +960,7 @@
             "partly": "Furniture partly in front",
             "yes": "Furniture directly in front",
             "why": "Furniture directly in front deflects the warm air. The heat still reaches the room, but delayed and unevenly – and on an external wall the trapped heat warms the wall too.",
-            "action": "Leave roughly 10 cm of air in front of the radiator so air can flow in from below."
+            "action": "Leave roughly 30 cm of air in front of the radiator so air can flow in from below."
           },
           "footless": {
             "partly": "Furniture partly without floor clearance",
@@ -979,6 +991,42 @@
             "yes": "Towels or laundry over the radiator",
             "why": "Textiles over the radiator have a double effect: they shield the heat output, and their evaporative cooling keeps the valve open longer. In a bathroom the evaporated moisture also stays in the room and has to be ventilated out.",
             "action": "Do not dry wet laundry on the radiator. Mount towel rails beside rather than above the radiator; ventilate thoroughly after showering."
+          },
+          "ir_furniture": {
+            "partly": "Furniture partly in the radiation path",
+            "yes": "Furniture in the radiation path",
+            "why": "An infrared panel heats by radiation, not by warming the air. Whatever stands in its path absorbs the heat before it reaches walls, floor and people – the wardrobe gets warm, the room does not.",
+            "action": "Clear the area in front of the panel so the radiation reaches the room."
+          },
+          "ir_cover": {
+            "partly": "Panel partly covered",
+            "yes": "Panel covered",
+            "why": "A covered panel gives its heat to the cloth instead of the room, and reaches well over 90 °C doing so – that is not just wasteful, it is a fire risk.",
+            "action": "Never hang anything on or over the panel. Laundry does not belong there."
+          },
+          "ir_sensor": {
+            "partly": "Sensor partly hidden",
+            "yes": "Sensor hidden",
+            "why": "A hidden sensor measures the heat trapped behind the furniture, not the room. It reports “warm enough” too early and switches off while the room is still cool – or the other way round.",
+            "action": "Let air reach the thermostat: nothing in front of it, no curtains over it."
+          },
+          "stove_furniture": {
+            "partly": "Furniture fairly close to the stove",
+            "yes": "Furniture close to the stove",
+            "why": "A stove gives off heat through its hot surface – partly as radiation, partly through the air rising along it. Furniture close by slows both and gets warm itself. With flammable materials there is also a safety clearance, stated in the stove’s installation instructions.",
+            "action": "Move furniture away. The minimum distance is in the stove’s manual – if in doubt, ask your chimney sweep."
+          },
+          "stove_cover": {
+            "partly": "Something partly on the stove",
+            "yes": "Something on the stove",
+            "why": "Anything resting on the stove absorbs the heat before it reaches the room – and on a surface that can reach several hundred degrees it is dangerous as well.",
+            "action": "Keep the surface clear, even while the stove is cold."
+          },
+          "stove_air": {
+            "partly": "Openings partly blocked",
+            "yes": "Openings blocked",
+            "why": "Stoves with air ducting draw cold air in at the bottom and release it warm at the top. With the grilles blocked the heat stays inside the appliance instead of entering the room, and the casing gets needlessly hot.",
+            "action": "Clear the air grilles and convection openings."
           }
         },
         "tipsTitle": "Recommendations",
@@ -992,7 +1040,18 @@
             "Choose furniture with legs – an air gap to the floor helps.",
             "Avoid large, thick rugs on the heated surface.",
             "Prefer thin rugs suitable for underfloor heating."
-          ]
+          ],
+          "infrared": [
+            "Keep the area in front of the panel clear – radiation does not travel around furniture.",
+            "Never hang anything on the panel; it gets hotter than 90 °C.",
+            "Let air reach the thermostat so it measures the room, not trapped heat."
+          ],
+          "stove": [
+            "Keep furniture at a distance – the stove’s manual states the minimum.",
+            "Put nothing on the stove surface, not even when it is cold.",
+            "Keep air grilles and convection openings clear."
+          ],
+          "none": []
         },
         "distanceTitle": "Measured distance",
         "distanceContext": "At least {{target}} cm is recommended so air can flow in freely from below. Under 5 cm the air intake is effectively cut off.",
@@ -1003,7 +1062,13 @@
         },
         "coverTitle": "Covered area",
         "coverContext": "The system is sized for the whole floor. Whatever is covered has to be made up by the rest at a higher flow temperature – noticeable from about {{target}} % onwards.",
-        "mechanismUnderfloor": "The heat is not lost – the heating surface sits inside the building envelope. It costs you in two ways: the system is sized for the whole floor, so if part of it drops out, the rest has to deliver the same output at a higher flow temperature – and every degree of flow temperature costs, especially with a heat pump. On top of that, a covered room thermostat measures the trapped heat instead of the room and controls to the wrong value."
+        "mechanisms": {
+          "radiator": "The heat is not lost – the radiator sits inside the building envelope and releases almost all of it into the room. It costs energy in three other ways: the temperature sensor reads the trapped heat, shuts off too early, the room stays cool and gets turned up by hand. On an external wall the trapped heat raises the wall temperature and with it the loss to the outside. And a higher flow temperature is needed for the same output.",
+          "underfloor": "The heat is not lost – the heating surface sits inside the building envelope. It costs you in two ways: the system is sized for the whole floor, so if part of it drops out, the rest has to deliver the same output at a higher flow temperature – and every degree of flow temperature costs, especially with a heat pump. On top of that, a covered room thermostat measures the trapped heat instead of the room and controls to the wrong value.",
+          "infrared": "The heat is not lost – the panel sits inside the building envelope. It costs energy in two other ways: an infrared panel heats by radiation, and radiation does not travel around furniture. Whatever stands in its path gets warm instead of the room, and the control keeps heating because the room stays cool. A hidden sensor measures trapped heat rather than room air, switching off too early or on too late. With direct electric heating this weighs more than with any other system: every kilowatt-hour is electricity at the full rate.",
+          "stove": "The heat is not lost – the stove stands inside the building envelope. It costs fuel in two ways: furniture close to the stove and objects on its surface absorb heat before it reaches the room, and blocked air grilles keep it inside the appliance. Both lead to adding more fuel although the heat has already been produced. On top of that comes the safety clearance to flammable materials set out in the stove’s installation instructions – that one is not a question of efficiency.",
+          "none": "The heat is not lost – the radiator sits inside the building envelope and releases almost all of it into the room. It costs energy in three other ways: the temperature sensor reads the trapped heat, shuts off too early, the room stays cool and gets turned up by hand. On an external wall the trapped heat raises the wall temperature and with it the loss to the outside. And a higher flow temperature is needed for the same output."
+        }
       }
     },
     "base_load": {
@@ -1322,7 +1387,8 @@
         "wood_stove": "Wood Stove",
         "pellets": "Pellets",
         "solar_thermal": "Solar Thermal",
-        "unknown": "Unknown"
+        "unknown": "Unknown",
+        "electric_direct": "Direct electric (infrared, convector)"
       },
       "hotWaterOptions": {
         "same_as_heating": "Same as heating",
@@ -1370,7 +1436,13 @@
       "roomsHint": "Radiator or underfloor heating? This tailors your heating tips per room.",
       "insulationHint": "A rough self-assessment is enough.",
       "radiatorShort": "Radiator",
-      "underfloorShort": "Underfloor"
+      "underfloorShort": "Underfloor",
+      "infrared": "Infrared panel",
+      "infraredShort": "Infrared",
+      "stove": "Wood / tiled stove",
+      "stoveShort": "Stove",
+      "none": "Unheated",
+      "noneShort": "Unheated"
     },
     "step6": {
       "title": "Measuring Instruments",

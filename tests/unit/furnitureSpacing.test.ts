@@ -93,7 +93,7 @@ describe('Möbel-Abstand – Gewichtung', () => {
   it('stuft einen einzelnen vollen Befund in jedem Fragensatz als elevated ein', () => {
     const sets = [
       UNDERFLOOR_KEYS,
-      ...ROOM_SETS.map((r) => questionKeys(false, r.room)),
+      ...ROOM_SETS.map((r) => questionKeys('radiator', r.room)),
     ]
     for (const keys of sets) {
       for (const key of keys) {
@@ -112,7 +112,7 @@ describe('Möbel-Abstand – Gewichtung', () => {
   })
 
   it('bewertet alle Fragensätze gleich streng – volle Blockade ist immer high', () => {
-    const sets = [UNDERFLOOR_KEYS, ...ROOM_SETS.map((r) => questionKeys(false, r.room))]
+    const sets = [UNDERFLOOR_KEYS, ...ROOM_SETS.map((r) => questionKeys('radiator', r.room))]
     for (const keys of sets) {
       expect(rateFurniture(allAnswers(keys, 2)).rating, keys.join('/')).toBe('high')
       expect(rateFurniture(allAnswers(keys, 0)).rating, keys.join('/')).toBe('good')
@@ -122,18 +122,18 @@ describe('Möbel-Abstand – Gewichtung', () => {
 
 describe('Möbel-Abstand – Fragenauswahl', () => {
   it('stellt je Wärmeübergabe den passenden Satz', () => {
-    expect(questionKeys(false)).toEqual(RADIATOR_KEYS)
-    expect(questionKeys(true)).toEqual(UNDERFLOOR_KEYS)
+    expect(questionKeys('radiator')).toEqual(RADIATOR_KEYS)
+    expect(questionKeys('underfloor')).toEqual(UNDERFLOOR_KEYS)
   })
 
   it('ersetzt die erste Frage passend zum Raumtyp', () => {
     for (const { room, expected } of ROOM_SETS) {
-      expect(questionKeys(false, room)[0], String(room)).toBe(expected)
+      expect(questionKeys('radiator', room)[0], String(room)).toBe(expected)
     }
   })
 
   it('stellt in jedem Fragensatz genau drei Fragen ohne Dopplung', () => {
-    const sets = [UNDERFLOOR_KEYS, ...ROOM_SETS.map((r) => questionKeys(false, r.room))]
+    const sets = [UNDERFLOOR_KEYS, ...ROOM_SETS.map((r) => questionKeys('radiator', r.room))]
     for (const keys of sets) {
       expect(keys, keys.join('/')).toHaveLength(3)
       expect(new Set(keys).size, keys.join('/')).toBe(3)
@@ -141,13 +141,13 @@ describe('Möbel-Abstand – Fragenauswahl', () => {
   })
 
   it('behält den Raumtyp bei Fußbodenheizung ohne Wirkung auf die Fragen', () => {
-    expect(questionKeys(true, 'kitchen')).toEqual(UNDERFLOOR_KEYS)
-    expect(questionKeys(true, 'bathroom')).toEqual(UNDERFLOOR_KEYS)
+    expect(questionKeys('underfloor', 'kitchen')).toEqual(UNDERFLOOR_KEYS)
+    expect(questionKeys('underfloor', 'bathroom')).toEqual(UNDERFLOOR_KEYS)
   })
 
   it('fragt in beiden Fällen den Temperaturfühler ab', () => {
-    expect(questionKeys(false)).toContain('valve')
-    expect(questionKeys(true)).toContain('thermostat')
+    expect(questionKeys('radiator')).toContain('valve')
+    expect(questionKeys('underfloor')).toContain('thermostat')
   })
 })
 
@@ -205,7 +205,10 @@ describe('Möbel-Abstand – Texte', () => {
         expect(text.toLowerCase(), locale).not.toContain('kommt nicht im raum an')
         expect(text.toLowerCase(), locale).not.toContain('wärme verloren')
       }
-      expect(fs.result.mechanism.length, locale).toBeGreaterThan(0)
+      // Alle fünf Wärmeübergaben haben einen Erklärtext.
+      for (const [key, text] of Object.entries(fs.result.mechanisms as Record<string, string>)) {
+        expect(text.length, `${locale}/${key}`).toBeGreaterThan(0)
+      }
     })
   }
 })
@@ -259,14 +262,14 @@ describe('Möbel-Abstand – gemessener Abstand', () => {
   })
 
   it('liefert in jedem Fragensatz höchstens eine Abstandsfrage', () => {
-    const sets = [UNDERFLOOR_KEYS, ...ROOM_SETS.map((r) => questionKeys(false, r.room))]
+    const sets = [UNDERFLOOR_KEYS, ...ROOM_SETS.map((r) => questionKeys('radiator', r.room))]
     for (const keys of sets) {
       expect(keys.filter(supportsDistance).length, keys.join('/')).toBeLessThanOrEqual(1)
     }
   })
 
   it('schlägt sich in der Gesamtbewertung nieder', () => {
-    const keys = questionKeys(false)
+    const keys = questionKeys('radiator')
     const rate = (cm: number) =>
       rateFurniture({ ...allAnswers(keys, 0), furniture: answerFromDistance(cm) }).rating
 
@@ -281,7 +284,7 @@ describe('Möbel-Abstand – gemessener Abstand', () => {
   })
 
   it('ergibt dasselbe wie die gleichbedeutende Antwort per Button', () => {
-    const keys = questionKeys(false)
+    const keys = questionKeys('radiator')
     // 2 cm entspricht "Ja", 7 cm entspricht "Teilweise".
     expect(rateFurniture({ ...allAnswers(keys, 0), furniture: answerFromDistance(2) })).toEqual(
       rateFurniture({ ...allAnswers(keys, 0), furniture: 2 }),
@@ -302,7 +305,7 @@ describe('Fußbodenheizung – zugestellte Fläche', () => {
   })
 
   it('bietet die Flächen-Schätzung nur bei Fußbodenheizung an', () => {
-    for (const key of questionKeys(false)) {
+    for (const key of questionKeys('radiator')) {
       expect(supportsCoverage(key), key).toBe(false)
     }
   })

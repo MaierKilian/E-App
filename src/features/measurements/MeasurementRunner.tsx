@@ -5,7 +5,7 @@ import { ArrowLeft, Check, ChevronDown, ChevronRight, DoorOpen, Plus } from 'luc
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftStore'
-import { getMeasurementMeta } from './catalog'
+import { getMeasurementMeta, roomsForMeasurement } from './catalog'
 import { getMeasurementModule } from './registry'
 import { roomInstances, roomLabel, instanceKey, type RoomInstance } from './rooms'
 import { displayableSavingEur } from './impact'
@@ -126,7 +126,9 @@ export function MeasurementRunner() {
 
   const { Intro, Run, Result } = mod
   const phaseIndex = phases.indexOf(phase)
-  const instances = roomInstances(rooms)
+  // Nur die Räume, in denen diese Messung etwas zu sagen hat: Der
+  // Möbelabstand-Check entfällt in unbeheizten Räumen.
+  const instances = roomsForMeasurement(meta, roomInstances(rooms))
   const roomInst = roomKey ? instances.find((r) => r.key === roomKey) : undefined
 
   // Nächster noch offener Raum dieser Messung – schon vor dem Speichern
@@ -460,7 +462,10 @@ function RoomPicker({ id }: { id: string }) {
   const navigate = useNavigate()
   const rooms = useOnboardingStore((s) => s.data.rooms)
   const results = useMeasurementsStore((s) => s.results)
-  const instances = roomInstances(rooms)
+  const meta = getMeasurementMeta(id)
+  // Unbeheizte Räume stehen hier nicht zur Wahl – im Keller ohne Heizung gibt
+  // es nichts freizuhalten.
+  const instances = meta ? roomsForMeasurement(meta, roomInstances(rooms)) : roomInstances(rooms)
   const [addOpen, setAddOpen] = useState(false)
 
   function startIn(key: string) {

@@ -1,7 +1,7 @@
 import { Droplet, Snowflake, Plug, Thermometer, Hourglass, Sofa, Gauge, Lightbulb } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { MeasurementId } from './types'
-import type { InstrumentType, RoomType } from '@/types'
+import type { InstrumentType, RoomType, HeatTransferType } from '@/types'
 
 /** Gewerk-Kategorie einer Messung (für die „Gewerke"-Ansicht). */
 export type MeasurementCategory = 'heating' | 'hot_water' | 'electricity' | 'water'
@@ -45,6 +45,15 @@ export interface MeasurementMeta {
   rooms?: RoomType[]
   /** True = Messung wird je Raum einzeln durchgeführt (eigenes Ergebnis pro Raum). */
   perRoom?: boolean
+  /**
+   * True = in einem als **unbeheizt** angegebenen Raum entfällt die Messung.
+   *
+   * Für den Möbelabstand-Check: Wo nichts heizt, gibt es nichts freizuhalten.
+   * Ohne das Flag stünde der Check in jedem Keller und Dachboden als offene
+   * Aufgabe, die niemand sinnvoll erledigen kann – und der Fortschritt käme
+   * nie auf 100 %.
+   */
+  skipWhenUnheated?: boolean
   /** True = Messung gilt fürs ganze Zuhause (ein Ergebnis, nicht je Raum). */
   wholeHome?: boolean
   /**
@@ -138,6 +147,7 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'heating',
     estimatedMinutes: 2,
     perRoom: true,
+    skipWhenUnheated: true,
     // Der Check kommt mit geschätzten Antworten aus; ein Messgerät ersetzt die
     // Schätzung durch einen Zahlenwert (`measureOn`).
     instruments: [{ type: 'distance_meter', required: false }],
@@ -215,9 +225,27 @@ export function getMeasurementMeta(id: string): MeasurementMeta | undefined {
   return MEASUREMENT_CATALOG.find((m) => m.id === id)
 }
 
-/** Prüft, ob eine Messung in einem Raum(typ) angeboten wird. */
-export function appliesToRoom(meta: MeasurementMeta, room: RoomType): boolean {
+/**
+ * Prüft, ob eine Messung in einem konkreten Raum angeboten wird.
+ *
+ * Nimmt den Raum, nicht nur seine Art: Ob der Möbelabstand-Check hier etwas zu
+ * sagen hat, hängt an der Wärmeübergabe **dieses** Raums – ein unbeheizter
+ * Keller und ein beheizter Hobbykeller sind beide `basement`.
+ */
+export function appliesToRoom(
+  meta: MeasurementMeta,
+  room: { type: RoomType; heatTransfer?: HeatTransferType },
+): boolean {
   if (meta.wholeHome) return false
+  if (meta.skipWhenUnheated && room.heatTransfer === 'none') return false
   if (meta.perRoom) return true
-  return Boolean(meta.rooms?.includes(room))
+  return Boolean(meta.rooms?.includes(room.type))
+}
+
+/** Die Räume, in denen diese Messung zählt – Gegenstück zu {@link appliesToRoom}. */
+export function roomsForMeasurement<T extends { type: RoomType; heatTransfer?: HeatTransferType }>(
+  meta: MeasurementMeta,
+  instances: readonly T[],
+): T[] {
+  return instances.filter((inst) => appliesToRoom(meta, inst))
 }

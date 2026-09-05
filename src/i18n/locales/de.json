@@ -855,7 +855,7 @@
         "details": [
           "Verdeckte Heizflächen verlieren die Wärme nicht – sie geben sie verzögert und ungleichmäßig ab.",
           "Teuer wird es indirekt: Ein eingeschlossener Thermostat misst Stauwärme, regelt zu früh ab, und der Raum wird von Hand höher gedreht.",
-          "Vor Heizkörpern sollten möglichst rund 10 cm Luft bleiben, damit Luft von unten nachströmen kann.",
+          "Vor Heizkörpern sollten möglichst rund 30 cm Luft bleiben, damit Luft von unten nachströmen kann.",
           "Wer einen Zollstock zur Hand hat, kann den Abstand direkt eingeben – der Check leitet die Bewertung dann daraus ab.",
           "Sofas, Schränke, lange Vorhänge oder Verkleidungen davor bremsen die Wärmeabgabe.",
           "Bei Fußbodenheizung behindern großflächige Möbel ohne Füße und dicke Teppiche die Abgabe – die Anlage braucht dann eine höhere Vorlauftemperatur.",
@@ -874,7 +874,13 @@
           "carpet": "Liegt ein großer, dicker Teppich auf der beheizten Fläche?",
           "thermostat": "Ist der Raumthermostat durch Möbel, Vorhang oder Bilder verdeckt?",
           "builtin": "Ist der Heizkörper von Einbaumöbeln, Arbeitsplatte oder Sockelblende überbaut?",
-          "towels": "Hängen Handtücher oder Wäsche über dem Heizkörper?"
+          "towels": "Hängen Handtücher oder Wäsche über dem Heizkörper?",
+          "ir_furniture": "Steht ein großes Möbel (Schrank, Regal, Sofa) in der Abstrahlrichtung der Platte?",
+          "ir_cover": "Ist die Platte durch Vorhang, Wäsche oder eine Ablage verdeckt?",
+          "ir_sensor": "Ist der Thermostat oder Fühler durch Möbel, Vorhang oder Bilder verdeckt?",
+          "stove_furniture": "Stehen Möbel dicht am Ofen (weniger als eine Handbreit Luft)?",
+          "stove_cover": "Liegt oder hängt etwas auf dem Ofen (Wäsche, Decken, Ablage)?",
+          "stove_air": "Sind Luftgitter oder Konvektionsöffnungen des Ofens verstellt?"
         },
         "options": {
           "no": "Nein",
@@ -912,7 +918,14 @@
         "transferHint": "Danach richten sich die Fragen. Die Angabe gilt für alle Räume vom Typ „{{room}}\" und lässt sich im Profil ändern.",
         "coverToggle": "Zugestellte Fläche abschätzen",
         "coverUnit": "%",
-        "coverHint": "Grob geschätzt: Wie viel der beheizten Bodenfläche steht unter Möbeln ohne Luftspalt? Ab etwa {{target}} % fällt spürbar Heizfläche aus."
+        "coverHint": "Grob geschätzt: Wie viel der beheizten Bodenfläche steht unter Möbeln ohne Luftspalt? Ab etwa {{target}} % fällt spürbar Heizfläche aus.",
+        "headings": {
+          "radiator": "Rund um den Heizkörper",
+          "underfloor": "Auf der beheizten Fläche",
+          "infrared": "Vor der Infrarotplatte",
+          "stove": "Rund um den Ofen",
+          "none": "Unbeheizter Raum"
+        }
       },
       "result": {
         "ratings": {
@@ -930,7 +943,6 @@
         "findingsTitle": "Befunde",
         "allClear": "Nichts blockiert die Heizfläche und der Temperaturfühler arbeitet frei. Beim Umstellen von Möbeln lohnt ein kurzer Blick, dass es so bleibt.",
         "mechanismTitle": "Warum das zählt",
-        "mechanism": "Die Wärme geht nicht verloren – der Heizkörper steht innerhalb der Gebäudehülle und gibt sie fast vollständig an den Raum ab. Verbrauch kostet es auf drei anderen Wegen: Der Temperaturfühler misst im Wärmestau zu warm und regelt zu früh ab, der Raum wird kühler und wird höher gedreht. An einer Außenwand steigt hinter dem Stau die Wandtemperatur und damit der Verlust nach außen. Und es braucht eine höhere Vorlauftemperatur für dieselbe Leistung.",
         "findings": {
           "valve": {
             "partly": "Thermostatventil teilweise eingeschlossen",
@@ -948,7 +960,7 @@
             "partly": "Möbel teilweise davor",
             "yes": "Möbel direkt davor",
             "why": "Ein Möbel direkt davor lenkt die warme Luft um. Die Wärme kommt weiterhin im Raum an, aber verzögert und ungleichmäßig – und an einer Außenwand heizt der Stau die Wand mit.",
-            "action": "Rund 10 cm Luft vor dem Heizkörper lassen, damit die Luft von unten nachströmen kann."
+            "action": "Rund 30 cm Luft vor dem Heizkörper lassen, damit die Luft von unten nachströmen kann."
           },
           "footless": {
             "partly": "Möbel teilweise ohne Bodenabstand",
@@ -979,6 +991,42 @@
             "yes": "Handtücher oder Wäsche über dem Heizkörper",
             "why": "Textilien über dem Heizkörper wirken doppelt: Sie schirmen die Wärmeabgabe ab, und ihre Verdunstungskälte hält das Ventil länger offen. Im Bad kommt hinzu, dass die verdunstende Feuchte im Raum bleibt und dort gelüftet werden muss.",
             "action": "Nasse Wäsche nicht auf dem Heizkörper trocknen. Handtuchhalter neben statt über dem Heizkörper anbringen; im Bad nach dem Duschen stoßlüften."
+          },
+          "ir_furniture": {
+            "partly": "Möbel teilweise im Strahlungsweg",
+            "yes": "Möbel im Strahlungsweg",
+            "why": "Eine Infrarotplatte heizt über Strahlung, nicht über die Luft. Was in ihrer Abstrahlrichtung steht, nimmt die Wärme auf, bevor sie Wände, Boden und Menschen erreicht – der Schrank wird warm, der Raum nicht.",
+            "action": "Die Fläche vor der Platte frei räumen, damit die Strahlung in den Raum geht."
+          },
+          "ir_cover": {
+            "partly": "Platte teilweise abgedeckt",
+            "yes": "Platte abgedeckt",
+            "why": "Eine abgedeckte Platte gibt ihre Wärme an das Tuch statt an den Raum ab. Sie wird dabei über 90 °C heiß – das ist nicht nur ineffizient, sondern ein Brandrisiko.",
+            "action": "Nichts über oder an die Platte hängen. Wäsche gehört nicht darauf."
+          },
+          "ir_sensor": {
+            "partly": "Fühler teilweise verdeckt",
+            "yes": "Fühler verdeckt",
+            "why": "Ein verdeckter Fühler misst die Wärme, die sich hinter dem Möbel staut, nicht die des Raums. Er meldet zu früh „warm genug\" und schaltet ab, obwohl der Raum kühl ist – oder umgekehrt.",
+            "action": "Thermostat oder Fühler frei umströmen lassen: nichts davorstellen, keine Vorhänge davor."
+          },
+          "stove_furniture": {
+            "partly": "Möbel recht nah am Ofen",
+            "yes": "Möbel dicht am Ofen",
+            "why": "Ein Ofen gibt Wärme über seine heiße Oberfläche ab – strahlend und über die Luft, die an ihm aufsteigt. Möbel dicht davor bremsen beides und werden selbst warm. Bei brennbaren Materialien kommt ein Sicherheitsabstand dazu, den die Aufstellanleitung des Ofens nennt.",
+            "action": "Möbel abrücken. Den Mindestabstand nennt die Anleitung des Ofens – im Zweifel den Schornsteinfeger fragen."
+          },
+          "stove_cover": {
+            "partly": "Etwas liegt teilweise auf dem Ofen",
+            "yes": "Etwas liegt auf dem Ofen",
+            "why": "Was auf dem Ofen liegt, nimmt die Wärme auf, bevor sie in den Raum geht – und auf einer Oberfläche, die mehrere hundert Grad erreichen kann, ist es zugleich gefährlich.",
+            "action": "Die Oberfläche frei halten, auch wenn der Ofen gerade aus ist."
+          },
+          "stove_air": {
+            "partly": "Öffnungen teilweise verstellt",
+            "yes": "Öffnungen verstellt",
+            "why": "Öfen mit Luftführung ziehen kalte Luft unten ein und geben sie oben warm wieder ab. Sind die Gitter verstellt, bleibt die Wärme im Gerät statt im Raum, und die Verkleidung wird unnötig heiß.",
+            "action": "Luftgitter und Konvektionsöffnungen frei räumen."
           }
         },
         "tipsTitle": "Empfehlungen",
@@ -992,7 +1040,18 @@
             "Möbel mit Füßen wählen – ein Luftspalt zum Boden hilft.",
             "Große, dicke Teppiche auf der beheizten Fläche vermeiden.",
             "Dünne, für Fußbodenheizung geeignete Teppiche bevorzugen."
-          ]
+          ],
+          "infrared": [
+            "Die Fläche vor der Platte frei halten – Strahlung geht nicht um Möbel herum.",
+            "Nichts auf oder an die Platte hängen; sie wird über 90 °C heiß.",
+            "Thermostat frei umströmen lassen, damit er den Raum misst und nicht den Wärmestau."
+          ],
+          "stove": [
+            "Möbel auf Abstand halten – die Anleitung des Ofens nennt den Mindestwert.",
+            "Nichts auf der Ofenoberfläche ablegen, auch nicht im kalten Zustand.",
+            "Luftgitter und Konvektionsöffnungen frei räumen."
+          ],
+          "none": []
         },
         "distanceTitle": "Gemessener Abstand",
         "distanceContext": "Empfohlen sind mindestens {{target}} cm, damit Luft von unten frei nachströmen kann. Unter 5 cm ist die Luftzufuhr praktisch unterbunden.",
@@ -1003,7 +1062,13 @@
         },
         "coverTitle": "Zugestellte Fläche",
         "coverContext": "Die Anlage ist auf die ganze Fläche ausgelegt. Was zugestellt ist, muss der Rest mit höherer Vorlauftemperatur ausgleichen – ab etwa {{target}} % wird das spürbar.",
-        "mechanismUnderfloor": "Die Wärme geht nicht verloren – die Heizfläche liegt innerhalb der Gebäudehülle. Verbrauch kostet es auf zwei Wegen: Die Anlage ist auf die ganze Bodenfläche ausgelegt; fällt ein Teil davon aus, muss der Rest dieselbe Leistung mit höherer Vorlauftemperatur liefern – und jedes Grad Vorlauftemperatur kostet, bei einer Wärmepumpe besonders. Dazu misst ein verdeckter Raumthermostat den Stau statt des Raums und regelt daneben."
+        "mechanisms": {
+          "radiator": "Die Wärme geht nicht verloren – der Heizkörper steht innerhalb der Gebäudehülle und gibt sie fast vollständig an den Raum ab. Verbrauch kostet es auf drei anderen Wegen: Der Temperaturfühler misst im Wärmestau zu warm und regelt zu früh ab, der Raum wird kühler und wird höher gedreht. An einer Außenwand steigt hinter dem Stau die Wandtemperatur und damit der Verlust nach außen. Und es braucht eine höhere Vorlauftemperatur für dieselbe Leistung.",
+          "underfloor": "Die Wärme geht nicht verloren – die Heizfläche liegt innerhalb der Gebäudehülle. Verbrauch kostet es auf zwei Wegen: Die Anlage ist auf die ganze Bodenfläche ausgelegt; fällt ein Teil davon aus, muss der Rest dieselbe Leistung mit höherer Vorlauftemperatur liefern – und jedes Grad Vorlauftemperatur kostet, bei einer Wärmepumpe besonders. Dazu misst ein verdeckter Raumthermostat den Stau statt des Raums und regelt daneben.",
+          "infrared": "Die Wärme geht nicht verloren – die Platte hängt innerhalb der Gebäudehülle. Verbrauch kostet es auf zwei Wegen: Eine Infrarotplatte heizt über Strahlung, und Strahlung geht nicht um Möbel herum. Was im Strahlungsweg steht, wird warm statt des Raums; die Regelung heizt weiter, weil es im Raum kühl bleibt. Und ein verdeckter Fühler misst den Wärmestau hinter dem Möbel statt der Raumluft – er schaltet zu früh ab oder zu spät ein. Bei Direktstrom wiegt das schwerer als bei jeder anderen Heizung: Jede Kilowattstunde ist Strom zum vollen Arbeitspreis.",
+          "stove": "Die Wärme geht nicht verloren – der Ofen steht innerhalb der Gebäudehülle. Verbrauch kostet es auf zwei Wegen: Möbel dicht am Ofen und Gegenstände auf der Oberfläche nehmen die Wärme auf, bevor sie in den Raum geht, und verstellte Luftgitter halten sie im Gerät. Beides führt dazu, dass nachgelegt wird, obwohl die Wärme bereits erzeugt ist. Dazu kommt der Sicherheitsabstand zu brennbaren Stoffen, den die Aufstellanleitung des Ofens vorgibt – der ist keine Frage der Effizienz.",
+          "none": "Die Wärme geht nicht verloren – der Heizkörper steht innerhalb der Gebäudehülle und gibt sie fast vollständig an den Raum ab. Verbrauch kostet es auf drei anderen Wegen: Der Temperaturfühler misst im Wärmestau zu warm und regelt zu früh ab, der Raum wird kühler und wird höher gedreht. An einer Außenwand steigt hinter dem Stau die Wandtemperatur und damit der Verlust nach außen. Und es braucht eine höhere Vorlauftemperatur für dieselbe Leistung."
+        }
       }
     },
     "base_load": {
@@ -1535,7 +1600,8 @@
         "wood_stove": "Holzofen",
         "pellets": "Pellets",
         "solar_thermal": "Solarthermie",
-        "unknown": "Nicht bekannt"
+        "unknown": "Nicht bekannt",
+        "electric_direct": "Direktstrom (Infrarot, Konvektor)"
       },
       "hotWaterOptions": {
         "same_as_heating": "Wie Heizung",
@@ -1583,7 +1649,13 @@
       "roomsHint": "Heizkörper oder Fußbodenheizung? Das bestimmt deine Heiz-Tipps je Raum.",
       "insulationHint": "Eine grobe Selbsteinschätzung genügt.",
       "radiatorShort": "Heizkörper",
-      "underfloorShort": "Fußboden"
+      "underfloorShort": "Fußboden",
+      "infrared": "Infrarotheizplatte",
+      "infraredShort": "Infrarot",
+      "stove": "Einzel-/Kachelofen",
+      "stoveShort": "Ofen",
+      "none": "Unbeheizt",
+      "noneShort": "Unbeheizt"
     },
     "step6": {
       "title": "Messinstrumente",

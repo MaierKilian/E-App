@@ -73,7 +73,7 @@ export function ByRoomView({ results }: ViewProps) {
       label: roomLabel(t, inst),
       icon: DoorOpen,
       color: ROOM_PALETTE[idx % ROOM_PALETTE.length],
-      items: MEASUREMENT_CATALOG.filter((m) => appliesToRoom(m, inst.type)).map<TileItem>((meta) =>
+      items: MEASUREMENT_CATALOG.filter((m) => appliesToRoom(m, inst)).map<TileItem>((meta) =>
         tileItem(meta, meta.perRoom ? inst.key : undefined),
       ),
     }))

@@ -934,7 +934,9 @@ bleibt.
 ### 29. Wärmeübergabe kennt nur zwei Bauarten – und kein „unbeheizt"
 **Kategorie:** Problem · **Bereich:** `types/index.ts` (`HeatTransferType`),
 `Step3Rooms`, `furnitureSpacing.ts`, `FurnitureSpacingRun`, `sections.ts`
-**Status:** 🔍 Nur gesammelt – Vorschlag steht, Entscheidung offen.
+**Status:** ✅ Umgesetzt (05.09.) – Kilians Entscheidung: „so wie du
+empfiehlst", also mit Kachelofen in der Raumliste, Direktstrom beim Erzeuger und
+rein qualitativen Fragensätzen ohne neue Zahlen.
 
 Kilians Befund: „Außerdem kann man nur Heizkörper und Fußbodenheizung
 auswählen. Der Nutzer könnte aber auch Infrarotheizplatten haben oder einen
@@ -982,17 +984,40 @@ Zwei Dinge daran sind Fachentscheidungen, keine Programmierung:
    Heizkosten und Einsparungen. Die Raum-Antwort allein schließt diese Lücke
    nicht.
 
-**Umfang:** `HeatTransferType` erweitern (rein additiv, Bestandswerte bleiben
-gültig), zwei neue Fragensätze in `furnitureSpacing.ts` inkl. Gewichten und
-Befundtexten, `applicableFor` im Katalog um „unbeheizt" ergänzen, `sections.ts`
-(Pflicht bleibt Pflicht, aber „unbeheizt" zählt als Antwort), Step3-Kacheln
-(fünf Knöpfe statt zwei – die Kachel ist nur rund 127 px breit, das braucht ein
-anderes Layout als die heutigen gestapelten Knöpfe), de/en, Bericht.
+**Umgesetzt wie vorgeschlagen.** `HeatTransferType` hat fünf Werte; die
+Erweiterung ist rein additiv, Bestandsangaben bleiben gültig. Der
+Möbelabstand-Check bekommt zwei neue Fragensätze mit eigenen Gewichten,
+Befundtexten und Erklärtext – und „unbeheizt" nimmt ihn über
+`skipWhenUnheated` aus dem Raum, in der Auswahl wie im Fortschritt. Ohne diesen
+Riegel stünde er in jedem Keller als offene Aufgabe, die niemand erledigen kann,
+und der Ring käme nie auf 100 %.
 
-Für die beiden neuen Fragensätze gilt die Richtwert-Konvention: Jeder neue
-Schwellwert braucht ein `ThresholdOrigin`. Für Infrarot und Kachelofen habe ich
-noch keine belegte Quelle geprüft – bis dahin wären es `'own'`-Richtwerte mit
-Begründung, nicht `'reference'`.
+`HeatGeneratorType` hat jetzt `electric_direct` (Direktstrom: Infrarot,
+Konvektor, Nachtspeicher). Damit hat ein Infrarot-Haushalt erstmals eine
+Kostengrundlage – die Raum-Angabe sagt, *wie* die Wärme in den Raum kommt, nicht
+*woher* sie stammt.
+
+**Keine neuen Richtwerte.** Beide Fragensätze bleiben rein qualitativ
+(ja/teilweise/nein). Das war Absicht: Ein Mindestabstand zum Ofen ist eine
+Brandschutzgröße aus der Aufstellanleitung des Geräts, keine Effizienzgröße, die
+sich mitteln lässt – der Befundtext verweist deshalb auf die Anleitung und den
+Schornsteinfeger, statt eine Zahl zu nennen, für die hier keine geprüfte Quelle
+vorliegt. Es entsteht also kein `ThresholdOrigin: 'pending'`.
+
+**Gespeicherte Ergebnisse.** `details.transfer` trägt die Bauart als Zahlcode;
+Altergebnisse kennen nur `underfloor: 0|1`. `decodeTransfer` liest beide Formate
+– die Konvention „Gespeicherte Messergebnisse bleiben lesbar".
+
+**Beim Bauen aufgefallen und mitkorrigiert:** Zwei Texte nannten weiter „rund
+10 cm Luft vor dem Heizkörper", obwohl der Richtwert im September auf 30 cm
+angehoben wurde (Verbraucherzentrale, siehe `DISTANCE_TARGET_CM`). Die App
+rechnete mit 30 und schrieb 10.
+
+Abnahme: `tsc -b`, 969 Tests (20 neue), ESLint, Build grün; im Browser
+durchgespielt – fünf Antworten je Raum, Wohnzimmer auf Infrarot und Keller auf
+unbeheizt gesetzt, der Keller steht in der Raumauswahl des Checks nicht mehr,
+das Wohnzimmer zeigt die Infrarot-Fragen und das Ergebnis die
+Infrarot-Befunde.
 
 ## Cookie-Banner & Rechtsseiten
 
@@ -1164,15 +1189,11 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   Rauminstanz? Bis zur Entscheidung bleibt der bestehende Datenverlust bei
   mehreren gleichartigen Entnahmestellen (z. B. zwei Waschbecken) bestehen.
 
-- Bei #28: Sollen einzelne Räume löschbar sein, oder bleibt es beim Hoch- und
-  Runterzählen? Löschbarkeit ist der Grund für die stabilen `id`s – ohne sie
-  reicht der heutige Index-Schlüssel weiter aus, und der Umbau wird deutlich
-  kleiner.
-- Bei #29: Kachelofen/Einzelofen in der **Raum**-Liste (Nutzersicht) oder nur
-  beim Wärmeerzeuger (Fachsystematik)? Und soll `HeatGeneratorType` eine
-  Direktstromheizung bekommen, damit Infrarot-Haushalte überhaupt eine
-  Heizkosten-Grundlage haben?
-- Bei #29: Für die Fragensätze „Infrarotheizplatte" und „Einzelofen" gibt es
-  noch keine geprüfte Quelle. Als `'own'`-Richtwerte mit Begründung bauen –
-  oder auf eine Session mit Netzzugang warten und so lange nur „unbeheizt"
-  und die zwei bestehenden Bauarten anbieten?
+- Bei #29 (neu, aus der Umsetzung): Das Intro-Bild des Möbelabstand-Checks
+  zeigt einen Heizkörper – auch dann, wenn der Raum eine Infrarotplatte oder
+  einen Ofen hat. Eigene Bilder je Bauart, oder bleibt das eine Illustration
+  für den Check als Ganzes?
+- Bei #29 (neu): Die Ergebnis-Zusammenfassung je Bewertungsstufe
+  (`result.summary`) ist für Heizkörper formuliert („Wärme verteilt sich
+  ungleichmäßig"). Für Infrarot und Ofen trifft sie ungefähr zu, die Befunde
+  darunter tragen das Genaue. Eigene Sätze je Bauart nachziehen?

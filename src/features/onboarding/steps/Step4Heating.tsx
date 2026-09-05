@@ -1,18 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import {
-  Flame,
-  Fuel,
-  Fan,
-  TreePine,
-  Wheat,
-  Sun,
-  HelpCircle,
-  Droplets,
-  Blend,
-  Check,
-  X,
-  CalendarClock,
-} from 'lucide-react'
+import { Blend, CalendarClock, Check, Droplets, Fan, Flame, Fuel, HelpCircle, Sun, TreePine, Wheat, X, Zap } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { OptionChip } from '@/components/ui/OptionChip'
 import { Slider } from '@/components/ui/Slider'
@@ -32,6 +19,10 @@ const HEAT_GENERATORS: HeatGeneratorType[] = [
   'wood_stove',
   'pellets',
   'solar_thermal',
+  // Direktstrom seit dem 05.09.2026: Wer nur mit Infrarotplatten oder
+  // Konvektoren heizt, konnte hier vorher nichts angeben – und ohne Erzeuger
+  // fehlt die Grundlage für Heizkosten und Einsparungen.
+  'electric_direct',
   'unknown',
 ]
 const GENERATOR_ICONS: Record<HeatGeneratorType, LucideIcon> = {
@@ -41,6 +32,7 @@ const GENERATOR_ICONS: Record<HeatGeneratorType, LucideIcon> = {
   wood_stove: TreePine,
   pellets: Wheat,
   solar_thermal: Sun,
+  electric_direct: Zap,
   unknown: HelpCircle,
 }
 

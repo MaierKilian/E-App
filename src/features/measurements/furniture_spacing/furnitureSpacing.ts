@@ -1,4 +1,4 @@
-import type { RoomType } from '@/types'
+import type { HeatTransferType, RoomType } from '@/types'
 import type { MeasurementRating } from '../types'
 
 /**
@@ -28,9 +28,34 @@ export type FindingKey =
   | 'footless'
   | 'carpet'
   | 'thermostat'
+  // Infrarotheizplatte
+  | 'ir_furniture'
+  | 'ir_cover'
+  | 'ir_sensor'
+  // Einzel-/Kachelofen
+  | 'stove_furniture'
+  | 'stove_cover'
+  | 'stove_air'
 
 export const RADIATOR_KEYS: FindingKey[] = ['furniture', 'cover', 'valve']
 export const UNDERFLOOR_KEYS: FindingKey[] = ['footless', 'carpet', 'thermostat']
+
+/**
+ * Infrarotplatte: Sie heizt über **Strahlung**, nicht über Konvektion. Was in
+ * der Abstrahlrichtung steht, schluckt die Wärme, bevor sie Wand, Boden und
+ * Menschen erreicht – der Raum wird trotz laufender Platte nicht warm. Und die
+ * Platte selbst darf nichts abdecken: Sie wird über 90 °C heiß.
+ */
+export const INFRARED_KEYS: FindingKey[] = ['ir_furniture', 'ir_cover', 'ir_sensor']
+
+/**
+ * Einzel-/Kachelofen: Er gibt Wärme über die heiße Oberfläche ab, teils
+ * strahlend, teils über die Luft, die an ihm aufsteigt. Möbel dicht davor
+ * bremsen beides – und sind zugleich ein Brandrisiko. Verstellte
+ * Konvektionsöffnungen an einem Ofen mit Luftführung halten die Wärme im
+ * Gerät statt im Raum.
+ */
+export const STOVE_KEYS: FindingKey[] = ['stove_furniture', 'stove_cover', 'stove_air']
 
 /** Alle Befunde – für das Auslesen gespeicherter Ergebnisse. */
 export const ALL_FINDING_KEYS: FindingKey[] = [
@@ -42,6 +67,12 @@ export const ALL_FINDING_KEYS: FindingKey[] = [
   'footless',
   'carpet',
   'thermostat',
+  'ir_furniture',
+  'ir_cover',
+  'ir_sensor',
+  'stove_furniture',
+  'stove_cover',
+  'stove_air',
 ]
 
 /**
@@ -57,11 +88,52 @@ const ROOM_PRIMARY_KEY: Partial<Record<RoomType, FindingKey>> = {
   bathroom: 'towels',
 }
 
-/** Fragenreihenfolge je Wärmeübergabe und Raumtyp. */
-export function questionKeys(underfloor: boolean, roomType?: RoomType): FindingKey[] {
-  if (underfloor) return UNDERFLOOR_KEYS
+/**
+ * Fragenreihenfolge je Wärmeübergabe und Raumtyp.
+ *
+ * `none` (unbeheizt) liefert bewusst eine leere Liste: In einem unbeheizten
+ * Raum gibt es nichts freizuhalten. Der Check wird dort gar nicht erst
+ * angeboten (`skipWhenUnheated` im Katalog); die leere Liste ist der Riegel
+ * dahinter, falls er doch über eine alte URL aufgerufen wird.
+ */
+export function questionKeys(
+  transfer: HeatTransferType | undefined,
+  roomType?: RoomType,
+): FindingKey[] {
+  if (transfer === 'none') return []
+  if (transfer === 'underfloor') return UNDERFLOOR_KEYS
+  if (transfer === 'infrared') return INFRARED_KEYS
+  if (transfer === 'stove') return STOVE_KEYS
   const primary = (roomType && ROOM_PRIMARY_KEY[roomType]) ?? 'furniture'
   return [primary, 'cover', 'valve']
+}
+
+/**
+ * Zahlencode der Wärmeübergabe im Ergebnis.
+ *
+ * Gespeicherte Ergebnisse werden nie migriert (siehe CLAUDE.md), und `details`
+ * nimmt nur Zahlen auf. Ältere Ergebnisse tragen stattdessen `underfloor: 0|1`
+ * – {@link decodeTransfer} liest beide Formate.
+ */
+export const TRANSFER_CODES: Record<HeatTransferType, number> = {
+  radiator: 0,
+  underfloor: 1,
+  infrared: 2,
+  stove: 3,
+  none: 4,
+}
+
+/** Wärmeübergabe aus einem gespeicherten Ergebnis, neues Format zuerst. */
+export function decodeTransfer(details: Record<string, number> | undefined): HeatTransferType {
+  const code = details?.transfer
+  if (code !== undefined) {
+    const hit = (Object.keys(TRANSFER_CODES) as HeatTransferType[]).find(
+      (k) => TRANSFER_CODES[k] === code,
+    )
+    if (hit) return hit
+  }
+  // Altergebnisse kannten nur die zwei Bauarten.
+  return (details?.underfloor ?? 0) === 1 ? 'underfloor' : 'radiator'
 }
 
 /**
@@ -83,6 +155,17 @@ const WEIGHTS: Record<FindingKey, readonly [number, number]> = {
   footless: [1, 3],
   carpet: [1, 3],
   thermostat: [2, 4],
+  // Infrarot: Was in der Abstrahlrichtung steht, nimmt die Wärme direkt weg –
+  // dieselbe Größenordnung wie ein Möbel vor dem Heizkörper. Die abgedeckte
+  // Platte wiegt schwerer, weil sie zusätzlich ein Sicherheitsproblem ist.
+  ir_furniture: [1, 3],
+  ir_cover: [2, 4],
+  ir_sensor: [2, 4],
+  // Ofen: Wie beim Heizkörper wiegt die dauerhafte Behinderung schwerer als
+  // das umstellbare Möbel.
+  stove_furniture: [1, 3],
+  stove_cover: [2, 4],
+  stove_air: [2, 4],
 }
 
 export type FindingLevel = 'partly' | 'yes'

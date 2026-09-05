@@ -9,6 +9,7 @@ import type { ResultProps } from '../runnerTypes'
 import { contextNotes } from './context'
 import {
   ALL_FINDING_KEYS,
+  decodeTransfer,
   rateFurniture,
   COVER_PARTLY_PCT,
   DISTANCE_TARGET_CM,
@@ -28,7 +29,9 @@ import {
  */
 export function FurnitureSpacingResult({ result }: ResultProps) {
   const { t } = useTranslation()
-  const underfloor = (result.details?.underfloor ?? 0) === 1
+  // Liest beide Formate: `transfer` seit den fünf Bauarten, `underfloor: 0|1`
+  // in Altergebnissen. Gespeicherte Ergebnisse werden nicht migriert.
+  const transfer = decodeTransfer(result.details)
   // Über alle bekannten Befunde lesen: Welche Fragen gestellt wurden, hängt vom
   // Raumtyp ab und kann sich zwischen App-Ständen geändert haben.
   const answers: FurnitureAnswers = {}
@@ -44,7 +47,7 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
   // Altbestand ohne Einzelantworten: frühere, allgemeine Empfehlungen.
   const legacyTips = hasAnswers
     ? []
-    : (t(`measurements.furniture_spacing.result.tips.${underfloor ? 'underfloor' : 'radiator'}`, {
+    : (t(`measurements.furniture_spacing.result.tips.${transfer}`, {
         returnObjects: true,
       }) as string[])
 
@@ -204,9 +207,7 @@ export function FurnitureSpacingResult({ result }: ResultProps) {
               nicht. Sie braucht eine eigene Begründung. */}
           <p className="text-xs leading-relaxed text-muted">
             {t(
-              underfloor
-                ? 'measurements.furniture_spacing.result.mechanismUnderfloor'
-                : 'measurements.furniture_spacing.result.mechanism',
+              `measurements.furniture_spacing.result.mechanisms.${transfer}`,
             )}
           </p>
         </div>

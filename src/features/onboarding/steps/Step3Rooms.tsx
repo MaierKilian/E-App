@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Flame, Grip, Plus, X } from 'lucide-react'
+import { Flame, Grip, Plus, RadioTower, Snowflake, Trees, X } from 'lucide-react'
 import { DecimalField } from '@/components/ui/DecimalField'
 import { RoomTypePicker } from '../RoomTypePicker'
 import { newRoomId } from '@/features/measurements/rooms'
@@ -12,9 +12,20 @@ import type {
   HeatTransferType,
 } from '@/types'
 
+/**
+ * Fünf Antworten seit dem 05.09.2026.
+ *
+ * Vorher gab es nur Heizkörper und Fußbodenheizung – wer Infrarotplatten oder
+ * einen Kachelofen hat, musste eins von beiden behaupten, um weiterzukommen.
+ * Und für Keller, Dachboden und Treppenhaus war **jede** der zwei Antworten
+ * falsch: „unbeheizt" fehlte, obwohl die Angabe Pflicht ist.
+ */
 const TRANSFERS: { value: HeatTransferType; icon: typeof Flame }[] = [
   { value: 'radiator', icon: Flame },
   { value: 'underfloor', icon: Grip },
+  { value: 'infrared', icon: RadioTower },
+  { value: 'stove', icon: Trees },
+  { value: 'none', icon: Snowflake },
 ]
 
 interface Props {
@@ -135,7 +146,8 @@ export function Step3Rooms({ data, onChange }: Props) {
                       flex-1-Knöpfe schrumpfen nicht unter ihre Mindestbreite,
                       also stand der zweite über den Kachelrand hinaus.
                       Gestapelt hat jeder die volle Breite, unabhängig davon, wie
-                      lang die Beschriftung übersetzt ist. */}
+                      lang die Beschriftung übersetzt ist. Mit fünf Antworten
+                      gilt das erst recht – nebeneinander wäre keine lesbar. */}
                   <div className="flex w-full flex-col gap-1">
                     {TRANSFERS.map(({ value, icon: Icon }) => {
                       const active = inst.heatTransfer === value
