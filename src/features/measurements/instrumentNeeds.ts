@@ -13,8 +13,13 @@ import type { MeasurementId } from './types'
  *
  * `unused` ist bewusst eine eigene Stufe und kein weggelassener Eintrag: Der
  * CO₂-Sensor stand im Fragebogen zur Auswahl, ohne dass ihn je etwas gelesen
- * hätte. Ihn stillschweigend aus der Übersicht zu nehmen, hieße die Lücke zu
- * verstecken; sie zu benennen, ist die ehrlichere Auskunft.
+ * hätte. Die Stufe hält diese Lücke im Code fest.
+ *
+ * **In der Nutzer-Übersicht erscheint sie seit dem 05.09.2026 nicht mehr**
+ * (siehe {@link instrumentsToShow}). Die Seite heißt „Was du zum Messen
+ * brauchst" – ein Gerät, das keine Messung liest, braucht man dafür nicht, und
+ * die Zeile war die einzige der Seite, die dem Nutzer nichts zu tun gab. Die
+ * Lücke zu benennen ist eine Aufgabe der Entwicklung, keine des Nutzers.
  */
 export type InstrumentRole = 'required' | 'optional' | 'unused'
 
@@ -85,4 +90,19 @@ export function measurementsWithoutRequiredInstrument(): MeasurementId[] {
   return MEASUREMENT_CATALOG.filter(
     (m) => m.available && !m.instruments.some((i) => i.required),
   ).map((m) => m.id)
+}
+
+/**
+ * Die Geräte, die die Nutzer-Übersicht zeigt: alles außer `unused`.
+ *
+ * Getrennt von {@link summarizeInstrumentNeeds}, weil diese die vollständige –
+ * und damit ehrliche – Auskunft bleiben soll. Gefiltert wird erst an der
+ * Anzeige.
+ *
+ * Wie alles hier abgeleitet, nicht gepflegt: Liest eines Tages ein Check den
+ * CO₂-Sensor, steht er von selbst wieder in der Übersicht. Eine ausgetragene
+ * Liste müsste jemand daran denken zu ergänzen.
+ */
+export function instrumentsToShow(): InstrumentNeedSummary[] {
+  return summarizeInstrumentNeeds().filter((s) => s.role !== 'unused')
 }

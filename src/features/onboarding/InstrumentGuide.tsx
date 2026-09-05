@@ -12,10 +12,9 @@ import {
 } from 'lucide-react'
 import type { InstrumentType } from '@/types'
 import {
-  summarizeInstrumentNeeds,
+  instrumentsToShow,
   measurementsWithoutRequiredInstrument,
   type InstrumentNeedSummary,
-  type InstrumentRole,
 } from '@/features/measurements/instrumentNeeds'
 import { getModelTypes } from './instrumentOptions'
 
@@ -27,13 +26,6 @@ const INSTRUMENT_ICONS: Record<InstrumentType, LucideIcon> = {
   power_meter: Plug,
   none: Thermometer,
   unknown: Thermometer,
-}
-
-/** Farbgebung des Rollen-Abzeichens – nur drei Stufen, bewusst ohne Ampel. */
-const ROLE_BADGE: Record<InstrumentRole, string> = {
-  required: 'bg-primary text-primary-foreground',
-  optional: 'bg-surface-2 text-muted',
-  unused: 'bg-surface-2 text-muted',
 }
 
 /** Namen der genannten Messungen, in der Reihenfolge des Katalogs. */
@@ -74,7 +66,11 @@ function InstrumentCard({ summary }: { summary: InstrumentNeedSummary }) {
               {t(`onboarding.step6.instruments.${summary.type}`)}
             </span>
             <span
-              className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${ROLE_BADGE[summary.role]}`}
+              className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                summary.role === 'required'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-surface-2 text-muted'
+              }`}
             >
               {t(`onboarding.step6.guide.roles.${summary.role}`)}
             </span>
@@ -94,17 +90,6 @@ function InstrumentCard({ summary }: { summary: InstrumentNeedSummary }) {
                 {t('onboarding.step6.guide.optionalFor')}
               </span>{' '}
               {names(summary.optionalFor)}
-            </p>
-          )}
-          {summary.role === 'unused' && (
-            <p className="text-xs leading-snug text-muted">
-              {/* Gerätespezifischer Text, wenn es einen gibt – sonst der
-                  allgemeine. Fällt künftig ein Check weg, steht hier ein Satz
-                  statt eines rohen i18n-Schlüssels. */}
-              {t([
-                `onboarding.step6.guide.unusedNote.${summary.type}`,
-                'onboarding.step6.guide.unusedNoteGeneric',
-              ])}
             </p>
           )}
         </div>
@@ -164,7 +149,9 @@ function InstrumentCard({ summary }: { summary: InstrumentNeedSummary }) {
 export function InstrumentGuide() {
   const { t } = useTranslation()
   const names = useMeasurementNames()
-  const summaries = summarizeInstrumentNeeds()
+  // Ohne die Geräte, die keine Messung liest: Die Seite beantwortet „was
+  // brauche ich?", und ein ungenutztes Gerät braucht man nicht.
+  const summaries = instrumentsToShow()
   const noGear = measurementsWithoutRequiredInstrument()
 
   return (

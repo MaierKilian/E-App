@@ -9,6 +9,7 @@
 import { describe, expect, it } from 'vitest'
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import {
+  instrumentsToShow,
   measurementsWithoutRequiredInstrument,
   summarizeInstrumentNeeds,
 } from '@/features/measurements/instrumentNeeds'
@@ -74,7 +75,7 @@ describe('Messgeräte-Bedarf', () => {
 })
 
 describe('Texte der Geräte-Übersicht', () => {
-  const typen = summarizeInstrumentNeeds().map((s) => s.type)
+  const typen = instrumentsToShow().map((s) => s.type)
 
   for (const [name, locale] of Object.entries(LOCALES)) {
     it(`erklärt in ${name} jede Bauart, die die Übersicht anbietet`, () => {
@@ -92,13 +93,32 @@ describe('Texte der Geräte-Übersicht', () => {
       expect(fehlend).toEqual([])
     })
 
-    it(`benennt in ${name} jedes ungenutzte Gerät`, () => {
-      for (const s of summarizeInstrumentNeeds()) {
-        if (s.role !== 'unused') continue
-        const eigen = at(locale, `onboarding.step6.guide.unusedNote.${s.type}`)
-        const allgemein = at(locale, 'onboarding.step6.guide.unusedNoteGeneric')
-        expect(typeof eigen === 'string' || typeof allgemein === 'string', s.type).toBe(true)
+    it(`nennt in ${name} jede Rolle, die die Übersicht zeigt`, () => {
+      // Nur zwei: „ungenutzt" wird seit dem 05.09.2026 gar nicht mehr
+      // angezeigt, die Übersicht filtert solche Geräte vorher weg.
+      for (const s of instrumentsToShow()) {
+        expect(typeof at(locale, `onboarding.step6.guide.roles.${s.role}`), s.role).toBe('string')
       }
     })
+
   }
+})
+
+describe('Was die Übersicht zeigt', () => {
+  it('lässt Geräte weg, die keine Messung liest', () => {
+    // Die Seite heißt „Was du zum Messen brauchst" – ein Gerät, das kein Check
+    // liest, braucht man dafür nicht. Der CO₂-Sensor war die einzige Zeile,
+    // die dem Nutzer nichts zu tun gab.
+    expect(instrumentsToShow().map((s) => s.type)).not.toContain('co2_sensor')
+    expect(instrumentsToShow().every((s) => s.role !== 'unused')).toBe(true)
+  })
+
+  it('behält die vollständige Auskunft im Modul', () => {
+    // Gefiltert wird erst an der Anzeige: Die Lücke bleibt im Code sichtbar,
+    // und sobald ein Check den Sensor liest, steht er von selbst wieder in der
+    // Übersicht.
+    const alle = summarizeInstrumentNeeds().map((s) => s.type)
+    expect(alle).toContain('co2_sensor')
+    expect(alle.length).toBeGreaterThan(instrumentsToShow().length)
+  })
 })

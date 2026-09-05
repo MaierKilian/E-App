@@ -1504,15 +1504,10 @@
         "intro": "Many checks run without buying anything at all. Here is what the others need a device for – and which kind will do.",
         "roles": {
           "required": "Needed",
-          "optional": "Optional",
-          "unused": "Currently unused"
+          "optional": "Optional"
         },
         "requiredFor": "Needed for:",
         "optionalFor": "More precise in:",
-        "unusedNoteGeneric": "No check currently reads this value.",
-        "unusedNote": {
-          "co2_sensor": "No check currently reads the CO₂ value. It is still the most honest indicator of when to air a room – the basics are in the knowledge section."
-        },
         "variantsToggle_one": "1 kind",
         "variantsToggle_other": "{{count}} kinds",
         "variantNotes": {
@@ -2022,7 +2017,8 @@
       "glossary": "Glossary",
       "measurements": "Backgrounds",
       "university": "Lab experiments",
-      "flashcards": "Flashcards"
+      "flashcards": "Flashcards",
+      "instruments": "Equipment"
     },
     "glossarySearch": "Search term …",
     "source": "Source",
@@ -2267,6 +2263,9 @@
       "mistakes": "Common mistakes",
       "start": "Start this measurement",
       "more": "More on this"
+    },
+    "instruments": {
+      "subtitle": "Which instruments the checks need, which types work – and what runs without buying anything."
     }
   },
   "profiles": {

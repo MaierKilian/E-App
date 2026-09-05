@@ -372,12 +372,34 @@ Sprachen.
 
 **Zwei Nebenbefunde**, beide nicht angefasst:
 
-- Der CO₂-Sensor steht jetzt sichtbar als „Zurzeit ungenutzt" in der Übersicht.
-  Das ist die ehrliche Auskunft, aber keine Dauerlösung – siehe „Offene Fragen".
+- Der CO₂-Sensor stand zunächst sichtbar als „Zurzeit ungenutzt" in der
+  Übersicht. **Am 05.09. erledigt** – siehe den Nachtrag am Ende dieses Punkts.
 - `windowAge`, `insulationState`, `ventilationType` und `renovations` behielten
   bei #17 ihren `labelKey` und stehen deshalb weiter in „Wofür wir das nutzen" –
   als Angaben, die ein neues Profil nie macht. Derselbe Fall, den #18 für
   `instruments` gerade behoben hat.
+
+**Nachtrag (05.09.) – die beiden offenen Fragen sind entschieden.**
+
+*Der CO₂-Sensor verschwindet aus der Übersicht.* Kein Check im Katalog liest
+ihn, und es steht auch keiner an – alle neun Einträge sind `available: true`,
+eine Lüftungs-Messung gibt es nicht einmal als Entwurf. Die Seite heißt
+„Was du zum Messen brauchst": Ein Gerät, das keine Messung liest, braucht man
+dafür nicht, und es war die einzige Zeile, die dem Nutzer nichts zu tun gab.
+
+Die Rolle `unused` **bleibt** im Modul, gefiltert wird erst an der Anzeige
+(`instrumentsToShow()`). Damit gilt weiter, was die Übersicht ausmacht:
+abgeleitet, nicht gepflegt. Liest eines Tages ein Check den CO₂-Wert, steht der
+Sensor von selbst wieder da – eine ausgetragene Liste müsste jemand daran denken
+zu ergänzen. Die Lücke zu benennen bleibt so eine Aufgabe der Entwicklung, wo
+sie hingehört, statt eine des Nutzers. Zwei Tests halten beides fest.
+
+*Die Übersicht steht jetzt auch im Wissensbereich* – als vierter Reiter
+„Ausrüstung" neben FAQ, Glossar und Hintergründen. Im Fragebogen sieht man sie
+genau einmal, beim Anlegen der Wohnung; wer Wochen später vor dem Standby-Check
+wissen will, was er braucht, hatte dafür keinen Weg. Bewusst **dasselbe
+Bauteil**, keine zweite Fassung: Der Inhalt ist aus `MEASUREMENT_CATALOG`
+abgeleitet, eine Kopie liefe über kurz oder lang auseinander.
 
 ### 19. Frage nach Kamin/Ofen ohne Wirkung
 **Kategorie:** Problem · **Bereich:** `Step4Heating`, `fieldUsage.ts`,
@@ -1265,13 +1287,6 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   nur Dusche)? Wäre eine bewusste Verhaltensänderung, keine reine Korrektur.
 - Bei #15: Temperatur-Eingabe im Gefrierschrank-Check nachrüsten (dann stimmt
   der Info-Tab) oder die Temperatur aus dem Info-Tab streichen?
-- Bei #18: Der CO₂-Sensor steht in der neuen Übersicht als „Zurzeit ungenutzt".
-  Soll er dort ganz verschwinden – oder ist ein CO₂-/Lüftungs-Check geplant,
-  der ihn anschließt? Solange keins von beidem entschieden ist, bleibt er die
-  einzige Zeile der Seite, die dem Nutzer nichts zu tun gibt.
-- Bei #18: Soll die Übersicht zusätzlich im Wissensbereich stehen? Im
-  Fragebogen sieht sie jeder genau einmal – beim Anlegen der Wohnung. Wer sie
-  Wochen später vor dem Standby-Check wiederfinden will, hat dafür keinen Weg.
 - Bei #17 (Nachtrag aus #18): Sollen `windowAge`, `insulationState`,
   `ventilationType` und `renovations` aus „Wofür wir das nutzen" verschwinden?
   Sie stehen dort als Angaben, die ein neues Profil nie macht.

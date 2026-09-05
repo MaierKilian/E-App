@@ -1717,15 +1717,10 @@
         "intro": "Viele Checks laufen ganz ohne Anschaffung. Hier steht, wofür die übrigen ein Gerät brauchen – und welche Bauart dafür taugt.",
         "roles": {
           "required": "Nötig",
-          "optional": "Optional",
-          "unused": "Zurzeit ungenutzt"
+          "optional": "Optional"
         },
         "requiredFor": "Nötig für:",
         "optionalFor": "Genauer bei:",
-        "unusedNoteGeneric": "Zurzeit liest kein Check diesen Wert.",
-        "unusedNote": {
-          "co2_sensor": "Zurzeit liest kein Check den CO₂-Wert. Fürs Lüften ist er trotzdem der ehrlichste Anzeiger – die Grundlagen dazu stehen im Wissensbereich."
-        },
         "variantsToggle_one": "1 Bauart",
         "variantsToggle_other": "{{count}} Bauarten",
         "variantNotes": {
@@ -2022,7 +2017,8 @@
       "glossary": "Glossar",
       "measurements": "Hintergründe",
       "university": "Laborversuche",
-      "flashcards": "Karteikarten"
+      "flashcards": "Karteikarten",
+      "instruments": "Ausrüstung"
     },
     "glossarySearch": "Begriff suchen …",
     "source": "Quelle",
@@ -2267,6 +2263,9 @@
       "mistakes": "Häufige Fehler",
       "start": "Diese Messung starten",
       "more": "Mehr dazu"
+    },
+    "instruments": {
+      "subtitle": "Welche Messgeräte die Checks verlangen, welche Bauarten taugen – und was ganz ohne Anschaffung läuft."
     }
   },
   "profiles": {

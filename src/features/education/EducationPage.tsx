@@ -30,15 +30,20 @@ import {
   MEASUREMENT_INFOS,
   type LabExperiment,
 } from './educationContent'
+import { InstrumentGuide } from '@/features/onboarding/InstrumentGuide'
 
-type Section = 'faq' | 'glossary' | 'measurements' | 'university' | 'flashcards'
+type Section = 'faq' | 'glossary' | 'measurements' | 'instruments' | 'university' | 'flashcards'
 
 /** Oberste Ebene: allgemeines Energiewissen vs. HTW-GEIT-Studieninhalte. */
 type Group = 'general' | 'university'
 
 /** Welche Unterpunkte zu welcher Gruppe gehören. */
 const GROUP_SECTIONS: Record<Group, Section[]> = {
-  general: ['faq', 'glossary', 'measurements'],
+  // „instruments" steht seit dem 05.09.2026 hier. Die Übersicht „Was du zum
+  // Messen brauchst" gab es nur im Fragebogen – dort sieht sie jeder genau
+  // einmal, beim Anlegen der Wohnung. Wer sie Wochen später vor dem
+  // Standby-Check wiederfinden will, hatte dafür keinen Weg.
+  general: ['faq', 'glossary', 'measurements', 'instruments'],
   university: ['university', 'flashcards'],
 }
 
@@ -661,6 +666,24 @@ function UniversityView() {
   )
 }
 
+/**
+ * „Was du zum Messen brauchst" – dieselbe Übersicht wie im Fragebogen.
+ *
+ * Bewusst dasselbe Bauteil und keine zweite Fassung: Der Inhalt ist aus
+ * `MEASUREMENT_CATALOG` abgeleitet, eine Kopie liefe über kurz oder lang
+ * auseinander. Im Fragebogen beantwortet die Seite „was kommt auf mich zu?",
+ * hier „was brauche ich für diesen Check?" – dieselbe Auskunft, zwei Anlässe.
+ */
+function InstrumentsView() {
+  const { t } = useTranslation()
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted">{t('education.instruments.subtitle')}</p>
+      <InstrumentGuide />
+    </div>
+  )
+}
+
 /** Bildungsbereich „Wissen" mit FAQ, Glossar, Messungs-Infos und Hochschulteil. */
 export function EducationPage() {
   const { t } = useTranslation()
@@ -691,6 +714,7 @@ export function EducationPage() {
       {section === 'faq' && <FaqView />}
       {section === 'glossary' && <GlossaryView />}
       {section === 'measurements' && <MeasurementsView />}
+      {section === 'instruments' && <InstrumentsView />}
       {section === 'university' && <UniversityView />}
       {section === 'flashcards' && <FlashcardsView />}
     </div>
