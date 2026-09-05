@@ -1476,6 +1476,105 @@ Raumklima und Möbelabstand. Die Option, die sie behebt, ist jetzt da; sie dort
 zu setzen ist eine eigene Änderung an drei Checks, die niemand gemeldet hat –
 siehe „Offene Fragen".
 
+### 38. Bewertungs-Chip sagt „Gut", der Satz darunter „mittel"
+**Kategorie:** Bug · **Bereich:** `measurements.ratings` (de/en), `RatingBadge`,
+alle Checks ohne eigenes Badge-Label
+**Status:** ✅ Umgesetzt (05.09.).
+
+Aufgefallen beim Schreiben der Projekt-Dokumentation (Kapitel 8.9,
+Standby-Check): Im abgebildeten Ergebnis steht bei 12 W der Chip auf **„Gut"**,
+während der Satz darunter „Mittlerer Standby-Verbrauch – hier steckt
+Sparpotenzial" lautet.
+
+**Die Diagnose der Dokumentation trifft es nicht ganz.** Dort steht, beide
+Anzeigen sollten auf dieselbe Bewertung zurückgreifen – das tun sie längst:
+`StandbyResult` reicht ein und dasselbe `result.rating` an Chip und Text, und
+`rateStandby` liefert bei 12 W korrekt `medium` (über 5 W, bis 20 W). Der
+Widerspruch ist rein sprachlich: Ohne eigenes Label greift `RatingBadge` auf die
+gemeinsame Skala zurück, und dort hieß `medium` **„Gut"**. Dieselbe Stufe trug
+damit drei Namen – „Gut" auf dem Chip, „mittel" im Satz darunter, „Mittel" in
+der Richtwerte-Tabelle des Wissensbereichs.
+
+**Und es war nicht der Standby-Check.** Fünf Ergebnis-Schirme nutzen die
+generische Skala (Standby, Kühlschrank, Duschkopf, Warmwasser-Wartezeit,
+Raumklima), dazu die Verlaufsliste – die zeigt *immer* die generische
+Beschriftung, auch bei den vier Checks mit eigenem Vokabular – und der
+PDF-Bericht an vier Stellen. Am deutlichsten beim Kühlschrank: Dort bedeutet
+`medium` „Zu warm – Lebensmittel verderben schneller", der Chip sagte „Gut".
+
+Geändert wurde deshalb die Skala selbst, nicht der Standby-Check: `medium`
+heißt jetzt **„Mittel"** (englisch „Moderate"). Zwei Zeilen, die überall
+gleichzeitig wirken. Das ist die unerledigte zweite Hälfte von **#6** – damals
+wurde die 5-cm-Grenze korrigiert, die Beschriftung blieb.
+
+**Bewusst nicht gemacht:** dem Standby-Check ein eigenes `badgeLabel` geben, wie
+Grundlast oder Möbelabstand es tun. Das hätte den einen Schirm geheilt, die
+Verlaufsliste aber nicht – und ein fünftes Vokabular für dieselbe vierstufige
+Skala geschaffen, wovor der Kommentar an `RatingBadge` ausdrücklich warnt.
+
+`good` heißt weiter „Sehr gut". Ob die Skala oben „Gut" heißen sollte, wenn sie
+in der Mitte „Mittel" heißt, steht unter „Offene Fragen".
+
+### 39. Demo-Profil: Standby im Altformat – und 0 € Einsparpotenzial
+**Kategorie:** Bug · **Bereich:** `demoProfile.ts`
+**Status:** ✅ Umgesetzt (05.09.).
+
+Ebenfalls aus Kapitel 8.9: Das Demo-Profil trug den Standby-Eintrag noch im
+alten Format – `primaryValue: 31` mit der Einheit `W` und `details: { watts:
+31 }`. Der Ergebnis-Schirm liest aber `details.annualCost ?? primaryValue`:
+Aus der **Wattzahl 31 wurden „31 €/Jahr"**, Gesamtleistung und Jahresverbrauch
+standen auf 0, und die Geräte-Aufschlüsselung fehlte ganz, weil keine
+`dev{i}`-Schlüssel vorhanden waren.
+
+**Beim Beheben kam ein größerer Schaden zum Vorschein.** Der Eintrag war das
+einzige Demo-Ergebnis mit einem Sparbetrag; ohne `avoidableCost` lieferte
+`impactSummary` für die ganze Beispiel-Wohnung **0 € aus 0 beitragenden
+Messungen**. Die prominenteste Zahl des Demo-Modus – „Dein Einsparpotenzial"
+über der Messungen-Liste – stand damit auf null, in einer Ansicht, die gerade
+zeigen soll, was die App leistet. Sie nennt jetzt 100 €/Jahr (31 W × 8.760 h ×
+36 ct = 98 €, gerundet auf die 5-€-Schrittweite der Anzeige).
+
+Die sechs Geräte tragen **absichtlich keine Namen**: Der Ergebnis-Schirm
+nummeriert sie dann durch („Gerät 1" … „Gerät 6"), was in beiden Sprachen
+funktioniert. Deutscher Klartext wäre die erste Stelle im Demo-Profil, die in
+der englischen Oberfläche stehen bliebe – alles andere dort kommt aus i18n.
+
+Ein Test rechnet den Eintrag aus seiner eigenen Geräteliste nach (`calcStandby`
+gegen den Demo-Tarif) und hält so fest, dass er nicht wieder ins Altformat
+zurückfällt.
+
+### 40. Standby-Check: die Geräteliste geht beim Verlassen verloren
+**Kategorie:** Bug · **Bereich:** `StandbyRun`, `measurementDraftStore`
+**Status:** ✅ Umgesetzt (05.09.).
+
+Dritter Punkt aus Kapitel 8.9: Die laufende Geräteliste lag nur im
+Komponentenzustand. Wer den Check verließ oder die Seite neu lud, fing ohne
+Warnung von vorn an – bei einer Messung, die über Minuten läuft und für jedes
+Gerät ein Umstecken verlangt, der teuerste Datenverlust der App.
+
+**Der Mechanismus war schon da**, nur nicht angeschlossen: Kühlschrank,
+Gefriergerät und Grundlast legen ihren Zwischenstand im `measurementDraftStore`
+ab, der Ablauf räumt ihn nach dem Speichern weg und springt bei vorhandenem
+Entwurf direkt zur Erfassung statt zur Erklärseite. Zwei Dinge fehlten dem
+Store für eine Geräteliste:
+
+- **Bezeichnungen.** Er nahm bisher nur Zahlen auf. Er trägt jetzt zusätzlich
+  `labels` – dieselbe Aufteilung wie das fertige `MeasurementResult`
+  (`details` + `labels`), damit Entwurf und Ergebnis gleich kodiert sind.
+- **Ersetzen statt Ergänzen.** `setDraft` fügt nur hinzu und entfernt nie ein
+  Feld; ein gelöschtes Gerät wäre als `dev3` liegen geblieben und beim nächsten
+  Öffnen zurückgekommen. Dafür gibt es `replaceDraft`.
+
+Eine leere Zeile landet nicht im Entwurf, ein leeres Formular verwirft ihn ganz:
+Sonst zählte ein bloß geöffneter Check als angefangene Messung und der Ablauf
+überspränge künftig die Erklärseite, ohne dass je etwas erfasst wurde. Eine
+benannte Zeile ohne Wattzahl bleibt dagegen stehen – das ist begonnene Arbeit.
+
+Die Kodierung liegt in `standby/draft.ts`, nicht in der Komponente: Tests des
+Projekts importieren nur `.ts`-Module. Nachgefahren im Browser (393 × 760,
+Chromium): drei Geräte erfasst, Seite neu geladen – Namen, Wattzahlen und die
+Summe von 12,0 W stehen wieder da, der Ablauf öffnet direkt den Reiter „Messen".
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
@@ -1669,3 +1768,11 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   eigenen, alten Stand (z. B. 00:01,5, während im Feld 21 s steht). Der
   Wartezeit-Check verhält sich genauso – soll das Feld die Uhr zurücksetzen,
   oder bleibt die Uhr das Protokoll dessen, was wirklich lief?
+
+- Bei #38 (neu, aus der Umsetzung): Die gemeinsame Skala liest sich jetzt
+  „Sehr gut · Mittel · Auffällig · Hoch". Soll die oberste Stufe schlicht „Gut"
+  heißen, damit nicht ein Superlativ neben nüchternen Stufen steht? Und beim
+  Kühlschrank bedeutet `medium` „zu warm" – der Chip sagt dort jetzt „Mittel"
+  statt „Gut", was nicht mehr falsch, aber auch nicht sprechend ist. Eigenes
+  Badge-Vokabular für den Kühlschrank (wie Grundlast und Möbelabstand es haben),
+  oder bleibt es bei der neutralen Skala?

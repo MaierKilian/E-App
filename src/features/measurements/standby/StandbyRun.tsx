@@ -1,8 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, X, Info } from 'lucide-react'
 import { useTariffStore } from '@/store/tariffStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
+import {
+  useMeasurementDraftStore,
+  readDraft,
+  readDraftLabels,
+} from '@/store/measurementDraftStore'
+import { instanceKey } from '../rooms'
+import { encodeStandbyDraft, decodeStandbyDraft } from './draft'
 import { calcStandby, totalWatts } from './standby'
 import type { StandbyDevice } from './standby'
 import type { RunProps } from '../runnerTypes'
@@ -51,8 +58,13 @@ function encodeDevices(devices: StandbyDevice[]): {
  * Durchführungs-Phase des Standby-Checks: eine wachsende Liste von Geräten
  * (Typ-Auswahl + Watt-Eingabe), laufende Gesamtsumme und „Auswerten", sobald
  * mindestens ein Gerät mit Leistung > 0 erfasst ist.
+ *
+ * Die Liste entsteht über Minuten – Gerät für Gerät wird umgesteckt und
+ * abgelesen. Sie liegt deshalb nicht nur im Komponentenzustand, sondern wandert
+ * bei jeder Änderung in den Entwurfs-Speicher; ein Neuladen oder ein Ausflug in
+ * einen anderen Bereich der App kostet die bisherige Arbeit nicht mehr.
  */
-export function StandbyRun({ onEvaluate }: RunProps) {
+export function StandbyRun({ onEvaluate, roomKey }: RunProps) {
   const { t, i18n } = useTranslation()
   const workPriceCt = useTariffStore((s) => s.electricityWorkPrice)
   const tariffIsCustom = useTariffStore((s) => s.isCustom)
@@ -60,7 +72,19 @@ export function StandbyRun({ onEvaluate }: RunProps) {
   // misst, sieht den früheren Wert direkt beim Eintippen des Namens.
   const lastResult = useMeasurementsStore((s) => s.results.standby)
 
-  const [entries, setEntries] = useState<DeviceEntry[]>(() => [makeEntry()])
+  const draftKey = instanceKey('standby', roomKey)
+  const replaceDraft = useMeasurementDraftStore((s) => s.replaceDraft)
+
+  const [entries, setEntries] = useState<DeviceEntry[]>(() => {
+    const restored = decodeStandbyDraft(readDraft(draftKey), readDraftLabels(draftKey))
+    if (restored.length === 0) return [makeEntry()]
+    return restored.map((d) => ({ id: nextId++, name: d.name, watts: clampWatts(d.watts) }))
+  })
+
+  useEffect(() => {
+    const { values, labels } = encodeStandbyDraft(entries)
+    replaceDraft(draftKey, values, labels)
+  }, [draftKey, replaceDraft, entries])
 
   const sum = totalWatts(entries)
   const canEvaluate = entries.some((e) => e.watts > 0)

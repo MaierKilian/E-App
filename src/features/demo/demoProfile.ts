@@ -81,7 +81,26 @@ const RESULTS: MeasurementResult[] = [
   result('showerhead', 'medium', 11.4, 'L/min', 34, { details: { liters: 1.9, seconds: 10 } }),
   result('hot_water_wait', 'medium', 24, 's', 33, { details: { seconds: 24 } }),
   result('base_load', 'elevated', 132, 'W', 20, { details: { watts: 132 } }),
-  result('standby', 'high', 31, 'W', 19, { details: { watts: 31 } }),
+  // Standby: 31 W Gesamtleistung, aufgeschlüsselt auf sechs Geräte. Hauptwert
+  // sind – wie bei einer echten Messung – die Jahreskosten; die Bewertung folgt
+  // der Leistung (> 20 W → „high"). Die Geräte tragen bewusst keine Namen: Der
+  // Ergebnis-Schirm nummeriert sie dann durch, statt deutschen Klartext in die
+  // englische Oberfläche zu tragen.
+  result('standby', 'high', 98, '€/Jahr', 19, {
+    details: {
+      totalWatts: 31,
+      annualKwh: 272,
+      annualCost: 98,
+      avoidableCost: 98,
+      tariffCustom: 1,
+      dev0: 8.5,
+      dev1: 7,
+      dev2: 6.5,
+      dev3: 5.5,
+      dev4: 2,
+      dev5: 1.5,
+    },
+  }),
   result('fridge', 'good', 0.82, 'kWh/Tag', 27, { details: { kwhPerDay: 0.82, watts: 34 } }),
   // Gefrier-Check: flächig dünn vereist. Hauptwert ist der Anteil am
   // Verbrauch – der frühere kWh/Tag-Wert stammte noch aus einer Zeit, in der
@@ -191,6 +210,6 @@ export function buildDemoSnapshot(): Record<string, unknown> {
       },
     },
     progress: { quizResults: {} },
-    drafts: { drafts: {} },
+    drafts: { drafts: {}, labels: {} },
   }
 }
