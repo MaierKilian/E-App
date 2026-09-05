@@ -1054,6 +1054,45 @@ während die gewählte Kachel in die Höhe wuchs.
 
 Die Höhe wächst jetzt nur noch dort, wo eine Entscheidung aussteht.
 
+### 31. Ziel-Seite: Kartenstapel statt Auswahlliste
+**Kategorie:** Problem · **Bereich:** `StepGoals`, de/en
+**Status:** ✅ Umgesetzt (05.09.).
+
+Kilians Befund an der neuen Ziel-Seite: „Hier finde ich das UI nicht schön,
+sieht ziemlich gevibecoded aus."
+
+**Bestätigt, und die Ursache ist benennbar: ein kopierter Zuschnitt.** Die
+Zielkarten stammten von der Modus-Auswahl (`Step0Mode`) – dort sind es **zwei**
+Karten für **eine** Entscheidung ganz am Anfang, da trägt das Gewicht. Fünfmal
+für eine *Mehrfach*auswahl kopiert kippte es in vier Punkten:
+
+1. **Nur dreieinhalb von fünf Optionen passten auf den Bildschirm** – auf einer
+   Seite, deren einzige Aufgabe das Vergleichen ist.
+2. **Die Zeile „Danach startest du hier" lag unter dem Fold.** Genau die
+   Wirkung, wegen der die Seite gebaut wurde (#27), bekam niemand zu sehen.
+3. **Der Kreis rechts sagte „nur eine Wahl".** Kreis ist die Radio-Konvention;
+   hier sind mehrere möglich. Der Hinweis darauf stand als letzter Halbsatz
+   eines dreizeiligen Fließtexts.
+4. **Alles gleich laut** – Titel fett, Beschreibung fast so groß, jede Karte
+   mit eigenem Schlagschatten. Fünf gleichwertige Blöcke ergeben keine
+   Rangfolge, sondern einen Stapel.
+
+**Umgesetzt: kompakte Zeilenliste.**
+
+- Eine Gruppe mit Trennlinien statt fünf schwebender Karten.
+- Je Zeile Symbol, Titel und **eine** Zeile Wirkung – klein und gedämpft.
+- Haken im abgerundeten **Quadrat** statt im Kreis, plus leichter Primary-Ton
+  auf der ganzen Zeile.
+- „Mehrfachauswahl möglich" als eigenes Label über der Liste.
+- Untertitel auf einen Satz gekürzt; die Beschreibungen so gekürzt, dass sie
+  den Titel **nicht wiederholen** („Zählerstände verfolgen" / „Verlauf über
+  Monate sehen" statt „Zählerstände ablesen und den Verlauf über Monate
+  sehen").
+
+**Ergebnis** (gemessen bei 430 × 932, dem Format aus Kilians Screenshot): Die
+Ziel-Zeile endet bei 617 px, die Seite ist **nicht mehr scrollbar** – alle fünf
+Optionen und die Landung stehen gleichzeitig im Blick.
+
 
 ## Cookie-Banner & Rechtsseiten
 

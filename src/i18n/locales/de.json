@@ -1948,15 +1948,16 @@
       }
     },
     "goals": {
-      "subtitle": "Wonach die App Messungen und Empfehlungen sortiert – und wo du nach dem Fragebogen startest. Mehrfachauswahl möglich.",
+      "subtitle": "Wonach die App Messungen und Empfehlungen sortiert – und wo du danach startest.",
       "destination": "Danach startest du hier:",
       "desc": {
-        "save_costs": "Empfehlungen stehen nach Ersparnis in Euro sortiert – die größten zuerst.",
-        "reduce_co2": "Wärme und Warmwasser rücken nach vorn: Dort liegt der größte CO₂-Hebel.",
-        "improve_comfort": "Raumklima und Zugluft rücken nach vorn, danach die Wartezeit auf warmes Wasser.",
-        "track_readings": "Strom, Gas, Wasser und Wärme regelmäßig ablesen und den Verlauf über Monate sehen.",
-        "curiosity": "Hintergründe zu jeder Messung, Glossar und FAQ im Wissensbereich."
-      }
+        "save_costs": "Nach Ersparnis in Euro sortiert",
+        "reduce_co2": "Wärme und Warmwasser zuerst",
+        "improve_comfort": "Raumklima und Zugluft zuerst",
+        "track_readings": "Verlauf über Monate sehen",
+        "curiosity": "Hintergründe, Glossar und FAQ"
+      },
+      "multiHint": "Mehrfachauswahl möglich"
     }
   },
   "pages": {

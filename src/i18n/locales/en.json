@@ -1735,15 +1735,16 @@
       }
     },
     "goals": {
-      "subtitle": "What the app sorts measurements and recommendations by — and where you start after the questionnaire. Multiple choices possible.",
+      "subtitle": "How the app sorts measurements and tips – and where you start afterwards.",
       "destination": "You will start here:",
       "desc": {
-        "save_costs": "Recommendations are sorted by savings in euros — the biggest first.",
-        "reduce_co2": "Heating and hot water move up: that is where the largest CO₂ lever sits.",
-        "improve_comfort": "Room climate and draughts move up, then the wait for hot water.",
-        "track_readings": "Read electricity, gas, water and heat regularly and watch the trend over months.",
-        "curiosity": "Background on every measurement, glossary and FAQ in the knowledge area."
-      }
+        "save_costs": "Sorted by savings in euros",
+        "reduce_co2": "Heating and hot water first",
+        "improve_comfort": "Room climate and draughts first",
+        "track_readings": "See the trend over months",
+        "curiosity": "Background, glossary and FAQ"
+      },
+      "multiHint": "Pick as many as you like"
     }
   },
   "monitoring": {

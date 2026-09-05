@@ -4,71 +4,73 @@ import type { LucideIcon } from 'lucide-react'
 import { GOALS, destinationFor, destinationLabelKey } from '../goals'
 import type { OnboardingData, UserGoal } from '@/types'
 
-interface Props {
-  data: OnboardingData
-  onChange: (partial: Partial<OnboardingData>) => void
-}
-
-interface GoalCardProps {
+interface GoalRowProps {
   selected: boolean
   onClick: () => void
   title: string
   desc: string
   icon: LucideIcon
+  /** Trennlinie nach oben – die Liste ist eine Gruppe, kein Kartenstapel. */
+  divided: boolean
 }
 
 /**
- * Eine Zielkarte – volle Breite, Symbol, Titel und ein Satz, was die Wahl
- * bewirkt.
+ * Ein Ziel als Zeile: Symbol, Titel, eine Zeile Wirkung, Haken.
  *
- * Vorher standen die Ziele als fünf kleine Chips nebeneinander, die je nach
- * Textlänge umbrachen. Sie sahen aus wie eine Nebensache, waren aber die
- * einzige Angabe, die die Reihenfolge von Messungen und Empfehlungen
- * verschiebt. Die Bauart ist bewusst dieselbe wie bei der Modus-Auswahl
- * (`Step0Mode`): Der Nutzer trifft hier dieselbe Art Entscheidung.
+ * **Warum keine Karten mehr.** Bis zum 05.09.2026 stand hier der Zuschnitt der
+ * Modus-Auswahl (`Step0Mode`): volle Karte, großes Symbolfeld, eigener
+ * Schlagschatten. Dort sind es **zwei** Karten für **eine** Entscheidung ganz
+ * am Anfang – da trägt das Gewicht. Fünfmal für eine Mehrfachauswahl kopiert
+ * kippte es: Nur dreieinhalb Optionen passten auf den Bildschirm, die Zeile
+ * „Danach startest du hier" lag unter dem Fold, und fünf gleich laute Blöcke
+ * ergaben keine Rangfolge, sondern einen Stapel.
+ *
+ * Der Haken sitzt in einem abgerundeten **Quadrat**, nicht in einem Kreis: Ein
+ * Kreis ist die Konvention für „genau eine Wahl", und hier sind mehrere
+ * möglich.
  *
  * `aria-pressed` statt `checkbox`: Es sind Umschalter, keine Formularfelder –
- * und Screenreader lesen den Zustand damit an der Karte selbst vor.
+ * Screenreader lesen den Zustand damit an der Zeile selbst vor.
  */
-function GoalCard({ selected, onClick, title, desc, icon: Icon }: GoalCardProps) {
+function GoalRow({ selected, onClick, title, desc, icon: Icon, divided }: GoalRowProps) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`focus-ring w-full rounded-3xl p-4 text-left transition-[transform,background-color,box-shadow] duration-200 active:scale-[0.985] ${
-        selected
-          ? 'bg-primary/[0.08] border border-primary shadow-[0_6px_24px_color-mix(in_srgb,var(--primary)_18%,transparent)]'
-          : 'glass border border-transparent hover:bg-surface-2/60'
-      }`}
+      className={`focus-ring flex w-full items-center gap-3 px-3.5 py-3 text-left transition-colors ${
+        divided ? 'border-t border-border/50' : ''
+      } ${selected ? 'bg-primary/[0.07]' : 'hover:bg-surface-2/50'}`}
     >
-      <div className="flex items-start gap-3.5">
+      <Icon
+        className={`h-5 w-5 shrink-0 transition-colors ${selected ? 'text-primary' : 'text-muted'}`}
+        aria-hidden="true"
+      />
+      <span className="min-w-0 flex-1">
         <span
-          className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl transition-colors ${
-            selected ? 'bg-primary text-primary-foreground' : 'bg-surface-2 text-muted'
-          }`}
+          className={`block text-sm font-semibold ${selected ? 'text-primary' : 'text-foreground'}`}
         >
-          <Icon className="h-5 w-5" aria-hidden="true" />
+          {title}
         </span>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <p className={`font-semibold ${selected ? 'text-primary' : 'text-foreground'}`}>
-              {title}
-            </p>
-            <span
-              aria-hidden="true"
-              className={`ml-auto grid h-6 w-6 shrink-0 place-items-center rounded-full border transition-colors ${
-                selected ? 'border-primary bg-primary text-primary-foreground' : 'border-border'
-              }`}
-            >
-              {selected && <Check className="h-4 w-4" strokeWidth={3} />}
-            </span>
-          </div>
-          <p className="mt-1 text-sm leading-snug text-muted">{desc}</p>
-        </div>
-      </div>
+        {/* Eine Zeile, nicht drei: Der Satz nennt die Wirkung der Wahl, er
+            erklärt sie nicht. */}
+        <span className="mt-0.5 block text-xs leading-snug text-muted">{desc}</span>
+      </span>
+      <span
+        aria-hidden="true"
+        className={`grid h-5 w-5 shrink-0 place-items-center rounded-md border transition-colors ${
+          selected ? 'border-primary bg-primary text-primary-foreground' : 'border-border'
+        }`}
+      >
+        {selected && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+      </span>
     </button>
   )
+}
+
+interface Props {
+  data: OnboardingData
+  onChange: (partial: Partial<OnboardingData>) => void
 }
 
 /**
@@ -95,18 +97,28 @@ export function StepGoals({ data, onChange }: Props) {
   const destination = destinationFor(data.goals)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <p className="text-sm leading-snug text-muted">{t('onboarding.goals.subtitle')}</p>
 
-      <div className="space-y-2.5">
-        {GOALS.map((goal) => (
-          <GoalCard
+      {/* „Mehrfachauswahl" als eigenes Label über der Liste. Vorher stand es
+          als letzter Halbsatz eines dreizeiligen Fließtexts – dort hat es
+          niemand gelesen, und die Kreise daneben behaupteten das Gegenteil. */}
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+        {t('onboarding.goals.multiHint')}
+      </p>
+
+      {/* Eine Gruppe mit Trennlinien statt fünf schwebender Karten: Fünf
+          Schlagschatten übereinander lesen sich als Stapel, nicht als Liste. */}
+      <div className="glass overflow-hidden rounded-2xl">
+        {GOALS.map((goal, i) => (
+          <GoalRow
             key={goal.id}
             icon={goal.icon}
             title={t(`onboarding.step1.goalOptions.${goal.id}`)}
             desc={t(`onboarding.goals.desc.${goal.id}`)}
             selected={data.goals.includes(goal.id)}
             onClick={() => toggle(goal.id)}
+            divided={i > 0}
           />
         ))}
       </div>
@@ -115,7 +127,8 @@ export function StepGoals({ data, onChange }: Props) {
           sofort, wo die App ihn danach hinbringt. Dasselbe Muster wie bei der
           PV- und der Warmwasser-Frage – eine Angabe, der man ihre Wirkung
           ansieht. Die Zeile steht auch ohne Auswahl da, sonst wirkte sie wie
-          eine Belohnung fürs Antippen statt wie eine Auskunft. */}
+          eine Belohnung fürs Antippen statt wie eine Auskunft. Seit die Liste
+          kompakt ist, steht sie im sichtbaren Bereich statt unter dem Fold. */}
       <p
         aria-live="polite"
         className="flex items-center gap-2 rounded-2xl bg-surface-2/60 px-3.5 py-2.5 text-sm text-foreground"
