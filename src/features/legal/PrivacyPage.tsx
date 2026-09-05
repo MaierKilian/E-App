@@ -32,9 +32,13 @@ export function PrivacyPage() {
       intro="Informationen zur Verarbeitung personenbezogener Daten nach Art. 13 DSGVO"
     >
       <LegalSection title="1. Verantwortlicher">
+        {/* Bewusst ohne Verb: „ist"/„sind" haengt daran, ob eine oder mehrere
+            Personen im Impressum stehen. Der Doppelpunkt stimmt in beiden
+            Faellen und muss nicht mitgepflegt werden, wenn sich der Betreiber
+            aendert. */}
         <p>
           Verantwortlich für die Datenverarbeitung im Sinne des Art. 4 Nr. 7
-          DSGVO ist:
+          DSGVO:
         </p>
         <p>
           <LegalValue value={OPERATOR.name} hint="Name noch einzutragen" />
