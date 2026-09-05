@@ -1276,14 +1276,14 @@
       "detailedDesc": "Maximum accuracy",
       "recommended": "Recommended",
       "quickIncludes": [
-        "Living area & people",
-        "Heating type",
-        "First saving tips"
+        "Living area, people & year built",
+        "Your goal",
+        "Heating, hot water & tariffs"
       ],
       "detailedIncludes": [
         "Everything from Quick Start",
-        "Rooms & appliances",
-        "Tariffs for € savings"
+        "Rooms & heat emitters",
+        "Appliances that unlock checks"
       ],
       "note": "No pressure – you can switch modes and add details later any time."
     },

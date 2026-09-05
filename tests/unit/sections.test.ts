@@ -142,6 +142,27 @@ describe('Registry ist widerspruchsfrei', () => {
     expect(quick).toEqual(detailed.filter((s) => quick.includes(s)))
   })
 
+  it('unterscheidet die beiden Wege in genau drei Schritten', () => {
+    // Die Aufzählungen auf der Modus-Wahl (`onboarding.step0.quickIncludes` und
+    // `detailedIncludes`) beschreiben genau diesen Unterschied – und standen bis
+    // zum 05.09.2026 daneben: „Tarife für die €-Ersparnis" galt dort als Vorteil
+    // des vollständigen Wegs, obwohl „Preise & Kosten" `quick: true` ist und der
+    // Schnellstart danach genauso fragt. Wer hier einen Schritt umhängt, ändert
+    // die beiden Texte mit.
+    expect(sectionsFor('quick').map((s) => s.id)).toEqual([
+      'home',
+      'goals',
+      'heating',
+      'prices',
+      'review',
+    ])
+    expect(ONBOARDING_SECTIONS.filter((s) => !s.quick).map((s) => s.id)).toEqual([
+      'rooms',
+      'appliances',
+      'equipment',
+    ])
+  })
+
   it('endet auch im Schnellstart mit dem Abschluss-Schritt', () => {
     expect(sectionsFor('quick').at(-1)?.review).toBe(true)
   })

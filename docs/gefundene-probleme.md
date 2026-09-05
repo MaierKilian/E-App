@@ -1198,6 +1198,58 @@ nicht wie hoch er gerade ist – die nächste Preisänderung macht ihn nicht meh
 rot.
 
 
+### 35. Modus-Wahl: zwei Aufzählungen, die nicht stimmten
+**Kategorie:** Bug (Text) · **Bereich:** `de/en` (`onboarding.step0`),
+`tests/unit/sections.test.ts`
+**Status:** ✅ Umgesetzt (05.09.) – Aufzählungen neu geschrieben.
+
+Kilians Frage zum Bildschirm „Los geht's": „Stimmt das, was hier so steht?"
+Geprüft gegen `sections.ts` – drei Befunde.
+
+**(a) Falsch: „Tarife für die €-Ersparnis" als Vorteil von „Vollständig".** Der
+Schritt „Preise & Kosten" steht auf `quick: true` (`sections.ts`), ist also in
+**beiden** Wegen drin. Das Bullet nannte als Unterschied etwas, das keiner ist.
+Der echte Unterschied sind genau drei Schritte: Räume, Geräte und die
+Messgeräte-Übersicht.
+
+**(b) Meist nicht eingelöst: „Erste Spartipps" im Schnellstart.** Nachgerechnet,
+welche Tipps ein Schnellstart-Profil ohne jede Messung bekommt: bei einer
+Gasheizung ohne eingetragenes Baujahr und ohne PV **keinen einzigen**. Nur ein
+Kessel ab 20 Jahren (`old_boiler`) oder eine vorhandene PV-Anlage
+(`pv_self_consumption`) lösen etwas aus. Das ist strukturell richtig –
+Empfehlungen entstehen aus Messungen, nicht aus dem Fragebogen –, nur versprach
+der Bildschirm etwas anderes. Der am selben Tag entfernte Warmwasser-Tipp
+(#33) hat einen weiteren Fall wegfallen lassen.
+
+**(c) Fehlte: das Ziel.** „Dein Ziel" ist seit dem 05.09. Schritt 2 in beiden
+Wegen und entscheidet sichtbar, wo der Fragebogen endet (`goals.ts`) – in den
+Aufzählungen kam es nicht vor.
+
+**Neu:**
+
+| | bisher | jetzt |
+|---|---|---|
+| Schnellstart | Wohnfläche & Personen · Heizungsart · Erste Spartipps | Wohnfläche, Personen & Baujahr · Dein Ziel · Heizung, Warmwasser & Tarife |
+| Vollständig | Alles aus dem Schnellstart · Räume & Geräte · Tarife für die €-Ersparnis | Alles aus dem Schnellstart · Räume & Wärmeübergabe · Geräte, die Messungen freischalten |
+
+Jede Zeile nennt jetzt etwas, das der jeweilige Weg tatsächlich tut, und der
+Unterschied ist der echte. Ein Test in `sections.test.ts` hält die Aufteilung
+fest („unterscheidet die beiden Wege in genau drei Schritten"): Wer einen
+Schritt umhängt, wird daran erinnert, die Texte mitzuändern – genau der Fehler,
+der hier aufgefallen ist.
+
+**Nicht geändert, bewusst:**
+
+- **Zeitangabe „8–10 Min"** für den vollständigen Weg ist optimistisch: Der
+  Räume-Schritt allein verlangt Raumtypen wählen, Instanzen benennen und je
+  Instanz die Wärmeübergabe. Bei sechs Räumen ist man damit nah an zehn
+  Minuten, bevor die Geräte kommen.
+- **„Du kannst den Modus wechseln"** stimmt nur *während* des Fragebogens
+  (Zurück auf Schritt 1 führt zur Modus-Wahl). Danach öffnet „Bearbeiten" den
+  Profil-Hub, nicht die Modus-Wahl. Der zweite Halbsatz stimmt ganz: Der Hub
+  zeigt alle acht Abschnitte, auch die übersprungenen.
+
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen

@@ -1489,14 +1489,14 @@
       "detailedDesc": "Maximale Genauigkeit",
       "recommended": "Empfohlen",
       "quickIncludes": [
-        "Wohnfläche & Personen",
-        "Heizungsart",
-        "Erste Spartipps"
+        "Wohnfläche, Personen & Baujahr",
+        "Dein Ziel",
+        "Heizung, Warmwasser & Tarife"
       ],
       "detailedIncludes": [
         "Alles aus dem Schnellstart",
-        "Räume & Geräte",
-        "Tarife für die €-Ersparnis"
+        "Räume & Wärmeübergabe",
+        "Geräte, die Messungen freischalten"
       ],
       "note": "Kein Stress – du kannst den Modus wechseln und Angaben jederzeit später ergänzen."
     },
