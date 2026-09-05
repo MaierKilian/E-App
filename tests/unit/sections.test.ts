@@ -18,6 +18,7 @@ import {
   type SectionId,
 } from '@/features/onboarding/sections'
 import type { OnboardingData } from '@/types'
+import { room } from '../roomFixture'
 
 /** Profil, in dem nichts beantwortet ist. */
 const EMPTY = {
@@ -55,7 +56,7 @@ const FULL = {
   livingArea: 70,
   floors: 1,
   windowAge: '2000_2015',
-  rooms: [{ type: 'living_room', count: 1, heatTransfer: 'radiator' }],
+  rooms: [room('living_room', 1, { heatTransfer: 'radiator' })],
   heatGenerators: ['gas_boiler'],
   hotWaterType: 'same_as_heating',
   ventilationType: 'natural',

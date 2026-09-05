@@ -6,6 +6,7 @@ import type {
   OnboardingData,
   RenovationEvent,
   RoomEntry,
+  RoomInstanceEntry,
   RoomType,
   UserGoal,
 } from '@/types'
@@ -14,6 +15,7 @@ import {
   migrateLegacyRenovations,
 } from '@/features/onboarding/renovationProjection'
 import { newApplianceId } from '@/features/onboarding/appliances'
+import { newRoomId } from '@/features/measurements/rooms'
 
 /**
  * Migriert zusammengeführte Raumtypen aus älteren Profilen:
@@ -26,20 +28,70 @@ const ROOM_TYPE_RENAMES: Partial<Record<string, RoomType>> = {
   bureau: 'office',
 }
 
+/** Rohform eines Raums, wie sie aus localStorage oder der Cloud kommt. */
+type StoredRoom = Partial<RoomEntry> & {
+  type?: string
+  /** Altfelder vor dem Instanz-Umbau – galten für den ganzen Raumtyp. */
+  count?: number
+  areaSqm?: number
+  heatTransfer?: HeatTransferType
+}
+
+/**
+ * Räume aus einem gespeicherten Profil einlesen.
+ *
+ * Zwei Aufgaben in einem Durchgang:
+ *
+ * 1. **Zusammengeführte Raumtypen** ('guest_toilet' → 'toilet', 'bureau' →
+ *    'office'). Wie bisher werden mehrfach vorkommende Typen vereinigt.
+ * 2. **Instanz-Umbau.** Altprofile tragen `count` plus je eine Fläche und
+ *    Wärmeübergabe für den ganzen Typ; daraus werden einzelne Räume.
+ *
+ * Entscheidend ist dabei die Kennung: Ein Altprofil mit `count: 2` bekommt
+ * exakt `bedroom#0` und `bedroom#1` – **genau die Schlüssel, unter denen seine
+ * Messergebnisse schon liegen** (`room_temperature@bedroom#1`). Würden hier
+ * frische Kennungen vergeben, verlöre jedes bestehende Profil sämtliche
+ * Pro-Raum-Messungen, ohne dass es jemandem auffiele: Die Ergebnisse blieben
+ * gespeichert, nur fände sie kein Raum mehr.
+ *
+ * Fläche und Wärmeübergabe erben alle Instanzen des Typs. Das ist genau das,
+ * was das Altprofil ausgesagt hat – dass beide Kinderzimmer dieselbe Fläche
+ * haben, war dort keine Angabe, sondern die einzig mögliche Darstellung.
+ */
 function migrateRooms(rooms: unknown): RoomEntry[] | undefined {
   if (!Array.isArray(rooms)) return undefined
   const merged = new Map<RoomType, RoomEntry>()
-  for (const entry of rooms as RoomEntry[]) {
+  const usedIds = new Set<string>()
+
+  for (const entry of rooms as StoredRoom[]) {
     if (!entry || typeof entry.type !== 'string') continue
     const type = ROOM_TYPE_RENAMES[entry.type] ?? (entry.type as RoomType)
-    const existing = merged.get(type)
-    if (existing) {
-      existing.count += entry.count ?? 1
-    } else {
-      merged.set(type, { ...entry, type })
+    const target = merged.get(type) ?? { type, instances: [] }
+
+    const incoming: RoomInstanceEntry[] = Array.isArray(entry.instances)
+      ? entry.instances.filter((i): i is RoomInstanceEntry => Boolean(i))
+      : Array.from({ length: Math.max(1, Math.floor(entry.count ?? 1)) }, (_, i) => ({
+          // Der Schlüssel des Altprofils, Zeichen für Zeichen.
+          id: `${type}#${target.instances.length + i}`,
+          areaSqm: entry.areaSqm,
+          heatTransfer: entry.heatTransfer,
+        }))
+
+    for (const inst of incoming) {
+      // Eine fehlende oder doppelte Kennung kann nur aus einem beschädigten
+      // Profil oder einer Typ-Zusammenführung stammen. Eine frische Kennung
+      // kostet dann die Messergebnisse dieses einen Raums – eine doppelte
+      // ließe zwei Räume auf dieselben Ergebnisse zeigen.
+      const id = inst.id && !usedIds.has(inst.id) ? inst.id : newRoomId(type)
+      usedIds.add(id)
+      target.instances.push({ ...inst, id })
     }
+    merged.set(type, target)
   }
-  return [...merged.values()]
+
+  // Ein Raumtyp ohne Instanzen ist kein Raum – er entstünde nur aus einem
+  // Profil mit `count: 0`, das es über die Oberfläche nie gab.
+  return [...merged.values()].filter((r) => r.instances.length > 0)
 }
 
 const defaultData: OnboardingData = {
@@ -174,7 +226,7 @@ interface OnboardingState {
   markVisited: (id: string) => void
   updateData: (partial: Partial<OnboardingData>) => void
   addRoom: (type: RoomType) => string
-  setRoomHeatTransfer: (type: RoomType, transfer: HeatTransferType) => void
+  setRoomHeatTransfer: (roomKey: string, transfer: HeatTransferType) => void
   setRenovations: (events: RenovationEvent[] | null) => void
   setAppliances: (appliances: ApplianceEntry[], answered?: boolean) => void
   complete: () => void
@@ -186,7 +238,7 @@ interface OnboardingState {
 
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       data: defaultData,
       currentStep: -1,
       flowMode: 'linear',
@@ -211,19 +263,21 @@ export const useOnboardingStore = create<OnboardingState>()(
       // deshalb der Rückgabewert, sonst müsste der Aufrufer den Index selbst
       // ausrechnen und läge bei gleichzeitigen Änderungen daneben.
       addRoom: (type) => {
-        const existing = get().data.rooms.find((r) => r.type === type)
-        const index = existing ? Math.max(1, Math.floor(existing.count ?? 1)) : 0
-        set((state) => ({
-          data: {
-            ...state.data,
-            rooms: existing
-              ? state.data.rooms.map((r) =>
-                  r.type === type ? { ...r, count: index + 1 } : r,
-                )
-              : [...state.data.rooms, { type, count: 1 }],
-          },
-        }))
-        return `${type}#${index}`
+        const id = newRoomId(type)
+        set((state) => {
+          const exists = state.data.rooms.some((r) => r.type === type)
+          return {
+            data: {
+              ...state.data,
+              rooms: exists
+                ? state.data.rooms.map((r) =>
+                    r.type === type ? { ...r, instances: [...r.instances, { id }] } : r,
+                  )
+                : [...state.data.rooms, { type, instances: [{ id }] }],
+            },
+          }
+        })
+        return id
       },
       // Sanierungen setzen und die Altfelder mitziehen. `lastRenovationYear`
       // und `renovationItems` bleiben im Typ (Demo-Profil, Firestore-Sync,
@@ -243,16 +297,24 @@ export const useOnboardingStore = create<OnboardingState>()(
         set((state) => ({
           data: { ...state.data, appliances, appliancesAnswered: answered },
         })),
-      // Wärmeübergabe eines Raumtyps setzen. Kommt aus dem Möbelabstand-Check,
+      // Wärmeübergabe **eines Raums** setzen. Kommt aus dem Möbelabstand-Check,
       // wenn das Profil sie noch nicht kennt (Schnellstart-Raum): Der Check
       // erhebt die Angabe selbst, statt stillschweigend Heizkörper anzunehmen.
-      setRoomHeatTransfer: (type, transfer) =>
+      //
+      // Adressiert über den Raumschlüssel, nicht über die Raumart: Vorher
+      // schrieb eine Antwort im Kinderzimmer 1 stillschweigend auch das
+      // Kinderzimmer 2 um, und der Check dort stellte fortan die falschen
+      // Fragen – ohne je gefragt zu haben.
+      setRoomHeatTransfer: (roomKey, transfer) =>
         set((state) => ({
           data: {
             ...state.data,
-            rooms: state.data.rooms.map((r) =>
-              r.type === type ? { ...r, heatTransfer: transfer } : r,
-            ),
+            rooms: state.data.rooms.map((r) => ({
+              ...r,
+              instances: r.instances.map((inst) =>
+                inst.id === roomKey ? { ...inst, heatTransfer: transfer } : inst,
+              ),
+            })),
           },
         })),
       complete: () =>

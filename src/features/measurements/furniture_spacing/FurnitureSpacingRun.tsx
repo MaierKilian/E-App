@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Flame, Grip, Ruler } from 'lucide-react'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { Stepper } from '@/components/ui/Stepper'
-import { parseRoomKey } from '../rooms'
+import { parseRoomKey, roomHeatTransfer } from '../rooms'
 import {
   answerFromCoverage,
   answerFromDistance,
@@ -46,7 +46,7 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
   // nachdem ob ein Heizkörper freistehen muss oder eine Fußbodenheizung nicht
   // zugestellt werden darf. Weiß das Profil sie nicht (Raum aus dem
   // Schnellstart), erhebt der Check sie selbst, statt Heizkörper zu unterstellen.
-  const transfer = roomType ? rooms.find((r) => r.type === roomType)?.heatTransfer : undefined
+  const transfer = roomHeatTransfer(rooms, roomKey)
   const underfloor = transfer === 'underfloor'
   const keys = questionKeys(underfloor, roomType)
   const HeadIcon = underfloor ? Grip : Flame
@@ -129,7 +129,7 @@ export function FurnitureSpacingRun({ onEvaluate, roomKey }: RunProps) {
               <button
                 key={option}
                 type="button"
-                onClick={() => roomType && setRoomHeatTransfer(roomType, option)}
+                onClick={() => roomKey && setRoomHeatTransfer(roomKey, option)}
                 disabled={!roomType}
                 className="glass focus-ring flex flex-col items-center gap-2 rounded-2xl px-3 py-4 text-sm font-semibold text-foreground transition-transform active:scale-[0.97] disabled:opacity-40"
               >

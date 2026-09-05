@@ -6,7 +6,7 @@ import { ProgressRing } from '@/components/ui/ProgressRing'
 import { useMeasurementsStore } from '@/store/measurementsStore'
 import { useOnboardingStore } from '@/store/onboardingStore'
 import { RatingBadge } from '@/features/measurements/RatingBadge'
-import { parseRoomKey, roomLabel } from '@/features/measurements/rooms'
+import { roomLabelForKey } from '@/features/measurements/rooms'
 import type { MeasurementResult } from '@/features/measurements/types'
 import { measurementProgress, recentResults } from './measurementSummary'
 import { resultValueText } from '@/features/measurements/resultValue'
@@ -90,10 +90,7 @@ export function MeasurementSummaryCard() {
     if (!r.roomKey) return undefined
     // Nicht jeder Schlüssel ist ein Raum: Der Warmwasser-Check speichert dort
     // die Entnahmestelle. Ohne Treffer bleibt die Zeile einfach ohne Zusatz.
-    const parsed = parseRoomKey(r.roomKey)
-    if (!parsed) return undefined
-    const total = rooms.find((room) => room.type === parsed.type)?.count ?? 1
-    return roomLabel(t, { ...parsed, total: Math.max(1, total) })
+    return roomLabelForKey(t, rooms, r.roomKey)
   }
 
   return (

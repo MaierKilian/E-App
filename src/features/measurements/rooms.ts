@@ -1,36 +1,97 @@
 import type { TFunction } from 'i18next'
-import type { RoomEntry, RoomType } from '@/types'
+import type { HeatTransferType, RoomEntry, RoomInstanceEntry, RoomType } from '@/types'
 import type { MeasurementResult } from './types'
 
-/** Eine einzelne Raum-Instanz (ein konkreter Raum, auch bei mehreren gleichen). */
-export interface RoomInstance {
-  /** Stabiler Schlüssel, z. B. "bedroom#0". */
+/**
+ * Kennung für einen **neuen** Raum.
+ *
+ * Der Typ steht vorn und `#` trennt ihn ab, damit {@link parseRoomKey} die
+ * Raumart auch dann noch aus einem Schlüssel lesen kann, wenn der Raum selbst
+ * gelöscht wurde – ein gespeichertes Ergebnis heißt dann immer noch
+ * „Schlafzimmer" statt gar nichts.
+ *
+ * Der hintere Teil ist bewusst **keine laufende Nummer**: Sie würde nach dem
+ * Löschen wiederverwendet, und der neue Raum erbte die Messergebnisse des
+ * gelöschten.
+ */
+export function newRoomId(type: RoomType): string {
+  const unique =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID().slice(0, 8)
+      : `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`
+  return `${type}#${unique}`
+}
+
+/** Ein konkreter Raum, aus `rooms` aufgeklappt und um seine Raumart ergänzt. */
+export interface RoomInstance extends RoomInstanceEntry {
+  /** Schlüssel für Messergebnisse – identisch mit `id`. */
   key: string
   type: RoomType
+  /** Position innerhalb der eigenen Raumart, nur für die Beschriftung. */
   index: number
-  /** Gesamtzahl dieses Raumtyps (für die Beschriftung „Schlafzimmer 2"). */
+  /** Gesamtzahl dieser Raumart (für die Beschriftung „Schlafzimmer 2"). */
   total: number
 }
 
-/** Expandiert Raumtyp+Anzahl in einzelne Raum-Instanzen. */
+/** Klappt die nach Raumart gruppierten Einträge in einzelne Räume auf. */
 export function roomInstances(rooms: RoomEntry[]): RoomInstance[] {
   const out: RoomInstance[] = []
   for (const r of rooms) {
-    const n = Math.max(1, Math.floor(r.count ?? 1))
-    for (let i = 0; i < n; i++) {
-      out.push({ key: `${r.type}#${i}`, type: r.type, index: i, total: n })
-    }
+    const list = r.instances ?? []
+    list.forEach((inst, i) => {
+      out.push({ ...inst, key: inst.id, type: r.type, index: i, total: list.length })
+    })
   }
   return out
 }
 
-/** Anzeigename einer Raum-Instanz, nummeriert nur bei mehreren gleichen Räumen. */
+/** Der Raum zu einem Ergebnis-Schlüssel – `undefined`, wenn es ihn nicht (mehr) gibt. */
+export function findRoomInstance(rooms: RoomEntry[], roomKey: string): RoomInstance | undefined {
+  return roomInstances(rooms).find((inst) => inst.key === roomKey)
+}
+
+/** Wärmeübergabe eines konkreten Raums. */
+export function roomHeatTransfer(
+  rooms: RoomEntry[],
+  roomKey: string | undefined,
+): HeatTransferType | undefined {
+  return roomKey ? findRoomInstance(rooms, roomKey)?.heatTransfer : undefined
+}
+
+/**
+ * Anzeigename eines Raums.
+ *
+ * Der eigene Name schlägt alles; sonst benennt die Raumart ihn, nummeriert nur
+ * bei mehreren gleichen Räumen. Dasselbe Vorgehen wie bei den Geräten
+ * (`applianceLabel`) – zwei Zeilen „Kinderzimmer" untereinander wären in einer
+ * Auswahl unbrauchbar.
+ */
 export function roomLabel(
   t: TFunction,
-  inst: { type: RoomType; index: number; total: number },
+  inst: { type: RoomType; index: number; total: number; name?: string },
 ): string {
+  const own = inst.name?.trim()
+  if (own) return own
   const base = t(`onboarding.step3.roomTypes.${inst.type}`)
   return inst.total > 1 ? `${base} ${inst.index + 1}` : base
+}
+
+/**
+ * Beschriftung zu einem Ergebnis-Schlüssel.
+ *
+ * Fällt auf die blanke Raumart zurück, wenn es den Raum nicht mehr gibt: Ein
+ * gelöschter Raum lässt sein Ergebnis zurück, und „Schlafzimmer" ist dort eine
+ * bessere Auskunft als eine leere Zeile.
+ */
+export function roomLabelForKey(
+  t: TFunction,
+  rooms: RoomEntry[],
+  roomKey: string,
+): string | undefined {
+  const inst = findRoomInstance(rooms, roomKey)
+  if (inst) return roomLabel(t, inst)
+  const parsed = parseRoomKey(roomKey)
+  return parsed ? t(`onboarding.step3.roomTypes.${parsed.type}`) : undefined
 }
 
 /**
@@ -44,17 +105,30 @@ export function roomLabel(
  */
 export function roomLabelIn(
   t: TFunction,
-  inst: { type: RoomType; index: number; total: number },
+  inst: { type: RoomType; index: number; total: number; name?: string },
 ): string {
+  const own = inst.name?.trim()
+  // Mit eigenem Namen trägt die Präposition der Raumtyp nicht mehr: „in
+  // Zimmer Lena" statt „im Zimmer Lena" – ein Name ist grammatisch ein
+  // Eigenname, kein Gattungswort.
+  if (own) return `${t('measurements.rooms.inNamed')} ${own}`
   const base = t(`onboarding.step3.roomTypesIn.${inst.type}`)
   return inst.total > 1 ? `${base} ${inst.index + 1}` : base
 }
 
-/** Zerlegt einen Raum-Schlüssel "bedroom#0" wieder in Typ und Index. */
-export function parseRoomKey(roomKey: string): { type: RoomType; index: number } | null {
-  const m = /^(.+)#(\d+)$/.exec(roomKey)
+/**
+ * Liest die Raumart aus einem Raum-Schlüssel ("bedroom#0", "bedroom#a1b2c3d4").
+ *
+ * Nur für den Fall, dass es den Raum nicht mehr gibt – wo er existiert, liefert
+ * {@link findRoomInstance} mehr. Der hintere Teil ist seit dem Instanz-Umbau
+ * keine Zahl mehr, deshalb passt der Ausdruck auf beliebige Zeichen. Ein
+ * Schlüssel ohne `#` (der Warmwasser-Check legt dort die Entnahmestelle ab)
+ * bleibt wie bisher ohne Treffer.
+ */
+export function parseRoomKey(roomKey: string): { type: RoomType } | null {
+  const m = /^([^#]+)#(.+)$/.exec(roomKey)
   if (!m) return null
-  return { type: m[1] as RoomType, index: Number(m[2]) }
+  return { type: m[1] as RoomType }
 }
 
 /** Schlüssel eines Mess-Ergebnisses inkl. optionalem Raum (z. B. "room_temperature@bedroom#0"). */

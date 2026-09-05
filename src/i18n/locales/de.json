@@ -1168,6 +1168,9 @@
       "title": "Jetzt nachmessen",
       "text": "Du hast vor {{days}} Tagen den {{check}} gemacht. Miss die Grundlast erneut – dann siehst du schwarz auf weiß, was deine Änderungen gebracht haben.",
       "cta": "Grundlast erneut messen"
+    },
+    "rooms": {
+      "inNamed": "in"
     }
   },
   "monitoring": {
@@ -1478,7 +1481,7 @@
     },
     "step3": {
       "title": "Zimmer",
-      "subtitle": "Wähle deine Zimmertypen aus und passe Anzahl und Fläche (m², optional) an.",
+      "subtitle": "Wähle deine Zimmertypen aus. Mehrere gleiche Räume kannst du einzeln benennen und bemessen.",
       "areaLabel": "Fläche pro Raum",
       "areaUnit": "m²",
       "groups": {
@@ -1515,7 +1518,11 @@
         "basement": "im Keller",
         "staircase": "im Treppenhaus",
         "attic": "auf dem Dachboden"
-      }
+      },
+      "namePlaceholder": "Raum {{n}}",
+      "nameLabel": "Name dieses Raums",
+      "removeRoom": "Diesen Raum entfernen",
+      "addRoom": "Weiterer Raum"
     },
     "step4": {
       "title": "Heizsystem",

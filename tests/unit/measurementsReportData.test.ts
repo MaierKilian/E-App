@@ -14,6 +14,7 @@ import { buildMeasurementsReportData } from '@/features/reports/measurementsRepo
 import type { MeasurementResult } from '@/features/measurements/types'
 import type { RoomEntry } from '@/types'
 import type { ApplianceEntry } from '@/types'
+import { room } from '../roomFixture'
 
 const NOW = '2026-08-25T08:00:00.000Z'
 
@@ -26,7 +27,7 @@ function result(
   return { id, rating: 'good', primaryValue, unit, completedAt: NOW, details }
 }
 
-const ROOMS: RoomEntry[] = [{ type: 'bedroom', count: 1 }]
+const ROOMS: RoomEntry[] = [room('bedroom')]
 
 function entryOf(results: Record<string, MeasurementResult>, id: string) {
   const data = buildMeasurementsReportData({ results, rooms: ROOMS })

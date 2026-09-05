@@ -22,7 +22,7 @@ import { isMeasuredSaving } from '@/features/measurements/savingsDisplay'
 import { applianceInstances } from '@/features/onboarding/appliances'
 import type { MeasurementCategory } from '@/features/measurements/catalog'
 import { DEFAULT_COMFORT_BAND } from '@/features/measurements/room_temperature/roomClimate'
-import { parseRoomKey, roomInstances } from '@/features/measurements/rooms'
+import { findRoomInstance, parseRoomKey, roomInstances } from '@/features/measurements/rooms'
 import {
   isCurrentLightingResult,
   openRoomKeys,
@@ -289,12 +289,14 @@ function biggestStandbyDevice(
 function roomOf(
   r: MeasurementResult,
   data: OnboardingData,
-): { type: RoomType; index: number; total: number } | undefined {
+): { type: RoomType; index: number; total: number; name?: string } | undefined {
   if (!r.roomKey) return undefined
+  const inst = findRoomInstance(data.rooms, r.roomKey)
+  if (inst) return { type: inst.type, index: inst.index, total: inst.total, name: inst.name }
+  // Der Raum wurde gelöscht, sein Ergebnis blieb: Die Raumart trägt den Tipp
+  // weiter, nur ohne Nummer – „Schlafzimmer 2" wäre jetzt eine Lüge.
   const parsed = parseRoomKey(r.roomKey)
-  if (!parsed) return undefined
-  const entry = data.rooms.find((room) => room.type === parsed.type)
-  return { type: parsed.type, index: parsed.index, total: Math.max(1, entry?.count ?? 1) }
+  return parsed ? { type: parsed.type, index: 0, total: 1 } : undefined
 }
 
 /**

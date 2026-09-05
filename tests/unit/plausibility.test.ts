@@ -11,6 +11,7 @@ import {
   plausibilityKey,
 } from '@/features/onboarding/plausibility'
 import type { OnboardingData } from '@/types'
+import { room } from '../roomFixture'
 
 function profile(over: Partial<OnboardingData>): OnboardingData {
   return { livingArea: 70, personsCount: 2, roomsCount: 3, rooms: [], ...over } as OnboardingData
@@ -85,8 +86,8 @@ describe('Zimmerzahl', () => {
     const d = profile({
       roomsCount: 3,
       rooms: [
-        { type: 'bedroom', count: 2 },
-        { type: 'living_room', count: 1 },
+        room('bedroom', 2),
+        room('living_room'),
       ],
     } as Partial<OnboardingData>)
     expect(effectiveRoomCount(d)).toBe(3)

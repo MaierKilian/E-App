@@ -138,7 +138,7 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
       ) : !detailed ? (
         <p className="text-xs text-muted">
           {t('onboarding.step1.roomsFromList', {
-            count: data.rooms.reduce((sum, r) => sum + Math.max(1, r.count ?? 1), 0),
+            count: data.rooms.reduce((sum, r) => sum + r.instances.length, 0),
           })}
         </p>
       ) : null}

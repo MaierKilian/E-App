@@ -8,6 +8,7 @@ import type { OnboardingData } from '@/types'
 import type { EnergyType } from '@/store/readingsStore'
 import { useTariffStore, resolvePrice } from '@/store/tariffStore'
 import { PRICE_META } from '@/features/monitoring/priceConfig'
+import { roomInstances, roomLabel } from '@/features/measurements/rooms'
 
 interface Props {
   data: OnboardingData
@@ -89,9 +90,10 @@ function UnlockSummary({ data }: Props) {
 export function Step8Review({ data }: Props) {
   const { t, i18n } = useTranslation()
 
-  const roomsSummary = data.rooms
-    .map((r) => `${t(`onboarding.step3.roomTypes.${r.type}`)} ×${r.count}`)
-    .join(', ')
+  // Seit dem Instanz-Umbau je Raum: „Zimmer Lena, Zimmer Max" sagt mehr als
+  // „Kinderzimmer ×2" – und ist genau das, was der Nutzer eingetragen hat.
+  const instances = roomInstances(data.rooms)
+  const roomsSummary = instances.map((inst) => roomLabel(t, inst)).join(', ')
 
   const generatorsSummary = data.heatGenerators
     .map((g) => t(`onboarding.step4.generators.${g}`))
@@ -110,12 +112,9 @@ export function Step8Review({ data }: Props) {
     })
     .join(', ')
 
-  const heatTransferSummary = data.rooms
-    .filter((r) => Boolean(r.heatTransfer))
-    .map(
-      (r) =>
-        `${t(`onboarding.step3.roomTypes.${r.type}`)}: ${t(`onboarding.step5.${r.heatTransfer}`)}`,
-    )
+  const heatTransferSummary = instances
+    .filter((inst) => Boolean(inst.heatTransfer))
+    .map((inst) => `${roomLabel(t, inst)}: ${t(`onboarding.step5.${inst.heatTransfer}`)}`)
     .join(', ')
 
   const goalsSummary = data.goals

@@ -813,7 +813,8 @@ und auf einen Bereich zeigt, den die Navigation wirklich führt.
 **Kategorie:** Problem · **Bereich:** `Step3Rooms`, `RoomTypePicker`,
 `types/index.ts` (`RoomEntry`), `measurements/rooms.ts`, `roomAreas.ts`,
 `onboardingStore`
-**Status:** 🔍 Nur gesammelt – Vorschlag steht, Entscheidung offen.
+**Status:** ✅ Umgesetzt (05.09.) – Kilians Entscheidung: „so wie du
+empfiehlst", also mit einzeln löschbaren Räumen und stabilen Kennungen.
 
 Kilians Befund am Schritt „Räume": „Wenn man 2 Räume des gleichen Typs hat, hat
 man keine Möglichkeit die Räume sinnvoll individuell zu benennen. Auch die
@@ -904,11 +905,31 @@ Stepper entfällt, die Anzahl ist die Länge der Liste.
 `roomLabel()` ist der einzige Ort, an dem der Name durchschlagen muss – alle
 rund 15 Anzeigestellen (Messungen, Tipps, Bericht, Startseite) gehen durch ihn.
 
-**Umfang:** `RoomEntry`-Umbau + Migration, `Step3Rooms`/`RoomTypePicker`,
-`roomInstances`/`roomLabel`, `resolveRoomArea` (Signatur auf Instanz statt Typ),
-`setRoomHeatTransfer`, `addRoom`, `Step8Review`, PDF-Steckbrief, Demo-Profil,
-`fieldUsage`, de/en. Kein Verlust gespeicherter Messergebnisse, wenn die
-id-Vererbung sitzt – dafür braucht es einen Test, der genau das festhält.
+**Umgesetzt wie vorgeschlagen.** `RoomEntry` trägt jetzt `instances`, die Länge
+ersetzt `count`; Name, Fläche und Wärmeübergabe stehen je Raum. Der Stepper ist
+der Zeilenliste gewichen – Namensfeld und Löschen erscheinen wie bei den Geräten
+erst ab dem zweiten Raum. `resolveRoomArea` rechnet je Raum statt je Raumart,
+`setRoomHeatTransfer` adressiert über den Raumschlüssel, `roomLabel` lässt den
+eigenen Namen alles schlagen und trägt ihn damit durch Messungen, Tipps, Bericht
+und Startseite.
+
+**Die Migration ist der Kern.** Ein Altprofil mit `count: 2` bekommt exakt
+`children_room#0` und `children_room#1` – genau die Schlüssel, unter denen seine
+Messergebnisse schon liegen. Fläche und Wärmeübergabe erben alle Instanzen des
+Typs: Dass beide Kinderzimmer dieselbe Fläche hatten, war im Altprofil keine
+Angabe, sondern die einzig mögliche Darstellung. Ein Test hält das fest, ein
+zweiter, dass eine gelöschte Kennung nie wieder vergeben wird.
+
+`parseRoomKey` liest den hinteren Teil nicht mehr als Zahl (neue Räume tragen
+dort eine zufällige Kennung) und dient nur noch dazu, die Raumart eines
+**verwaisten** Schlüssels zu lesen – ein gelöschter Raum lässt sein Ergebnis
+zurück, und „Schlafzimmer" ist dort eine bessere Auskunft als eine leere Zeile.
+
+Abnahme: `tsc -b`, 949 Tests (22 neue), ESLint, Build grün; im Browser mit einem
+Altprofil in der `count`-Form durchgespielt – Kennungen erhalten, zwei
+Kinderzimmer getrennt benannt (9 m² / 18 m²), Fußbodenheizung nur im ersten
+gesetzt, ersten gelöscht und geprüft, dass „Zimmer Max" mit seinen Angaben
+bleibt.
 
 ### 29. Wärmeübergabe kennt nur zwei Bauarten – und kein „unbeheizt"
 **Kategorie:** Problem · **Bereich:** `types/index.ts` (`HeatTransferType`),

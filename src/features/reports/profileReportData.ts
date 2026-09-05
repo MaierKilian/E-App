@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { OnboardingData, RenovationEvent } from '@/types'
+import { roomInstances, roomLabel } from '@/features/measurements/rooms'
 
 /**
  * Der Haushalts-Steckbrief: was der Bericht über das Objekt selbst sagt.
@@ -137,11 +138,7 @@ export function buildProfileReportData(
     [t('onboarding.step8.labels.persons'), quantity(data.personsCount, '', language)],
     [
       t('report.pdf.profile.rooms'),
-      list(
-        data.rooms.map(
-          (r) => `${t(`onboarding.step3.roomTypes.${r.type}`)}${r.count > 1 ? ` ×${r.count}` : ''}`,
-        ),
-      ),
+      list(roomInstances(data.rooms).map((inst) => roomLabel(t, inst))),
     ],
     // Mieter/Eigentümer wird seit dem 05.09.2026 nicht mehr gefragt. Der
     // Standardwert ist `null`, „nie gefragt" also sauber von einer echten

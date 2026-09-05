@@ -149,20 +149,56 @@ export type InstrumentType =
 
 export type LocationMode = 'manual' | 'automatic' | 'skip'
 
-export interface RoomEntry {
-  type: RoomType
-  count: number
+/**
+ * Ein **einzelner** Raum. Alles, was einen Raum von seinem Nachbarn gleicher
+ * Art unterscheidet, steht hier – nicht am {@link RoomEntry}.
+ *
+ * Vorher trug `RoomEntry` nur `count`, und Fläche wie Wärmeübergabe galten für
+ * den ganzen Raumtyp. Zwei Kinderzimmer teilten sich zwangsläufig eine Fläche,
+ * obwohl die Pro-Raum-Checks längst je Raum messen und speichern
+ * (`room_temperature@children_room#1`). Die App maß je Raum und konnte ihn nur
+ * nicht beschreiben.
+ */
+export interface RoomInstanceEntry {
   /**
-   * Wärmeübergabe im Raum. **Optional**, weil „noch nicht beantwortet" ein
-   * eigener Zustand sein muss: Vorher stand hier bei jedem neuen Raum
+   * Stabile Kennung, beim Anlegen vergeben und danach unveränderlich. Sie ist
+   * zugleich der `roomKey`, unter dem Messergebnisse liegen.
+   *
+   * **Kein Index.** Wie bei {@link ApplianceEntry}: Löscht man den ersten von
+   * zwei Kinderzimmern, rutschte `children_room#1` auf `#0` und erbte dessen
+   * Messergebnisse – der Nutzer sähe eine Messung, die er in einem anderen
+   * Raum gemacht hat. Solange Räume nur hoch- und runtergezählt wurden, war
+   * das folgenlos; mit einzeln löschbaren Räumen ist es der Normalfall.
+   *
+   * Bestandsräume erben als `id` genau ihren bisherigen Schlüssel
+   * (`bedroom#0`, `bedroom#1`, … – siehe `migrateOnboardingData`). Damit gilt
+   * `roomKey === id` in beide Richtungen und kein gespeichertes Ergebnis
+   * verliert seinen Raum. Neue Räume bekommen eine frische, nie
+   * wiederverwendete Kennung.
+   */
+  id: string
+  /**
+   * Frei wählbarer Name, nötig erst ab dem zweiten Raum derselben Art
+   * („Zimmer Lena"). Leer heißt: Raumart und laufende Nummer benennen ihn.
+   */
+  name?: string
+  /** Optionale Wohnfläche dieses Raums in m². Fehlt sie, verteilt
+   *  `resolveRoomArea` die restliche Wohnfläche gewichtet. */
+  areaSqm?: number
+  /**
+   * Wärmeübergabe in diesem Raum. **Optional**, weil „noch nicht beantwortet"
+   * ein eigener Zustand sein muss: Vorher stand hier bei jedem neuen Raum
    * `'radiator'`, und der Möbelabstand-Check bewertete stillschweigend
    * Heizkörper – auch in Räumen mit Fußbodenheizung. Fehlt der Wert, fragt der
    * Check einmal nach und schreibt die Antwort zurück.
    */
   heatTransfer?: HeatTransferType
-  /** Optionale Wohnfläche dieses Raumtyps in m² (gilt je Raum-Instanz). Fehlt
-   *  sie, greift ein typischer Fallback-Wert je Raumtyp. */
-  areaSqm?: number
+}
+
+export interface RoomEntry {
+  type: RoomType
+  /** Die einzelnen Räume dieser Art. Die Länge ersetzt das frühere `count`. */
+  instances: RoomInstanceEntry[]
 }
 
 export interface InstrumentEntry {

@@ -9,6 +9,7 @@ import { measurementProgress, recentResults } from '@/features/home/measurementS
 import { MEASUREMENT_CATALOG } from '@/features/measurements/catalog'
 import type { MeasurementResult } from '@/features/measurements/types'
 import type { RoomEntry } from '@/types'
+import { room } from '../roomFixture'
 
 function result(id: string, completedAt: string, roomKey?: string): MeasurementResult {
   return { id, rating: 'good', primaryValue: 1, unit: '°C', completedAt, roomKey }
@@ -17,8 +18,8 @@ function result(id: string, completedAt: string, roomKey?: string): MeasurementR
 const AVAILABLE = MEASUREMENT_CATALOG.filter((m) => m.available)
 const PER_ROOM = MEASUREMENT_CATALOG.find((m) => m.available && m.perRoom)!
 const ROOMS: RoomEntry[] = [
-  { type: 'living_room', count: 1, heatTransfer: 'radiator' },
-  { type: 'bedroom', count: 1, heatTransfer: 'radiator' },
+  room('living_room', 1, { heatTransfer: 'radiator' }),
+  room('bedroom', 1, { heatTransfer: 'radiator' }),
 ]
 
 describe('Fortschritt', () => {

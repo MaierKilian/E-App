@@ -159,11 +159,12 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
       // Die Wärmeübergabe steht jetzt beim Raum, den sie beschreibt. Zählbar
       // ist sie überhaupt erst, seit sie optional ist – vorher stand bei jedem
       // Raum stillschweigend „Heizkörper".
-      field(
-        'heatTransfer',
-        (d) => d.rooms.length > 0 && d.rooms.every((r) => Boolean(r.heatTransfer)),
+      field('heatTransfer', (d) =>
+        d.rooms.length > 0 && d.rooms.every((r) => r.instances.every((i) => Boolean(i.heatTransfer))),
       ),
-      optional('roomAreas', (d) => d.rooms.some((r) => (r.areaSqm ?? 0) > 0)),
+      optional('roomAreas', (d) =>
+        d.rooms.some((r) => r.instances.some((i) => (i.areaSqm ?? 0) > 0)),
+      ),
     ],
   },
   {

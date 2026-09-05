@@ -1168,6 +1168,9 @@
       "title": "Time to measure again",
       "text": "You did the {{check}} {{days}} days ago. Measure the base load again – then you will see in black and white what your changes achieved.",
       "cta": "Measure base load again"
+    },
+    "rooms": {
+      "inNamed": "in"
     }
   },
   "onboarding": {
@@ -1265,7 +1268,7 @@
     },
     "step3": {
       "title": "Rooms",
-      "subtitle": "Select your room types and adjust count and area (m², optional).",
+      "subtitle": "Pick your room types. Rooms of the same type can be named and sized individually.",
       "areaLabel": "Area per room",
       "areaUnit": "m²",
       "groups": {
@@ -1302,7 +1305,11 @@
         "basement": "in the basement",
         "staircase": "in the stairwell",
         "attic": "in the attic"
-      }
+      },
+      "namePlaceholder": "Room {{n}}",
+      "nameLabel": "Name of this room",
+      "removeRoom": "Remove this room",
+      "addRoom": "Another room"
     },
     "step4": {
       "title": "Heating System",

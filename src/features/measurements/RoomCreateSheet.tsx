@@ -44,7 +44,7 @@ export function RoomCreateSheet({ open, onClose, onCreated }: Props) {
         isSelected={(type) => rooms.some((r) => r.type === type)}
         onPick={handlePick}
         renderDetails={(type) => {
-          const count = rooms.find((r) => r.type === type)?.count ?? 0
+          const count = rooms.find((r) => r.type === type)?.instances.length ?? 0
           return (
             <p className="mt-1.5 text-[11px] text-muted">
               {t('measurements.roomPicker.addAnother', { n: count })}

@@ -269,6 +269,22 @@ Der zweite geht am `merge` vorbei. Stünde die Migration nur dort, käme ein
 Altprofil aus der Cloud unmigriert an. Beide Wege rufen `migrateOnboardingData`
 auf – dort greift die Migration also in jedem Fall.
 
+### Kennungen von Räumen und Geräten sind unveränderlich
+
+`RoomInstanceEntry.id` und `ApplianceEntry.id` werden beim Anlegen vergeben und
+danach **nie** geändert oder wiederverwendet. Sie sind zugleich der Schlüssel,
+unter dem Messergebnisse liegen (`room_temperature@children_room#a1b2c3d4`).
+
+Grund: Eine laufende Nummer rutscht beim Löschen nach. Entfernt man den ersten
+von zwei Kinderzimmern, hieße das zweite plötzlich `children_room#0` und erbte
+die Messungen des gelöschten – der Nutzer sähe ein Ergebnis, das er in einem
+anderen Raum erhoben hat. Deshalb trägt `newRoomId()` einen zufälligen Teil.
+
+Bestandsdaten sind die Ausnahme, die die Regel trägt: `migrateOnboardingData`
+gibt Altprofilen genau ihre bisherigen Schlüssel (`bedroom#0`, `bedroom#1`),
+damit kein gespeichertes Ergebnis seinen Raum verliert. Wer die Vergabe anfasst,
+prüft `tests/unit/roomMigration.test.ts`.
+
 ### Gespeicherte Messergebnisse bleiben lesbar
 
 `MeasurementResult.details` nimmt nur Zahlen auf (`Record<string, number>`),

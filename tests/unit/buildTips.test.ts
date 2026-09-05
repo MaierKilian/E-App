@@ -11,14 +11,15 @@ import type { MeasurementResult } from '@/features/measurements/types'
 import type { OnboardingData } from '@/types'
 import de from '@/i18n/locales/de.json'
 import en from '@/i18n/locales/en.json'
+import { room } from '../roomFixture'
 
 const NOW = '2026-08-19T08:00:00.000Z'
 
 /** Profil mit Heizkörpern in Wohnzimmer und zwei Schlafzimmern. */
 const PROFILE = {
   rooms: [
-    { type: 'living_room', count: 1, heatTransfer: 'radiator' },
-    { type: 'bedroom', count: 2, heatTransfer: 'radiator' },
+    room('living_room', 1, { heatTransfer: 'radiator' }),
+    room('bedroom', 2, { heatTransfer: 'radiator' }),
   ],
   smartHomeDevices: [],
   occupancyStatus: 'tenant',

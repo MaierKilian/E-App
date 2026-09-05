@@ -22,14 +22,15 @@ import { buildSteps } from '@/features/measurements/tasks'
 import { instanceKey } from '@/features/measurements/rooms'
 import type { MeasurementResult } from '@/features/measurements/types'
 import type { RoomEntry } from '@/types'
+import { room } from '../roomFixture'
 
 const t = ((key: string) => key) as never
 
 const ROOMS: RoomEntry[] = [
-  { type: 'living_room', count: 1, heatTransfer: 'radiator' },
-  { type: 'bedroom', count: 2, heatTransfer: 'radiator' },
-  { type: 'bathroom', count: 1, heatTransfer: 'radiator' },
-  { type: 'kitchen', count: 1, heatTransfer: 'radiator' },
+  room('living_room', 1, { heatTransfer: 'radiator' }),
+  room('bedroom', 2, { heatTransfer: 'radiator' }),
+  room('bathroom', 1, { heatTransfer: 'radiator' }),
+  room('kitchen', 1, { heatTransfer: 'radiator' }),
 ]
 
 function result(id: string, roomKey?: string): MeasurementResult {

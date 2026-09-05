@@ -122,12 +122,14 @@ const onboardingData: OnboardingData = {
   buildingType: 'apartment',
   livingArea: 85,
   rooms: [
-    { type: 'living_room', count: 1, heatTransfer: 'radiator', areaSqm: 26 },
-    { type: 'bedroom', count: 1, heatTransfer: 'radiator', areaSqm: 16 },
-    { type: 'children_room', count: 1, heatTransfer: 'radiator', areaSqm: 12 },
-    { type: 'kitchen', count: 1, heatTransfer: 'radiator', areaSqm: 11 },
-    { type: 'bathroom', count: 1, heatTransfer: 'radiator', areaSqm: 6 },
-    { type: 'hallway', count: 1, heatTransfer: 'radiator', areaSqm: 8 },
+    // Kennungen in der Altprofil-Form `type#0`: Das Demo-Profil liefert
+    // vorgefertigte Messergebnisse mit, deren Raumschlüssel dazu passen müssen.
+    { type: 'living_room', instances: [{ id: 'living_room#0', heatTransfer: 'radiator', areaSqm: 26 }] },
+    { type: 'bedroom', instances: [{ id: 'bedroom#0', heatTransfer: 'radiator', areaSqm: 16 }] },
+    { type: 'children_room', instances: [{ id: 'children_room#0', heatTransfer: 'radiator', areaSqm: 12 }] },
+    { type: 'kitchen', instances: [{ id: 'kitchen#0', heatTransfer: 'radiator', areaSqm: 11 }] },
+    { type: 'bathroom', instances: [{ id: 'bathroom#0', heatTransfer: 'radiator', areaSqm: 6 }] },
+    { type: 'hallway', instances: [{ id: 'hallway#0', heatTransfer: 'radiator', areaSqm: 8 }] },
   ],
   heatGenerators: ['gas_boiler'],
   hotWaterType: 'same_as_heating',

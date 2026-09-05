@@ -28,12 +28,13 @@ import { localizeParams } from '@/features/tips/tipsForReport'
 import type { RoomEntry, RoomType } from '@/types'
 import de from '@/i18n/locales/de.json'
 import en from '@/i18n/locales/en.json'
+import { room } from '../roomFixture'
 
 const ROOMS: RoomEntry[] = [
-  { type: 'living_room', count: 1, heatTransfer: 'radiator' },
-  { type: 'kitchen', count: 1, heatTransfer: 'radiator' },
-  { type: 'bedroom', count: 2, heatTransfer: 'radiator' },
-  { type: 'basement', count: 1, heatTransfer: 'radiator' },
+  room('living_room', 1, { heatTransfer: 'radiator' }),
+  room('kitchen', 1, { heatTransfer: 'radiator' }),
+  room('bedroom', 2, { heatTransfer: 'radiator' }),
+  room('basement', 1, { heatTransfer: 'radiator' }),
 ]
 const INSTANCES = roomInstances(ROOMS)
 

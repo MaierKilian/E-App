@@ -39,7 +39,7 @@ const AREA_PER_ROOM_HIGH = 80
  * `roomsCount` ist dann nur noch der grobe Vorläufer.
  */
 export function effectiveRoomCount(data: OnboardingData): number {
-  const listed = data.rooms.reduce((sum, r) => sum + Math.max(1, Math.floor(r.count ?? 1)), 0)
+  const listed = data.rooms.reduce((sum, r) => sum + r.instances.length, 0)
   return listed > 0 ? listed : Math.max(0, Math.floor(data.roomsCount ?? 0))
 }
 
