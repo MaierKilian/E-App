@@ -1168,6 +1168,70 @@ an dem die App vor einer Anschaffung zu einer Messung riet. Soll dieser Rat an
 anderer Stelle wieder auftauchen (z. B. im Grundlast-Check selbst), wäre das
 eine eigene Änderung.
 
+### 33. Warmwasser-Tipp „die teuerste Kilowattstunde im Haus"
+**Kategorie:** Problem · **Bereich:** `buildTips.ts` (`hot_water_electric`),
+`hotWaterEnergy.ts`, de/en
+**Status:** 🔍 Nur gesammelt – Vorschlag steht, Entscheidung offen.
+
+Kilians Befund aus der Nutzung: „Diesen Tipp finde ich komisch."
+
+Nachgeprüft – vier Dinge, die zusammen den Eindruck machen:
+
+**1. Die zentrale Behauptung ist eine Unterstellung.** Der Tipp erscheint bei
+`hotWaterType === 'separate_system'` und schreibt: „Du erzeugst dein Warmwasser
+über ein eigenes Gerät, **also in aller Regel elektrisch**." Die Frage im
+Fragebogen unterscheidet aber „Wie Heizung / Separates System / Teilweise
+kombiniert / Nicht bekannt" – sie fragt, **ob** das Warmwasser vom Heizgerät
+kommt, nicht **womit** es erzeugt wird. Ein separates System kann eine
+Gastherme, ein Gas-Durchlauferhitzer, eine Brauchwasser-Wärmepumpe oder
+Solarthermie sein.
+
+Bemerkenswert: Genau diesen Fehlschluss hat das Projekt schon einmal korrigiert.
+Der Kommentar an `defaultHotWaterSource` hält fest, dass „Nicht bekannt" früher
+pauschal bei „elektrisch" landete und „eine Zahl, die um ein Vielfaches
+danebenlag" erzeugte. Für `separate_system` steht die Annahme unverändert – und
+der Tipp macht sie jetzt zusätzlich zum Fließtext, wo sie niemand mehr ändern
+kann. Im Duschkopf-Check ist sie wenigstens nur eine Vorbelegung.
+
+**2. Die Zahl ist Prosa statt Rechnung.** „Gut zweieinhalbmal so teuer wie Gas"
+steht fest im Text. Nachgerechnet stimmt sie – mit den **Standardpreisen** der
+App (35 ct/kWh Strom → 0,354 €/kWh nutzbar; 1,20 €/m³ Gas → 0,133 €/kWh; Faktor
+2,65). Wer im Schritt „Preise & Kosten" eigene Tarife einträgt – wozu die App
+ausdrücklich auffordert –, bekommt trotzdem den Standardwert erzählt. Dabei
+rechnet `eurPerKwhHeat()` genau diesen Vergleich mit den echten Preisen. Das
+verstößt gegen die Hausregel „Zahlen stehen an einer Stelle".
+
+**3. Der Vergleich ist nicht handlungsleitend.** „Dieselbe Dusche kostet dich
+damit deutlich mehr als in einem Haus mit Gastherme" – der Nutzer hat kein Haus
+mit Gastherme und kann daran nichts ändern. Der Satz erklärt nicht, er wertet.
+
+**4. Es ist keine Maßnahme, sondern eine Begründung.** Der Tipp steht unter
+„Offene Maßnahmen · 1", zählt in „0 von 1 Maßnahmen umgesetzt" und trägt ein
+„Erledigt"-Häkchen. Umzusetzen gibt es aber nichts: Die einzige Handlung ist
+„mach den Duschkopf-Test", und das ist ein Check, keine Maßnahme. Man kann
+„Erledigt" ankreuzen, ohne irgendetwas getan zu haben. Das Tipp-Modell kennt
+keine Unterscheidung zwischen Hinweis und Maßnahme – jeder Tipp bekommt das
+Häkchen und zählt im Nenner.
+
+**Vorschlag – den Tipp ehrlich machen statt streichen:**
+
+- **Die Gewissheit raus.** „Meist elektrisch" statt „also in aller Regel
+  elektrisch", und der Satz führt zum Check, der die Quelle tatsächlich erfragt:
+  „Der Duschkopf-Test rechnet mit deiner Quelle und deinen Preisen."
+- **Den Faktor rechnen**, nicht schreiben: aus `eurPerKwhHeat('electric')` gegen
+  `eurPerKwhHeat('gas')` mit den Tarifen des Nutzers, als `params` in den Text.
+  Das Tipp-Modell trägt `params` schon (`old_boiler` nutzt es).
+- **Den Gastherme-Vergleich streichen.**
+
+Zwei Punkte, die eine Entscheidung brauchen:
+
+- Soll der Tipp **nur noch erscheinen, wenn kein Wärmeerzeuger im Profil steht**?
+  Wer „separates System" **und** einen Gaskessel angegeben hat, hat vermutlich
+  eine zweite Gas-Einheit – dann ist „elektrisch" besonders unwahrscheinlich.
+- Braucht das Tipp-Modell eine Stufe „Hinweis" ohne Erledigt-Häkchen und ohne
+  Nenner-Anteil? Das beträfe nicht nur diesen Tipp, sondern jeden, der zu einer
+  Messung führt statt zu einer Handlung.
+
 
 ## Cookie-Banner & Rechtsseiten
 
