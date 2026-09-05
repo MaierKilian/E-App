@@ -71,6 +71,9 @@ deployten App dazu.
   „Ausstattung", statt unter der Messgeräte-Übersicht am Seitenende. Damit hat
   „Ausstattung" keine Frage mehr und ist – wie „Preise & Kosten" – eine reine
   Auskunft.
+- Frage nach Mieter oder Eigentümer entfernt (05.09.) – sie hätte genau einen
+  Tipp gefiltert (Alter des Kessels), und der ist für Mieter das Argument
+  gegenüber der Vermietung. Der Schritt heißt seither nur noch „Standort".
 - Die PV-Angabe trägt jetzt auch Empfehlungen: „Ja" rät, große Verbraucher in
   die Mittagsstunden zu legen (Eigenverbrauch statt Einspeisung), „geplant" rät,
   vor der Auslegung die eigene Grundlast zu messen. Den Erzeugungszähler im
@@ -78,6 +81,14 @@ deployten App dazu.
 - Die Warmwasser-Angabe wirkt sichtbar: Der Duschkopf-Check nennt die Herkunft
   seiner Vorbelegung, „Nicht bekannt" rät auf den Wärmeerzeuger statt pauschal
   auf Strom, und „Separates System" trägt eine eigene Empfehlung.
+
+*Monitoring*
+- **Sommer-Check** bei Gas, Öl, Pellets und Wärmepumpe (05.09.): Der gemessene
+  Verbrauch im Hochsommer wird gegen den erwarteten Warmwasserbedarf gehalten.
+  Läuft dort deutlich mehr, ist die Heizung nicht abgeschaltet – fehlende
+  Sommerabschaltung, Zirkulationspumpe im Dauerlauf, zu hohe Heizgrenze.
+- Das Verlaufsdiagramm hinterlegt bei diesen Trägern die **Heizperiode**
+  (Okt–Apr), damit sichtbar wird, wann der Verbrauch entstanden ist.
 
 *Messungen*
 - Kellerklima wird nach Keller-Maßstäben bewertet (Taupunkt-Berechnung statt
@@ -129,6 +140,12 @@ Konventionen, die dabei entstanden sind und weiter gelten:
   `measurementThresholds.ts` ist `'reference'` (belegte Quelle), `'own'`
   (Richtwert der E-App, begründet) oder `'pending'` (noch offen) – nie
   unmarkiert.
+- **Ein Befund kommt aus eigenen Daten, bevor er aus einem Modell kommt.**
+  Der Sommer-Check (`monitoring/heatingPeriod.ts`) beantwortet „läuft die
+  Heizung im Sommer mit?" ohne Klimadaten: Der gemessene Sommerverbrauch **ist**
+  der Warmwasser-Grundbedarf des Haushalts. Sein Maßstab wird aus den
+  Konstanten des Duschkopf-Checks hergeleitet und die Wirkungsgrade aus
+  `hotWaterEnergy.ts` gelesen – nicht danebengeschrieben.
 - **Jede Messung nennt ihre Messgeräte.** `MeasurementMeta.instruments`
   (`measurements/catalog.ts`) ist Pflicht – ein leeres Array ist die gültige
   Aussage „braucht keins". Die Geräte-Übersicht im Fragebogen wird daraus

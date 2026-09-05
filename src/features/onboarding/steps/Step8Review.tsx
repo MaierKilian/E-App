@@ -153,12 +153,6 @@ export function Step8Review({ data }: Props) {
         {isDetailed && goalsSummary && (
           <ReviewRow label={t('onboarding.step8.labels.goals')} value={goalsSummary} />
         )}
-        {isDetailed && data.occupancyStatus && (
-          <ReviewRow
-            label={t('onboarding.step8.labels.occupancyStatus')}
-            value={t(`onboarding.step1.occupancyOptions.${data.occupancyStatus}`)}
-          />
-        )}
       </ReviewSection>
 
       <ReviewSection title={t('onboarding.step8.sections.building')}>

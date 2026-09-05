@@ -1,6 +1,7 @@
 import { useId, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { isoToTime, timeAxisPositions } from '@/lib/timeAxis'
+import { isoToTime, offsetForTime, timeAxisPositions } from '@/lib/timeAxis'
+import { heatingSpans } from './heatingPeriod'
 
 export interface LinePoint {
   /** ISO-Datum yyyy-mm-dd der Ablesung. */
@@ -21,6 +22,15 @@ interface AbsoluteLineChartProps {
   unit?: string
   /** Typ-eigener Akzent für Linie, Punkte und Flächen-Fade. */
   accent?: string
+  /**
+   * Heizperiode hinterlegen (nur für Wärmeträger sinnvoll).
+   *
+   * Ohne das Band ist an einer steigenden Kurve nicht zu sehen, ob der
+   * Verbrauch dann entstand, als geheizt werden musste. Mit ihm liest sich der
+   * Verlauf in einem Blick: Steigt die Linie im hellen Bereich spürbar, läuft
+   * etwas, das im Sommer nicht laufen müsste.
+   */
+  showHeatingPeriod?: boolean
 }
 
 // Geometrie im viewBox-Koordinatensystem; per CSS auf 100 % skaliert.
@@ -48,7 +58,12 @@ const PAD_BOTTOM = 8
  * dessen Datum und Wert. Mit der Maus genügt Darüberfahren, auf dem Touchscreen
  * Tippen/Ziehen; per Tastatur gehen die Pfeiltasten von Punkt zu Punkt.
  */
-export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartProps) {
+export function AbsoluteLineChart({
+  points,
+  unit,
+  accent,
+  showHeatingPeriod = false,
+}: AbsoluteLineChartProps) {
   const { t, i18n } = useTranslation()
   const gradId = useId()
   const color = accent ?? 'var(--color-primary)'
@@ -118,11 +133,27 @@ export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartPro
   // Bei r=3 verdecken sich zwei Marker unter 7 Einheiten Abstand gegenseitig,
   // und der Scrubber könnte den hinteren nicht mehr einzeln treffen.
   const MIN_POINT_GAP = 7
-  const offsets = timeAxisPositions(points.map((p) => isoToTime(p.date)), innerW, MIN_POINT_GAP)
+  const times = points.map((p) => isoToTime(p.date))
+  const offsets = timeAxisPositions(times, innerW, MIN_POINT_GAP)
   const x = (i: number): number => PAD_L + offsets[i]
   const y = (v: number): number => PAD_TOP + innerH * (1 - (v - yMin) / (yMax - yMin || 1))
   // Position in % der Gesamtbreite (für HTML-Overlays: Blase, Achsen-Labels).
   const leftPct = (i: number): number => (x(i) / VB_W) * 100
+
+  // Heizperioden als Rechtecke hinter allem anderen. Die Ränder werden über
+  // dieselbe (nicht zeit-proportionale) Achse interpoliert wie die Punkte –
+  // sonst säße die Kante neben der Linie, die sie einordnen soll.
+  const heatingBands =
+    showHeatingPeriod && times.length > 1
+      ? heatingSpans(times[0], times[times.length - 1])
+          .map((span) => {
+            const from = offsetForTime(times, offsets, span.from)
+            const to = offsetForTime(times, offsets, span.to)
+            if (from === undefined || to === undefined) return null
+            return { x: PAD_L + from, width: to - from }
+          })
+          .filter((b): b is { x: number; width: number } => b !== null && b.width > 0.5)
+      : []
 
   const coords = points.map((p, i) => ({ cx: x(i), cy: y(p.value) }))
   const path = coords.map((c, i) => `${i === 0 ? 'M' : 'L'} ${c.cx} ${c.cy}`).join(' ')
@@ -261,6 +292,19 @@ export function AbsoluteLineChart({ points, unit, accent }: AbsoluteLineChartPro
             <stop offset="100%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
+        {/* Heizperioden-Band: zuerst gezeichnet, damit Linie, Fläche und Punkte
+            darüber liegen. Sehr dezent – es ordnet ein, es konkurriert nicht. */}
+        {heatingBands.map((band) => (
+          <rect
+            key={band.x}
+            x={band.x}
+            y={PAD_TOP}
+            width={band.width}
+            height={innerH}
+            fill="var(--color-foreground)"
+            opacity={0.05}
+          />
+        ))}
         {/* Baseline / x-Achse */}
         <line
           x1={PAD_L}

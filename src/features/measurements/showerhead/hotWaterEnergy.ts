@@ -27,6 +27,28 @@ const PELLET_EFFICIENCY = 0.85
 const ELECTRIC_EFFICIENCY = 0.99
 const HEAT_PUMP_COP = 2.8
 
+/**
+ * Nutzungsgrad je Erzeuger – wie viel nutzbare Wärme aus dem Brennstoff wird,
+ * den der Zähler zählt.
+ *
+ * Exportiert, weil der Heizperioden-Check (`monitoring/heatingPeriod.ts`)
+ * dieselbe Umrechnung braucht: Er vergleicht den gemessenen Sommerverbrauch am
+ * Zähler mit dem erwarteten Warmwasserbedarf in nutzbarer Wärme. Stünden die
+ * Wirkungsgrade dort ein zweites Mal, könnten beide Rechnungen auseinanderlaufen
+ * – dieselbe Regel wie bei den Richtwerten im Wissensbereich.
+ *
+ * Die Wärmepumpe steht hier mit ihrer Arbeitszahl statt eines Wirkungsgrads:
+ * Sie erzeugt aus einer Kilowattstunde Strom rund 2,8 Kilowattstunden Wärme.
+ * Für die Umrechnung Zähler → Wärme ist das dieselbe Rechenrolle.
+ */
+export const HEAT_CONVERSION: Record<HotWaterSource, number> = {
+  gas: GAS_EFFICIENCY,
+  oil: OIL_EFFICIENCY,
+  pellets: PELLET_EFFICIENCY,
+  electric: ELECTRIC_EFFICIENCY,
+  heat_pump: HEAT_PUMP_COP,
+}
+
 type TariffState = Parameters<typeof resolvePrice>[0]
 
 /** Effektive €/kWh nutzbarer Wärme für die gewählte Warmwasserquelle. */

@@ -58,6 +58,47 @@ export function timeAxisPositions(times: number[], width: number, minGap: number
   return positions
 }
 
+/**
+ * Umkehrung von {@link timeAxisPositions}: Wo liegt ein beliebiger Zeitpunkt?
+ *
+ * Die Achse ist nicht zeit-proportional – jeder Abstand trägt erst einen
+ * Sockel, dann seinen Zeitanteil. Ein Datum zwischen zwei Ablesungen lässt sich
+ * deshalb nicht aus der Gesamtspanne ausrechnen, sondern nur zwischen den
+ * beiden Nachbarpunkten interpolieren. Genau das tut diese Funktion, mit
+ * derselben Verzerrung wie die Punkte selbst – sonst läge das
+ * Heizperioden-Band neben der Linie, die es einordnen soll.
+ *
+ * Zeitpunkte vor dem ersten bzw. nach dem letzten Punkt werden auf den Rand
+ * geklemmt: Eine Heizperiode, die vor der ersten Ablesung begonnen hat, füllt
+ * den Rand aus, statt zu verschwinden.
+ *
+ * @param times   Zeitstempel der Punkte in ms, aufsteigend (wie oben).
+ * @param offsets Die zugehörigen Offsets aus {@link timeAxisPositions}.
+ * @param t       Gesuchter Zeitpunkt in ms.
+ * @returns Offset auf derselben Strecke, oder `undefined` bei unbrauchbarer
+ *          Eingabe (leere Liste, nicht lesbare Zeitstempel).
+ */
+export function offsetForTime(
+  times: number[],
+  offsets: number[],
+  t: number,
+): number | undefined {
+  const n = times.length
+  if (n === 0 || offsets.length !== n || !Number.isFinite(t)) return undefined
+  if (times.some((v) => !Number.isFinite(v))) return undefined
+  if (t <= times[0]) return offsets[0]
+  if (t >= times[n - 1]) return offsets[n - 1]
+  for (let i = 1; i < n; i++) {
+    if (t <= times[i]) {
+      const span = times[i] - times[i - 1]
+      // Mehrere Ablesungen am selben Tag: kein Zwischenraum zu interpolieren.
+      if (span <= 0) return offsets[i]
+      return offsets[i - 1] + ((offsets[i] - offsets[i - 1]) * (t - times[i - 1])) / span
+    }
+  }
+  return offsets[n - 1]
+}
+
 /** ISO-Datum (`yyyy-mm-dd`) als Zeitstempel; NaN, wenn nicht lesbar. */
 export function isoToTime(iso: string): number {
   return new Date(`${iso}T00:00:00`).getTime()

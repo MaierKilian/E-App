@@ -1379,6 +1379,34 @@
       "refillsPerUnit": "je Einheit",
       "refillsTotal": "Summe",
       "refillsNone": "Keine Lieferungen im Zeitraum."
+    },
+    "summerCheck": {
+      "title": "Sommer-Check",
+      "legend": "Grau hinterlegt: Heizperiode (Oktober bis April)",
+      "measured": "Gemessen im Sommer",
+      "expected": "Erwartet fürs Warmwasser",
+      "perDay": "{{value}} {{unit}}/Tag",
+      "excess": "Rund {{value}} {{unit}} je Sommer gehen über den Warmwasserbedarf hinaus.",
+      "verdict": {
+        "good": "Nur Warmwasser",
+        "medium": "Etwas mehr als Warmwasser",
+        "high": "Deutlich mehr als Warmwasser"
+      },
+      "text": {
+        "good": "Im Hochsommer verbrauchst du ungefähr so viel, wie das Warmwasser für deinen Haushalt braucht. Die Heizung bleibt also aus, wenn sie aus sein soll.",
+        "medium": "Im Hochsommer läuft das {{factor}}-fache dessen, was das Warmwasser braucht. Ein Teil davon sind normale Bereitschaftsverluste des Wärmeerzeugers – auffällig ist es noch nicht, einen Blick auf die Zirkulationspumpe wert schon.",
+        "high": "Im Hochsommer läuft das {{factor}}-fache dessen, was das Warmwasser braucht – mehr als die Hälfte geht also für etwas anderes als warmes Wasser drauf. Typische Ursachen: keine Sommerabschaltung am Wärmeerzeuger, eine Zirkulationspumpe im Dauerlauf oder eine zu hoch gesetzte Heizgrenze. Alle drei lassen sich einstellen, ohne etwas zu kaufen."
+      },
+      "calc": {
+        "formula": "Sommerverbrauch je Tag ÷ (Personen × Warmwasserbedarf je Person und Tag)",
+        "window": "Gemessene Sommertage (15.6.–31.8.)",
+        "windowValue": "{{days}} Tage",
+        "measured": "Verbrauch je Tag in diesem Fenster",
+        "persons": "Personen im Haushalt",
+        "hotWater": "Warmwasser je Person und Tag",
+        "hotWaterValue": "{{value}} kWh Wärme",
+        "note": "Der erwartete Warmwasserbedarf ist derselbe, mit dem der Duschkopf-Check rechnet (rund 500 kWh je Person und Jahr). Er wird über den Wirkungsgrad deines Wärmeerzeugers auf das umgerechnet, was der Zähler zählt. Nur das Hochsommer-Fenster zählt: Mai und September tragen in kühlen Jahren echten Heizbedarf."
+      }
     }
   },
   "onboarding": {
@@ -1817,7 +1845,7 @@
       "building": "Gebäudehülle & Modernisierung",
       "appliances": "Kühl- & Gefriergeräte",
       "equipment": "Ausstattung",
-      "location": "Standort & Wohnsituation",
+      "location": "Standort",
       "review": "Prüfen & Speichern"
     },
     "plausibility": {

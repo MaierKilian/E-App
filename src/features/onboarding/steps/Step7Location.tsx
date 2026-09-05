@@ -1,23 +1,23 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Key, Home } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
 import { InfoButton } from '@/components/ui/InfoButton'
-import { OptionChip } from '@/components/ui/OptionChip'
-import { Field } from '@/components/ui/Field'
-import type { OnboardingData, OccupancyStatus } from '@/types'
-
-const OCCUPANCY_STATUSES: OccupancyStatus[] = ['tenant', 'owner']
-const OCCUPANCY_ICONS: Record<OccupancyStatus, LucideIcon> = {
-  tenant: Key,
-  owner: Home,
-}
+import type { OnboardingData } from '@/types'
 
 interface Props {
   data: OnboardingData
   onChange: (partial: Partial<OnboardingData>) => void
 }
 
+/**
+ * „Standort" – seit dem 05.09.2026 nur noch die freiwillige Postleitzahl.
+ *
+ * Die Frage nach Mieter oder Eigentümer stand hier und ist entfallen. Sie hatte
+ * keine funktionale Lesestelle, und nachgezählt hätte sie genau **einen** Tipp
+ * gefiltert (`old_boiler`) – der einem Mieter nicht einmal nutzlos ist: Das
+ * Alter des Kessels ist sein Argument gegenüber der Vermietung. Eine
+ * Pflichtangabe für einen einzigen Tipp, den sie nicht einmal sicher entfernen
+ * sollte, trägt sich nicht (Punkt 25 in `docs/gefundene-probleme.md`).
+ */
 export function Step7Location({ data, onChange }: Props) {
   const { t } = useTranslation()
   const [code, setCode] = useState(data.postalCode)
@@ -52,28 +52,6 @@ export function Step7Location({ data, onChange }: Props) {
         />
         <p className="text-xs text-muted">{t('onboarding.step7.optionalHint')}</p>
       </div>
-
-      {/* Mieter oder Eigentuemer stand vorher neben dem Profilnamen. Die Angabe
-          entscheidet, welche Massnahmen ueberhaupt in Frage kommen – Dach- und
-          Kellerdaemmung sind fuer Mieter nicht umsetzbar –, gehoert also zu den
-          Rahmenbedingungen der Wohnung, nicht zur Begruessung. */}
-      <Field
-        title={t('onboarding.step1.occupancyStatus')}
-        info={t('info.occupancy')}
-        hint={t('onboarding.step1.statusHint')}
-      >
-        <div className="flex gap-2">
-          {OCCUPANCY_STATUSES.map((status) => (
-            <OptionChip
-              key={status}
-              icon={OCCUPANCY_ICONS[status]}
-              label={t(`onboarding.step1.occupancyOptions.${status}`)}
-              selected={data.occupancyStatus === status}
-              onClick={() => onChange({ occupancyStatus: status })}
-            />
-          ))}
-        </div>
-      </Field>
     </div>
   )
 }

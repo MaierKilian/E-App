@@ -133,8 +133,7 @@ export const FIELD_USAGE = {
   occupancyStatus: {
     consumers: ['report'],
     reason:
-      'Mieter oder Eigentümer, im Steckbrief des Berichts. Dass die Empfehlungen die Angabe lesen – eine neue Heizung ist für Mieter keine Empfehlung – steht weiter aus.',
-    labelKey: 'onboarding.step8.labels.occupancyStatus',
+      'Mieter oder Eigentümer. Wird nicht mehr gefragt – nachgezählt hätte die Angabe genau einen Tipp gefiltert (das Alter des Kessels), und der ist für Mieter das Argument gegenüber der Vermietung. Ein Bestandsprofil behält die Zeile im Steckbrief.',
   },
   floors: {
     consumers: ['report'],

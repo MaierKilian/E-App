@@ -128,10 +128,16 @@ export function buildProfileReportData(
         ),
       ),
     ],
-    [
-      t('onboarding.step8.labels.occupancyStatus'),
-      opt('onboarding.step1.occupancyOptions', data.occupancyStatus),
-    ],
+    // Mieter/Eigentümer wird seit dem 05.09.2026 nicht mehr gefragt. Der
+    // Standardwert ist `null`, „nie gefragt" also sauber von einer echten
+    // Angabe zu unterscheiden – `opt` liefert dafür schon null, `retired`
+    // nimmt die Zeile dann heraus.
+    ...retired([
+      [
+        t('onboarding.step8.labels.occupancyStatus'),
+        opt('onboarding.step1.occupancyOptions', data.occupancyStatus),
+      ],
+    ]),
     [t('onboarding.step8.labels.postalCode'), coarsePostalCode(data.postalCode)],
   ]
 

@@ -214,8 +214,14 @@ describe('Kein Feld ist verlorengegangen', () => {
   // gewichen. Sie hatte eine einzige Wirkung – einen vorangehakten Schalter im
   // Möbelabstand-Check – und stellte 24 Bauarten zur Wahl, die keine Zeile Code
   // je gelesen hat.
+  //
+  // Seit dem 05.09.2026 fehlt `occupancyStatus`: Mieter oder Eigentümer wurde
+  // als Pflichtangabe erhoben und nur angezeigt. Nachgezählt hätte die Angabe
+  // genau einen Tipp gefiltert – das Alter des Kessels –, und der ist für
+  // Mieter das Argument gegenüber der Vermietung, also nicht einmal sicher zu
+  // unterdrücken. Auch sie ist nicht verlorengegangen, sondern abgeschafft.
   const ERHOBEN = [
-    'profileName', 'profileImage', 'personsCount', 'goals', 'occupancyStatus',
+    'profileName', 'profileImage', 'personsCount', 'goals',
     'buildingYear', 'buildingType', 'livingArea', 'floors',
     'rooms', 'heatTransfer', 'roomAreas',
     'heatGenerators', 'hotWaterType',

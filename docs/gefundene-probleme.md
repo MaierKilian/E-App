@@ -537,8 +537,9 @@ Seite, die nur noch die Messgeräte-Übersicht zeigt, noch der richtige ist.
 ### 24. Postleitzahl als totes Ende – Vorschlag: Klimaregion, Heizperiode, Gradtage
 **Kategorie:** Verbesserung · **Bereich:** `seasonality.ts`, `Step7Location`,
 `AbsoluteLineChart`, `fieldUsage.ts`
-**Status:** 🔍 Nur bewertet – **noch nicht umgesetzt**, wartet auf Kilians
-Entscheidung (siehe Offene Fragen).
+**Status:** ⚠️ Teilweise umgesetzt (05.09.) – **der Nutzen ist da, die
+Postleitzahl aber weiterhin nicht angeschlossen.** Beim Bauen zeigte sich, dass
+beides nicht zusammengehört; Begründung unten unter „Was daraus wurde".
 
 Kilians Frage: „Wie können wir diese Info besser nutzen? Bis jetzt ist das ja
 quasi ein totes Ende. Kann man daraus die Heizperiode vielleicht ableiten? Oder
@@ -598,10 +599,57 @@ Monatsmittel müssen an der Quelle geprüft werden, nicht aus dem Gedächtnis
 geschrieben. Nach der Konvention „Jeder Richtwert nennt seine Herkunft" gehört
 die Quelle an die Tabelle (`ThresholdOrigin: 'reference'`).
 
+**Was daraus wurde (05.09.).** Kilians eigentliche Frage – „läuft die Heizung
+wirklich nur in der Heizperiode?" – ist umgesetzt. Die Klimatabelle ist es
+nicht, und zwar aus einem Grund, der beim Bauen auffiel und die Reihenfolge
+umgedreht hat:
+
+*Die Frage braucht die Postleitzahl gar nicht.* Der bessere Maßstab für „ist
+der Sommerverbrauch zu hoch?" ist nicht ein Klimamodell, sondern der Haushalt
+selbst. Was im Hochsommer durch den Zähler geht, **ist** der
+Warmwasser-Grundbedarf – gemessen, nicht modelliert. Gehalten wird er gegen den
+erwarteten Bedarf aus der Personenzahl, den die App über den Duschkopf-Check
+ohnehin kennt. Das ist genauer als jede Regionaltabelle, weil es das eigene
+Haus beschreibt statt eines durchschnittlichen in derselben Gegend.
+
+Umgesetzt sind deshalb:
+
+- `monitoring/heatingPeriod.ts` – Heizperiode (1.10.–30.4., Konvention) und ein
+  bewusst enger gefasstes Sommerfenster (15.6.–31.8., Richtwert der E-App):
+  Mai und September tragen in kühlen Jahren echten Heizbedarf, und ein Befund,
+  der einen kalten Mai als Fehler auslegt, wäre falsch.
+- **Heizperioden-Band** hinter dem Verlaufsdiagramm der Wärmeträger. Dafür
+  brauchte die Zeitachse eine Umkehrung (`offsetForTime` in `lib/timeAxis.ts`):
+  Die Achse ist nicht zeit-proportional, ein beliebiges Datum lässt sich nur
+  zwischen seinen Nachbarpunkten interpolieren – sonst säße die Bandkante neben
+  der Linie, die sie einordnen soll.
+- **Sommer-Check** als Karte unter dem Diagramm: gemessener Sommerverbrauch je
+  Tag gegen den erwarteten Warmwasserbedarf, mit „So gerechnet"-Aufklapper.
+  Ab dem Zweieinhalbfachen wird es deutlich – dann geht mehr als die Hälfte des
+  Sommerverbrauchs für etwas anderes drauf als warmes Wasser: fehlende
+  Sommerabschaltung, Zirkulationspumpe im Dauerlauf, zu hohe Heizgrenze. Alle
+  drei lassen sich einstellen, ohne etwas zu kaufen.
+
+Der Warmwasser-Maßstab wird aus den Konstanten des Duschkopf-Checks
+**hergeleitet**, nicht danebengeschrieben; die Wirkungsgrade kommen aus
+`hotWaterEnergy.ts`, das mit ihnen rechnet. Ändert der Duschkopf-Check seine
+Annahmen, zieht der Sommer-Check mit.
+
+**Warum die Klimatabelle nicht kam.** Diese Session hat keinen Netzzugang: Der
+Egress-Proxy lehnt `opendata.dwd.de`, `open-meteo.com` und Wikipedia gleichermaßen
+ab. Monatsmittel für 15 Klimaregionen aus dem Gedächtnis zu schreiben und als
+`'reference'` zu kennzeichnen, wäre gegen die Konvention „Jeder Richtwert nennt
+seine Herkunft" – und niemandem fiele es auf, wenn sie daneben lägen. Der
+Regionalisierungs-Teil bleibt damit offen; er ist auch nach wie vor sinnvoll
+(das Saisonprofil in `seasonality.ts` gilt weiterhin bundesweit einheitlich),
+nur eben nicht ohne geprüfte Daten. Dieselbe Begründung wie bei den
+Wikipedia-Quellen im Wissens-Tracker.
+
 ### 25. Standort-Schritt: Mieter/Eigentümer streichen, Standort sichtbar machen
 **Kategorie:** Verbesserung · **Bereich:** `Step7Location`, `sections.ts`,
 `fieldUsage.ts`
-**Status:** 🔍 Nur bewertet – **noch nicht umgesetzt**.
+**Status:** ✅ Umgesetzt (05.09.) – Frage entfernt, Abschnitt heißt jetzt
+„Standort". Die grafische Visualisierung ist nicht gekommen; Begründung unten.
 
 Kilians Befund: „Die Frage ob Mieter oder Eigentümer würde ich streichen. Das
 hat keinen großen Mehrwert finde ich. Vielleicht kann man den Standort dann auch
@@ -617,8 +665,16 @@ sinnvoller Abnehmer in Sicht. Hier ist einer naheliegend und billig – die
 Empfehlungen filtern bereits nach Zielen (`buildTips.ts`), und „neue Heizung",
 „Dämmung", „PV-Anlage" sind für Mieter keine Empfehlung, sondern Frust. Es steht
 also eine echte Wahl an: streichen, oder in überschaubarem Aufwand anschließen.
-Kilians Tendenz ist streichen; entschieden ist es noch nicht (siehe Offene
-Fragen).
+**Entschieden am 05.09.: streichen** – nach dem Nachzählen. Der Tipp-Katalog
+enthält **genau einen** Eigentümer-Tipp (`old_boiler`, „Heizung prüfen oder
+tauschen lassen"). Die PV-Tipps hängen an einer Angabe, die der Nutzer selbst
+gemacht hat; Dämmungs-Tipps gibt es gar keine. Und selbst dieser eine Tipp ist
+für Mieter nicht nutzlos: Das Alter des Kessels ist ihr Argument gegenüber der
+Vermietung. Eine Pflichtangabe im Fragebogen für einen einzigen Tipp, den sie
+nicht einmal sicher unterdrücken sollte, trägt sich nicht.
+
+Die Zeile im PDF-Steckbrief bleibt für Bestandsprofile: Der Standardwert ist
+`null`, „nie gefragt" ist also sauber von einer echten Angabe zu unterscheiden.
 
 **Standort sichtbar machen.** Eine echte Karte scheidet aus: Kartenkacheln
 kommen von einem fremden Server, das wäre derselbe Einwilligungsfall wie in #24
@@ -630,9 +686,15 @@ Stufe 2 – für ein Bild. Ohne jede Netzanfrage geht:
   Heizperiode (etwa „Ende September bis Anfang Mai"), Gradtagzahl – und ein
   Satz dazu, was das in der App bewirkt.
 
-Damit hört der Schritt auf, ein Formularfeld ohne Echo zu sein: Die Eingabe
+Damit hörte der Schritt auf, ein Formularfeld ohne Echo zu sein: Die Eingabe
 antwortet sofort. Dasselbe Muster wie bei der PV- und der Warmwasser-Frage in
 der Runde vom 04.09.
+
+**Nicht umgesetzt (05.09.).** Beides – Silhouette wie abgeleitete Angaben –
+hängt an der Klimatabelle aus #24, und die ist ohne geprüfte Daten nicht zu
+haben. Eine Karte, die „deine Klimaregion" behauptet, ohne dass die Zuordnung
+belegt ist, wäre hübscher als heute und weniger ehrlich. Der Schritt zeigt
+deshalb vorerst nur die Postleitzahl.
 
 **Nebenwirkung, die zur Entscheidung gehört:** Fällt Mieter/Eigentümer weg,
 bleibt im Schritt „Standort & Wohnsituation" nur noch die freiwillige
@@ -794,14 +856,11 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   `ventilationType` und `renovations` aus „Wofür wir das nutzen" verschwinden?
   Sie stehen dort als Angaben, die ein neues Profil nie macht.
 
-- Bei #24: Umsetzen? Und wenn ja: Stufe 1 allein (Klimaregion aus einer
-  statischen Tabelle, ohne jede Netzanfrage) – oder auch Stufe 2 mit echten
-  Wetterdaten, die eine neue Einwilligungskategorie und eine erweiterte
-  Datenschutzerklärung nach sich zieht?
-
-- Bei #25: Mieter/Eigentümer wirklich streichen – oder stattdessen an die
-  Empfehlungen anschließen, damit Mieter keine Eigentümer-Maßnahmen mehr
-  vorgeschlagen bekommen?
+- Bei #24: Die Klimatabelle (PLZ → Region → Monatsmittel) braucht geprüfte
+  DWD-Daten, und diese Session kam nicht ins Netz. Soll sie in einer Session
+  mit Netzzugang nachgezogen werden – dann kommen auch die Standort-Grafik und
+  die abgeleiteten Angaben aus #25 –, oder bleibt die Postleitzahl als
+  freiwillige Angabe ohne Wirkung stehen?
 
 - Bei #23: „Ausstattung" heißt jetzt eine Seite, auf der nur noch die
   Übersicht „Was du zum Messen brauchst" steht. Soll der Schritt so heißen wie

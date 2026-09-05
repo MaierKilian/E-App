@@ -197,12 +197,11 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
     titleKey: 'onboarding.sectionTitles.location',
     icon: MapPin,
     quick: false,
+    // Seit dem 05.09.2026 ohne Pflichtangabe: Mieter/Eigentümer ist entfallen
+    // (Punkt 25), und die App beschriftet die Postleitzahl selbst als optional –
+    // dann darf sie den Fortschritt auch nicht bremsen. Wie „Preise & Kosten"
+    // und „Ausstattung" gilt der Schritt als erledigt, sobald er besucht wurde.
     fields: [
-      // Mieter oder Eigentümer entscheidet, welche Maßnahmen überhaupt in Frage
-      // kommen – das gehört neben den Standort, nicht neben den Profilnamen.
-      field('occupancyStatus', (d) => d.occupancyStatus !== null),
-      // Die App beschriftet die Postleitzahl selbst als optional – dann darf sie
-      // den Fortschritt auch nicht bremsen.
       optional('postalCode', (d) => (d.postalCode ?? '').trim().length > 0),
     ],
   },
