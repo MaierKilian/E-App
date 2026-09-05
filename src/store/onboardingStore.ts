@@ -183,6 +183,13 @@ export function migrateOnboardingData(stored: Partial<OnboardingData> | undefine
   const data = { ...defaultData, ...(stored ?? {}) }
   const migratedRooms = migrateRooms(data.rooms)
   if (migratedRooms) data.rooms = migratedRooms
+  // „Geplant" ist am 05.09.2026 aus der PV-Frage entfallen. Ein Bestandsprofil
+  // mit diesem Wert bekäme sonst eine Frage zu sehen, bei der nichts ausgewählt
+  // ist, obwohl `sections.ts` sie als beantwortet zählt. Ziel ist `'no'`:
+  // „geplant" heißt sachlich, dass noch keine Anlage steht – und den
+  // Erzeugungszähler schaltete der Wert ohnehin nie frei, das tut nur `'yes'`.
+  if ((data.hasPV as string) === 'planned') data.hasPV = 'no'
+
   // Altprofile kannten nur ein globales Sanierungsjahr plus Häkchenliste.
   // Daraus entsteht ein Ereignis mit dem mittleren Jahr der Spanne, als
   // geschätzt gekennzeichnet – verlustfrei und zur Präzisierung einladend.

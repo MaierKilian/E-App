@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Blend, CalendarClock, Check, Droplets, Fan, Flame, Fuel, HelpCircle, Sun, TreePine, Wheat, X, Zap } from 'lucide-react'
+import { Blend, Check, Droplets, Fan, Flame, Fuel, HelpCircle, Sun, TreePine, Wheat, X, Zap } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { OptionChip } from '@/components/ui/OptionChip'
 import { Slider } from '@/components/ui/Slider'
@@ -49,12 +49,11 @@ const HOT_WATER_ICONS: Record<HotWaterType, LucideIcon> = {
   unknown: HelpCircle,
 }
 
-const PV_OPTIONS = ['yes', 'no', 'planned'] as const
+const PV_OPTIONS = ['yes', 'no'] as const
 type PVOption = (typeof PV_OPTIONS)[number]
 const PV_ICONS: Record<PVOption, LucideIcon> = {
   yes: Check,
   no: X,
-  planned: CalendarClock,
 }
 
 export function Step4Heating({ data, onChange }: Props) {

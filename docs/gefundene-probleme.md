@@ -1093,6 +1093,34 @@ für eine *Mehrfach*auswahl kopiert kippte es in vier Punkten:
 Ziel-Zeile endet bei 617 px, die Seite ist **nicht mehr scrollbar** – alle fünf
 Optionen und die Landung stehen gleichzeitig im Blick.
 
+### 32. PV-Frage: Antwort „Geplant" entfernt
+**Kategorie:** Verbesserung · **Bereich:** `Step4Heating`, `types`, `buildTips`,
+`onboardingStore`, `fieldUsage`, de/en
+**Status:** ✅ Umgesetzt (05.09.).
+
+Kilians Wunsch: „Das ‚geplant' bei der Photovoltaik bitte entfernen."
+
+**Was daran hing.** `'planned'` hatte genau **einen** funktionalen Abnehmer: den
+Tipp `pv_planned_base_load` („vor der Auslegung die eigene Grundlast messen").
+Den Erzeugungszähler im Monitoring schaltete der Wert nie frei – das tut allein
+`'yes'` (`energyConfig.ts`). Mit der Antwort ist deshalb auch der Tipp entfallen;
+er wäre sonst toter Code gewesen, den keine Antwort mehr auslösen kann.
+
+**Bestandsprofile werden migriert, nicht liegengelassen.** Anders als bei den
+früher entfernten Fragen (Kamin, Gebäudeteil) verschwindet hier nicht die ganze
+Frage, sondern nur eine ihrer Antworten – die Frage steht weiter auf der Seite.
+Ein Profil mit `'planned'` hätte deshalb eine Frage gezeigt, bei der **nichts
+ausgewählt** ist, obwohl `sections.ts` sie als beantwortet zählt.
+`migrateOnboardingData` zieht den Wert auf `'no'`: „geplant" heißt sachlich,
+dass noch keine Anlage steht. Ein Test hält das fest
+(`tests/unit/pvMigration.test.ts`).
+
+**Was dadurch verlorengeht** – bewusst benannt: Wer eine Anlage plant, bekommt
+den Rat, vorher die Grundlast zu messen, nicht mehr. Das war der einzige Ort,
+an dem die App vor einer Anschaffung zu einer Messung riet. Soll dieser Rat an
+anderer Stelle wieder auftauchen (z. B. im Grundlast-Check selbst), wäre das
+eine eigene Änderung.
+
 
 ## Cookie-Banner & Rechtsseiten
 
@@ -1264,6 +1292,9 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   Rauminstanz? Bis zur Entscheidung bleibt der bestehende Datenverlust bei
   mehreren gleichartigen Entnahmestellen (z. B. zwei Waschbecken) bestehen.
 
+- Bei #32: Der Rat „vor der PV-Auslegung die Grundlast messen" ist mit der
+  Antwort „geplant" entfallen. Soll er an anderer Stelle wieder auftauchen –
+  etwa als Hinweis im Grundlast-Check selbst?
 - Bei #29 (neu, aus der Umsetzung): Das Intro-Bild des Möbelabstand-Checks
   zeigt einen Heizkörper – auch dann, wenn der Raum eine Infrarotplatte oder
   einen Ofen hat. Eigene Bilder je Bauart, oder bleibt das eine Illustration

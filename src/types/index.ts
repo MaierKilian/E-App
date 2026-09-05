@@ -251,7 +251,17 @@ export interface OnboardingData {
   occupancyStatus: OccupancyStatus | null
   floors: number
   windowAge: WindowAge
-  hasPV: 'yes' | 'no' | 'planned'
+  /**
+   * Photovoltaik vorhanden.
+   *
+   * `'planned'` ist am 05.09.2026 entfallen (Kilians Wunsch). Der Wert hatte
+   * genau einen Abnehmer – einen Tipp, vor der Auslegung die Grundlast zu
+   * messen; den Erzeugungszähler schaltete nur `'yes'` frei. Bestandsprofile
+   * werden in `migrateOnboardingData` auf `'no'` gezogen: „geplant" heißt
+   * sachlich, dass noch keine Anlage da ist, und ein Wert ohne Knopf ließe die
+   * Frage unbeantwortet aussehen.
+   */
+  hasPV: 'yes' | 'no'
   hasExtraFireplace: boolean
   ventilationType: VentilationType
   insulationState: InsulationState

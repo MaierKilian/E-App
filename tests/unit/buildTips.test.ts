@@ -509,8 +509,8 @@ describe('Ziele bestimmen die Reihenfolge – innerhalb der Gruppen', () => {
 describe('Photovoltaik-Angabe', () => {
   // Die Frage „Gibt es eine PV-Anlage?" legte bisher nur den Erzeugungszähler
   // aufs Monitoring-Board. Sie beantwortete damit, wie viel erzeugt wird – nicht,
-  // was man damit tun soll. „Geplant" hatte gar keine Folge.
-  const withPv = (hasPV: 'yes' | 'no' | 'planned') =>
+  // was man damit tun soll.
+  const withPv = (hasPV: 'yes' | 'no') =>
     ({ ...PROFILE, hasPV }) as unknown as OnboardingData
 
   it('rät bei vorhandener Anlage, große Verbraucher zu verschieben', () => {
@@ -521,31 +521,19 @@ describe('Photovoltaik-Angabe', () => {
     expect(tip?.effortMinutes).toBeLessThanOrEqual(15)
   })
 
-  it('führt bei geplanter Anlage in den Grundlast-Check', () => {
-    const tip = buildTips(withPv('planned'), {}).find((t) => t.id === 'pv_planned_base_load')
-    expect(tip?.linkTo).toBe('/measurements/base_load')
-  })
-
-  it('lässt den Grundlast-Rat weg, sobald die Grundlast gemessen ist', () => {
-    // Sonst empfiehlt die App eine Messung, die schon im Profil steht.
-    const tips = buildTips(withPv('planned'), {
-      base_load: result({ id: 'base_load', rating: 'good', primaryValue: 90, unit: 'W' }),
-    })
-    expect(tips.map((t) => t.id)).not.toContain('pv_planned_base_load')
-  })
-
   it('schweigt ohne Anlage – die Angabe „nein" ist keine Empfehlung', () => {
-    const ids = buildTips(withPv('no'), {}).map((t) => t.id)
-    expect(ids).not.toContain('pv_self_consumption')
-    expect(ids).not.toContain('pv_planned_base_load')
+    expect(buildTips(withPv('no'), {}).map((t) => t.id)).not.toContain('pv_self_consumption')
   })
 
-  it('verwechselt die beiden Fälle nicht', () => {
-    // „Ja" bekommt den Verschiebe-Rat, „geplant" den Mess-Rat – nie umgekehrt.
-    expect(buildTips(withPv('yes'), {}).map((t) => t.id)).not.toContain('pv_planned_base_load')
-    expect(buildTips(withPv('planned'), {}).map((t) => t.id)).not.toContain(
-      'pv_self_consumption',
-    )
+  it('kennt „geplant" nicht mehr', () => {
+    // Die Antwort ist am 05.09.2026 entfallen; ein Bestandsprofil wird in
+    // `migrateOnboardingData` auf „nein" gezogen. Hier steht nur, dass der
+    // Tipp, der allein an ihr hing, aus dem Katalog verschwunden ist.
+    const alle = [
+      ...buildTips(withPv('yes'), {}),
+      ...buildTips(withPv('no'), {}),
+    ].map((t) => t.id)
+    expect(alle).not.toContain('pv_planned_base_load')
   })
 })
 

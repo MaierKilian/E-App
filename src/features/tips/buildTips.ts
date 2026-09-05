@@ -836,20 +836,8 @@ export function buildTips(
     })
   }
 
-  // „Geplant" war bis hierher die einzige Antwort ohne jede Folge. Vor der
-  // Auslegung ist die eigene Grundlast die nuetzlichste Zahl, die es gibt: Sie
-  // sagt, welcher Teil der Erzeugung ueberhaupt im Haus bleiben kann. Der Tipp
-  // fuehrt deshalb in den Grundlast-Check, nicht zu einem Angebotsvergleich.
-  if (data.hasPV === 'planned' && !results['base_load']) {
-    tips.push({
-      id: 'pv_planned_base_load',
-      icon: Sun,
-      category: 'electricity',
-      effortMinutes: 20,
-      costEur: 0,
-      linkTo: '/measurements/base_load',
-    })
-  }
+  // Der Rat „vor der Auslegung die Grundlast messen" hing an der Antwort
+  // „geplant" und ist mit ihr entfallen (05.09.2026).
 
   return tips.sort((a, b) => compareTips(a, b, data.goals))
 }

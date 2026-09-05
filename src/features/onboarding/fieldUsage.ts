@@ -147,7 +147,7 @@ export const FIELD_USAGE = {
   hasPV: {
     consumers: ['monitoring', 'tips'],
     reason:
-      'Legt den Erzeugungszähler aufs Board und erinnert daran, ihn zu füllen. „Ja" trägt zusätzlich die Empfehlung, große Verbraucher in die Mittagsstunden zu legen; „geplant" die, vor der Auslegung Grundlast und Standby zu messen.',
+      'Legt den Erzeugungszähler aufs Board und erinnert daran, ihn zu füllen. „Ja" trägt zusätzlich die Empfehlung, große Verbraucher in die Mittagsstunden zu legen.',
     labelKey: 'onboarding.step8.labels.hasPV',
   },
   hasExtraFireplace: {
