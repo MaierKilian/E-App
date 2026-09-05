@@ -1018,6 +1018,42 @@ durchgespielt – fünf Antworten je Raum, Wohnzimmer auf Infrarot und Keller au
 unbeheizt gesetzt, der Keller steht in der Raumauswahl des Checks nicht mehr,
 das Wohnzimmer zeigt die Infrarot-Fragen und das Ergebnis die
 Infrarot-Befunde.
+### 30. Räume-Kachel fächert sich vertikal auf
+**Kategorie:** Problem · **Bereich:** `Step3Rooms`, `RoomTypePicker`
+**Status:** ✅ Umgesetzt (05.09.).
+
+Kilians Befund direkt nach #28/#29: „Kann man das auch anders lösen, dass sich
+das nicht so extrem hoch vertikal auffächert? Ich finde das nicht hübsch."
+
+**Bestätigt – gemessen 780 px für zwei Räume.** Zwei Ursachen, die sich
+multipliziert haben: Die Kachel ist eine von zwei Rasterspalten und innen nur
+rund 127 px breit, also muss alles untereinander. Und die Wärmeübergabe aus #29
+belegt fünf Zeilen – **je Raum**. Dazu kam, dass die Nachbarspalte leer blieb,
+während die gewählte Kachel in die Höhe wuchs.
+
+**Umgesetzt: gewählte Kachel über beide Spalten, Wärmeübergabe einklappbar.**
+
+- `RoomTypePicker` bekommt `expandSelected`: Eine gewählte Kachel läuft über
+  beide Spalten. Damit stehen rund 340 px statt 127 zur Verfügung – Name,
+  Fläche und Löschen passen in **eine** Zeile, und die leere Nachbarspalte ist
+  weg. Im Check (`RoomCreateSheet`) bleibt das Flag aus: Dort steht unter der
+  Kachel nur eine Hinweiszeile, die keine Breite braucht.
+- Die Wärmeübergabe ist eine Zeile, die den gewählten Wert nennt und zum Ändern
+  aufklappt. **Solange sie unbeantwortet ist, steht sie offen** – sie ist eine
+  Pflichtangabe, und eine zugeklappte Zeile sähe aus, als sei schon etwas
+  beantwortet. Aufgeklappt stehen die fünf Antworten als Chips nebeneinander mit
+  Umbruch: zwei Reihen statt fünf.
+
+**Was das bringt** (gemessen im Browser, 430 px breit):
+
+| Zustand | vorher | nachher |
+|---|---:|---:|
+| ein Raum, beantwortet | ~390 px | **155 px** |
+| zwei Räume, beide offen | ~780 px | **315 px** |
+| zwei Räume, beide beantwortet | ~780 px | **246 px** |
+
+Die Höhe wächst jetzt nur noch dort, wo eine Entscheidung aussteht.
+
 
 ## Cookie-Banner & Rechtsseiten
 

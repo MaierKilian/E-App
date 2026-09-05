@@ -16,11 +16,21 @@ interface Props {
   /** Antippen eines Raumtyps. */
   onPick: (type: RoomType) => void
   /**
-   * Zusatz unterhalb einer gewählten Kachel – im Fragebogen Anzahl und Fläche.
-   * Im Check bleibt es weg: Dort soll ein Raum mit einem Tipp entstehen, alles
-   * Weitere kann später im Profil nachgetragen werden.
+   * Zusatz unterhalb einer gewählten Kachel – im Fragebogen die einzelnen
+   * Räume. Im Check bleibt es weg: Dort soll ein Raum mit einem Tipp entstehen,
+   * alles Weitere kann später im Profil nachgetragen werden.
    */
   renderDetails?: (type: RoomType) => ReactNode
+  /**
+   * Lässt eine **gewählte** Kachel über beide Spalten laufen.
+   *
+   * Nur dort sinnvoll, wo unter der Kachel etwas steht, das Breite braucht: Im
+   * Fragebogen sind das Name, Fläche und Wärmeübergabe je Raum. In einer halben
+   * Spalte (innen rund 127 px) muss davon alles untereinander – bei zwei Räumen
+   * wuchs die Kachel auf knapp 800 px, während die Nachbarspalte leer blieb.
+   * Im Check bleibt es aus: Dort steht unter der Kachel nur eine Hinweiszeile.
+   */
+  expandSelected?: boolean
 }
 
 /**
@@ -32,7 +42,7 @@ interface Props {
  * würden über kurz oder lang auseinanderlaufen, und der Nutzer bekäme je nach
  * Einstieg andere Räume angeboten.
  */
-export function RoomTypePicker({ isSelected, onPick, renderDetails }: Props) {
+export function RoomTypePicker({ isSelected, onPick, renderDetails, expandSelected }: Props) {
   const { t } = useTranslation()
 
   return (
@@ -53,7 +63,7 @@ export function RoomTypePicker({ isSelected, onPick, renderDetails }: Props) {
                     selected
                       ? 'border border-primary bg-primary/10 shadow-[0_3px_14px_color-mix(in_srgb,var(--primary)_18%,transparent)]'
                       : 'glass'
-                  }`}
+                  } ${selected && expandSelected ? 'col-span-2' : ''}`}
                 >
                   <button
                     type="button"

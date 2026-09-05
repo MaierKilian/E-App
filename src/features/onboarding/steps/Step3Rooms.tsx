@@ -1,5 +1,6 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Flame, Grip, Plus, RadioTower, Snowflake, Trees, X } from 'lucide-react'
+import { ChevronDown, Flame, Grip, Plus, RadioTower, Snowflake, Trees, X } from 'lucide-react'
 import { DecimalField } from '@/components/ui/DecimalField'
 import { RoomTypePicker } from '../RoomTypePicker'
 import { newRoomId } from '@/features/measurements/rooms'
@@ -35,6 +36,9 @@ interface Props {
 
 export function Step3Rooms({ data, onChange }: Props) {
   const { t } = useTranslation()
+  // Welcher Raum zeigt seine Wärmeübergabe gerade zur Auswahl? Siehe unten:
+  // Ein unbeantworteter Raum ist immer offen, ein beantworteter nur auf Wunsch.
+  const [openTransfer, setOpenTransfer] = useState<string | null>(null)
 
   function isSelected(type: RoomType) {
     return data.rooms.some((r) => r.type === type)
@@ -75,102 +79,127 @@ export function Step3Rooms({ data, onChange }: Props) {
       <RoomTypePicker
         isSelected={isSelected}
         onPick={toggleRoom}
+        expandSelected
         renderDetails={(type) => {
           const instances = instancesOf(type)
           const many = instances.length > 1
           return (
-            <div className="mt-2 space-y-2.5">
-              {instances.map((inst, i) => (
-                <div
-                  key={inst.id}
-                  className={`flex flex-col items-center gap-2 ${
-                    // Ab dem zweiten Raum eine sichtbare Trennung: Sonst
-                    // verschwimmen zwei Flächenfelder untereinander zu einem
-                    // Formular ohne erkennbare Zugehörigkeit.
-                    i > 0 ? 'border-t border-border/50 pt-2.5' : ''
-                  }`}
-                >
-                  {/* Namensfeld und Löschen erst ab dem zweiten Raum. Bei einem
-                      Kinderzimmer wäre „Kinderzimmer 1" eine Nummerierung ohne
-                      Gegenstück – dieselbe Regel wie bei den Geräten. */}
-                  {many && (
-                    <div className="flex w-full items-center gap-1">
-                      <input
-                        type="text"
-                        value={inst.name ?? ''}
-                        onChange={(e) => patch(type, inst.id, { name: e.target.value })}
-                        placeholder={t('onboarding.step3.namePlaceholder', { n: i + 1 })}
-                        aria-label={t('onboarding.step3.nameLabel')}
-                        className="focus-ring min-w-0 flex-1 rounded-lg border border-border/60 bg-surface px-2 py-1 text-xs text-foreground placeholder:text-muted"
-                      />
+            <div className="mt-2.5 space-y-2.5">
+              {instances.map((inst, i) => {
+                const chosen = TRANSFERS.find((x) => x.value === inst.heatTransfer)
+                // Solange die Frage offen ist, stehen die Antworten offen: Sie
+                // ist eine Pflichtangabe, und eine zugeklappte Zeile würde
+                // aussehen, als sei schon etwas beantwortet. Ist sie
+                // beantwortet, genügt eine Zeile – aufklappbar zum Ändern.
+                const open = !chosen || openTransfer === inst.id
+                return (
+                  <div
+                    key={inst.id}
+                    className={`space-y-2 ${i > 0 ? 'border-t border-border/50 pt-2.5' : ''}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {/* Namensfeld und Löschen erst ab dem zweiten Raum. Bei
+                          einem Kinderzimmer wäre „Kinderzimmer 1" eine
+                          Nummerierung ohne Gegenstück – dieselbe Regel wie bei
+                          den Geräten. */}
+                      {many && (
+                        <input
+                          type="text"
+                          value={inst.name ?? ''}
+                          onChange={(e) => patch(type, inst.id, { name: e.target.value })}
+                          placeholder={t('onboarding.step3.namePlaceholder', { n: i + 1 })}
+                          aria-label={t('onboarding.step3.nameLabel')}
+                          className="focus-ring min-w-0 flex-1 rounded-lg border border-border/60 bg-surface px-2.5 py-1.5 text-sm text-foreground placeholder:text-muted"
+                        />
+                      )}
+                      <label
+                        className={`flex items-center gap-1.5 text-xs text-muted ${many ? '' : 'flex-1'}`}
+                      >
+                        <DecimalField
+                          value={inst.areaSqm}
+                          placeholder={String(
+                            Math.round(
+                              resolveRoomArea(data.rooms, data.livingArea, inst.id).areaSqm,
+                            ),
+                          )}
+                          onChange={(v) =>
+                            patch(type, inst.id, {
+                              areaSqm: v !== undefined && v > 0 ? v : undefined,
+                            })
+                          }
+                          aria-label={t('onboarding.step3.areaLabel')}
+                          className="focus-ring w-14 rounded-lg border border-border bg-surface px-2 py-1.5 text-center text-sm text-foreground"
+                        />
+                        {t('onboarding.step3.areaUnit')}
+                      </label>
+                      {many && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setInstances(
+                              type,
+                              instances.filter((x) => x.id !== inst.id),
+                            )
+                          }
+                          aria-label={t('onboarding.step3.removeRoom')}
+                          className="focus-ring grid h-7 w-7 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:text-foreground"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Die Wärmeübergabe stand vorher in einem eigenen Schritt
+                        als Tabelle über alle Raumtypen. Hier steht sie bei dem
+                        Raum, den sie beschreibt – und der Möbelabstand-Check
+                        braucht sie ohnehin je Raum. Keine Vorauswahl: „noch
+                        nicht beantwortet" ist ein eigener Zustand, sonst
+                        behauptete die App Heizkörper. */}
+                    {open ? (
+                      // Nebeneinander mit Umbruch: Über beide Spalten hinweg
+                      // stehen rund 340 px zur Verfügung, das trägt die fünf
+                      // Antworten in zwei Reihen statt in fünf.
+                      <div className="flex flex-wrap gap-1.5">
+                        {TRANSFERS.map(({ value, icon: Icon }) => {
+                          const active = inst.heatTransfer === value
+                          return (
+                            <button
+                              key={value}
+                              type="button"
+                              onClick={() => {
+                                patch(type, inst.id, { heatTransfer: value })
+                                setOpenTransfer(null)
+                              }}
+                              aria-pressed={active}
+                              className={`focus-ring flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-[11px] font-medium transition-[background-color,color] ${
+                                active
+                                  ? 'bg-primary text-primary-foreground'
+                                  : 'bg-surface-2/70 text-muted hover:text-foreground'
+                              }`}
+                            >
+                              <Icon className="h-3 w-3 shrink-0" />
+                              {t(`onboarding.step5.${value}Short`)}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    ) : (
                       <button
                         type="button"
-                        onClick={() =>
-                          setInstances(
-                            type,
-                            instances.filter((x) => x.id !== inst.id),
-                          )
-                        }
-                        aria-label={t('onboarding.step3.removeRoom')}
-                        className="focus-ring grid h-6 w-6 shrink-0 place-items-center rounded-lg text-muted transition-colors hover:text-foreground"
+                        onClick={() => setOpenTransfer(inst.id)}
+                        aria-expanded={false}
+                        className="focus-ring flex w-full items-center gap-1.5 rounded-lg bg-surface-2/70 px-2.5 py-1.5 text-[11px] font-medium text-foreground transition-colors hover:bg-surface-2"
                       >
-                        <X className="h-3.5 w-3.5" />
+                        <chosen.icon className="h-3 w-3 shrink-0 text-primary" />
+                        <span className="flex-1 text-left">
+                          {t(`onboarding.step5.${chosen.value}`)}
+                        </span>
+                        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted" />
                       </button>
-                    </div>
-                  )}
-
-                  <label className="flex items-center gap-1.5 text-xs text-muted">
-                    <DecimalField
-                      value={inst.areaSqm}
-                      placeholder={String(
-                        Math.round(resolveRoomArea(data.rooms, data.livingArea, inst.id).areaSqm),
-                      )}
-                      onChange={(v) =>
-                        patch(type, inst.id, { areaSqm: v !== undefined && v > 0 ? v : undefined })
-                      }
-                      aria-label={t('onboarding.step3.areaLabel')}
-                      className="focus-ring w-14 rounded-lg border border-border bg-surface px-2 py-1 text-center text-sm text-foreground"
-                    />
-                    {t('onboarding.step3.areaUnit')}
-                  </label>
-
-                  {/* Die Wärmeübergabe stand vorher in einem eigenen Schritt als
-                      Tabelle über alle Raumtypen. Hier steht sie bei dem Raum,
-                      den sie beschreibt – und der Möbelabstand-Check braucht sie
-                      ohnehin je Raum. Keine Vorauswahl: „noch nicht
-                      beantwortet" ist ein eigener Zustand, sonst behauptete die
-                      App Heizkörper. */}
-                  {/* Untereinander, nicht nebeneinander: Die Kachel ist eine von
-                      zwei Spalten und innen nur rund 127 px breit – „Heizkörper"
-                      und „Fußboden" brauchen nebeneinander gut 170 px. Zwei
-                      flex-1-Knöpfe schrumpfen nicht unter ihre Mindestbreite,
-                      also stand der zweite über den Kachelrand hinaus.
-                      Gestapelt hat jeder die volle Breite, unabhängig davon, wie
-                      lang die Beschriftung übersetzt ist. Mit fünf Antworten
-                      gilt das erst recht – nebeneinander wäre keine lesbar. */}
-                  <div className="flex w-full flex-col gap-1">
-                    {TRANSFERS.map(({ value, icon: Icon }) => {
-                      const active = inst.heatTransfer === value
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => patch(type, inst.id, { heatTransfer: value })}
-                          aria-pressed={active}
-                          className={`focus-ring flex w-full min-w-0 items-center justify-center gap-1 rounded-lg px-1.5 py-1 text-[11px] font-medium transition-[background-color,color] ${
-                            active
-                              ? 'bg-primary text-primary-foreground'
-                              : 'bg-surface-2/70 text-muted hover:text-foreground'
-                          }`}
-                        >
-                          <Icon className="h-3 w-3 shrink-0" />
-                          <span className="truncate">{t(`onboarding.step5.${value}Short`)}</span>
-                        </button>
-                      )
-                    })}
+                    )}
                   </div>
-                </div>
-              ))}
+                )
+              })}
 
               {/* Ersetzt den früheren Stepper: Die Anzahl ist die Länge der
                   Liste. Ein Stepper könnte die Räume nur zählen, nicht
@@ -178,9 +207,7 @@ export function Step3Rooms({ data, onChange }: Props) {
                   beiden verschwindet. */}
               <button
                 type="button"
-                onClick={() =>
-                  setInstances(type, [...instances, { id: newRoomId(type) }])
-                }
+                onClick={() => setInstances(type, [...instances, { id: newRoomId(type) }])}
                 className="focus-ring flex w-full items-center justify-center gap-1 rounded-lg px-1 py-1 text-[11px] font-semibold text-primary transition-transform active:scale-[0.98]"
               >
                 <Plus className="h-3 w-3" />
