@@ -1166,6 +1166,12 @@ Wirkung: Der Duschkopf-Check rechnet weiter je Quelle mit einem anderen
 €/kWh-Preis und nennt die Herkunft seiner Vorbelegung. `fieldUsage` führt
 `hotWaterType` deshalb nur noch unter `measurements`.
 
+> **Nachtrag (05.09., aus #36):** Dieser Absatz gilt nicht mehr. Wenige Stunden
+> später ist auch die Vorbelegung im Duschkopf-Check entfallen – der Check
+> rechnet keinen €-Betrag mehr, sondern einen Prozentsatz, in dem sich der
+> Preis herauskürzt. `hotWaterType` steht seither nur noch im PDF-Steckbrief.
+> Zusammen mit diesem Punkt hat die Frage damit **beide** Abnehmer verloren.
+
 **Nebenbefund im Test.** `hot_water_electric` war der einzige Tipp, den die
 Profil-Fälle des Tests „beschriftet jeden Tipp, der irgendwohin führt"
 erzeugten – seine Kanarienvogel-Zeile (`geprueft > 0`) schlug beim Entfernen

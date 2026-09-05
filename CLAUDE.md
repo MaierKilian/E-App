@@ -98,9 +98,12 @@ deployten App dazu.
   Monitoring schaltete sie schon vorher frei.
 - Die Warmwasser-Angabe wirkte kurz sichtbar (Herkunft der Vorbelegung im
   Duschkopf-Check, „Nicht bekannt" auf den Wärmeerzeuger statt pauschal auf
-  Strom). **Am 05.09. ist das wieder entfallen** – zusammen mit dem
-  Euro-Betrag, den es trug (siehe unten). Der Satz „und ‚Separates System' trägt
-  eine eigene Empfehlung" stand hier zu Unrecht: Einen solchen Tipp gab es nie.
+  Strom; dazu ein eigener Tipp `hot_water_electric`). **Am 05.09. ist das alles
+  wieder entfallen:** der Tipp mit Punkt 33 („der ist komisch" – er entstand
+  als einziger ohne jede Messung), die Vorbelegung mit Punkt 36, zusammen mit
+  dem Euro-Betrag, den sie trug. Die Angabe hat damit **keinen funktionalen
+  Abnehmer mehr** und steht nur noch im PDF-Steckbrief – ob die Frage bleibt,
+  entscheidet Kilian (siehe „Offene Fragen").
 
 *Monitoring*
 - Das Verlaufsdiagramm hinterlegt bei Gas, Öl, Pellets und Wärmepumpe die
