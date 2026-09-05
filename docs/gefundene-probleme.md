@@ -1173,6 +1173,31 @@ sofort an, wie vorgesehen. Die Fälle tragen jetzt zusätzlich Messergebnisse,
 denn alle verbliebenen verlinkten Tipps hängen an Messungen, nicht am
 Fragebogen.
 
+### 34. Standard-Wasserpreis auf 2,40 €/m³
+**Kategorie:** Verbesserung · **Bereich:** `priceConfig`,
+`tests/unit/monitoringReport.test.ts`
+**Status:** ✅ Umgesetzt (05.09.) – Kilians Vorgabe.
+
+Der Standardwert im Schritt „Preise & Kosten" stand auf 4,50 €/m³ und liegt
+jetzt bei **2,40 €/m³**. Der Wert steht an genau einer Stelle
+(`PRICE_META.water.defaultWork` in `priceConfig.ts`) und wirkt dadurch überall
+zugleich: Monitoring-Kosten, Bericht, Duschkopf-Check und
+Warmwasser-Wartezeit.
+
+**Was der Wert abbildet.** 2,40 €/m³ ist der Frischwasserpreis. Die
+Abwassergebühr – in vielen Gemeinden noch einmal ähnlich hoch – steckt nicht
+darin. Für die Ersparnis beim Duschen wäre die Summe beider Posten die
+passendere Größe, weil warmes Wasser, das man nicht verbraucht, auch nicht
+abgeleitet wird; die App rechnet mit dem eingetragenen Preis – wer beides
+zusammenrechnen will, trägt die Summe in das Feld ein. Genau dafür ist es da.
+
+**Nebenbefund im Test.** `monitoringReport.test.ts` hatte den alten Wert als
+Zahl im Erwartungswert stehen (1642,50 €) und wurde rot. Der Test liest den
+Standard jetzt aus `PRICE_META`: Geprüft wird, **dass** der Standard greift,
+nicht wie hoch er gerade ist – die nächste Preisänderung macht ihn nicht mehr
+rot.
+
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen

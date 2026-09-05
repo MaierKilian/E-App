@@ -10,6 +10,7 @@ import {
 import type { MeterReading } from '@/store/readingsStore'
 import { counterSeries } from '@/features/monitoring/counterSeries'
 import { consumptionSegments, stats } from '@/features/monitoring/readings'
+import { PRICE_META } from '@/features/monitoring/priceConfig'
 import type { OnboardingData } from '@/types'
 
 const NOW = new Date('2026-08-19T12:00:00Z').getTime()
@@ -140,10 +141,13 @@ describe('buildMonitoringReportData', () => {
       types: ['water'],
     })
 
-    // Wasser: 10 m³ / 10 d → 365 m³/a × 4,50 €/m³ (Default) = 1642,50 €
+    // Wasser: 10 m³ / 10 d → 365 m³/a mal dem Standardpreis. Der Preis kommt
+    // aus PRICE_META statt als Zahl im Test: Geprüft wird, dass der Standard
+    // greift – nicht, wie hoch er gerade ist.
+    const standard = PRICE_META.water!.defaultWork
     const wasser = data.entries.find((e) => e.type === 'water')
-    expect(wasser?.costYear).toBeCloseTo(1642.5, 6)
-    expect(wasser?.priceWork).toBe(4.5)
+    expect(wasser?.costYear).toBeCloseTo(365 * standard, 6)
+    expect(wasser?.priceWork).toBe(standard)
   })
 
   it('liefert keine Hochrechnung, wenn alle Ablesungen auf denselben Tag fallen', () => {

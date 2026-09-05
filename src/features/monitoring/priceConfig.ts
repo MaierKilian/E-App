@@ -24,7 +24,12 @@ export interface PriceMeta {
 export const PRICE_META: Partial<Record<EnergyType, PriceMeta>> = {
   electricity: { priceUnit: 'ct/kWh', priceToEur: 0.01, defaultWork: 35, defaultBase: 12 },
   heat_pump: { priceUnit: 'ct/kWh', priceToEur: 0.01, defaultWork: 30, defaultBase: 0 },
-  water: { priceUnit: '€/m³', priceToEur: 1, defaultWork: 4.5, defaultBase: 0 },
+  // Wasser: 2,40 EUR/m3 auf Kilians Vorgabe (05.09.2026). Der Wert ist der
+  // Frischwasserpreis; die Abwassergebuehr, die in vielen Gemeinden noch einmal
+  // aehnlich hoch ausfaellt, steckt nicht darin. Wer sie mitrechnen will, traegt
+  // im Schritt „Preise & Kosten" die Summe beider Posten ein - dafuer ist das
+  // Feld da.
+  water: { priceUnit: '€/m³', priceToEur: 1, defaultWork: 2.4, defaultBase: 0 },
   gas: { priceUnit: '€/m³', priceToEur: 1, defaultWork: 1.2, defaultBase: 12 },
   oil: { priceUnit: '€/l', priceToEur: 1, defaultWork: 1.1, defaultBase: 0 },
   pellets: { priceUnit: '€/kg', priceToEur: 1, defaultWork: 0.35, defaultBase: 0 },
