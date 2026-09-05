@@ -4,13 +4,18 @@ Diese Datei beschreibt, **wo** die Rechtstexte und die Einwilligungs-Logik
 liegen und **was** bei Änderungen an der App zu tun ist. Sie ersetzt keine
 Rechtsberatung – die offenen Punkte am Ende sind bewusst als solche markiert.
 
-## Vor der Veröffentlichung ausfüllen
+## Betreiberdaten
 
 `src/features/legal/operator.ts` ist die **einzige** Stelle mit Betreiberdaten.
 Solange dort Pflichtfelder leer sind, zeigt die Impressumsseite einen roten
 Hinweis „Impressum unvollständig" und markiert jede Lücke einzeln. Der Hinweis
 verschwindet automatisch, sobald alle Felder gefüllt sind – ein unvollständiges
 Impressum kann so nicht unbemerkt online gehen.
+
+**Seit dem 05.09.2026 sind alle Pflichtfelder gefüllt** (Kilian Maier und Johan
+Uhle, E-Mail-Adresse), der Hinweis erscheint also nicht mehr. Offen bleibt die
+Frage der Anschrift – siehe „Von einem Rechts-/Datenschutzexperten prüfen
+lassen", Punkt 10.
 
 Pflicht für ein **privates, nicht-geschäftsmäßiges** Angebot (§ 5 DDG,
 § 18 Abs. 2 MStV): Name, ladungsfähige Anschrift (kein Postfach), E-Mail.
@@ -93,3 +98,18 @@ Diese Punkte sind bewusst offen und lassen sich nicht aus dem Code beantworten:
    GA4-Property gegenprüfen (Verwaltung → Datenaufbewahrung) und ggf. anpassen.
 9. **Zuständige Aufsichtsbehörde** ergibt sich aus dem Wohnsitz; sie wird in
    der Erklärung nur allgemein beschrieben und kann konkret benannt werden.
+10. **Anschrift im Impressum**: Angegeben ist der Campus Wilhelminenhof der HTW
+    Berlin, wo das Projekt entsteht. Diensteanbieter nach § 5 DDG sind aber die
+    Personen, die das Angebot betreiben – nicht der Ort seiner Entstehung. Ein
+    Personenname unter einer Hochschulanschrift behauptet Zustellbarkeit unter
+    dieser Adresse; das trifft nur zu, wenn die Hochschule Post für diese
+    Personen entgegennimmt. Für ein Studienprojekt vertretbar, vor öffentlicher
+    Bewerbung zu klären.
+
+
+## Ausführliche Erklärung für Außenstehende
+
+`docs/rechtliches-referenz.md` erklärt Zweck, Inhalt und Begründung der drei
+Bausteine (Impressum, Datenschutzerklärung, Einwilligung) im Zusammenhang –
+gedacht als Faktenquelle für die schriftliche Ausarbeitung, nicht für die
+Wartung. Diese Datei hier bleibt die Wartungsanleitung.
