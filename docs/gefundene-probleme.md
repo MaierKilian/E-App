@@ -534,6 +534,112 @@ besucht wurde. Im Profil-Hub steht sie folgerichtig als „Optional".
 **Zu entscheiden (siehe Offene Fragen):** Ob der Titel „Ausstattung" für eine
 Seite, die nur noch die Messgeräte-Übersicht zeigt, noch der richtige ist.
 
+### 24. Postleitzahl als totes Ende – Vorschlag: Klimaregion, Heizperiode, Gradtage
+**Kategorie:** Verbesserung · **Bereich:** `seasonality.ts`, `Step7Location`,
+`AbsoluteLineChart`, `fieldUsage.ts`
+**Status:** 🔍 Nur bewertet – **noch nicht umgesetzt**, wartet auf Kilians
+Entscheidung (siehe Offene Fragen).
+
+Kilians Frage: „Wie können wir diese Info besser nutzen? Bis jetzt ist das ja
+quasi ein totes Ende. Kann man daraus die Heizperiode vielleicht ableiten? Oder
+Heiztage oder so? Dass man das dann im Monitoring einblenden kann? Zum
+Überprüfen, ob wirklich nur in der Heizperiode geheizt wird?"
+
+**Befund bestätigt.** `postalCode` hat genau eine Lesestelle: `coarsePostalCode`
+kürzt sie auf zwei Ziffern und schreibt sie in den PDF-Steckbrief. Der eigene
+`fieldUsage`-Eintrag benennt die Lücke seit Etappe 4 selbst: „Für Klimadaten und
+regionale Preise wäre sie zusätzlich brauchbar, beides gibt es noch nicht."
+
+**Der Anschlusspunkt existiert schon.** `monitoring/seasonality.ts` trägt ein
+jahreszeitliches Verbrauchsprofil (`MONTH_SHARE`, an die BDEW-Standardlastprofile
+angenähert) – und zwar **eines für ganz Deutschland**, ausdrücklich „gemittelt
+über die Klimazonen". Daran hängen vier Rechnungen: die Jahres-Hochrechnung
+(`readings.ts`), die Reichweite eines Tanks (`range.ts`), das Saisonprofil und
+das Monitoring-Kapitel des Berichts (`monitoringReportData.ts`).
+
+Die Postleitzahl regionalisiert dieses eine Profil. Das ist der elegante Weg:
+**keine zweite Rechenkette**, dieselbe Regel wie beim Tank-Umbau – es ändern
+sich Daten, nicht der Rechenweg. Ein Haus in Garmisch heizt länger als eines in
+Freiburg; heute rechnet die App für beide mit derselben Kurve.
+
+**Stufe 1 – ohne Netz, ohne Einwilligung (empfohlen).**
+Eine kleine statische Tabelle im Code: PLZ-Präfix → Klimaregion → zwölf
+Monatsmittel der Lufttemperatur (DWD-Klimareferenzperiode; die 15
+TRY-Klimaregionen des DWD wären der passende Zuschnitt). Daraus folgen mit der
+üblichen Konvention – Heiztag = Tagesmitteltemperatur unter der Heizgrenze von
+15 °C, Gradtagzahl G20/15 nach VDI 3807 – drei Dinge:
+
+1. **Regionalisiertes Saisonprofil.** Die Jahres-Hochrechnung wird genauer,
+   ohne dass irgendwo eine neue Rechnung entsteht.
+2. **Heizperioden-Band im Verlaufsdiagramm.** Die x-Achse von
+   `AbsoluteLineChart` ist bereits eine echte Datumsachse – das Band ist ein
+   Rechteck dahinter, kein Umbau. Damit ist auf einen Blick zu sehen, ob
+   Verbrauch außerhalb der Heizperiode entsteht.
+3. **Sommer-Check (Kilians eigentliche Frage).** Außerhalb der Heizperiode geht
+   Gas/Öl praktisch vollständig ins Warmwasser. Liegt der Sommerverbrauch
+   deutlich über diesem Sockel, läuft die Heizung, wenn sie nicht müsste –
+   fehlende Sommerabschaltung, durchlaufende Zirkulationspumpe, zu hoch
+   gesetzte Heizgrenze. Das ist ein echter, belegbarer Befund und der einzige
+   Punkt der Liste, der aus der PLZ eine Handlung macht.
+
+**Die ehrliche Grenze.** Langjährige Mittel sagen, was *normal* ist – nicht, wie
+*dieser* Winter war. Eine echte Witterungsbereinigung („war der Mehrverbrauch
+das Wetter oder ich?") braucht die tatsächlichen Gradtage des laufenden Jahres,
+also eine Wetter-Schnittstelle (DWD, Open-Meteo). Das wäre **Stufe 2** und hat
+Folgen, die über die Technik hinausgehen: Der Client stellt heute *keine einzige*
+externe Netzanfrage; eine Wetterabfrage mit dem Standort des Nutzers wäre ein
+neuer einwilligungsbedürftiger Dienst – neue Kategorie in `consent.ts`,
+Datenschutzerklärung erweitern, `CONSENT_VERSION` erhöhen (siehe
+„Rechtliches" in `CLAUDE.md`). Empfehlung: Stufe 1 zuerst, Stufe 2 nur, wenn
+Kilian den Aufwand ausdrücklich will.
+
+**Zu prüfen vor der Umsetzung:** Die Zuordnung PLZ-Präfix → Klimaregion und die
+Monatsmittel müssen an der Quelle geprüft werden, nicht aus dem Gedächtnis
+geschrieben. Nach der Konvention „Jeder Richtwert nennt seine Herkunft" gehört
+die Quelle an die Tabelle (`ThresholdOrigin: 'reference'`).
+
+### 25. Standort-Schritt: Mieter/Eigentümer streichen, Standort sichtbar machen
+**Kategorie:** Verbesserung · **Bereich:** `Step7Location`, `sections.ts`,
+`fieldUsage.ts`
+**Status:** 🔍 Nur bewertet – **noch nicht umgesetzt**.
+
+Kilians Befund: „Die Frage ob Mieter oder Eigentümer würde ich streichen. Das
+hat keinen großen Mehrwert finde ich. Vielleicht kann man den Standort dann auch
+hier gleich schöner grafisch visualisieren und dann gleich relevante Infos
+anzeigen an geeigneter Stelle."
+
+**Mieter/Eigentümer.** Befund bestätigt: `occupancyStatus` wird nur angezeigt –
+eine Zeile in der Zusammenfassung, eine im Steckbrief. Kein Tipp, keine Messung,
+keine Rechnung liest die Angabe.
+
+Ein Unterschied zu Smart-Home (#22) und Kamin (#19) gehört dazu: Dort war kein
+sinnvoller Abnehmer in Sicht. Hier ist einer naheliegend und billig – die
+Empfehlungen filtern bereits nach Zielen (`buildTips.ts`), und „neue Heizung",
+„Dämmung", „PV-Anlage" sind für Mieter keine Empfehlung, sondern Frust. Es steht
+also eine echte Wahl an: streichen, oder in überschaubarem Aufwand anschließen.
+Kilians Tendenz ist streichen; entschieden ist es noch nicht (siehe Offene
+Fragen).
+
+**Standort sichtbar machen.** Eine echte Karte scheidet aus: Kartenkacheln
+kommen von einem fremden Server, das wäre derselbe Einwilligungsfall wie in #24
+Stufe 2 – für ein Bild. Ohne jede Netzanfrage geht:
+
+- eine schlichte Deutschland-Silhouette als Inline-SVG mit hervorgehobener
+  Klimaregion (die App kennt ohnehin nur die Region, nicht die Adresse), und
+- **die abgeleiteten Angaben direkt unter der Eingabe**: Klimaregion, normale
+  Heizperiode (etwa „Ende September bis Anfang Mai"), Gradtagzahl – und ein
+  Satz dazu, was das in der App bewirkt.
+
+Damit hört der Schritt auf, ein Formularfeld ohne Echo zu sein: Die Eingabe
+antwortet sofort. Dasselbe Muster wie bei der PV- und der Warmwasser-Frage in
+der Runde vom 04.09.
+
+**Nebenwirkung, die zur Entscheidung gehört:** Fällt Mieter/Eigentümer weg,
+bleibt im Schritt „Standort & Wohnsituation" nur noch die freiwillige
+Postleitzahl. Der Abschnitt hätte dann keine Pflichtangabe mehr – wie „Preise &
+Kosten" und seit #23 auch „Ausstattung". Ein Name wie „Standort" wäre dann
+passender als „Standort & Wohnsituation".
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
@@ -687,6 +793,15 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
 - Bei #17 (Nachtrag aus #18): Sollen `windowAge`, `insulationState`,
   `ventilationType` und `renovations` aus „Wofür wir das nutzen" verschwinden?
   Sie stehen dort als Angaben, die ein neues Profil nie macht.
+
+- Bei #24: Umsetzen? Und wenn ja: Stufe 1 allein (Klimaregion aus einer
+  statischen Tabelle, ohne jede Netzanfrage) – oder auch Stufe 2 mit echten
+  Wetterdaten, die eine neue Einwilligungskategorie und eine erweiterte
+  Datenschutzerklärung nach sich zieht?
+
+- Bei #25: Mieter/Eigentümer wirklich streichen – oder stattdessen an die
+  Empfehlungen anschließen, damit Mieter keine Eigentümer-Maßnahmen mehr
+  vorgeschlagen bekommen?
 
 - Bei #23: „Ausstattung" heißt jetzt eine Seite, auf der nur noch die
   Übersicht „Was du zum Messen brauchst" steht. Soll der Schritt so heißen wie
