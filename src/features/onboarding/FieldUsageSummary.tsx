@@ -25,11 +25,17 @@ const CONSUMERS: FieldConsumer[] = ['measurements', 'monitoring', 'tips', 'repor
  * Aufstellung am Ende – und später in der Profil-Übersicht, wo sie nach ein
  * paar Wochen tatsächlich etwas erklärt – sagt sie etwas.
  *
- * Felder ohne `labelKey` fehlen hier absichtlich: `completed` und `mode` sind
- * innerer Zustand, keine beantwortete Frage – und `instruments` ist eine Frage,
- * die nicht mehr gestellt wird. „Wofür wir das nutzen" soll erklären, wozu die
- * eigenen Antworten dienen; eine Zeile zu einer Angabe, die der Nutzer nie
- * gemacht hat, tut das Gegenteil.
+ * Felder ohne `labelKey` fehlen hier absichtlich. Zwei Sorten: innerer Zustand
+ * (`completed`, `mode`) und Fragen, die **nicht mehr gestellt werden** – die
+ * Messgeräte-Abfrage, der Kamin, die Smart-Home-Geräte und seit dem 05.09.2026
+ * auch die vier aus dem entfallenen Schritt „Gebäudehülle" (Fensteralter,
+ * Dämmzustand, Lüftungsart, Sanierungs-Log).
+ *
+ * „Wofür wir das nutzen" soll erklären, wozu die **eigenen Antworten** dienen.
+ * Die Aufstellung ist statisch – sie zeigt jedes Feld mit `labelKey`, egal ob
+ * beantwortet. Eine Zeile zu einer Angabe, die der Nutzer nie gemacht hat und
+ * gar nicht machen konnte, tut damit das Gegenteil. Bestandsprofile verlieren
+ * nichts: Ihre Werte stehen weiter im Steckbrief des Berichts.
  */
 export function FieldUsageSummary() {
   const { t } = useTranslation()

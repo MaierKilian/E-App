@@ -294,6 +294,31 @@ Zwei Dinge sind bewusst geblieben:
 Nicht angefasst: Die i18n-Schlüssel bleiben stehen (der Bericht braucht einen
 Teil davon, der Rest hält das Archiv wiederherstellbar).
 
+**Nachtrag (05.09.) – die vier Felder sind aus „Wofür wir das nutzen" raus.**
+
+Die Aufstellung am Ende des Fragebogens (und im Profil-Hub) ist **statisch**:
+Sie zeigt jedes Feld, das in `fieldUsage.ts` einen `labelKey` trägt, unabhängig
+davon, ob der Nutzer es beantwortet hat. Fensteralter, Dämmzustand, Lüftungsart
+und Sanierungs-Log standen dort also weiter – als Angaben, die ein neues Profil
+gar nicht machen kann. Genau der Fall, den #18 für `instruments` schon gelöst
+hatte; die vier waren nur übersehen worden.
+
+Behoben durch dasselbe Mittel: `labelKey` entfernt. Die Einträge **bleiben** in
+der Landkarte (der Test soll jedes Feld abdecken), die i18n-Schlüssel bleiben
+(der Bericht liest drei davon), und Bestandsprofile verlieren nichts – ihre
+Werte stehen weiter im Steckbrief.
+
+Damit es nicht wieder auseinanderläuft, hält `tests/unit/fieldUsage.test.ts`
+jetzt zweierlei fest: eine Liste der nicht mehr gestellten Fragen, die keinen
+`labelKey` tragen dürfen, und die **exakte Menge** der genannten Angaben – wer
+eine aufnimmt oder herausnimmt, trifft damit eine sichtbare Entscheidung. Beide
+Prüfungen wurden gegen eine wieder eingesetzte Zeile getestet und schlagen an.
+
+Am Rande stehengeblieben: `roomsCount` trägt einen `labelKey`, hat aber keinen
+Abnehmer und erscheint deshalb in keiner der vier Gruppen. Kein sichtbarer
+Fehler, nur ein Schlüssel ohne Wirkung – er wird gebraucht, sobald das Feld
+einen Abnehmer bekommt.
+
 ### 18. Messgeräte-Abfrage ohne Wirkung – Vorschlag: Info-Seite statt Auswahl
 **Kategorie:** Problem (+ Verbesserungsvorschlag) · **Bereich:**
 `Step6Instruments`, `instrumentOptions.ts`, `fieldUsage.ts`, Wissensbereich
@@ -1287,9 +1312,6 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   nur Dusche)? Wäre eine bewusste Verhaltensänderung, keine reine Korrektur.
 - Bei #15: Temperatur-Eingabe im Gefrierschrank-Check nachrüsten (dann stimmt
   der Info-Tab) oder die Temperatur aus dem Info-Tab streichen?
-- Bei #17 (Nachtrag aus #18): Sollen `windowAge`, `insulationState`,
-  `ventilationType` und `renovations` aus „Wofür wir das nutzen" verschwinden?
-  Sie stehen dort als Angaben, die ein neues Profil nie macht.
 
 - Bei #24/#25: Der Standort-Schritt ist entfallen, die Postleitzahl wird also
   gar nicht mehr erhoben. Soll die Klimaregion in einer Session **mit**

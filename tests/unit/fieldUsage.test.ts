@@ -59,3 +59,59 @@ describe('Feld-Landkarte', () => {
     }
   })
 })
+
+/**
+ * Fragen, die **nicht mehr gestellt werden**. Ihre Felder bleiben in
+ * `OnboardingData` (Bestandsprofile tragen echte Werte, der Steckbrief des
+ * Berichts zeigt sie), aber „Wofür wir das nutzen" darf sie nicht nennen: Der
+ * Schirm erklärt, wozu die *eigenen Antworten* dienen, und die Aufstellung ist
+ * statisch – sie zeigt jedes Feld mit `labelKey`, egal ob beantwortet.
+ */
+const NICHT_MEHR_GEFRAGT = [
+  // Schritt „Gebäudehülle & Modernisierung", entfallen am 04.09.2026
+  'windowAge',
+  'insulationState',
+  'ventilationType',
+  'renovations',
+  // einzeln entfallene Fragen
+  'hasExtraFireplace',
+  'smartHomeDevices',
+  'instruments',
+  'occupancyStatus',
+  'postalCode',
+  'buildingType',
+  'floors',
+]
+
+describe('Aufstellung „Wofür wir das nutzen"', () => {
+  it('nennt keine Frage, die niemand mehr gestellt bekommt', () => {
+    for (const feld of NICHT_MEHR_GEFRAGT) {
+      const usage = FIELD_USAGE[feld as keyof typeof FIELD_USAGE] as { labelKey?: string }
+      expect(usage, `${feld} fehlt in der Landkarte`).toBeTruthy()
+      expect(usage.labelKey, `${feld} steht noch auf dem Schirm`).toBeUndefined()
+    }
+  })
+
+  it('hält die Menge der genannten Angaben fest', () => {
+    // Eine Liste, kein Zählwert: Wer eine Angabe aufnimmt oder herausnimmt,
+    // trifft damit eine Entscheidung und sieht sie hier.
+    const genannt = Object.entries(FIELD_USAGE)
+      .filter(([, u]) => Boolean((u as { labelKey?: string }).labelKey))
+      .map(([feld]) => feld)
+      .sort()
+    expect(genannt).toEqual([
+      'appliances',
+      'buildingYear',
+      'goals',
+      'hasPV',
+      'heatGeneratorYears',
+      'heatGenerators',
+      'hotWaterType',
+      'livingArea',
+      'personsCount',
+      'profileName',
+      'rooms',
+      'roomsCount',
+    ])
+  })
+})

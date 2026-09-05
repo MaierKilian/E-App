@@ -22,10 +22,12 @@ export interface FieldUsage {
   /**
    * i18n-Schlüssel der Beschriftung in der Aufstellung.
    *
-   * Fehlt er, taucht das Feld dort nicht auf – das ist der Unterschied
-   * zwischen einer Frage, die der Nutzer beantwortet hat, und einem inneren
-   * Zustand wie `completed` oder `mode`. In der Tabelle stehen beide, weil der
-   * Test alles abdecken soll; auf dem Schirm hat nur die Frage etwas verloren.
+   * Fehlt er, taucht das Feld dort nicht auf. Zwei Sorten lassen ihn weg:
+   * innerer Zustand (`completed`, `mode`) und Angaben, die **nicht mehr
+   * gefragt** werden – der Schritt „Gebäudehülle", der Kamin, die
+   * Smart-Home-Geräte, die Messgeräte-Abfrage. In der Tabelle stehen sie
+   * weiter, weil der Test alles abdecken soll; auf dem Schirm hat nur eine
+   * Frage etwas verloren, die der Nutzer auch gestellt bekommen hat.
    */
   labelKey?: string
 }
@@ -142,7 +144,6 @@ export const FIELD_USAGE = {
     consumers: ['report'],
     reason:
       'Fensteralter. Wird seit dem Wegfall des Schritts „Gebäudehülle" nicht mehr erhoben; im Steckbrief des Berichts erscheint es nur noch, wenn ein Bestandsprofil einen Wert trägt.',
-    labelKey: 'onboarding.step8.labels.windowAge',
   },
   hasPV: {
     consumers: ['monitoring', 'tips'],
@@ -159,13 +160,11 @@ export const FIELD_USAGE = {
     consumers: ['report'],
     reason:
       'Lüftungsart. Wird nicht mehr erhoben (Schritt „Gebäudehülle" entfallen); im Steckbrief nur noch bei Bestandsprofilen. Für Lüftungsverluste wäre sie brauchbar gewesen – gelesen hat sie dort nie jemand.',
-    labelKey: 'onboarding.step8.labels.ventilationType',
   },
   insulationState: {
     consumers: ['report'],
     reason:
       'Dämmzustand als Selbsteinschätzung. Wird nicht mehr erhoben (Schritt „Gebäudehülle" entfallen); im Steckbrief nur noch bei Bestandsprofilen.',
-    labelKey: 'onboarding.step8.labels.insulationState',
   },
   smartHomeDevices: {
     consumers: ['report'],
@@ -176,7 +175,6 @@ export const FIELD_USAGE = {
     consumers: ['report'],
     reason:
       'Der Sanierungs-Log steht chronologisch im Steckbrief des Berichts. Erhoben wird er nicht mehr (Schritt „Gebäudehülle" entfallen), deshalb bekommt nur noch ein Bestandsprofil dieses Kapitel.',
-    labelKey: 'onboarding.fieldUsage.labels.renovations',
   },
   heatGeneratorYears: {
     consumers: ['tips'],
