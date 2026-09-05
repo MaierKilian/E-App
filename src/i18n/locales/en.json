@@ -1879,33 +1879,8 @@
       "refillsTotal": "Total",
       "refillsNone": "No deliveries in this period."
     },
-    "summerCheck": {
-      "title": "Summer check",
-      "legend": "Shaded: heating season (October to April)",
-      "measured": "Measured in summer",
-      "expected": "Expected for hot water",
-      "perDay": "{{value}} {{unit}}/day",
-      "excess": "Around {{value}} {{unit}} per summer go beyond the hot water demand.",
-      "verdict": {
-        "good": "Hot water only",
-        "medium": "A bit above hot water",
-        "high": "Well above hot water"
-      },
-      "text": {
-        "good": "In high summer you use about as much as hot water for your household needs. So the heating is off when it should be.",
-        "medium": "In high summer you use {{factor}}× what hot water needs. Part of that is the normal standby loss of the heat generator — not alarming yet, but worth a look at the circulation pump.",
-        "high": "In high summer you use {{factor}}× what hot water needs — so more than half goes to something other than hot water. Typical causes: no summer shutdown on the heat generator, a circulation pump running around the clock, or a heating limit set too high. All three can be adjusted without buying anything."
-      },
-      "calc": {
-        "formula": "Summer use per day ÷ (people × hot water demand per person per day)",
-        "window": "Summer days measured (15 Jun–31 Aug)",
-        "windowValue": "{{days}} days",
-        "measured": "Use per day in that window",
-        "persons": "People in the household",
-        "hotWater": "Hot water per person per day",
-        "hotWaterValue": "{{value}} kWh of heat",
-        "note": "The expected hot water demand is the same one the showerhead check uses (around 500 kWh per person per year). It is converted to what the meter counts via the efficiency of your heat generator. Only the high-summer window counts: May and September carry real heating demand in cool years."
-      }
+    "heatingSeason": {
+      "legend": "Shaded: heating season (October to April)"
     }
   },
   "pages": {

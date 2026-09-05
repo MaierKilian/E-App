@@ -221,12 +221,8 @@ export function consumptionSegments(readings: MeterReading[]): ConsumptionSegmen
 /**
  * Verbrauch in einem Zeitfenster, anteilig aus den Abschnitten aufsummiert.
  * Ragt ein Abschnitt nur teilweise ins Fenster, zählt er anteilig nach Tagen.
- *
- * Exportiert für den Heizperioden-Check (`heatingPeriod.ts`): Ableseabstände
- * liegen so gut wie nie auf den Grenzen einer Heizperiode, und die anteilige
- * Zuordnung ist genau das, was dort gebraucht wird.
  */
-export function consumptionInWindow(
+function consumptionInWindow(
   segments: ConsumptionSegment[],
   windowStart: Date,
   windowEnd: Date,

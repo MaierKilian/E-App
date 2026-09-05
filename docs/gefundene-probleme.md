@@ -537,9 +537,10 @@ Seite, die nur noch die Messgeräte-Übersicht zeigt, noch der richtige ist.
 ### 24. Postleitzahl als totes Ende – Vorschlag: Klimaregion, Heizperiode, Gradtage
 **Kategorie:** Verbesserung · **Bereich:** `seasonality.ts`, `Step7Location`,
 `AbsoluteLineChart`, `fieldUsage.ts`
-**Status:** ⚠️ Teilweise umgesetzt (05.09.) – **der Nutzen ist da, die
-Postleitzahl aber weiterhin nicht angeschlossen.** Beim Bauen zeigte sich, dass
-beides nicht zusammengehört; Begründung unten unter „Was daraus wurde".
+**Status:** ⚠️ Teilweise umgesetzt (05.09.) – geblieben ist das
+Heizperioden-Band im Verlaufsdiagramm. Der Sommer-Check dazu war kurz da und ist
+auf Kilians Wunsch wieder entfernt worden; die Postleitzahl ist weiterhin nicht
+angeschlossen. Begründungen unten unter „Was daraus wurde".
 
 Kilians Frage: „Wie können wir diese Info besser nutzen? Bis jetzt ist das ja
 quasi ein totes Ende. Kann man daraus die Heizperiode vielleicht ableiten? Oder
@@ -612,28 +613,29 @@ erwarteten Bedarf aus der Personenzahl, den die App über den Duschkopf-Check
 ohnehin kennt. Das ist genauer als jede Regionaltabelle, weil es das eigene
 Haus beschreibt statt eines durchschnittlichen in derselben Gegend.
 
-Umgesetzt sind deshalb:
+Gebaut wurden daraufhin zwei Dinge – geblieben ist eines:
 
-- `monitoring/heatingPeriod.ts` – Heizperiode (1.10.–30.4., Konvention) und ein
-  bewusst enger gefasstes Sommerfenster (15.6.–31.8., Richtwert der E-App):
-  Mai und September tragen in kühlen Jahren echten Heizbedarf, und ein Befund,
-  der einen kalten Mai als Fehler auslegt, wäre falsch.
-- **Heizperioden-Band** hinter dem Verlaufsdiagramm der Wärmeträger. Dafür
-  brauchte die Zeitachse eine Umkehrung (`offsetForTime` in `lib/timeAxis.ts`):
-  Die Achse ist nicht zeit-proportional, ein beliebiges Datum lässt sich nur
-  zwischen seinen Nachbarpunkten interpolieren – sonst säße die Bandkante neben
-  der Linie, die sie einordnen soll.
-- **Sommer-Check** als Karte unter dem Diagramm: gemessener Sommerverbrauch je
-  Tag gegen den erwarteten Warmwasserbedarf, mit „So gerechnet"-Aufklapper.
-  Ab dem Zweieinhalbfachen wird es deutlich – dann geht mehr als die Hälfte des
-  Sommerverbrauchs für etwas anderes drauf als warmes Wasser: fehlende
-  Sommerabschaltung, Zirkulationspumpe im Dauerlauf, zu hohe Heizgrenze. Alle
-  drei lassen sich einstellen, ohne etwas zu kaufen.
+- **Geblieben: das Heizperioden-Band** hinter dem Verlaufsdiagramm der
+  Wärmeträger (`monitoring/heatingPeriod.ts`, Heizperiode 1.10.–30.4. als
+  Konvention). Dafür brauchte die Zeitachse eine Umkehrung (`offsetForTime` in
+  `lib/timeAxis.ts`): Die Achse ist nicht zeit-proportional, ein beliebiges
+  Datum lässt sich nur zwischen seinen Nachbarpunkten interpolieren – sonst
+  säße die Bandkante neben der Linie, die sie einordnen soll. Das Band ordnet
+  ein und bewertet nicht.
+- **Wieder entfernt: der Sommer-Check.** Eine Karte unter dem Diagramm, die den
+  gemessenen Sommerverbrauch gegen den erwarteten Warmwasserbedarf hielt und
+  daraus einen Befund ableitete (fehlende Sommerabschaltung, Zirkulationspumpe,
+  Heizgrenze). Sie war fertig, getestet und im Browser geprüft; Kilian hat sie
+  nach dem Ansehen wieder streichen lassen. Mit ihr sind der abgeleitete
+  Warmwasser-Maßstab und die beiden Hilfs-Exporte entfallen, die es nur für sie
+  gab (`HEAT_CONVERSION` in `hotWaterEnergy.ts`, `consumptionInWindow` in
+  `readings.ts`) – beide Dateien stehen wieder exakt auf ihrem vorherigen Stand.
 
-Der Warmwasser-Maßstab wird aus den Konstanten des Duschkopf-Checks
-**hergeleitet**, nicht danebengeschrieben; die Wirkungsgrade kommen aus
-`hotWaterEnergy.ts`, das mit ihnen rechnet. Ändert der Duschkopf-Check seine
-Annahmen, zieht der Sommer-Check mit.
+Was davon bleibt, ist der Gedanke dahinter, falls die Frage wiederkommt: Der
+Maßstab für „ist der Sommerverbrauch zu hoch?" muss nicht aus einem Klimamodell
+kommen. Der gemessene Sommerverbrauch **ist** der Warmwasser-Grundbedarf des
+Haushalts – genauer als jede Regionaltabelle, weil er das eigene Haus
+beschreibt.
 
 **Warum die Klimatabelle nicht kam.** Diese Session hat keinen Netzzugang: Der
 Egress-Proxy lehnt `opendata.dwd.de`, `open-meteo.com` und Wikipedia gleichermaßen

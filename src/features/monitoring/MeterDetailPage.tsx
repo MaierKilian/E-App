@@ -10,8 +10,7 @@ import { SelectChip } from '@/components/ui/SelectChip'
 import { ENERGY_META, isSeasonal } from './energyConfig'
 import { PRICE_META } from './priceConfig'
 import { AbsoluteLineChart, type LinePoint } from './AbsoluteLineChart'
-import { hasSummerCheck, summerHeatCheck } from './heatingPeriod'
-import { SummerHeatCard } from './SummerHeatCard'
+import { hasHeatingSeason } from './heatingPeriod'
 import { AddReadingScreen } from './AddReadingScreen'
 import { ReadingReminder } from './ReadingReminder'
 import { TariffModal } from './TariffModal'
@@ -160,12 +159,6 @@ export function MeterDetailPage() {
     kwhPerUnit,
   )
   const trend = consumptionTrend(counted)
-  // Sommer-Check: Steht der Sommerverbrauch im Verhältnis zum Warmwasserbedarf,
-  // oder läuft die Heizung mit? Bewusst auf `readings` und nicht auf `counted`:
-  // Die Frage gilt dem ganzen Messverlauf, nicht dem gewählten Diagramm-Ausschnitt.
-  const summer = hasSummerCheck(type)
-    ? summerHeatCheck(readings, { type, persons: data.personsCount, kwhPerUnit })
-    : undefined
   // Nicht `range` – so heißt hier schon der Zeitraum-Filter des Diagramms.
   const rangeEstimate = meterRange(readings, meterConfig, {
     seasonal: isSeasonal(type),
@@ -495,26 +488,22 @@ export function MeterDetailPage() {
               points={points}
               unit={unit}
               accent={meta.accent}
-              showHeatingPeriod={hasSummerCheck(type)}
+              showHeatingPeriod={hasHeatingSeason(type)}
             />
           )}
 
           {/* Ein hinterlegtes Band ohne Beschriftung ist ein Rätsel. Die Zeile
               steht nur da, wo das Band auch gezeichnet wird. */}
-          {hasSummerCheck(type) && points.length > 1 && (
+          {hasHeatingSeason(type) && points.length > 1 && (
             <p className="mt-2 flex items-center gap-1.5 px-1 text-xs text-muted">
               <span
                 aria-hidden="true"
                 className="inline-block h-3 w-5 rounded-[3px] bg-foreground/[0.05]"
               />
-              {t('monitoring.summerCheck.legend')}
+              {t('monitoring.heatingSeason.legend')}
             </p>
           )}
         </section>
-      )}
-
-      {summer && (
-        <SummerHeatCard check={summer} unit={unit} persons={data.personsCount} />
       )}
 
       {/* Historie (eingeklappt) */}
