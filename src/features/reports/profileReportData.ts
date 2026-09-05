@@ -157,14 +157,21 @@ export function buildProfileReportData(
       ],
     ]),
     [t('onboarding.step8.labels.hasPV'), opt('onboarding.step4.pvOptions', data.hasPV)],
-    [
-      t('onboarding.step8.labels.smartHomeDevices'),
-      list(
-        data.smartHomeDevices
-          .filter((d) => d !== 'none')
-          .map((d) => t(`onboarding.step6.smartHomeOptions.${d}`)),
-      ),
-    ],
+    // Smart-Home wird seit dem 05.09.2026 nicht mehr gefragt: Die drei
+    // Gerätearten haben nie eine Rechnung verschoben, ihre gesamte Wirkung war
+    // diese Zeile. Sie bleibt für Bestandsprofile, die etwas eingetragen haben
+    // – ein neues Profil bekommt sie nicht, weil eine leere Liste von „nie
+    // gefragt" nicht zu unterscheiden ist.
+    ...retired([
+      [
+        t('onboarding.step8.labels.smartHomeDevices'),
+        list(
+          data.smartHomeDevices
+            .filter((d) => d !== 'none')
+            .map((d) => t(`onboarding.step6.smartHomeOptions.${d}`)),
+        ),
+      ],
+    ]),
     // Die Messgeräte werden nicht mehr erhoben (siehe „Gebäudehülle" oben,
     // gleiche Begründung): Ein neues Profil bekommt die Zeile gar nicht, statt
     // ein „nicht angegeben" zu einer Frage zu zeigen, die niemand gestellt hat.

@@ -85,9 +85,25 @@ describe('Registry ist widerspruchsfrei', () => {
     // hat; hier die Gegenrichtung – eine id ohne Registry-Eintrag.
     const ids: SectionId[] = [
       'home', 'rooms', 'heating', 'prices',
-      'equipment', 'location', 'review',
+      'appliances', 'equipment', 'location', 'review',
     ]
     expect(ONBOARDING_SECTIONS.map((s) => s.id).sort()).toEqual([...ids].sort())
+  })
+
+  it('stellt die Geräte-Frage vor der Messgeräte-Übersicht, auf eigener Seite', () => {
+    // Beide standen bis zum 05.09.2026 auf derselben Seite: die Frage unter der
+    // Auskunft, wo man sie erst freiscrollen musste. Seither hat sie einen
+    // eigenen Schritt – und der steht davor, nicht dahinter.
+    const ids = ONBOARDING_SECTIONS.map((s) => s.id)
+    expect(ids.indexOf('appliances')).toBeLessThan(ids.indexOf('equipment'))
+
+    const appliances = ONBOARDING_SECTIONS.find((s) => s.id === 'appliances')!
+    expect(appliances.fields.map((f) => f.id)).toEqual(['appliances'])
+
+    // „Ausstattung" ist seither reine Auskunft: keine Frage, kein Ausfüllstand.
+    // Sonst hinge der Fortschritt an einer Seite, auf der es nichts zu
+    // beantworten gibt.
+    expect(ONBOARDING_SECTIONS.find((s) => s.id === 'equipment')!.fields).toEqual([])
   })
 
   it('hat genau einen Abschluss-Schritt, und zwar als letzten', () => {

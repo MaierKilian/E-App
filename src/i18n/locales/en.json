@@ -90,7 +90,6 @@
     "pv": "A PV system supplies your own electricity and changes the energy balance.",
     "fireplace": "An additional fireplace/stove adds room heat and should be recorded.",
     "instruments": "This overview is information, not a question – the app derives it from what its checks actually require. There is nothing to select here.",
-    "smartHome": "Smart devices can provide consumption data and improve the analysis.",
     "renovation": "Renovations improve the insulation standard and reduce the energy demand.",
     "location": "Your postal code lets regional climate and weather data flow in later.",
     "appliances": "The fridge and freezer checks each measure a real appliance. Without this answer the app suggests checks you have nothing to measure for – and your progress would never reach 100 %. “We have none” takes the matching check out; you can undo that here at any time."
@@ -1418,7 +1417,6 @@
           "smart_sensor": "Smart home CO₂ sensor"
         }
       },
-      "smartHomeDevices": "Smart home devices available?",
       "smartHomeOptions": {
         "smart_thermostat": "Smart thermostat",
         "smart_meter": "Smart electricity meter",
@@ -1607,6 +1605,7 @@
       "heating": "Heating & hot water",
       "prices": "Prices & costs",
       "building": "Building envelope & retrofits",
+      "appliances": "Fridges & freezers",
       "equipment": "Equipment",
       "location": "Location & tenancy",
       "review": "Review & save"
@@ -1639,8 +1638,8 @@
       "toHeating": "Change in the heating step"
     },
     "appliances": {
-      "title": "Fridges and freezers",
       "subtitle": "So we only suggest checks you actually have something to measure for.",
+      "question": "Which appliances do you have?",
       "roomLabel": "Where is it? (optional)",
       "none": "We have none",
       "kinds": {

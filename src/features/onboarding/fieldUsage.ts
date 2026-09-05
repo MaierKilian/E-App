@@ -174,8 +174,7 @@ export const FIELD_USAGE = {
   smartHomeDevices: {
     consumers: ['report'],
     reason:
-      'Vorhandene Smart-Home-Geräte, im Steckbrief des Berichts. Dass die Empfehlungen schon Vorhandenes unterdrücken, steht weiter aus.',
-    labelKey: 'onboarding.step8.labels.smartHomeDevices',
+      'Vorhandene Smart-Home-Geräte. Wird nicht mehr gefragt – die Angabe verschob keine Rechnung und unterdrückte keine Empfehlung, ihre gesamte Wirkung war eine Zeile im Steckbrief. Ein Bestandsprofil, das Geräte eingetragen hat, behält sie dort.',
   },
   renovations: {
     consumers: ['report'],

@@ -1,4 +1,4 @@
-import { Home, DoorOpen, Flame, Gauge, MapPin, Wallet, ClipboardCheck } from 'lucide-react'
+import { Home, DoorOpen, Flame, Gauge, MapPin, Wallet, ClipboardCheck, Refrigerator } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { OnboardingData } from '@/types'
 
@@ -30,6 +30,7 @@ export type SectionId =
   | 'rooms'
   | 'heating'
   | 'prices'
+  | 'appliances'
   | 'equipment'
   | 'location'
   | 'review'
@@ -159,20 +160,37 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
     fields: [],
   },
   {
-    id: 'equipment',
-    titleKey: 'onboarding.sectionTitles.equipment',
-    icon: Gauge,
+    // Eigener Schritt seit dem 05.09.2026. Vorher stand die Geräte-Frage unter
+    // der Messgeräte-Übersicht auf derselben Seite – eine echte Frage unter
+    // einer reinen Auskunft, die man erst freiscrollen musste. Sie ist die
+    // einzige Angabe des Fragebogens, die darüber entscheidet, welche Checks
+    // überhaupt erscheinen; das trägt eine eigene Seite.
+    id: 'appliances',
+    titleKey: 'onboarding.sectionTitles.appliances',
+    icon: Refrigerator,
     quick: false,
     fields: [
-      // Die Messgeräte-Frage ist hier entfallen: Sie zählte für den Fortschritt,
-      // ohne etwas zu bewirken – an ihrer Stelle steht jetzt die Übersicht
-      // „Was du zum Messen brauchst" (Punkt 18 in `docs/gefundene-probleme.md`).
-      // Eine Auskunft hat keinen Ausfüllstand.
-      //
       // Beantwortet ist die Geräte-Frage auch mit „wir haben keines" – erst dann
       // fallen Kühl- und Gefrier-Check aus der Fortschrittszählung.
       field('appliances', (d) => d.appliancesAnswered),
     ],
+  },
+  {
+    id: 'equipment',
+    titleKey: 'onboarding.sectionTitles.equipment',
+    icon: Gauge,
+    quick: false,
+    // Seit dem 05.09.2026 ohne jede Frage: Die Messgeräte-Abfrage ist der
+    // Übersicht „Was du zum Messen brauchst" gewichen (Punkt 18 in
+    // `docs/gefundene-probleme.md`), die Kühl- und Gefriergeräte haben einen
+    // eigenen Schritt bekommen, und die Smart-Home-Frage ist entfallen – sie
+    // erhob drei Gerätearten, deren gesamte Wirkung eine Zeile im
+    // PDF-Steckbrief war.
+    //
+    // Damit ist der Schritt eine reine Auskunft, wie „Preise & Kosten": Eine
+    // Auskunft hat keinen Ausfüllstand, `stateOf` zählt ihn als erledigt,
+    // sobald er besucht wurde.
+    fields: [],
   },
   {
     id: 'location',

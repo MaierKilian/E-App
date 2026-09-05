@@ -18,6 +18,7 @@ import { Step1Profile } from './steps/Step1Profile'
 import { Step3Rooms } from './steps/Step3Rooms'
 import { Step4Heating } from './steps/Step4Heating'
 import { Step6Instruments } from './steps/Step6Instruments'
+import { StepAppliances } from './steps/StepAppliances'
 import { Step7Location } from './steps/Step7Location'
 import { StepPrices } from './steps/StepPrices'
 import { Step8Review } from './steps/Step8Review'
@@ -50,9 +51,8 @@ const SECTION_BODIES: Record<SectionId, (p: StepContentProps) => ReactNode> = {
   rooms: ({ data, onChange }) => <Step3Rooms data={data} onChange={onChange} />,
   heating: ({ data, onChange }) => <Step4Heating data={data} onChange={onChange} />,
   prices: ({ data }) => <StepPrices data={data} />,
-  equipment: ({ data, onChange, detailed }) => (
-    <Step6Instruments data={data} onChange={onChange} detailed={detailed} />
-  ),
+  appliances: ({ data, onChange }) => <StepAppliances data={data} onChange={onChange} />,
+  equipment: () => <Step6Instruments />,
   location: ({ data, onChange }) => <Step7Location data={data} onChange={onChange} />,
   review: ({ data }) => <Step8Review data={data} />,
 }

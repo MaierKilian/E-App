@@ -64,6 +64,13 @@ deployten App dazu.
   gelesen hat.
 - Frage nach zusätzlichem Kamin/Ofen entfernt – sie hatte keine einzige
   funktionale Lesestelle.
+- Frage nach vorhandenen Smart-Home-Geräten entfernt (05.09.) – ebenfalls ohne
+  funktionale Lesestelle; ihre gesamte Wirkung war eine Zeile im PDF-Steckbrief,
+  die für Bestandsprofile bestehen bleibt.
+- Kühl- und Gefriergeräte stehen seit 05.09. auf einer eigenen Seite direkt vor
+  „Ausstattung", statt unter der Messgeräte-Übersicht am Seitenende. Damit hat
+  „Ausstattung" keine Frage mehr und ist – wie „Preise & Kosten" – eine reine
+  Auskunft.
 - Die PV-Angabe trägt jetzt auch Empfehlungen: „Ja" rät, große Verbraucher in
   die Mittagsstunden zu legen (Eigenverbrauch statt Einspeisung), „geplant" rät,
   vor der Auslegung die eigene Grundlast zu messen. Den Erzeugungszähler im

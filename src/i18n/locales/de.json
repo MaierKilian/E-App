@@ -90,7 +90,6 @@
     "pv": "Eine PV-Anlage liefert eigenen Strom und verändert die Energiebilanz.",
     "fireplace": "Ein zusätzlicher Kamin/Ofen trägt zur Raumwärme bei und sollte erfasst werden.",
     "instruments": "Diese Übersicht ist Auskunft, keine Frage – die App leitet sie daraus ab, was ihre Checks tatsächlich verlangen. Du musst hier nichts auswählen.",
-    "smartHome": "Smarte Geräte können Verbrauchsdaten liefern und die Auswertung verbessern.",
     "renovation": "Renovierungen verbessern den Dämmstandard und senken den Energiebedarf.",
     "location": "Mit der Postleitzahl können später regionale Klima- und Wetterdaten einfließen.",
     "appliances": "Der Kühlschrank- und der Gefriergerät-Check messen jeweils ein reales Gerät. Ohne diese Angabe schlägt die App Checks vor, die es bei dir nicht zu messen gibt – und der Fortschritt käme nie bei 100 % an. „Haben wir nicht\" nimmt den passenden Check heraus; du kannst das hier jederzeit zurücknehmen."
@@ -1628,7 +1627,6 @@
           "smart_sensor": "Smart-Home-CO₂-Sensor"
         }
       },
-      "smartHomeDevices": "Smart-Home-Geräte vorhanden?",
       "smartHomeOptions": {
         "smart_thermostat": "Smartes Thermostat",
         "smart_meter": "Smarter Stromzähler",
@@ -1817,6 +1815,7 @@
       "heating": "Heizung & Warmwasser",
       "prices": "Preise & Kosten",
       "building": "Gebäudehülle & Modernisierung",
+      "appliances": "Kühl- & Gefriergeräte",
       "equipment": "Ausstattung",
       "location": "Standort & Wohnsituation",
       "review": "Prüfen & Speichern"
@@ -1849,8 +1848,8 @@
       "toHeating": "Im Heizungs-Schritt ändern"
     },
     "appliances": {
-      "title": "Kühl- und Gefriergeräte",
       "subtitle": "Damit wir nur Checks vorschlagen, die es bei dir auch zu messen gibt.",
+      "question": "Welche Geräte hast du?",
       "roomLabel": "Wo steht es? (optional)",
       "none": "Haben wir nicht",
       "kinds": {

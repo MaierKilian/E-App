@@ -122,10 +122,6 @@ export function Step8Review({ data }: Props) {
     .map((g) => t(`onboarding.step1.goalOptions.${g}`))
     .join(', ')
 
-  const smartHomeDevicesSummary = data.smartHomeDevices
-    .map((d) => t(`onboarding.step6.smartHomeOptions.${d}`))
-    .join(', ')
-
   const isDetailed = data.mode === 'detailed'
 
   // Verbrauchspreise (zentral aus dem Tarif-Store; je nach Profil relevante Träger).
@@ -211,19 +207,13 @@ export function Step8Review({ data }: Props) {
         </ReviewSection>
       )}
 
+      {/* Die Smart-Home-Zeile, die hier danebenstand, ist entfallen: Die Frage
+          wird nicht mehr gestellt (05.09.2026). Die Messgeräte-Zeile bleibt
+          für Bestandsprofile, die noch welche eingetragen haben – neu befüllt
+          wird `instruments` seit dem 04.09.2026 nicht mehr. */}
       {data.instruments.length > 0 && (
         <ReviewSection title={t('onboarding.step8.sections.instruments')}>
           <p className="text-sm text-foreground">{instrumentsSummary || '—'}</p>
-          {isDetailed && (
-            <>
-              {smartHomeDevicesSummary && (
-                <ReviewRow
-                  label={t('onboarding.step8.labels.smartHomeDevices')}
-                  value={smartHomeDevicesSummary}
-                />
-              )}
-            </>
-          )}
         </ReviewSection>
       )}
 

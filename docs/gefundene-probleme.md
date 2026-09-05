@@ -480,6 +480,60 @@ das Vierfache von Gas". Gegen die Standardpreise der App gerechnet sind es 2,65
 teuerste aller Quellen" und, wo eine Zahl steht, „gut zweieinhalbmal so teuer
 wie Gas"; ein Test hält beides an der Rechnung fest.
 
+### 22. Smart-Home-Frage ohne Wirkung
+**Kategorie:** Problem · **Bereich:** `Step6Instruments`, `Step8Review`,
+`fieldUsage.ts`, `profileReportData.ts`
+**Status:** ✅ Umgesetzt (05.09.) – Frage entfernt.
+
+Kilians Befund: „Bitte entferne die Smart-Home-Geräte. Die haben keinen
+Mehrwert." Nachgeprüft und bestätigt – derselbe Fall wie #19: `smartHomeDevices`
+hatte keine funktionale Lesestelle. Die drei Antworten (smartes Thermostat,
+smarter Stromzähler, smarte Steckdosen) landeten in der Abschluss-Zusammenfassung
+und in einer Zeile des PDF-Steckbriefs, sonst nirgends. Der eigene
+`fieldUsage`-Eintrag stand seit Etappe 4 als offene Rechnung da: „Dass die
+Empfehlungen schon Vorhandenes unterdrücken, steht weiter aus." Angeschlossen
+wurde das nie.
+
+Das Feld bleibt in `OnboardingData`, wie bei #17, #18 und #19. Die
+Steckbrief-Zeile steht nur noch, wo tatsächlich Geräte eingetragen sind: Der
+Standardwert ist die leere Liste, die von „nie gefragt" nicht zu unterscheiden
+wäre (`retired()` in `profileReportData.ts`). Der `labelKey` ist weg, damit die
+Angabe nicht länger in „Wofür wir das nutzen" steht – dort stünde sonst eine
+Frage, die ein neues Profil nie beantwortet.
+
+Entfallen sind auch die beiden i18n-Schlüssel, die nur die Frage selbst trug
+(`onboarding.step6.smartHomeDevices`, `info.smartHome`). Die Bezeichnungen der
+Gerätearten bleiben – der Steckbrief liest sie für Bestandsprofile.
+
+### 23. Kühl- und Gefriergeräte auf eine eigene Seite
+**Kategorie:** Verbesserung · **Bereich:** `sections.ts`, `StepAppliances`,
+`Step6Instruments`
+**Status:** ✅ Umgesetzt (05.09.).
+
+Kilians Befund: „Das mit den Kühl- und Gefriergeräten finde ich gut. Kannst du
+das auf eine eigene Seite des Fragebogens vor dieser Seite bitte verorten."
+
+Die Frage stand seit #18 am Fuß des Schritts „Ausstattung", unterhalb der
+Übersicht „Was du zum Messen brauchst" – eine Frage unter einer Auskunft, die
+man erst freiscrollen musste (siehe Kilians Screenshot: Die Geräte-Auswahl
+beginnt unterhalb der Zeile „Ganz ohne Messgerät: …"). Ausgerechnet diese Frage:
+Sie ist die einzige des Fragebogens, die darüber entscheidet, welche Checks
+überhaupt erscheinen – und ob der Fortschritt je bei 100 % ankommt.
+
+Sie hat jetzt einen eigenen Schritt (`appliances`, neuer
+`StepAppliances`-Baustein) unmittelbar **vor** „Ausstattung". Der vollständige
+Fragebogen hat damit acht statt sieben Schritte; der Schnellstart bleibt
+unberührt (`quick: false`). Auf der Seite selbst steht als Überschrift die Frage
+(„Welche Geräte hast du?") statt der Bezeichnung ein zweites Mal – die trägt
+schon der Seitenkopf.
+
+„Ausstattung" ist damit die zweite Seite ohne jede Frage, wie „Preise & Kosten":
+Sie zeigt nur noch die Messgeräte-Übersicht und gilt als erledigt, sobald sie
+besucht wurde. Im Profil-Hub steht sie folgerichtig als „Optional".
+
+**Zu entscheiden (siehe Offene Fragen):** Ob der Titel „Ausstattung" für eine
+Seite, die nur noch die Messgeräte-Übersicht zeigt, noch der richtige ist.
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
@@ -633,6 +687,10 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
 - Bei #17 (Nachtrag aus #18): Sollen `windowAge`, `insulationState`,
   `ventilationType` und `renovations` aus „Wofür wir das nutzen" verschwinden?
   Sie stehen dort als Angaben, die ein neues Profil nie macht.
+
+- Bei #23: „Ausstattung" heißt jetzt eine Seite, auf der nur noch die
+  Übersicht „Was du zum Messen brauchst" steht. Soll der Schritt so heißen wie
+  sein Inhalt (z. B. „Was du zum Messen brauchst") – oder bleibt „Ausstattung"?
 
 - Bei #9: Welche Auswahl-Struktur für die Raumzuordnung – zweistufig
   (erst Raum, dann Entnahmestelle) oder eine kombinierte Liste je
