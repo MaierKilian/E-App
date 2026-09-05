@@ -1250,6 +1250,136 @@ der hier aufgefallen ist.
   zeigt alle acht Abschnitte, auch die übersprungenen.
 
 
+### 36. Duschkopf-Test fragt das Warmwasser ein zweites Mal
+**Kategorie:** Problem (Bedienung/Logik) · **Bereich:**
+`showerhead/ShowerheadRun.tsx`, `showerhead/hotWaterEnergy.ts`,
+`hot_water_wait/HotWaterWaitRun.tsx` (Vorbild)
+**Status:** 🔍 Nur gesammelt (05.09.) – Vorschlag unten, noch nichts geändert.
+
+Kilians Beobachtung: „Ich finde es komisch, hier nochmal das ‚Warmwasser über‘
+auszuwählen? Das hat man doch bereits im Onboarding gemacht."
+
+**Befund bestätigt – und es sind sogar zwei verschiedene Fragen.** Der
+Fragebogen fragt nach dem *Verhältnis* zur Heizung (`HotWaterType`:
+„wie Heizung", „eigenes Gerät", „separates System", „nicht bekannt"), der Check
+fragt nach dem *Energieträger* („Strom / Durchlauferhitzer", „Gas",
+„Wärmepumpe", „Öl", „Pellets"). Zwei Vokabulare für eine Tatsache. Der Nutzer
+erlebt das als dieselbe Frage – und hat recht damit, denn die Übersetzung
+zwischen beiden existiert bereits: `defaultHotWaterSource()` verknüpft
+`hotWaterType` mit den Wärmeerzeugern und liefert genau den Träger, den die
+Chips zur Wahl stellen. Die App **weiß die Antwort schon** und fragt trotzdem.
+
+**Warum die Auswahl überhaupt dasteht.** Sie tut genau eine Sache: Sie setzt
+`eurPerKwhHeat()` und damit den €-Betrag im Ergebnis. Auf die eigentliche
+Messung – Liter je Minute – hat sie **keinen Einfluss**. Sie ist ein
+Auswertungs-Parameter, kein Mess-Schritt.
+
+**Genau dieser Fall ist im Nachbar-Check schon entschieden.** Die
+Warmwasser-Wartezeit braucht den Wasserpreis für dieselbe Art Rechnung und
+stellt ihn nicht als Frage voran, sondern als schmale Zeile unter den
+Auswerten-Knopf, mit Stiftsymbol und Modal. Der Kommentar dort sagt die Regel:
+„Der Wasserpreis gehoert zur Auswertung, nicht in den Messablauf."
+(`HotWaterWaitRun.tsx`). Der Duschkopf-Test macht mit seinem Parameter das
+Gegenteil – fünf große Chips oberhalb der Stoppuhr.
+
+**Vorschlag: aus der Frage eine Auskunft mit Korrekturmöglichkeit machen.**
+Statt der Chip-Reihe eine Zeile im selben Muster wie der Wasserpreis:
+
+> Warmwasser über **Gas** · laut deinem Profil ✏️
+
+Tippen öffnet die fünf Träger. Damit verschwindet die Doppelfrage, die Angabe
+aus dem Fragebogen wird zum ersten Mal *sichtbar* wirksam statt nur
+vorausgewählt, und wer eine Gastherme fürs Bad und einen Durchlauferhitzer für
+die Küche hat, kann weiterhin korrigieren.
+
+**Nebenbefund (a): der erklärende Satz erscheint oft gar nicht.** Der Text
+„Vorbelegt aus deinem Profil …" hängt an `hotWaterSourceFromProfile()`. Auf
+Kilians Screenshot fehlt er – die Funktion hat also `false` geliefert. Das
+passiert bei „nicht bekannt" und bei jedem Erzeuger ohne Zuordnung. Ohne den
+Satz sieht die Auswahl aus wie eine Frage, die niemand gestellt hat.
+
+**Nebenbefund (b): `electric_direct` fehlt in der Zuordnung.** `GEN_TO_SOURCE`
+kennt `gas_boiler`, `oil_boiler`, `pellets`, `heat_pump` – nicht aber
+`electric_direct`, den mit #29 (05.09.) neu eingeführten Erzeuger
+(Infrarotplatten, Konvektoren, Nachtspeicher). Wer nur damit heizt, landet über
+den Rückfall zwar bei „elektrisch" – also zufällig richtig –, aber
+`hotWaterSourceFromProfile()` sagt „nicht aus dem Profil" und unterdrückt den
+Hinweis. Eine Zeile in der Tabelle behebt das. Auch `solar_thermal` und
+`wood_stove` sind nicht zugeordnet; dort ist der Rückfall auf Strom aber
+inhaltlich fragwürdig (Solarthermie *ist* meist Warmwasser) – siehe „Offene
+Fragen".
+
+**Nebenbefund (c): die Reihenfolge der Erzeuger entscheidet.**
+`defaultHotWaterSource()` nimmt den **ersten** zugeordneten Erzeuger aus der
+Liste. Bei „Wärmepumpe + Gaskessel" hängt das Ergebnis daran, in welcher
+Reihenfolge die Häkchen im Fragebogen stehen – nicht daran, was das Warmwasser
+tatsächlich macht.
+
+### 37. Duschkopf-Test, Reiter „Messen": drei Karten, nur eine misst
+**Kategorie:** Verbesserung (Gestaltung) · **Bereich:**
+`showerhead/ShowerheadRun.tsx`, `components/ui/Stepper.tsx`
+**Status:** 🔍 Nur gesammelt (05.09.) – Vorschlag unten, noch nichts geändert.
+
+Kilians Eindruck: „Ich finde diese Seite sieht sehr gevibecoded aus."
+
+**Der Eindruck hat konkrete Ursachen.** Nachgesehen, was auf dem Bildschirm
+konkurriert – und woran der Nachbar-Check es besser macht:
+
+**(a) Die Reihenfolge steht auf dem Kopf.** Ganz oben steht die Füllmenge, ein
+Wert, der praktisch nie verändert wird („Standard 5 L") und trotzdem fünf
+Bedienelemente bekommt. Darunter der Auswertungs-Parameter aus #36. Das
+eigentliche Messgerät – die Stoppuhr – steht als drittes, auf dem Handy am
+Rand des sichtbaren Bereichs. Der Nutzer steht mit dem Eimer unter der Dusche
+und muss an zwei Karten vorbeiscrollen, bevor er „Start" sieht.
+
+**(b) Drei verschiedene Beschriftungs-Konventionen auf einem Bildschirm.**
+„Füllmenge" und „Warmwasser über" stehen *in* ihren Karten, „Stoppuhr" steht
+als graue Überschrift *über* einer Karte, „Manuell (s)" steht wieder *in* einer.
+Nichts davon ist falsch; zusammen wirkt es zusammengesetzt statt gebaut.
+
+**(c) Stoppuhr und manuelle Eingabe stehen gleichzeitig da** und stellen
+dieselbe Frage zweimal. Der Wartezeit-Check zeigt die manuelle Korrektur erst,
+wenn die Stoppuhr gelaufen ist (`seconds > 0`) – dort ist sie eine Korrektur,
+hier eine zweite Bedienweise ohne Vorrang. Dazu die technische Beschriftung
+„Manuell (s)" mit der Einheit in Klammern, dem Platzhalter „z. B. 30" *im* Feld
+und einem zweiten „s" *neben* dem Feld.
+
+**(d) Der Auswerten-Knopf steht ausgegraut am Fuß**, ohne zu sagen, was fehlt.
+Auch das ist im Wartezeit-Check bereits gelöst: Dort steht statt der toten
+Schaltfläche ein Satz, der den nächsten Schritt nennt – mit ausdrücklicher
+Begründung im Code.
+
+**(e) Der Füllmengen-Regler ist handgebaut und kann deshalb weniger als der
+gemeinsame.** Vier Knöpfe in zwei Breiten (`w-10` für ±1, `w-12` für ±0,1) –
+daher die unruhige Zeile. Vor allem aber: Es sind einfache `onClick`-Knöpfe.
+Das Halten-und-Weiterzählen aus **#7** steckt in `components/ui/Stepper.tsx`
+und wirkt hier **nicht**. Wer von 5,0 auf 8,0 will, tippt dreimal – wer auf
+6,5 will, fünfmal.
+
+**Vorschlag – ein Bildschirm, der der Reihenfolge des Tuns folgt:**
+
+1. **Stoppuhr nach oben**, als einzige große Karte. Sie ist das Gerät.
+2. **Füllmenge darunter**, kompakt: gemeinsamer `Stepper` mit `step={0.1}`.
+   Durch das beschleunigte Halten ersetzt ein Knopfpaar die vier von heute.
+3. **Manuelle Sekunden** in die Stoppuhr-Karte, sichtbar erst nach dem Stoppen
+   – wie beim Wartezeit-Check, und beschriftet als das, was sie ist
+   („Zeit korrigieren").
+4. **Warmwasser-Quelle** als schmale Zeile unter den Auswerten-Knopf (#36).
+5. **Statt ausgegrautem Knopf** der Hinweis, was noch fehlt.
+
+Damit hat der Bildschirm eine Karte für die Messung, eine kleine für den
+Parameter und zwei Zeilen für die Auswertung – statt dreier gleich schwerer
+Karten in beliebiger Ordnung.
+
+**Nebenbefund: der gemeinsame `Stepper` zeigt seinen Wert doppelt.** Er
+rendert zwischen „−" und „+" selbst den rohen Wert. Kühlschrank, Raumklima und
+Möbelabstand stellen ihn aber neben eine große, formatierte Anzeige – der Wert
+steht dort also zweimal, einmal unformatiert („5") und einmal formatiert
+(„5,0 °C"). Vermutlich der Grund, warum der Duschkopf-Test sich seinen eigenen
+Regler gebaut hat. Eine Option `showValue={false}` würde beides lösen: den
+doppelten Wert dort und den handgebauten Regler hier. *Aus dem Code gelesen,
+nicht am Gerät nachgeprüft.*
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
@@ -1424,3 +1554,16 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   (`result.summary`) ist für Heizkörper formuliert („Wärme verteilt sich
   ungleichmäßig"). Für Infrarot und Ofen trifft sie ungefähr zu, die Befunde
   darunter tragen das Genaue. Eigene Sätze je Bauart nachziehen?
+
+- Bei #36: Soll die Warmwasser-Quelle im Duschkopf-Test von der Frage zur
+  Auskunft mit Stift werden (wie der Wasserpreis im Wartezeit-Check)? Und was
+  soll bei **Solarthermie** als Warmwasser-Quelle gelten – heute fällt sie
+  stillschweigend auf „elektrisch", obwohl Solarthermie in den meisten Anlagen
+  gerade das Warmwasser macht. Ein eigener Träger „Solar" (Preis 0 €/kWh) wäre
+  fachlich richtig, würde aber eine Ersparnis von 0 € ausweisen und den Test
+  entwerten – deshalb deine Entscheidung.
+- Bei #37: Umbau in der vorgeschlagenen Reihenfolge (Stoppuhr zuerst,
+  Füllmenge kompakt, manuelle Zeit erst nach dem Stoppen)? Und soll der
+  gemeinsame `Stepper` die Option bekommen, seinen Wert zu verbergen – dann
+  verschwindet nebenbei die doppelte Wertanzeige in Kühlschrank, Raumklima und
+  Möbelabstand.
