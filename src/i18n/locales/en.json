@@ -380,28 +380,15 @@
         "litersLabel": "Fill volume",
         "litersUnit": "L",
         "litersStandard": "Standard 5 L",
-        "litersInfo": "The volume of your container. Standard is 5 litres.",
         "stopwatchLabel": "Stopwatch",
-        "secondsLabel": "Time",
         "secondsUnit": "s",
-        "secondsManual": "Manual (s)",
-        "secondsPlaceholder": "e.g. 30",
-        "secondsInfo": "The time in seconds until the container was full.",
-        "sourceLabel": "Hot water via",
-        "sources": {
-          "electric": "Electric / on-demand heater",
-          "gas": "Gas",
-          "heat_pump": "Heat pump",
-          "oil": "Oil",
-          "pellets": "Pellets"
-        },
-        "sourceFromProfile": "Preset from your profile (“{{hotWater}}”): {{source}}. The price per kilowatt-hour depends on it – electricity is the most expensive of the sources."
+        "secondsManual": "Correct the time",
+        "stopwatchHint": "Hold the container under the shower head and start the clock. Stop as soon as it reaches {{liters}} L.",
+        "hintStopwatch": "Run the stopwatch or enter the time – then you can evaluate."
       },
       "result": {
         "flowUnit": "L/min",
-        "perYear": "€{{value}}/year",
-        "savingLabel": "Around {{liters}} litres of hot water a year",
-        "sourceNote": "Estimated for hot water via {{source}}. More accurate with your price set.",
+        "savingLabel": "A water-saving head at {{target}} L/min uses {{percent}} % less – both water and the energy that heats it.",
         "mini": {
           "liters": "Fill volume",
           "seconds": "Time",
@@ -419,18 +406,16 @@
           "time": "Shower for less time"
         },
         "calculation": {
-          "formula": "Shower minutes per year = occupants × showers/day × minutes/shower × 365. Times the flow rate gives litres; times the temperature rise and the energy per litre and kelvin gives kWh – times your hot water source's unit price gives the cost.",
+          "formula": "Saving in percent = (measured flow − water-saving head) ÷ measured flow. For the annual volume, additionally: shower minutes per year = occupants × showers/day × minutes/shower × 365.",
           "flow": "Flow rate of your shower head",
           "showers": "Showers per person per day",
           "minutes": "Duration per shower",
-          "deltaT": "Heating from/to",
-          "energy": "Energy per litre and kelvin",
           "reference": "Water-saving head for comparison",
-          "note": "Only the flow rate is measured. Shower frequency and duration are assumptions, chosen so the result lands at roughly 516 kWh per person per year – the range cited in the literature for domestic hot water is 500–600 kWh."
+          "note": "The percentage sits entirely in the measurement: water price, hot water source and temperature rise appear in both numerator and denominator and cancel out – which is why the check no longer asks for them. Only the litres per year additionally rest on assumed shower frequency and duration."
         },
-        "savingMoney": "roughly {{value}}",
         "buyingNote": "When buying: \"eco\" and \"water-saving\" are not protected terms – a head marketed that way can still deliver 15 L/min. What counts is the stated flow rate; below {{target}} L/min is considered economical.",
-        "referenceUpTo": "up to {{value}} L/min"
+        "referenceUpTo": "up to {{value}} L/min",
+        "savingLiters": "Projected onto your household, that is around {{liters}} litres a year."
       }
     },
     "fridge": {

@@ -380,28 +380,15 @@
         "litersLabel": "Füllmenge",
         "litersUnit": "L",
         "litersStandard": "Standard 5 L",
-        "litersInfo": "Das Volumen deines Gefäßes. Standard sind 5 Liter.",
         "stopwatchLabel": "Stoppuhr",
-        "secondsLabel": "Zeit",
         "secondsUnit": "s",
-        "secondsManual": "Manuell (s)",
-        "secondsPlaceholder": "z. B. 30",
-        "secondsInfo": "Die Zeit in Sekunden, bis das Gefäß voll war.",
-        "sourceLabel": "Warmwasser über",
-        "sources": {
-          "electric": "Strom / Durchlauferhitzer",
-          "gas": "Gas",
-          "heat_pump": "Wärmepumpe",
-          "oil": "Öl",
-          "pellets": "Pellets"
-        },
-        "sourceFromProfile": "Vorbelegt aus deinem Profil („{{hotWater}}“): {{source}}. Der Preis je Kilowattstunde hängt daran – elektrisch ist die teuerste der Quellen."
+        "secondsManual": "Zeit korrigieren",
+        "stopwatchHint": "Halte das Gefäß unter den Duschkopf und starte die Uhr. Stoppen, sobald {{liters}} L erreicht sind.",
+        "hintStopwatch": "Stoppuhr laufen lassen oder die Zeit eintragen – dann geht es zur Auswertung."
       },
       "result": {
         "flowUnit": "L/min",
-        "perYear": "{{value}} €/Jahr",
-        "savingLabel": "Rund {{liters}} Liter Warmwasser im Jahr",
-        "sourceNote": "Geschätzt für Warmwasser per {{source}}. Genauer mit hinterlegtem Preis.",
+        "savingLabel": "Ein Sparduschkopf mit {{target}} L/min braucht {{percent}} % weniger – an Wasser und an der Energie, die es erwärmt.",
         "mini": {
           "liters": "Füllmenge",
           "seconds": "Zeit",
@@ -419,18 +406,16 @@
           "time": "Kürzer duschen"
         },
         "calculation": {
-          "formula": "Duschminuten pro Jahr = Personen × Duschen/Tag × Minuten/Dusche × 365. Mal Durchfluss ergibt die Liter, mal Temperaturhub mal Energie je Liter und Kelvin die kWh – mal dem Arbeitspreis deiner Warmwasserquelle die Kosten.",
+          "formula": "Ersparnis in Prozent = (gemessener Durchfluss − Sparduschkopf) ÷ gemessener Durchfluss. Für die Jahresmenge zusätzlich: Duschminuten pro Jahr = Personen × Duschen/Tag × Minuten/Dusche × 365.",
           "flow": "Durchfluss deines Duschkopfs",
           "showers": "Duschen pro Person und Tag",
           "minutes": "Dauer je Dusche",
-          "deltaT": "Erwärmung",
-          "energy": "Energie je Liter und Kelvin",
           "reference": "Sparduschkopf als Vergleich",
-          "note": "Gemessen ist allein der Durchfluss. Duschhäufigkeit und -dauer sind Annahmen; sie sind so gewählt, dass sich rund 516 kWh pro Person und Jahr ergeben – der in der Literatur genannte Bereich für die Warmwasserbereitung liegt bei 500–600 kWh."
+          "note": "Der Prozentsatz steckt vollständig in der Messung: Wasserpreis, Warmwasserquelle und Temperaturhub stehen in Zähler und Nenner gleich und kürzen sich weg – deshalb fragt der Check nicht mehr danach. Nur die Literzahl pro Jahr beruht zusätzlich auf angenommener Duschhäufigkeit und -dauer."
         },
-        "savingMoney": "das sind etwa {{value}}",
         "buyingNote": "Beim Kauf: „Eco\" und „sparsam\" sind keine geschützten Begriffe – ein so beworbener Duschkopf kann trotzdem 15 L/min haben. Entscheidend ist die angegebene Durchflussmenge; unter {{target}} L/min gilt als sparsam.",
-        "referenceUpTo": "bis {{value}} L/min"
+        "referenceUpTo": "bis {{value}} L/min",
+        "savingLiters": "Hochgerechnet auf deinen Haushalt sind das rund {{liters}} Liter im Jahr."
       }
     },
     "fridge": {

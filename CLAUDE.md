@@ -96,9 +96,11 @@ deployten App dazu.
   die Mittagsstunden zu legen (Eigenverbrauch statt Einspeisung), „geplant" rät,
   vor der Auslegung die eigene Grundlast zu messen. Den Erzeugungszähler im
   Monitoring schaltete sie schon vorher frei.
-- Die Warmwasser-Angabe wirkt sichtbar: Der Duschkopf-Check nennt die Herkunft
-  seiner Vorbelegung, „Nicht bekannt" rät auf den Wärmeerzeuger statt pauschal
-  auf Strom, und „Separates System" trägt eine eigene Empfehlung.
+- Die Warmwasser-Angabe wirkte kurz sichtbar (Herkunft der Vorbelegung im
+  Duschkopf-Check, „Nicht bekannt" auf den Wärmeerzeuger statt pauschal auf
+  Strom). **Am 05.09. ist das wieder entfallen** – zusammen mit dem
+  Euro-Betrag, den es trug (siehe unten). Der Satz „und ‚Separates System' trägt
+  eine eigene Empfehlung" stand hier zu Unrecht: Einen solchen Tipp gab es nie.
 
 *Monitoring*
 - Das Verlaufsdiagramm hinterlegt bei Gas, Öl, Pellets und Wärmepumpe die
@@ -108,6 +110,15 @@ deployten App dazu.
   bewertet nicht.
 
 *Messungen*
+- **Duschkopf-Test ohne Warmwasserquelle und ohne Euro (05.09.).** Der Check
+  fragte vor der Stoppuhr nach dem Energieträger, obwohl der Fragebogen das
+  schon wusste. Beides ist weg: Die Ersparnis steht als **Prozentsatz**, und
+  der folgt allein aus der Messung, weil Kosten und Wassermenge beide linear im
+  Durchfluss sind – `(Durchfluss − 8) / Durchfluss`. Personenzahl, Duschdauer,
+  Temperaturhub und Arbeitspreis kürzen sich weg. Der Mess-Schirm folgt jetzt
+  dem Ablauf des Tuns: Stoppuhr zuerst, Füllmenge kompakt darunter, die
+  manuelle Zeit erst nach dem Stoppen als Korrektur. Archiv:
+  `archiv/duschkopf-warmwasserquelle/`.
 - Kellerklima wird nach Keller-Maßstäben bewertet (Taupunkt-Berechnung statt
   Wohnraum-Prozentwert).
 - Warmwasser-Wartezeit nutzt den tatsächlich gemessenen Duschkopf-Durchfluss

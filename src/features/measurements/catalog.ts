@@ -106,7 +106,12 @@ export const MEASUREMENT_CATALOG: MeasurementMeta[] = [
     category: 'hot_water',
     estimatedMinutes: 5,
     rooms: ['bathroom'],
-    yieldsSaving: true,
+    // **Kein `yieldsSaving`** (seit 05.09.2026): Der Check rechnet keinen
+    // Euro-Betrag mehr, sondern einen Prozentsatz. Der Eintrag ist zugleich
+    // der Riegel gegen Altergebnisse – ein vor dem Umbau gespeichertes
+    // `yearlySaving` käme sonst über `resultSavingsEur` in Wirkungs-Summe und
+    // Bericht zurück, obwohl der Check ihn nicht mehr behauptet. Genau
+    // derselbe Fall wie beim LED-Check.
     // Gemessen wird mit Messbecher und Stoppuhr – die Stoppuhr bringt die App
     // mit. Kein Gerät aus der Geräteliste.
     instruments: [],

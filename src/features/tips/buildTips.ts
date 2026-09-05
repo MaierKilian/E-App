@@ -28,6 +28,7 @@ import {
   openRoomKeys,
   rankOpenRooms,
 } from '@/features/measurements/lighting/lighting'
+import { GOOD_MAX as SHOWER_GOOD_MAX } from '@/features/measurements/showerhead/showerhead'
 import { ENERGY_META } from '@/features/monitoring/energyConfig'
 import { boilerAgeYears } from '@/features/onboarding/renovationProjection'
 
@@ -556,9 +557,13 @@ export function buildTips(
 
   // --- Warmwasser / Wasser --------------------------------------------------
   const showerRs = resultsForId(results, 'showerhead')
-  const shower = savingForId(results, 'showerhead')
-  if (shower > 0) {
-    const flow = Math.max(0, ...showerRs.map((r) => r.primaryValue))
+  const showerFlow = Math.max(0, ...showerRs.map((r) => r.primaryValue))
+  // Ausloeser ist der **gemessene Durchfluss**, nicht mehr ein Euro-Betrag aus
+  // den Details: Der Check rechnet seit dem 05.09.2026 keinen mehr, und mit
+  // `yieldsSaving` ist auch der Weg ueber Altergebnisse zu. Dieselbe Bauart wie
+  // beim LED-Tipp, der an den offenen Raeumen haengt.
+  if (showerRs.length > 0 && showerFlow > SHOWER_GOOD_MAX) {
+    const flow = showerFlow
     // Kein Euro-Betrag: Er laeuft ueber angenommene Duschdauer, Warmwasseranteil
     // und Temperaturhub. Die eingesparte Wassermenge folgt dagegen direkt aus dem
     // gemessenen Durchfluss – das ist die Zahl, die die Empfehlung traegt.

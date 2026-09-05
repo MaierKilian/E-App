@@ -1,42 +1,38 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOnboardingStore } from '@/store/onboardingStore'
-import { useTariffStore } from '@/store/tariffStore'
 import { Stopwatch } from '@/components/ui/Stopwatch'
-import { SelectChip } from '@/components/ui/SelectChip'
+import { Stepper } from '@/components/ui/Stepper'
 import { calcShowerhead } from './showerhead'
-import {
-  HOT_WATER_SOURCES,
-  eurPerKwhHeat,
-  defaultHotWaterSource,
-  hotWaterSourceFromProfile,
-  type HotWaterSource,
-} from './hotWaterEnergy'
 import type { RunProps } from '../runnerTypes'
 import { DecimalField } from '@/components/ui/DecimalField'
 
 const DEFAULT_LITERS = 5
+const MIN_LITERS = 0.5
+const MAX_LITERS = 20
+const LITERS_STEP = 0.1
 
 /**
- * Minimale Durchführungs-Phase: Füllmenge fein justieren, Zeit per Stoppuhr oder
- * manuell. Stoppuhr und manuelle Eingabe teilen denselben Sekundenwert. Zusätzlich
- * wählbar: die Warmwasserquelle (für den korrekten €/kWh-Preis).
+ * Durchführungs-Phase: Stoppuhr laufen lassen, bis das Gefäß voll ist, und
+ * bei Bedarf die Füllmenge anpassen.
+ *
+ * Die Reihenfolge folgt dem Tun, nicht der Datenstruktur: Wer den Eimer unter
+ * die Dusche hält, braucht zuerst „Start" – die Stoppuhr ist das Messgerät.
+ * Die Füllmenge steht darunter, weil sie in aller Regel unverändert bleibt
+ * (Standard 5 L), und die manuelle Zeiteingabe erscheint erst, wenn eine Zeit
+ * vorliegt: Dann ist sie eine Korrektur und keine zweite Bedienweise, die mit
+ * der Stoppuhr um dieselbe Frage konkurriert. (Vorbild: der Wartezeit-Check.)
+ *
+ * Die Warmwasserquelle wurde hier bis zum 05.09.2026 abgefragt. Sie ging
+ * ausschließlich in einen Euro-Betrag, den das Ergebnis nicht mehr zeigt –
+ * siehe `showerhead.ts`.
  */
 export function ShowerheadRun({ onEvaluate }: RunProps) {
   const { t, i18n } = useTranslation()
-  const profile = useOnboardingStore((s) => s.data)
-  const persons = profile.personsCount
-  const tariff = useTariffStore()
+  const persons = useOnboardingStore((s) => s.data.personsCount)
 
   const [liters, setLiters] = useState(DEFAULT_LITERS)
   const [seconds, setSeconds] = useState(0)
-  const profileSource = defaultHotWaterSource(profile.hotWaterType, profile.heatGenerators)
-  const [source, setSource] = useState<HotWaterSource>(profileSource)
-  const eurPerKwh = eurPerKwhHeat(source, tariff)
-  // Der Hinweis steht nur, solange die Vorbelegung unveraendert ist: Sobald der
-  // Nutzer selbst waehlt, waere "aus deinem Profil" schlicht falsch.
-  const showProfileHint =
-    source === profileSource && hotWaterSourceFromProfile(profile.hotWaterType, profile.heatGenerators)
 
   const canEvaluate = liters > 0 && seconds > 0
 
@@ -45,17 +41,13 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
     maximumFractionDigits: 1,
   }).format(liters)
 
-  function adjustLiters(delta: number) {
-    setLiters((v) => Math.max(0.1, Math.min(50, Math.round((v + delta) * 10) / 10)))
-  }
-
   function handleManualSeconds(value: number | undefined) {
     setSeconds(value !== undefined && value > 0 ? value : 0)
   }
 
   function handleEvaluate() {
     if (!canEvaluate) return
-    const calc = calcShowerhead({ liters, seconds, persons, eurPerKwh })
+    const calc = calcShowerhead({ liters, seconds, persons })
     onEvaluate({
       result: {
         id: 'showerhead',
@@ -66,10 +58,11 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
         details: {
           liters,
           seconds,
-          yearlyCost: calc.yearlyCost,
-          yearlySaving: calc.yearlySaving,
+          savingPct: calc.savingPct,
           litersSavedPerYear: calc.litersSavedPerYear,
-          hwSource: HOT_WATER_SOURCES.indexOf(source),
+          // Die Wassermenge ist aufs Jahr hochgerechnet (Personen, Duschen pro
+          // Tag, Minuten je Dusche) – der Prozentsatz nicht. Die Markierung
+          // gilt den Details als Ganzes und bleibt deshalb stehen.
           savingEstimated: 1,
         },
       },
@@ -78,116 +71,84 @@ export function ShowerheadRun({ onEvaluate }: RunProps) {
 
   return (
     <div className="space-y-4">
-      {/* Füllmenge */}
+      {/* Das Messgerät zuerst. */}
       <div className="glass rounded-3xl p-5">
-        <div className="flex items-center justify-between gap-3">
-          <span className="font-medium text-foreground">
-            {t('measurements.showerhead.run.litersLabel')}
-          </span>
-          <span className="text-xs text-muted">{t('measurements.showerhead.run.litersStandard')}</span>
-        </div>
-        <div className="mt-4 flex items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => adjustLiters(-1)}
-            className="focus-ring glass h-10 w-10 rounded-2xl text-lg font-bold text-foreground transition-transform active:scale-90"
-            aria-label="-1"
-          >
-            −1
-          </button>
-          <button
-            type="button"
-            onClick={() => adjustLiters(-0.1)}
-            className="focus-ring glass h-10 w-12 rounded-2xl text-sm font-bold text-foreground transition-transform active:scale-90"
-            aria-label="-0.1"
-          >
-            −0,1
-          </button>
-          <div className="flex min-w-24 items-baseline justify-center gap-1 px-2">
-            <span className="text-3xl font-bold tabular-nums text-foreground">{fmtLiters}</span>
-            <span className="text-sm text-muted">{t('measurements.showerhead.run.litersUnit')}</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => adjustLiters(0.1)}
-            className="focus-ring glass h-10 w-12 rounded-2xl text-sm font-bold text-foreground transition-transform active:scale-90"
-            aria-label="+0.1"
-          >
-            +0,1
-          </button>
-          <button
-            type="button"
-            onClick={() => adjustLiters(1)}
-            className="focus-ring glass h-10 w-10 rounded-2xl text-lg font-bold text-foreground transition-transform active:scale-90"
-            aria-label="+1"
-          >
-            +1
-          </button>
-        </div>
-      </div>
-
-      {/* Warmwasserquelle (für den €/kWh-Preis) */}
-      <div className="glass rounded-3xl p-5">
-        <span className="font-medium text-foreground">
-          {t('measurements.showerhead.run.sourceLabel')}
-        </span>
-        {/* Woher die Vorauswahl kommt. Die Warmwasserfrage aus dem Fragebogen
-            entscheidet hier ueber den €/kWh-Preis, und elektrisch ist die
-            teuerste der Quellen. Ohne diesen Satz war das die einzige
-            Stelle, an der die Frage wirkt, und zugleich unsichtbar. */}
-        {showProfileHint && (
-          <p className="mt-1 text-xs leading-snug text-muted">
-            {t('measurements.showerhead.run.sourceFromProfile', {
-              source: t(`measurements.showerhead.run.sources.${profileSource}`),
-              hotWater: t(`onboarding.step4.hotWaterOptions.${profile.hotWaterType}`),
-            })}
-          </p>
-        )}
-        <div className="mt-3 flex flex-wrap gap-2">
-          {HOT_WATER_SOURCES.map((s) => (
-            <SelectChip
-              key={s}
-              label={t(`measurements.showerhead.run.sources.${s}`)}
-              selected={source === s}
-              onClick={() => setSource(s)}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* Stoppuhr */}
-      <div className="space-y-2">
-        <p className="px-1 text-sm font-medium text-muted">
+        <p className="font-medium text-foreground">
           {t('measurements.showerhead.run.stopwatchLabel')}
         </p>
-        <Stopwatch onChange={setSeconds} />
+        <p className="mt-1 text-xs leading-snug text-muted">
+          {t('measurements.showerhead.run.stopwatchHint', { liters: fmtLiters })}
+        </p>
+        <div className="mt-4">
+          <Stopwatch onChange={setSeconds} />
+        </div>
+
+        {/* Korrektur statt zweiter Bedienweise: erst sichtbar, wenn eine Zeit
+            vorliegt – wie im Wartezeit-Check. */}
+        {seconds > 0 && (
+          <label
+            htmlFor="manual-seconds"
+            className="mt-4 flex items-center justify-between gap-3 text-sm"
+          >
+            <span className="text-muted">{t('measurements.showerhead.run.secondsManual')}</span>
+            <span className="flex items-center gap-1.5">
+              <DecimalField
+                id="manual-seconds"
+                value={seconds}
+                onChange={handleManualSeconds}
+                className="focus-ring w-20 rounded-xl bg-surface-2 px-3 py-1.5 text-right font-semibold tabular-nums text-foreground"
+              />
+              <span className="text-muted">{t('measurements.showerhead.run.secondsUnit')}</span>
+            </span>
+          </label>
+        )}
       </div>
 
-      {/* Manuelle Sekundeneingabe */}
-      <div className="glass flex items-center justify-between gap-3 rounded-3xl p-4">
-        <label htmlFor="manual-seconds" className="font-medium text-foreground">
-          {t('measurements.showerhead.run.secondsManual')}
-        </label>
-        <div className="flex items-center gap-1.5">
-          <DecimalField
-            id="manual-seconds"
-            value={seconds > 0 ? seconds : undefined}
-            onChange={handleManualSeconds}
-            placeholder={t('measurements.showerhead.run.secondsPlaceholder')}
-            className="focus-ring w-24 rounded-xl border border-border bg-surface/70 px-3 py-2 text-right font-semibold tabular-nums text-foreground"
-          />
-          <span className="text-sm text-muted">{t('measurements.showerhead.run.secondsUnit')}</span>
+      {/* Füllmenge – selten geändert, deshalb kompakt und zweitrangig. Der
+          gemeinsame Stepper bringt das beschleunigte Halten mit (Punkt 7);
+          die vier handgebauten Knöpfe von zuvor konnten es nicht. */}
+      <div className="glass rounded-3xl p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="font-medium text-foreground">
+              {t('measurements.showerhead.run.litersLabel')}
+            </p>
+            <p className="text-xs text-muted">{t('measurements.showerhead.run.litersStandard')}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold tabular-nums text-foreground">{fmtLiters}</span>
+              <span className="text-sm text-muted">
+                {t('measurements.showerhead.run.litersUnit')}
+              </span>
+            </div>
+            <Stepper
+              value={liters}
+              min={MIN_LITERS}
+              max={MAX_LITERS}
+              step={LITERS_STEP}
+              onChange={setLiters}
+              showValue={false}
+            />
+          </div>
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={handleEvaluate}
-        disabled={!canEvaluate}
-        className="flex w-full items-center justify-center gap-1 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97] disabled:opacity-40"
-      >
-        {t('measurements.common.evaluate')}
-      </button>
+      {/* Kein ausgegrauter Knopf ohne Begründung: Solange nichts auszuwerten
+          ist, steht dort, was noch fehlt. */}
+      {canEvaluate ? (
+        <button
+          type="button"
+          onClick={handleEvaluate}
+          className="flex w-full items-center justify-center gap-1 rounded-2xl bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-[transform,opacity] hover:opacity-90 active:scale-[0.97]"
+        >
+          {t('measurements.common.evaluate')}
+        </button>
+      ) : (
+        <p className="px-1 text-center text-sm text-muted">
+          {t('measurements.showerhead.run.hintStopwatch')}
+        </p>
+      )}
     </div>
   )
 }

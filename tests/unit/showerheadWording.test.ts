@@ -1,10 +1,10 @@
 // Die Formulierung der Duschkopf-Empfehlung.
 //
 // „Hoher Verbrauch – ein Sparaufsatz lohnt sich" war eine Kaufempfehlung ohne
-// Kenntnis von Preis und Einbausituation. Und der Euro-Betrag stand
-// gleichberechtigt neben der Wassermenge, obwohl die Menge die belastbarere
-// Größe ist: Sie folgt direkt aus der Messung, der Betrag zusätzlich über
-// Warmwasseranteil, Temperaturhub und Preis.
+// Kenntnis von Preis und Einbausituation. Der Euro-Betrag daneben lief über
+// fünf Annahmen, darunter die Warmwasserquelle, nach der der Check eigens
+// fragte. Seit dem 05.09.2026 steht dort ein Prozentsatz, der allein aus dem
+// gemessenen Durchfluss folgt.
 //
 // Diese Tests binden die Texte an das, was der Check wirklich weiß.
 
@@ -16,6 +16,11 @@ import { EFFICIENT_FLOW_LPM, GOOD_MAX } from '@/features/measurements/showerhead
 const texte = {
   de: de.measurements.showerhead.result,
   en: en.measurements.showerhead.result,
+}
+
+const laeufe = {
+  de: de.measurements.showerhead.run,
+  en: en.measurements.showerhead.run,
 }
 
 describe('Duschkopf – was die Texte behaupten', () => {
@@ -41,12 +46,34 @@ describe('Duschkopf – was die Texte behaupten', () => {
     expect(texte.de.summary.medium).not.toMatch(/lohnt sich/)
   })
 
-  it('stellt die Wassermenge vor den Euro-Betrag', () => {
+  it('führt mit dem Prozentsatz und stellt die Jahresmenge dahinter', () => {
     for (const [lang, t] of Object.entries(texte)) {
-      expect(t.savingLabel, lang).toContain('{{liters}}')
-      expect(t.savingLabel, lang).not.toContain('{{value}}')
-      // Der Betrag steht in einer eigenen, nachgeordneten Zeile.
-      expect(t.savingMoney, lang).toContain('{{value}}')
+      // Der Prozentsatz enthält nichts Geschätztes – er trägt die Aussage.
+      expect(t.savingLabel, lang).toContain('{{percent}}')
+      expect(t.savingLabel, lang).toContain('{{target}}')
+      // Die Jahresmenge beruht zusätzlich auf Duschhäufigkeit und -dauer und
+      // steht deshalb in einer eigenen, nachgeordneten Zeile.
+      expect(t.savingLiters, lang).toContain('{{liters}}')
+    }
+  })
+
+  it('behauptet nirgends mehr einen Euro-Betrag', () => {
+    // Der Check rechnet keinen. Ein Text, der einen nennt, wäre eine Zahl ohne
+    // Rechnung dahinter – und die Warmwasserquelle, die ihn möglich machte,
+    // ist mit ihm entfallen (archiv/duschkopf-warmwasserquelle/).
+    for (const [lang, t] of Object.entries(texte)) {
+      const alleTexte = JSON.stringify(t)
+      expect(alleTexte, lang).not.toMatch(/€|EUR|\bEuro\b/)
+      expect(Object.keys(t), lang).not.toContain('savingMoney')
+      expect(Object.keys(t), lang).not.toContain('sourceNote')
+    }
+  })
+
+  it('fragt im Mess-Schritt nicht mehr nach der Warmwasserquelle', () => {
+    for (const [lang, r] of Object.entries(laeufe)) {
+      expect(Object.keys(r), lang).not.toContain('sourceLabel')
+      expect(Object.keys(r), lang).not.toContain('sources')
+      expect(Object.keys(r), lang).not.toContain('sourceFromProfile')
     }
   })
 

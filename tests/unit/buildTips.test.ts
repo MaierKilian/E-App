@@ -223,7 +223,7 @@ describe('buildTips – Euro nur, wo die Rechnung ihn hergibt', () => {
       showerhead: result({
         id: 'showerhead',
         primaryValue: 14,
-        details: { yearlySaving: 95, litersSavedPerYear: 5500, savingEstimated: 1 },
+        details: { savingPct: 43, litersSavedPerYear: 5500, savingEstimated: 1 },
       }),
     })
     expect(tip.savingEur).toBeUndefined()
@@ -231,6 +231,37 @@ describe('buildTips – Euro nur, wo die Rechnung ihn hergibt', () => {
       key: 'tips.quantity.waterSaved',
       params: { liters: 5500 },
     })
+  })
+
+  it('haengt den Duschkopf-Tipp am Durchfluss, nicht an einem Euro-Betrag', () => {
+    // Seit dem 05.09.2026 rechnet der Check keinen Euro-Betrag mehr, und der
+    // Katalog laesst ueber `yieldsSaving` auch keinen aus Altergebnissen
+    // durch. Haenge der Tipp weiter daran, verschwaende er ab sofort.
+    const ohneGeld = buildTips(PROFILE, {
+      showerhead: result({
+        id: 'showerhead',
+        primaryValue: 14,
+        details: { savingPct: 43, litersSavedPerYear: 5500, savingEstimated: 1 },
+      }),
+    })
+    expect(ohneGeld.map((t) => t.id)).toContain('showerhead')
+
+    // Ein Altergebnis von vor dem Umbau traegt noch `yearlySaving` – es fuehrt
+    // zu demselben Tipp, nicht zu einem zweiten und nicht zu keinem.
+    const altergebnis = buildTips(PROFILE, {
+      showerhead: result({
+        id: 'showerhead',
+        primaryValue: 14,
+        details: { yearlySaving: 95, litersSavedPerYear: 5500, savingEstimated: 1 },
+      }),
+    })
+    expect(altergebnis.filter((t) => t.id === 'showerhead')).toHaveLength(1)
+
+    // Ein sparsamer Duschkopf loest weiterhin nichts aus.
+    const sparsam = buildTips(PROFILE, {
+      showerhead: result({ id: 'showerhead', primaryValue: 8.5, details: { savingPct: 0 } }),
+    })
+    expect(sparsam.map((t) => t.id)).not.toContain('showerhead')
   })
 
   it('nennt bei der Raumtemperatur die Prozent-Aussage des Modells', () => {

@@ -12,6 +12,16 @@ interface StepperProps {
   step?: number
   /** Optionale Einheit, dezent neben dem Wert. */
   unit?: string
+  /**
+   * Ob der Stepper den Wert selbst anzeigt (Standard: ja).
+   *
+   * `false` für Karten, die den Wert bereits groß und in der Sprache des
+   * Nutzers formatiert daneben stellen – sonst stünde er zweimal da, einmal
+   * roh („5") und einmal formatiert („5,0 L"). Genau daran vorbei hatte sich
+   * der Duschkopf-Check seinen eigenen Regler gebaut und dabei das
+   * beschleunigte Halten verloren.
+   */
+  showValue?: boolean
 }
 
 /** Verzögerung, bevor gehaltenes Drücken zu automatischem Weiterzählen wird (ms). */
@@ -32,6 +42,7 @@ export function Stepper({
   size = 'md',
   step = 1,
   unit,
+  showValue = true,
 }: StepperProps) {
   const btn =
     size === 'sm'
@@ -39,7 +50,12 @@ export function Stepper({
       : 'w-9 h-9 text-lg rounded-2xl'
   const num = size === 'sm' ? 'min-w-7 text-sm' : 'min-w-10'
 
-  const clamp = (v: number) => Math.max(min, Math.min(max, v))
+  // Auf die Nachkommastellen der Schrittweite runden: Bei `step = 0.1` liefert
+  // fortgesetztes Addieren sonst 5.199999999999999 statt 5,2 – sichtbar, sobald
+  // eine Karte den Wert mit einer Nachkommastelle formatiert.
+  const decimals = (String(step).split('.')[1] ?? '').length
+  const round = (v: number) => Number(v.toFixed(decimals))
+  const clamp = (v: number) => round(Math.max(min, Math.min(max, v)))
 
   // Der Halte-Timer läuft über mehrere Ticks und darf dabei nie mit einem
   // veralteten `value`/`min`/`max` aus der Render-Closure rechnen, in der das
@@ -122,10 +138,12 @@ export function Stepper({
       >
         −
       </button>
-      <span className={`${num} px-1 text-center font-semibold text-foreground tabular-nums`}>
-        {value}
-        {unit && <span className="text-muted font-normal text-xs ml-0.5">{unit}</span>}
-      </span>
+      {showValue && (
+        <span className={`${num} px-1 text-center font-semibold text-foreground tabular-nums`}>
+          {value}
+          {unit && <span className="text-muted font-normal text-xs ml-0.5">{unit}</span>}
+        </span>
+      )}
       <button
         type="button"
         onClick={() => endClick(1)}

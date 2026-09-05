@@ -1254,7 +1254,11 @@ der hier aufgefallen ist.
 **Kategorie:** Problem (Bedienung/Logik) · **Bereich:**
 `showerhead/ShowerheadRun.tsx`, `showerhead/hotWaterEnergy.ts`,
 `hot_water_wait/HotWaterWaitRun.tsx` (Vorbild)
-**Status:** 🔍 Nur gesammelt (05.09.) – Vorschlag unten, noch nichts geändert.
+**Status:** ✅ Umgesetzt (05.09.) – **weitergehend als vorgeschlagen.** Kilians
+Entscheidung: „Macht das hier überhaupt so wirklich Sinn, den
+Warmwassererzeuger anzugeben? Ich finde, man kann das weglassen und dann im
+Ergebnis einfach prozentuale Angaben machen." Die Frage ist damit nicht zur
+Auskunft geworden, sondern ganz entfallen – siehe „Was daraus wurde".
 
 Kilians Beobachtung: „Ich finde es komisch, hier nochmal das ‚Warmwasser über‘
 auszuwählen? Das hat man doch bereits im Onboarding gemacht."
@@ -1315,10 +1319,75 @@ Liste. Bei „Wärmepumpe + Gaskessel" hängt das Ergebnis daran, in welcher
 Reihenfolge die Häkchen im Fragebogen stehen – nicht daran, was das Warmwasser
 tatsächlich macht.
 
+---
+
+### Was daraus wurde
+
+Kilians Einwand war der stärkere. Die vorgeschlagene Auskunft-Zeile hätte die
+Frage höflicher gestellt – nötig war sie trotzdem nicht, denn **der Euro-Betrag
+selbst musste gehen.**
+
+**Die Rechnung, die das entscheidet.** Kosten und Wassermenge sind beide linear
+im Durchfluss. Im Verhältnis kürzt sich deshalb jeder Faktor weg, der für beide
+Durchflüsse derselbe ist:
+
+    Ersparnis / Kosten = (Durchfluss − 8) / Durchfluss
+
+Personenzahl, Duschhäufigkeit, Duschdauer, Temperaturhub **und der Arbeitspreis
+der Warmwasserquelle** stehen in Zähler und Nenner gleich. Der Prozentsatz ist
+damit die einzige Kennzahl des Checks, in der nichts steckt, was nicht gemessen
+wurde – die Frage nach der Quelle konnte am Ergebnis also nie etwas ändern. Ein
+Test hält die Eigenschaft fest: dieselbe Messung bei einem Ein- und einem
+Fünf-Personen-Haushalt ergibt denselben Prozentsatz.
+
+**Der Euro-Betrag war ohnehin die letzte seiner Art.** Weil der Check seine
+Details mit `savingEstimated: 1` markiert, zeigten ihn Empfehlungen,
+Wirkungs-Summe und PDF-Bericht längst nicht mehr (`isMeasuredSaving`). Nur der
+Ergebnis-Schirm griff über `displaySavingEur` direkt auf den Rohwert zu und
+lief damit an der eigenen Regel der App vorbei. Die Anzeige ist also nicht
+ärmer geworden, sondern erstmals einheitlich.
+
+**Was jetzt im Ergebnis steht** (nachgefahren an der Demo-Wohnung, 14,3 L/min):
+
+> Ein Sparduschkopf mit 8 L/min braucht **44 % weniger** – an Wasser und an der
+> Energie, die es erwärmt.
+> *Hochgerechnet auf deinen Haushalt sind das rund 22.995 Liter im Jahr.*
+
+Der Prozentsatz führt, die Jahresmenge steht dahinter – sie ist die einzige
+Zahl, die noch über Duschhäufigkeit und -dauer läuft.
+
+**Was mitging:**
+
+- Die Auswahl im Mess-Schritt, `hotWaterEnergy.ts` und sein Test liegen unter
+  `archiv/duschkopf-warmwasserquelle/` (mit README).
+- `yearlyCost` und `yearlySaving` sind aus `calcShowerhead` entfallen, dafür
+  `savingPct`. Die drei Konstanten der Energierechnung (ΔT, Kaltwassertemperatur,
+  Wh je Liter und Kelvin) trugen allein die Kosten und sind mit ihnen weg.
+- `yieldsSaving` ist im Katalog gestrichen – derselbe Riegel wie beim
+  LED-Check: Ein vor dem Umbau gespeichertes `yearlySaving` käme sonst über
+  `resultSavingsEur` in Wirkungs-Summe und Bericht zurück.
+- Der Duschkopf-Tipp hängt jetzt am **gemessenen Durchfluss** statt an einem
+  Euro-Betrag; sonst wäre er mit dem Betrag verschwunden. Ein Test deckt beide
+  Fälle ab (neues Ergebnis und Altergebnis).
+- Ergebnisse von vor dem Umbau tragen kein `savingPct`. Der Ergebnis-Schirm
+  rechnet es aus dem gespeicherten Durchfluss nach, statt sie mit „0 %"
+  abzuspeisen – gespeicherte Ergebnisse werden nie migriert.
+
+**Die Nebenbefunde (a) bis (c) haben sich erledigt** – sie betrafen alle die
+Vorbelegung, die es nicht mehr gibt.
+
+**Was offen bleibt:** `hotWaterType` – die Warmwasser-Frage im Fragebogen –
+verliert damit ihren einzigen funktionalen Abnehmer und steht nur noch im
+Steckbrief des Berichts. Das ist dieselbe Lage, die bei Kamin/Ofen (#19),
+Smart-Home (#22), Gebäudeteil (#26) und Postleitzahl (#24) zur Streichung der
+Frage geführt hat. `fieldUsage.ts` sagt das jetzt so; die Entscheidung über die
+Frage selbst steht bei Kilian – siehe „Offene Fragen".
+
 ### 37. Duschkopf-Test, Reiter „Messen": drei Karten, nur eine misst
 **Kategorie:** Verbesserung (Gestaltung) · **Bereich:**
 `showerhead/ShowerheadRun.tsx`, `components/ui/Stepper.tsx`
-**Status:** 🔍 Nur gesammelt (05.09.) – Vorschlag unten, noch nichts geändert.
+**Status:** ✅ Umgesetzt (05.09.) – in der vorgeschlagenen Reihenfolge, auf
+Kilians „Den Rest gerne so umsetzen wie du gesagt hast".
 
 Kilians Eindruck: „Ich finde diese Seite sieht sehr gevibecoded aus."
 
@@ -1376,9 +1445,30 @@ rendert zwischen „−" und „+" selbst den rohen Wert. Kühlschrank, Raumklim
 Möbelabstand stellen ihn aber neben eine große, formatierte Anzeige – der Wert
 steht dort also zweimal, einmal unformatiert („5") und einmal formatiert
 („5,0 °C"). Vermutlich der Grund, warum der Duschkopf-Test sich seinen eigenen
-Regler gebaut hat. Eine Option `showValue={false}` würde beides lösen: den
-doppelten Wert dort und den handgebauten Regler hier. *Aus dem Code gelesen,
-nicht am Gerät nachgeprüft.*
+Regler gebaut hat. *Aus dem Code gelesen, nicht am Gerät nachgeprüft.*
+
+---
+
+### Was daraus wurde
+
+Umgesetzt wie vorgeschlagen. Der Reiter „Messen" hat jetzt **eine** große Karte
+– die Stoppuhr, mit einem Satz darüber, was zu tun ist – und darunter eine
+schmale Zeile für die Füllmenge. Die manuelle Zeiteingabe erscheint erst nach
+dem Stoppen, beschriftet als „Zeit korrigieren"; statt des ausgegrauten Knopfes
+steht der Satz, was noch fehlt. Am Gerät nachgefahren (Demo-Wohnung,
+430 × 932 px): „Start" steht ohne Scrollen im Bild.
+
+Der `Stepper` hat die Option `showValue` bekommen. Damit fällt der handgebaute
+Regler weg – die Füllmenge läuft über den gemeinsamen und kann seither
+erstmals das beschleunigte Halten aus #7. Dazu rundet der `Stepper` jetzt auf
+die Nachkommastellen seiner Schrittweite: Bei `step = 0,1` lieferte
+fortgesetztes Addieren sonst 5,199999999999999 statt 5,2 – sichtbar, sobald
+eine Karte den Wert mit einer Nachkommastelle formatiert.
+
+**Nicht angefasst, bewusst:** die doppelte Wertanzeige in Kühlschrank,
+Raumklima und Möbelabstand. Die Option, die sie behebt, ist jetzt da; sie dort
+zu setzen ist eine eigene Änderung an drei Checks, die niemand gemeldet hat –
+siehe „Offene Fragen".
 
 ## Cookie-Banner & Rechtsseiten
 
@@ -1555,15 +1645,21 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   ungleichmäßig"). Für Infrarot und Ofen trifft sie ungefähr zu, die Befunde
   darunter tragen das Genaue. Eigene Sätze je Bauart nachziehen?
 
-- Bei #36: Soll die Warmwasser-Quelle im Duschkopf-Test von der Frage zur
-  Auskunft mit Stift werden (wie der Wasserpreis im Wartezeit-Check)? Und was
-  soll bei **Solarthermie** als Warmwasser-Quelle gelten – heute fällt sie
-  stillschweigend auf „elektrisch", obwohl Solarthermie in den meisten Anlagen
-  gerade das Warmwasser macht. Ein eigener Träger „Solar" (Preis 0 €/kWh) wäre
-  fachlich richtig, würde aber eine Ersparnis von 0 € ausweisen und den Test
-  entwerten – deshalb deine Entscheidung.
-- Bei #37: Umbau in der vorgeschlagenen Reihenfolge (Stoppuhr zuerst,
-  Füllmenge kompakt, manuelle Zeit erst nach dem Stoppen)? Und soll der
-  gemeinsame `Stepper` die Option bekommen, seinen Wert zu verbergen – dann
-  verschwindet nebenbei die doppelte Wertanzeige in Kühlschrank, Raumklima und
-  Möbelabstand.
+- Bei #36 (neu, aus der Umsetzung): Die Warmwasser-Frage im Fragebogen
+  (`hotWaterType`) hat jetzt **keinen funktionalen Abnehmer mehr** – sie steht
+  nur noch im Steckbrief des Berichts. Bei Kamin/Ofen, Smart-Home, Gebäudeteil
+  und Postleitzahl war genau das der Grund zu streichen. Soll die Frage
+  entfallen (Schritt „Heizung & Warmwasser" behält seine übrigen Fragen), oder
+  bleibt sie für den Steckbrief stehen? Eine dritte Möglichkeit: Sie bekommt
+  eine Aufgabe – etwa einen Tipp für „separates System" (Warmwasser aus einem
+  eigenen Gerät im Sommer ist oft der teuerste Weg). Der wäre aber neu zu
+  belegen, nicht bloß anzuschließen.
+- Bei #37 (neu, aus der Umsetzung): Der gemeinsame `Stepper` kann seinen Wert
+  jetzt verbergen (`showValue={false}`). Soll das in Kühlschrank, Raumklima und
+  Möbelabstand gesetzt werden? Dort steht der Wert heute zweimal – einmal roh
+  („5"), einmal formatiert („5,0 °C"). Drei kleine Änderungen, die niemand
+  gemeldet hat; deshalb nicht ungefragt gemacht.
+- Bei #37: Nach dem Korrigieren der Zeit zeigt die Stoppuhr weiter ihren
+  eigenen, alten Stand (z. B. 00:01,5, während im Feld 21 s steht). Der
+  Wartezeit-Check verhält sich genauso – soll das Feld die Uhr zurücksetzen,
+  oder bleibt die Uhr das Protokoll dessen, was wirklich lief?

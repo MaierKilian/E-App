@@ -5,11 +5,21 @@ import type { MeasurementRating } from '../types'
  *
  * Idee: Der Nutzer hält ein Gefäß bekannten Volumens unter den Duschkopf und
  * stoppt die Zeit, bis es voll ist. Aus Liter und Sekunden ergibt sich der
- * Durchfluss in L/min, daraus eine Bewertung und eine grobe Schätzung der
- * jährlichen Warmwasserkosten.
+ * Durchfluss in L/min, daraus eine Bewertung und die Ersparnis eines
+ * Sparduschkopfs.
  *
- * Alle Energie-/Kostenwerte sind bewusste Näherungen (siehe Annahmen unten)
- * und dienen der Veranschaulichung, nicht der exakten Abrechnung.
+ * **Die Ersparnis steht als Prozentsatz, nicht als Euro-Betrag** (05.09.2026).
+ * Der Grund ist nicht Vorsicht, sondern Mathematik: Kosten und Wassermenge
+ * sind beide *linear* im Durchfluss, also kürzt sich im Verhältnis alles weg,
+ * was nicht gemessen ist –
+ *
+ *     Ersparnis / Kosten = (Durchfluss − 8) / Durchfluss
+ *
+ * Personenzahl, Duschhäufigkeit, Duschdauer, Temperaturhub und Arbeitspreis
+ * stehen in Zähler und Nenner gleich und verschwinden. Der Prozentsatz folgt
+ * damit **allein aus der Messung**, während der Euro-Betrag über fünf
+ * Annahmen lief – darunter den Warmwasser-Erzeuger, den der Check eigens
+ * abfragen musste, obwohl er am Ergebnis nichts änderte.
  */
 
 export interface ShowerheadInput {
@@ -19,21 +29,18 @@ export interface ShowerheadInput {
   seconds: number
   /** Personen im Haushalt (aus dem Onboarding). */
   persons: number
-  /** Effektiver Warmwasserpreis in € je kWh nutzbarer Wärme. */
-  eurPerKwh: number
 }
 
 export interface ShowerheadResult {
   /** Durchfluss in L/min, auf eine Nachkommastelle gerundet. */
   flowLpm: number
   rating: MeasurementRating
-  /** Geschätzte Warmwasserkosten pro Jahr in € (gerundet). */
-  yearlyCost: number
   /**
-   * Geschätzte jährliche Ersparnis in € durch einen Sparduschkopf (~8 L/min).
+   * Ersparnis durch einen Sparduschkopf (~8 L/min) in Prozent – an Wasser und
+   * an Warmwasser-Energie zugleich, denn beide hängen linear am Durchfluss.
    * 0, wenn der aktuelle Durchfluss bereits sparsam ist (<= 9 L/min).
    */
-  yearlySaving: number
+  savingPct: number
   /** Jaehrlich eingesparte Wassermenge in Litern beim Wechsel auf ~8 L/min. */
   litersSavedPerYear: number
 }
@@ -42,9 +49,10 @@ export interface ShowerheadResult {
 export const GOOD_MAX = 9
 export const MEDIUM_MAX = 12
 
-// Annahmen für die Warmwasser-Kostenschätzung. Kalibriert: 1 Dusche/Tag à 5 min,
-// 9 L/min, ΔT 27 K → ~516 kWh/Person·Jahr (deckt sich mit Quellen: ~500–600
-// kWh/Person für die Warmwasserbereitung).
+// Annahmen – **nur noch** für die Hochrechnung der Wassermenge aufs Jahr. Der
+// Temperaturhub (ΔT 27 K, 11 → 38 °C) und die spezifische Wärme des Wassers
+// (1,163 Wh/(l·K)) sind mit dem Euro-Betrag entfallen: Sie trugen allein die
+// Kostenrechnung, und im Prozentsatz kürzen sie sich weg.
 //
 // Exportiert, damit der „So gerechnet"-Aufklapper sie **liest**, statt
 // dieselben Zahlen im Text zu wiederholen – dieselbe Regel wie bei den
@@ -52,12 +60,6 @@ export const MEDIUM_MAX = 12
 export const SHOWERS_PER_PERSON_PER_DAY = 1
 export const MINUTES_PER_SHOWER = 5
 const DAYS_PER_YEAR = 365
-/** K Temperaturanstieg (Kaltwasser ~11 °C → Dusche ~38 °C). */
-export const DELTA_T = 27
-/** Kaltwassertemperatur, von der aus erwärmt wird (°C). */
-export const COLD_WATER_C = 11
-/** Energie, um 1 L um 1 K zu erwärmen (Wh). */
-export const WH_PER_LITER_PER_K = 1.163
 /** Referenz-Durchfluss eines Sparduschkopfes (L/min). */
 export const EFFICIENT_FLOW_LPM = 8
 
@@ -68,25 +70,22 @@ export function rateFlow(flowLpm: number): MeasurementRating {
 }
 
 /**
- * Geschätzte jährliche Warmwasserkosten in € für einen gegebenen Durchfluss.
+ * Anteil, den ein Sparduschkopf einspart – an Wasser **und** an der Energie,
+ * die dieses Wasser erwärmt.
  *
- * Duschminuten/Jahr = Personen × Duschen/Tag × Minuten/Dusche × Tage/Jahr.
- * Davon die Liter (× Durchfluss), daraus die Energie über
- * {@link WH_PER_LITER_PER_K} bei {@link DELTA_T}, mal dem Arbeitspreis der
- * tatsächlichen Warmwasserquelle (`eurPerKwhHeat` in `hotWaterEnergy.ts`).
+ * Beide Größen sind das Produkt aus der Wassermenge und einem Faktor, der vom
+ * Duschkopf nicht abhängt (Preis je m³, bzw. Temperaturhub × spezifische Wärme
+ * × Arbeitspreis). Im Verhältnis der beiden Durchflüsse fällt dieser Faktor
+ * heraus, und mit ihm jede Annahme über Personen, Duschdauer und Tarife:
  *
- * **Es gibt keinen Warmwasser-Anteil in dieser Rechnung.** Die Duschminuten
- * sind bereits vollständig Warmwasser – ein zusätzlicher Prozentsatz würde die
- * Menge ein zweites Mal kürzen. (Bis September 2026 behauptete der Kommentar
- * hier einen 60-%-Faktor und ΔT = 25 K; beides stand nie im Code. Wer die Zahl
- * nachrechnen wollte, prüfte die falsche Formel.)
+ *     (Durchfluss − Referenz) / Durchfluss
+ *
+ * Deshalb ist dies die einzige Kennzahl des Checks, die **nichts** enthält,
+ * was nicht gemessen wurde.
  */
-function yearlyCostForFlow(flowLpm: number, persons: number, eurPerKwh: number): number {
-  const showerMinutesPerYear =
-    persons * SHOWERS_PER_PERSON_PER_DAY * MINUTES_PER_SHOWER * DAYS_PER_YEAR
-  const litersPerYear = flowLpm * showerMinutesPerYear
-  const kWhPerYear = (litersPerYear * DELTA_T * WH_PER_LITER_PER_K) / 1000
-  return kWhPerYear * Math.max(0, eurPerKwh)
+export function savingShareForFlow(flowLpm: number): number {
+  if (flowLpm <= GOOD_MAX) return 0
+  return Math.max(0, (flowLpm - EFFICIENT_FLOW_LPM) / flowLpm)
 }
 
 export function calcShowerhead(input: ShowerheadInput): ShowerheadResult {
@@ -94,17 +93,11 @@ export function calcShowerhead(input: ShowerheadInput): ShowerheadResult {
   const flowLpm = Math.round((input.liters / input.seconds) * 60 * 10) / 10
   const rating = rateFlow(flowLpm)
 
-  const yearlyCost = yearlyCostForFlow(flowLpm, persons, input.eurPerKwh)
-
-  let yearlySaving = 0
   let litersSavedPerYear = 0
   if (flowLpm > GOOD_MAX) {
-    const efficientCost = yearlyCostForFlow(EFFICIENT_FLOW_LPM, persons, input.eurPerKwh)
-    yearlySaving = Math.max(0, yearlyCost - efficientCost)
-    // Die Wassermenge ist die belastbarere Groesse: Sie folgt direkt aus dem
-    // gemessenen Durchfluss, waehrend der Euro-Betrag zusaetzlich ueber
-    // Warmwasseranteil, Temperaturhub und Strompreis laeuft. Sie steht deshalb
-    // in der Empfehlung, wo der Euro-Betrag entfaellt.
+    // Die Wassermenge braucht als einzige Kennzahl noch Annahmen (Personen,
+    // Duschen pro Tag, Minuten je Dusche). Sie steht deshalb hinter dem
+    // Prozentsatz, nicht vor ihm.
     const showerMinutesPerYear =
       persons * SHOWERS_PER_PERSON_PER_DAY * MINUTES_PER_SHOWER * DAYS_PER_YEAR
     litersSavedPerYear = (flowLpm - EFFICIENT_FLOW_LPM) * showerMinutesPerYear
@@ -113,8 +106,7 @@ export function calcShowerhead(input: ShowerheadInput): ShowerheadResult {
   return {
     flowLpm,
     rating,
-    yearlyCost: Math.round(yearlyCost),
-    yearlySaving: Math.round(yearlySaving),
+    savingPct: Math.round(savingShareForFlow(flowLpm) * 100),
     litersSavedPerYear: Math.round(litersSavedPerYear),
   }
 }

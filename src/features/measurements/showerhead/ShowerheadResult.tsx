@@ -1,18 +1,14 @@
 import { useTranslation } from 'react-i18next'
 import { ResultHero } from '../ResultHero'
-import { HOT_WATER_SOURCES } from './hotWaterEnergy'
 import type { ResultProps } from '../runnerTypes'
 import { CalculationNote } from '../CalculationNote'
 import {
-  COLD_WATER_C,
-  DELTA_T,
   EFFICIENT_FLOW_LPM,
   GOOD_MAX,
   MINUTES_PER_SHOWER,
   SHOWERS_PER_PERSON_PER_DAY,
-  WH_PER_LITER_PER_K,
+  savingShareForFlow,
 } from './showerhead'
-import { displaySavingEur } from '../savingsDisplay'
 
 /** Formatiert eine Zahl in der aktuellen Sprache. */
 function useNumberFormat() {
@@ -46,6 +42,14 @@ function Chip({ label }: { label: string }) {
 /**
  * Minimale Ergebnis-Phase: großer Durchflusswert + Bewertung, drei Mini-Kacheln,
  * Tipp-Chips und bei medium/high eine Sparduschkopf-Empfehlung samt Ersparnis.
+ *
+ * Die Ersparnis steht seit dem 05.09.2026 als **Prozentsatz**. Er folgt allein
+ * aus dem gemessenen Durchfluss (siehe `savingShareForFlow`), während der
+ * frühere Euro-Betrag über Personenzahl, Duschhäufigkeit, Duschdauer,
+ * Temperaturhub und Arbeitspreis lief – und über die Warmwasserquelle, die der
+ * Check eigens abfragte. Nebenbei behoben: Dieser Betrag war die einzige
+ * €-Anzeige der App, die an `isMeasuredSaving` vorbeilief; Empfehlungen,
+ * Wirkungs-Summe und Bericht haben ihn längst nicht mehr gezeigt.
  */
 export function ShowerheadResult({ result }: ResultProps) {
   const { t } = useTranslation()
@@ -56,13 +60,17 @@ export function ShowerheadResult({ result }: ResultProps) {
   const seconds = result.details?.seconds ?? 0
   const isGood = result.rating === 'good'
 
-  // Die Wassermenge folgt direkt aus der Messung; der Euro-Betrag läuft
-  // zusätzlich über Warmwasseranteil, Temperaturhub und Preis. Deshalb steht
-  // die Menge vorn und der Betrag dahinter – und der Betrag nur, wenn er über
-  // der Anzeigeschwelle liegt, wie überall sonst in der App auch.
+  // Der Prozentsatz steht vorn: Er folgt allein aus dem gemessenen Durchfluss.
+  // Die Jahresmenge in Litern dahinter – sie ist echt, aber hochgerechnet über
+  // Personen, Duschen pro Tag und Minuten je Dusche.
+  //
+  // Altergebnisse (vor dem 05.09.2026) tragen kein `savingPct`; es wird
+  // deshalb aus dem gespeicherten Durchfluss nachgerechnet, statt sie mit
+  // „0 %" abzuspeisen. Gespeicherte Ergebnisse werden nie migriert
+  // (siehe CLAUDE.md).
   const litersSaved = result.details?.litersSavedPerYear ?? 0
-  const showSaving = !isGood && litersSaved > 0
-  const savingEur = displaySavingEur(result.details?.yearlySaving)
+  const savingPct = result.details?.savingPct ?? Math.round(savingShareForFlow(flow) * 100)
+  const showSaving = !isGood && savingPct > 0
 
   return (
     <div className="space-y-4">
@@ -113,25 +121,17 @@ export function ShowerheadResult({ result }: ResultProps) {
             <>
               <p className="text-sm font-semibold text-primary">
                 {t('measurements.showerhead.result.savingLabel', {
-                  liters: fmt(litersSaved),
-                })}
-                {savingEur !== undefined && (
-                  <span className="ml-1 font-medium text-muted">
-                    {t('measurements.showerhead.result.savingMoney', {
-                      value: t('measurements.showerhead.result.perYear', {
-                        value: fmt(savingEur),
-                      }),
-                    })}
-                  </span>
-                )}
-              </p>
-              <p className="text-xs text-muted">
-                {t('measurements.showerhead.result.sourceNote', {
-                  source: t(
-                    `measurements.showerhead.run.sources.${HOT_WATER_SOURCES[result.details?.hwSource ?? 0] ?? 'electric'}`,
-                  ),
+                  percent: fmt(savingPct),
+                  target: fmt(EFFICIENT_FLOW_LPM),
                 })}
               </p>
+              {litersSaved > 0 && (
+                <p className="text-xs text-muted">
+                  {t('measurements.showerhead.result.savingLiters', {
+                    liters: fmt(litersSaved),
+                  })}
+                </p>
+              )}
             </>
           )}
           {/* Kilians Fund aus der Quellenprüfung – und die Begründung dieses
@@ -152,24 +152,18 @@ export function ShowerheadResult({ result }: ResultProps) {
             measured: true,
           },
           {
+            label: t('measurements.showerhead.result.calculation.reference'),
+            value: `${fmt(EFFICIENT_FLOW_LPM)} l/min`,
+          },
+          // Die beiden Annahmen stehen nur noch unter der Jahresmenge – der
+          // Prozentsatz darüber kommt ohne sie aus.
+          {
             label: t('measurements.showerhead.result.calculation.showers'),
             value: fmt(SHOWERS_PER_PERSON_PER_DAY),
           },
           {
             label: t('measurements.showerhead.result.calculation.minutes'),
             value: `${fmt(MINUTES_PER_SHOWER)} min`,
-          },
-          {
-            label: t('measurements.showerhead.result.calculation.deltaT'),
-            value: `${fmt(COLD_WATER_C)} → ${fmt(COLD_WATER_C + DELTA_T)} °C`,
-          },
-          {
-            label: t('measurements.showerhead.result.calculation.energy'),
-            value: `${fmt(WH_PER_LITER_PER_K, 3)} Wh/(l·K)`,
-          },
-          {
-            label: t('measurements.showerhead.result.calculation.reference'),
-            value: `${fmt(EFFICIENT_FLOW_LPM)} l/min`,
           },
         ]}
         note={t('measurements.showerhead.result.calculation.note')}
