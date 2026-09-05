@@ -1171,7 +1171,8 @@ eine eigene Änderung.
 ### 33. Warmwasser-Tipp „die teuerste Kilowattstunde im Haus"
 **Kategorie:** Problem · **Bereich:** `buildTips.ts` (`hot_water_electric`),
 `hotWaterEnergy.ts`, de/en
-**Status:** 🔍 Nur gesammelt – Vorschlag steht, Entscheidung offen.
+**Status:** ✅ Umgesetzt (05.09.) – Kilians Entscheidung: Der Tipp geht **ganz**
+raus, und die Hinweis-Stufe kommt.
 
 Kilians Befund aus der Nutzung: „Diesen Tipp finde ich komisch."
 
@@ -1223,14 +1224,45 @@ Häkchen und zählt im Nenner.
   Das Tipp-Modell trägt `params` schon (`old_boiler` nutzt es).
 - **Den Gastherme-Vergleich streichen.**
 
-Zwei Punkte, die eine Entscheidung brauchen:
+**Umgesetzt: der Tipp ganz raus, die Hinweis-Stufe rein.**
 
-- Soll der Tipp **nur noch erscheinen, wenn kein Wärmeerzeuger im Profil steht**?
-  Wer „separates System" **und** einen Gaskessel angegeben hat, hat vermutlich
-  eine zweite Gas-Einheit – dann ist „elektrisch" besonders unwahrscheinlich.
-- Braucht das Tipp-Modell eine Stufe „Hinweis" ohne Erledigt-Häkchen und ohne
-  Nenner-Anteil? Das beträfe nicht nur diesen Tipp, sondern jeden, der zu einer
-  Messung führt statt zu einer Handlung.
+Kilians Entscheidung zu den beiden Punkten: „dieser Tipp soll komplett raus"
+und, zur Hinweis-Stufe, „das ist eine gute Idee". Der Tipp ist also nicht
+umformuliert, sondern entfallen – die Umschreibung hätte die Unterstellung nur
+abgemildert, nicht beseitigt: Aus „separates System" lässt sich die Quelle
+schlicht nicht ableiten.
+
+`Tip.kind` ist neu (`'action' | 'hint'`, ohne Angabe Maßnahme). Ein **Hinweis**
+ist ein Befund, dessen einziger nächster Schritt eine Messung oder ein Blick in
+die eigenen Daten ist. Er trägt **kein** „Erledigt"-Häkchen, steht in einer
+eigenen Gruppe unter den offenen Maßnahmen und zählt **nicht im Nenner**.
+Ausblenden bleibt möglich.
+
+Zwei Tipps sind Hinweise geworden:
+
+- **`base_load`** („Dauerverbraucher aufspüren") – führt in den Standby-Check
+  und tritt ab, sobald der gemacht ist. Ein Häkchen hatte hier nie etwas
+  bedeutet.
+- **`consumption_up_*`** (gestiegener Verbrauch) – ein Befund aus den eigenen
+  Zählerständen; er verschwindet, wenn der Verbrauch wieder fällt, nicht durch
+  eine Handlung.
+
+Alte Einträge in `doneIds` werden bei Hinweisen **nicht gelesen** statt migriert
+– sonst bliebe ein früher abgehakter Hinweis unsichtbar. Gespeicherte Zustände
+werden in diesem Projekt nicht umgeschrieben; hier genügt es, sie zu ignorieren.
+
+**Nebenbefund beim Bauen:** Der Test „beschriftet jeden Tipp, der irgendwohin
+führt" wurde rot – sein einziger verlinkter Fall war der entfernte Tipp. Die
+Wachzeile `expect(geprueft).toBeGreaterThan(0)`, eigens gegen dieses stille
+Leerlaufen geschrieben, hat gegriffen. Die Prüfung fährt jetzt mit einem
+Grundlast-Ergebnis.
+
+**Offen geblieben:** Der **PDF-Handlungsplan** (`actionPlanData.ts`) führt
+Hinweise weiter als Maßnahmen – er liest `openTips` ungefiltert. Sie dort
+wegzulassen hieße, den Befund „Verbrauch gestiegen" aus dem Bericht ganz zu
+verlieren (er hängt an keiner Messung und hätte kein Kapitel mehr). Die saubere
+Lösung wäre eine dritte Gruppe im Kapitel – eine eigene Entscheidung, siehe
+„Offene Fragen".
 
 
 ## Cookie-Banner & Rechtsseiten
@@ -1404,3 +1436,8 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   (`result.summary`) ist für Heizkörper formuliert („Wärme verteilt sich
   ungleichmäßig"). Für Infrarot und Ofen trifft sie ungefähr zu, die Befunde
   darunter tragen das Genaue. Eigene Sätze je Bauart nachziehen?
+
+- Bei #33: Der PDF-Handlungsplan führt Hinweise weiter als Maßnahmen. Eine
+  dritte Gruppe „Hinweise" im Kapitel – oder bleibt es im Bericht bei zwei
+  Gruppen, weil ein Handlungsplan zum Ausdrucken ohnehin anders gelesen wird
+  als eine Bildschirmliste?

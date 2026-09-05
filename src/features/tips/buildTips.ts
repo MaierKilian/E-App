@@ -61,6 +61,21 @@ export interface Tip {
   /** Gewerk – steuert die Farbcodierung der Icon-Kachel. */
   category: TipCategory
   /**
+   * Maßnahme oder Hinweis. Ohne Angabe: Maßnahme.
+   *
+   * Ein **Hinweis** ist ein Befund, dessen einziger nächster Schritt eine
+   * Messung oder ein Blick in die eigenen Daten ist – nichts, was man
+   * „umsetzt". Bis zum 05.09.2026 gab es die Unterscheidung nicht: Jeder Tipp
+   * trug ein „Erledigt"-Häkchen und zählte in „x von y Maßnahmen umgesetzt".
+   * Man konnte damit „erledigt" ankreuzen, ohne irgendetwas getan zu haben –
+   * und der Nenner behauptete offene Arbeit, die keine war.
+   *
+   * Hinweise stehen in einer eigenen Gruppe, ohne Häkchen und außerhalb des
+   * Nenners. Ausblenden bleibt möglich: Ein Befund, den man kennt, muss nicht
+   * stehen bleiben.
+   */
+  kind?: 'action' | 'hint'
+  /**
    * Jahresersparnis in €.
    *
    * Nur gesetzt, wo die Rechnung ohne geschätzte Nutzungshäufigkeit auskommt
@@ -314,6 +329,11 @@ export function isQuickWin(tip: Tip): boolean {
   return tip.costEur === 0 && tip.effortMinutes <= 15
 }
 
+/** Befund statt Maßnahme – siehe {@link Tip.kind}. */
+export function isHint(tip: Tip): boolean {
+  return tip.kind === 'hint'
+}
+
 /**
  * Gewicht eines Gewerks je Ziel – die Stelle, an der die Ziel-Frage endlich
  * etwas bewirkt. Sie wurde seit jeher erhoben und nirgends gelesen.
@@ -544,6 +564,10 @@ export function buildTips(
     const r = resultsForId(results, 'base_load')[0]
     tips.push({
       id: 'base_load',
+      // Hinweis, keine Maßnahme: Der einzige nächste Schritt ist der
+      // Standby-Check – der Tipp tritt ab, sobald er gemacht ist. „Erledigt"
+      // haette hier nie etwas bedeutet.
+      kind: 'hint',
       source: sourceFor(results, 'base_load'),
       icon: Gauge,
       category: 'electricity',
@@ -756,6 +780,10 @@ export function buildTips(
     tips.push({
       id: `consumption_up_${type}`,
       textId: 'consumption_up',
+      // Hinweis: ein Befund aus den eigenen Zählerständen. Er führt ins
+      // Monitoring, nicht zu einer Handlung – und verschwindet, wenn der
+      // Verbrauch wieder faellt, nicht durch ein Haekchen.
+      kind: 'hint',
       icon: TrendingUp,
       category,
       quantity: {
@@ -800,24 +828,13 @@ export function buildTips(
     })
   }
 
-  // Elektrisch erzeugtes Warmwasser ist die teuerste Art, es zu erzeugen: je
-  // nutzbarer Kilowattstunde die teuerste der fuenf Quellen (siehe
-  // `eurPerKwhHeat`) – mit den Standardpreisen der App gut das Zweieinhalbfache
-  // von Gas und rund das Vierfache von Pellets.
-  // Damit wiegt beim Duschen jeder gesparte Liter hier am schwersten – das ist
-  // die Folgerung aus der Warmwasserfrage, die dem Nutzer bisher niemand
-  // gezogen hat. Der Tipp fuehrt in den Duschkopf-Check und tritt ab, sobald der
-  // gemacht ist: Dann traegt dessen eigener Tipp die gemessene Zahl.
-  if (data.hotWaterType === 'separate_system' && !results['showerhead']) {
-    tips.push({
-      id: 'hot_water_electric',
-      icon: Droplets,
-      category: 'water',
-      effortMinutes: 5,
-      costEur: 0,
-      linkTo: '/measurements/showerhead',
-    })
-  }
+  // Der Tipp „Warmwasser aus dem eigenen Gerät – die teuerste Kilowattstunde"
+  // stand hier bis zum 05.09.2026 und ist auf Kilians Wunsch ganz entfallen.
+  // Er schloss aus „separates System" auf „elektrisch" – die Frage unterscheidet
+  // aber, **ob** das Warmwasser vom Heizgerät kommt, nicht **womit** es erzeugt
+  // wird; eine Gastherme oder eine Brauchwasser-Wärmepumpe ist genauso ein
+  // eigenes Gerät. Denselben Fehlschluss hatte `defaultHotWaterSource` für
+  // „nicht bekannt" schon einmal korrigiert.
 
   // --- Photovoltaik ---------------------------------------------------------
   // Die PV-Angabe legte bisher nur den Erzeugungszaehler aufs Monitoring-Board.

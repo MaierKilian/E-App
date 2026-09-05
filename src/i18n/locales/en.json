@@ -2637,11 +2637,6 @@
       "pv_self_consumption": {
         "title": "Move big loads into the sunny hours",
         "reason": "Electricity you use yourself is worth what you would otherwise pay for it – electricity you feed in only earns the feed-in tariff, which is considerably lower. Use the delayed start on your dishwasher and washing machine to run them around midday, charge the car and your batteries then, and heat hot water at noon. This is not about using less, it is about shifting when."
-      },
-      "hot_water_electric": {
-        "title": "Hot water from its own unit – the most expensive kilowatt-hour in the house",
-        "reason": "Your hot water comes from a separate unit, which almost always means electrically. Per usable kilowatt-hour that is the most expensive of all sources – a good two and a half times the cost of gas. The same shower therefore costs you considerably more than in a house with a gas boiler, which is precisely why the showerhead test is worth more to you than to most.",
-        "action": "Go to the showerhead test"
       }
     },
     "potentialLabel": "Your recommendations",
@@ -2677,7 +2672,8 @@
     "sortedByGoal": "Sorted by your goal: {{goals}}",
     "changeGoal": "change",
     "groupQuick": "Do it today",
-    "groupPrepared": "Needs a bit of prep"
+    "groupPrepared": "Needs a bit of prep",
+    "hintsSection": "Worth a look"
   },
   "scan": {
     "button": "Scan",

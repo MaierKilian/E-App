@@ -22,7 +22,7 @@ import { useTipContext } from './useTipContext'
 import { roomLabel } from '@/features/measurements/rooms'
 import { applianceLabel } from '@/features/measurements/applianceLabel'
 import { displaySavingEur, savingRange } from '@/features/measurements/savingsDisplay'
-import { buildTips, isQuickWin, sortingGoals, type Tip, type TipCategory } from './buildTips'
+import { buildTips, isHint, isQuickWin, sortingGoals, type Tip, type TipCategory } from './buildTips'
 
 /** Farbcodierung der Icon-Kachel je Gewerk (Structured-Stil, ruhige Akzente). */
 const ACCENT: Record<TipCategory, string> = {
@@ -105,7 +105,8 @@ interface TipCardProps {
   maxSaving?: number
   /** Hebt den wirksamsten offenen Tipp visuell als „Top-Tipp" hervor. */
   top?: boolean
-  onToggleDone: (id: string) => void
+  /** Fehlt bei Hinweisen – dort gibt es nichts zu erledigen. */
+  onToggleDone?: (id: string) => void
   onDismiss: (id: string) => void
 }
 
@@ -254,7 +255,10 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
             </button>
           )}
 
-          {/* Einzelner, ruhiger Erledigt-Toggle (kein zweiter lauter Button mehr). */}
+          {/* Einzelner, ruhiger Erledigt-Toggle (kein zweiter lauter Button mehr).
+              Bei Hinweisen fehlt er ganz: Ein Befund, dessen nächster Schritt
+              eine Messung ist, laesst sich nicht „umsetzen". */}
+          {onToggleDone && (
           <button
             type="button"
             onClick={() => onToggleDone(tip.id)}
@@ -274,6 +278,7 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
               {done ? t('tips.reopen') : t('tips.markDone')}
             </span>
           </button>
+          )}
         </div>
       </div>
     </div>
@@ -357,12 +362,19 @@ export function TipsPage() {
   const restore = useTipsStore((s) => s.restore)
 
   const allTips = buildTips(data, results, useTipContext())
-  const active = allTips.filter((tip) => !doneIds.includes(tip.id) && !dismissedIds.includes(tip.id))
+  const visible = allTips.filter((tip) => !dismissedIds.includes(tip.id))
+
+  // Hinweise laufen am „Erledigt"-Zustand vorbei: Sie tragen kein Häkchen, und
+  // ein alter Eintrag in `doneIds` (aus der Zeit, als jeder Tipp eines hatte)
+  // darf sie nicht unsichtbar machen. Gespeicherte Zustände werden nicht
+  // migriert – hier reicht es, sie nicht zu lesen.
+  const hints = visible.filter(isHint)
+  const active = visible.filter((tip) => !isHint(tip) && !doneIds.includes(tip.id))
   // Dieselbe Grenze, nach der auch sortiert wird (siehe `compareTips`) – die
   // Gruppen bilden die bestehende Reihenfolge ab, sie ordnen nicht um.
   const quickWins = active.filter(isQuickWin)
   const prepared = active.filter((tip) => !isQuickWin(tip))
-  const done = allTips.filter((tip) => doneIds.includes(tip.id))
+  const done = allTips.filter((tip) => !isHint(tip) && doneIds.includes(tip.id))
   const dismissed = allTips.filter((tip) => dismissedIds.includes(tip.id))
 
   // Nur Betraege ueber der Anzeigeschwelle zaehlen – in der Summe wie in den
@@ -537,6 +549,20 @@ export function TipsPage() {
                 <CheckCircle2 className="h-6 w-6" />
               </span>
               <p className="text-sm text-muted">{t('tips.allHandled')}</p>
+            </div>
+          )}
+
+          {/* Hinweise: Befunde, deren nächster Schritt eine Messung oder ein
+              Blick in die eigenen Daten ist. Ohne „Erledigt" und außerhalb des
+              Nenners – man setzt sie nicht um, man geht ihnen nach. */}
+          {hints.length > 0 && (
+            <div className="space-y-3">
+              <p className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
+                {t('tips.hintsSection')} · {hints.length}
+              </p>
+              {hints.map((tip) => (
+                <TipCard key={tip.id} tip={tip} maxSaving={maxSaving} onDismiss={dismiss} />
+              ))}
             </div>
           )}
 

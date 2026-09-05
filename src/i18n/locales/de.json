@@ -2637,11 +2637,6 @@
       "pv_self_consumption": {
         "title": "Große Verbraucher in die Sonnenstunden legen",
         "reason": "Strom, den du selbst verbrauchst, ist so viel wert wie der Preis, den du sonst dafür zahlst – eingespeister bringt dir nur die Vergütung, und die ist deutlich niedriger. Stell Spül- und Waschmaschine per Startzeitvorwahl auf die Mittagsstunden, lade E-Auto und Akkus dann, und heize Warmwasser um die Mittagszeit auf. Es geht nicht ums Sparen, sondern ums Verschieben."
-      },
-      "hot_water_electric": {
-        "title": "Warmwasser aus dem eigenen Gerät – die teuerste Kilowattstunde im Haus",
-        "reason": "Du erzeugst dein Warmwasser über ein eigenes Gerät, also in aller Regel elektrisch. Je nutzbarer Kilowattstunde ist das die teuerste aller Quellen – gut zweieinhalbmal so teuer wie Gas. Dieselbe Dusche kostet dich damit deutlich mehr als in einem Haus mit Gastherme, und genau deshalb lohnt der Duschkopf-Test bei dir mehr als bei den meisten.",
-        "action": "Zum Duschkopf-Test"
       }
     },
     "potentialLabel": "Deine Empfehlungen",
@@ -2677,7 +2672,8 @@
     "sortedByGoal": "Sortiert nach deinem Ziel: {{goals}}",
     "changeGoal": "ändern",
     "groupQuick": "Sofort machbar",
-    "groupPrepared": "Braucht etwas Vorbereitung"
+    "groupPrepared": "Braucht etwas Vorbereitung",
+    "hintsSection": "Hinweise"
   },
   "scan": {
     "button": "Scannen",

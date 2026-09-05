@@ -6,7 +6,7 @@
 // Thermostate für 120 €".
 
 import { describe, expect, it } from 'vitest'
-import { buildTips, sortingGoals } from '@/features/tips/buildTips'
+import { buildTips, isHint, sortingGoals } from '@/features/tips/buildTips'
 import type { MeasurementResult } from '@/features/measurements/types'
 import type { OnboardingData } from '@/types'
 import de from '@/i18n/locales/de.json'
@@ -568,14 +568,26 @@ describe('Jeder Tipp ist beschriftet', () => {
 
   const CASES: OnboardingData[] = [
     RICH,
-    { ...RICH, hasPV: 'planned' } as unknown as OnboardingData,
+    { ...RICH, hasPV: 'no' } as unknown as OnboardingData,
     { ...RICH, hotWaterType: 'separate_system' } as unknown as OnboardingData,
   ]
+
+  /**
+   * Messergebnisse, die die verlinkten Tipps ausloesen.
+   *
+   * Vorher lief die Pruefung mit leeren Ergebnissen, und der einzige verlinkte
+   * Tipp kam aus dem Profil („separates System"). Mit dessen Wegfall am
+   * 05.09.2026 pruefte sie nichts mehr - die Wachzeile `geprueft > 0` hat das
+   * gefangen. Jetzt liefert der Grundlast-Befund den verlinkten Fall.
+   */
+  const RESULTS = {
+    base_load: result({ id: 'base_load', rating: 'elevated', primaryValue: 180, unit: 'W' }),
+  }
 
   it('hat zu jedem Tipp Titel und Begründung in beiden Sprachen', () => {
     const fehlend: string[] = []
     for (const profile of CASES) {
-      for (const tip of buildTips(profile, {})) {
+      for (const tip of buildTips(profile, RESULTS)) {
         const textId = tip.textId ?? tip.id
         for (const [name, locale] of Object.entries(LOCALES)) {
           for (const part of ['title', 'reason']) {
@@ -593,7 +605,7 @@ describe('Jeder Tipp ist beschriftet', () => {
     const fehlend: string[] = []
     let geprueft = 0
     for (const profile of CASES) {
-      for (const tip of buildTips(profile, {})) {
+      for (const tip of buildTips(profile, RESULTS)) {
         if (!tip.linkTo) continue
         geprueft++
         const textId = tip.textId ?? tip.id
@@ -613,35 +625,52 @@ describe('Jeder Tipp ist beschriftet', () => {
 })
 
 describe('Warmwasser-Quelle', () => {
-  // Die Frage nach der Warmwasserbereitung war nie folgenlos – sie setzt den
-  // €/kWh-Preis des Duschkopf-Checks. Sichtbar war das nur nicht: ein
-  // vorausgewähltes Chip mitten im Check. Der Tipp zieht die Folgerung, die
-  // vorher niemand zog.
   const withHotWater = (hotWaterType: string) =>
     ({ ...PROFILE, hotWaterType }) as unknown as OnboardingData
 
-  it('führt bei eigenem Warmwassergerät in den Duschkopf-Test', () => {
-    const tip = buildTips(withHotWater('separate_system'), {}).find(
-      (t) => t.id === 'hot_water_electric',
-    )
-    expect(tip?.linkTo).toBe('/measurements/showerhead')
-    expect(tip?.costEur).toBe(0)
-  })
-
-  it('tritt ab, sobald der Duschkopf gemessen ist', () => {
-    // Sonst stünde neben dem gemessenen Ergebnis noch die Empfehlung, es zu
-    // messen.
-    const tips = buildTips(withHotWater('separate_system'), {
-      showerhead: result({ id: 'showerhead', rating: 'good', primaryValue: 7, unit: 'L/min' }),
-    })
-    expect(tips.map((t) => t.id)).not.toContain('hot_water_electric')
-  })
-
-  it('schweigt bei Warmwasser über die Heizung', () => {
-    for (const type of ['same_as_heating', 'partially_combined', 'unknown']) {
+  it('zieht aus „separates System" keinen Schluss mehr', () => {
+    // Der Tipp `hot_water_electric` schloss daraus auf „elektrisch". Die Frage
+    // unterscheidet aber, OB das Warmwasser vom Heizgeraet kommt, nicht WOMIT
+    // es erzeugt wird - eine Gastherme oder eine Brauchwasser-Waermepumpe ist
+    // genauso ein eigenes Geraet. Am 05.09.2026 entfallen.
+    for (const type of ['separate_system', 'same_as_heating', 'partially_combined', 'unknown']) {
       expect(buildTips(withHotWater(type), {}).map((t) => t.id)).not.toContain(
         'hot_water_electric',
       )
+    }
+  })
+})
+
+describe('Hinweis statt Massnahme', () => {
+  it('fuehrt den Grundlast-Befund als Hinweis', () => {
+    // Sein einziger naechster Schritt ist der Standby-Check - „erledigt" haette
+    // hier nie etwas bedeutet.
+    const tip = buildTips(PROFILE, {
+      base_load: result({ id: 'base_load', rating: 'elevated', primaryValue: 180, unit: 'W' }),
+    }).find((t) => t.id === 'base_load')
+    expect(tip && isHint(tip)).toBe(true)
+  })
+
+  it('fuehrt Massnahmen weiter als Massnahmen', () => {
+    // Ein alter Kessel ist etwas, das man tatsaechlich umsetzt.
+    const alt = {
+      ...PROFILE,
+      heatGenerators: ['gas_boiler'],
+      heatGeneratorYears: { gas_boiler: 1985 },
+    } as unknown as OnboardingData
+    const tip = buildTips(alt, {}).find((t) => t.id === 'old_boiler')
+    expect(tip).toBeTruthy()
+    expect(isHint(tip!)).toBe(false)
+  })
+
+  it('gibt jedem Hinweis einen Weg, ihm nachzugehen', () => {
+    // Ein Befund ohne naechsten Schritt waere nur ein Vorwurf.
+    const tips = buildTips(PROFILE, {
+      base_load: result({ id: 'base_load', rating: 'elevated', primaryValue: 180, unit: 'W' }),
+    }).filter(isHint)
+    expect(tips.length).toBeGreaterThan(0)
+    for (const tip of tips) {
+      expect(tip.linkTo, tip.id).toBeTruthy()
     }
   })
 })
