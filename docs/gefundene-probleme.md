@@ -1144,6 +1144,35 @@ anderer Stelle wieder auftauchen (z. B. im Grundlast-Check selbst), wäre das
 eine eigene Änderung.
 
 
+### 33. Tipp „Warmwasser aus dem eigenen Gerät" wirkt fehl am Platz
+**Kategorie:** Verbesserung · **Bereich:** `buildTips`, `fieldUsage`, de/en,
+`tests/unit/buildTips.test.ts`
+**Status:** ✅ Umgesetzt (05.09.) – Tipp entfernt.
+
+Kilians Befund aus dem Live-Test: „Entferne bitte diesen Tipp, der ist komisch."
+Auf dem Empfehlungs-Board stand er als **einzige** offene Maßnahme („0 von 1").
+
+**Warum er komisch wirkt.** Er ist der einzige Tipp, der ohne jede Messung
+entsteht – allein aus einer Fragebogen-Antwort. Alle anderen Empfehlungen
+berichten über etwas, das der Nutzer selbst erhoben hat; dieser erzählt
+stattdessen einen Preisvergleich („zweieinhalbmal so teuer wie Gas"), aus dem
+für ihn nichts folgt außer: miss den Duschkopf. Diesen Weg zeigt der
+Messungen-Bereich ohnehin. Dazu kam die Kulisse: Ein frisches Profil bekam
+dadurch ein Board mit genau einer Maßnahme, die keine ist – ein
+Fortschrittsbalken „0 von 1" über einem Absatz Text.
+
+**Was bleibt.** Die Warmwasser-Angabe verliert nichts von ihrer eigentlichen
+Wirkung: Der Duschkopf-Check rechnet weiter je Quelle mit einem anderen
+€/kWh-Preis und nennt die Herkunft seiner Vorbelegung. `fieldUsage` führt
+`hotWaterType` deshalb nur noch unter `measurements`.
+
+**Nebenbefund im Test.** `hot_water_electric` war der einzige Tipp, den die
+Profil-Fälle des Tests „beschriftet jeden Tipp, der irgendwohin führt"
+erzeugten – seine Kanarienvogel-Zeile (`geprueft > 0`) schlug beim Entfernen
+sofort an, wie vorgesehen. Die Fälle tragen jetzt zusätzlich Messergebnisse,
+denn alle verbliebenen verlinkten Tipps hängen an Messungen, nicht am
+Fragebogen.
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen

@@ -94,9 +94,9 @@ export const FIELD_USAGE = {
     labelKey: 'onboarding.step8.labels.heatGenerators',
   },
   hotWaterType: {
-    consumers: ['measurements', 'tips'],
+    consumers: ['measurements'],
     reason:
-      'Der Duschkopf-Check rechnet je Warmwasserquelle anders – ein Durchlauferhitzer kostet anderes Geld als eine Wärmepumpe, und elektrisch ist je nutzbarer Kilowattstunde die teuerste der fünf Quellen. „Separates System" trägt zusätzlich die Empfehlung, genau deshalb mit dem Duschkopf-Test anzufangen.',
+      'Der Duschkopf-Check rechnet je Warmwasserquelle anders – ein Durchlauferhitzer kostet anderes Geld als eine Wärmepumpe, und elektrisch ist je nutzbarer Kilowattstunde die teuerste der fünf Quellen. Der Check nennt die Herkunft seiner Vorbelegung.',
     labelKey: 'onboarding.step8.labels.hotWater',
   },
   instruments: {

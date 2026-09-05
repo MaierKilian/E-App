@@ -800,24 +800,14 @@ export function buildTips(
     })
   }
 
-  // Elektrisch erzeugtes Warmwasser ist die teuerste Art, es zu erzeugen: je
-  // nutzbarer Kilowattstunde die teuerste der fuenf Quellen (siehe
-  // `eurPerKwhHeat`) – mit den Standardpreisen der App gut das Zweieinhalbfache
-  // von Gas und rund das Vierfache von Pellets.
-  // Damit wiegt beim Duschen jeder gesparte Liter hier am schwersten – das ist
-  // die Folgerung aus der Warmwasserfrage, die dem Nutzer bisher niemand
-  // gezogen hat. Der Tipp fuehrt in den Duschkopf-Check und tritt ab, sobald der
-  // gemacht ist: Dann traegt dessen eigener Tipp die gemessene Zahl.
-  if (data.hotWaterType === 'separate_system' && !results['showerhead']) {
-    tips.push({
-      id: 'hot_water_electric',
-      icon: Droplets,
-      category: 'water',
-      effortMinutes: 5,
-      costEur: 0,
-      linkTo: '/measurements/showerhead',
-    })
-  }
+  // Der Tipp „Warmwasser aus dem eigenen Geraet" ist am 05.09.2026 entfallen.
+  // Er zog eine Folgerung aus der Warmwasserfrage, die fuer den Nutzer nicht
+  // nachvollziehbar war: Er erschien ohne jede Messung, allein aus einer
+  // Fragebogen-Antwort, und stand dann als einzige Empfehlung im Board – ein
+  // Preisvergleich, aus dem nichts folgt ausser „miss den Duschkopf". Diesen
+  // Weg zeigt der Messungen-Bereich selbst. Die Warmwasser-Angabe wirkt
+  // weiterhin dort, wo sie hingehoert: im Duschkopf-Check, der mit ihr rechnet
+  // und ihre Herkunft nennt.
 
   // --- Photovoltaik ---------------------------------------------------------
   // Die PV-Angabe legte bisher nur den Erzeugungszaehler aufs Monitoring-Board.
