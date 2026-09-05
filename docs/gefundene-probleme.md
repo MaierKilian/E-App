@@ -809,6 +809,170 @@ sagt nichts darüber, welches Gewerk den Nutzer interessiert, seine Wirkung lieg
 in der Navigation. Ein Test hält fest, dass jedes Ziel des Typs eine Karte hat
 und auf einen Bereich zeigt, den die Navigation wirklich führt.
 
+### 28. Räume gleichen Typs: kein eigener Name, keine eigene Fläche
+**Kategorie:** Problem · **Bereich:** `Step3Rooms`, `RoomTypePicker`,
+`types/index.ts` (`RoomEntry`), `measurements/rooms.ts`, `roomAreas.ts`,
+`onboardingStore`
+**Status:** 🔍 Nur gesammelt – Vorschlag steht, Entscheidung offen.
+
+Kilians Befund am Schritt „Räume": „Wenn man 2 Räume des gleichen Typs hat, hat
+man keine Möglichkeit die Räume sinnvoll individuell zu benennen. Auch die
+Quadratmeterzahl kann man nicht individuell einstellen."
+
+**Bestätigt, und die Ursache liegt eine Ebene tiefer als die Oberfläche.**
+`RoomEntry` beschreibt einen *Raumtyp*, nicht einen Raum:
+
+```ts
+interface RoomEntry { type: RoomType; count: number; areaSqm?: number; heatTransfer?: … }
+```
+
+`count` ist die Anzahl, alle übrigen Angaben gelten für den Typ. Zwei
+Kinderzimmer teilen sich damit zwangsläufig eine Fläche und eine Wärmeübergabe.
+Es gibt keine Stelle, an der ein einzelner Raum etwas Eigenes sagen könnte.
+
+**Der Rest der App kennt einzelne Räume längst.** `roomInstances()` klappt
+`type + count` in Instanzen mit stabilem Schlüssel (`bedroom#0`, `bedroom#1`)
+auf, und die beiden Pro-Raum-Checks – Raumklima und Möbelabstand – speichern
+ihre Ergebnisse einzeln unter `room_temperature@bedroom#1`. Die App **misst**
+also je Raum, sie kann ihn nur nicht **beschreiben**. Der Fragebogen ist die
+einzige Stelle, die noch in Typen denkt.
+
+**Was daraus praktisch folgt – drei Dinge, nicht nur ein Schönheitsfehler:**
+
+1. *Man weiß nicht, welchen Raum man misst.* In der Raum-Ansicht der Messungen
+   (`ByRoomView`) stehen „Kinderzimmer 1" und „Kinderzimmer 2" – die Nummer
+   kommt aus der Position im Array, nicht aus etwas, das der Nutzer je gesehen
+   hat. Wer eine Woche später weitermisst, kann nicht wissen, welches der
+   beiden er schon gemacht hat.
+2. *Die Fläche trägt einen Geldbetrag.* `resolveRoomArea` speist
+   `calcRoomTempSaving` in `RoomTemperatureRun` – daraus entsteht die
+   Einsparung in €/Jahr für diesen Raum. Ein 9-m²-Kinderzimmer und ein
+   18-m²-Kinderzimmer bekommen heute denselben Betrag. Einer der beiden ist
+   um den Faktor zwei falsch.
+3. *Eine Antwort aus dem Check überschreibt beide Räume.* Fehlt die
+   Wärmeübergabe, erhebt der Möbelabstand-Check sie selbst und ruft
+   `setRoomHeatTransfer(type, transfer)` – das schreibt auf **den Typ**. Wer im
+   Kinderzimmer 1 „Fußbodenheizung" antwortet, hat sie stillschweigend auch im
+   Kinderzimmer 2 stehen, und der Check dort stellt ab sofort die falschen
+   Fragen, ohne je gefragt zu haben.
+
+**Kein Bug, obwohl es im Screenshot so aussieht:** Beim Erhöhen der Anzahl von
+1 auf 2 springt das m²-Feld von 70 auf 35. Das ist der *Platzhalter*, kein
+eingetragener Wert – `resolveRoomArea` verteilt die Wohnfläche gewichtet auf die
+Räume, und bei zwei Esszimmern in 70 m² Wohnfläche sind das je 35. Die Rechnung
+stimmt und ist bereits je Instanz gedacht. Nur eingeben kann man sie nicht
+je Instanz.
+
+**Vorschlag: `count` durch eine Instanzliste ersetzen, nach dem Muster der
+Geräte.** Genau dieses Problem ist bei den Kühl- und Gefriergeräten schon
+gelöst (#Sammelliste, „mehrere Geräte gleicher Art"), und die Lösung dort ist
+erprobt:
+
+```ts
+interface RoomEntry {
+  type: RoomType
+  instances: RoomInstanceEntry[]   // Länge ersetzt count
+}
+interface RoomInstanceEntry {
+  id: string                 // stabil, siehe unten
+  name?: string              // „Zimmer Lena" – leer heißt: Typ + Nummer benennen ihn
+  areaSqm?: number
+  heatTransfer?: HeatTransferType
+}
+```
+
+**Der Schlüssel muss stabil bleiben, sonst erben Räume fremde Messwerte.** Der
+Kommentar an `ApplianceEntry` beschreibt die Falle: Löscht man den ersten von
+zwei Einträgen, rutscht `#1` auf `#0` und erbt dessen Ergebnis – der Nutzer
+sieht eine Messung, die er woanders gemacht hat. Für Räume ist das heute nur
+deshalb harmlos, weil man Instanzen gar nicht einzeln löschen kann. Sobald es
+Namen gibt, will man genau das.
+
+Deshalb dieselbe Antwort wie bei den Geräten: Die Instanz bekommt eine eigene,
+unveränderliche `id`, und **die Bestandsräume erben als `id` genau ihren
+bisherigen Schlüssel** (`bedroom#0`, `bedroom#1`, … in `migrateOnboardingData`).
+Dann gilt `roomKey === instance.id` in beide Richtungen, jedes gespeicherte
+Ergebnis findet weiter seinen Raum, und ein Löschen verschiebt nie wieder
+jemanden. Neue Räume bekommen eine frische, nie wiederverwendete `id`.
+
+**Oberfläche:** Die Kachel bekommt beim Aufklappen eine Zeile je Raum – Name
+(Eingabefeld), m², Wärmeübergabe, Löschen – plus „Weiteren hinzufügen". Der
+Name erscheint wie bei den Geräten **erst ab dem zweiten Raum**; bei einem
+Kinderzimmer wäre „Kinderzimmer 1" eine Nummerierung ohne Gegenstück. Der
+Stepper entfällt, die Anzahl ist die Länge der Liste.
+
+`roomLabel()` ist der einzige Ort, an dem der Name durchschlagen muss – alle
+rund 15 Anzeigestellen (Messungen, Tipps, Bericht, Startseite) gehen durch ihn.
+
+**Umfang:** `RoomEntry`-Umbau + Migration, `Step3Rooms`/`RoomTypePicker`,
+`roomInstances`/`roomLabel`, `resolveRoomArea` (Signatur auf Instanz statt Typ),
+`setRoomHeatTransfer`, `addRoom`, `Step8Review`, PDF-Steckbrief, Demo-Profil,
+`fieldUsage`, de/en. Kein Verlust gespeicherter Messergebnisse, wenn die
+id-Vererbung sitzt – dafür braucht es einen Test, der genau das festhält.
+
+### 29. Wärmeübergabe kennt nur zwei Bauarten – und kein „unbeheizt"
+**Kategorie:** Problem · **Bereich:** `types/index.ts` (`HeatTransferType`),
+`Step3Rooms`, `furnitureSpacing.ts`, `FurnitureSpacingRun`, `sections.ts`
+**Status:** 🔍 Nur gesammelt – Vorschlag steht, Entscheidung offen.
+
+Kilians Befund: „Außerdem kann man nur Heizkörper und Fußbodenheizung
+auswählen. Der Nutzer könnte aber auch Infrarotheizplatten haben oder einen
+alten Holzkachelofen."
+
+**Bestätigt.** `HeatTransferType` ist `'radiator' | 'underfloor'`, und die
+Angabe ist **Pflicht für jeden Raum** (`sections.ts`: `rooms.every(r =>
+Boolean(r.heatTransfer))`). Wer Infrarotplatten hat, muss „Heizkörper"
+behaupten, um den Fragebogen zu Ende zu bringen.
+
+**Die Lücke ist größer als die zwei genannten Bauarten.** Zur Auswahl stehen
+13 Raumtypen, darunter Keller, Dachboden und Treppenhaus. Für einen unbeheizten
+Keller ist *jede* der beiden Antworten falsch, und trotzdem verlangt der
+Fragebogen eine. „Unbeheizt" fehlt als Antwort – dabei ist es genau die
+Angabe, die den Möbelabstand-Check in diesem Raum überflüssig macht.
+
+**Wo die Angabe wirkt:** genau an einer funktionalen Stelle – dem
+Möbelabstand-Check. `questionKeys(underfloor, roomType)` wählt zwischen zwei
+Fragensätzen: beim Heizkörper Abstand/Verkleidung/Ventil, bei der
+Fußbodenheizung fußlose Möbel/Teppich/Raumthermostat. Dazu der Steckbrief im
+Bericht und die Zusammenfassung in der Übersicht.
+
+**Vorschlag: fünf Antworten statt zwei, und für jede ein ehrlicher Fragensatz.**
+
+| Antwort | Fragensatz im Möbelabstand-Check |
+|---|---|
+| Heizkörper | wie heute (`RADIATOR_KEYS`, Küche/Bad-Variante) |
+| Fußbodenheizung | wie heute (`UNDERFLOOR_KEYS`) |
+| **Infrarotheizplatte** | neu: freie Abstrahlfläche, nichts davor/darunter, Fühler nicht verbaut |
+| **Einzelofen / Kachelofen** | neu: Abstand zu Möbeln, freie Luftzirkulation – der Rest der Bewertung greift dort nicht |
+| **Unbeheizt** | Check erscheint in diesem Raum gar nicht |
+
+Zwei Dinge daran sind Fachentscheidungen, keine Programmierung:
+
+1. *Der Kachelofen ist kein Übergabe-System im selben Sinn.* Ein Heizkörper
+   verteilt Wärme, die woanders erzeugt wurde; ein Kachelofen erzeugt sie im
+   Raum. Er gehört fachlich zum Wärmeerzeuger (`HeatGeneratorType` kennt
+   `wood_stove` bereits) und steht hier nur, weil der Nutzer ihn als „das, was
+   den Raum warm macht" erlebt. Ihn in die Raumliste aufzunehmen ist eine
+   bewusste Entscheidung für die Nutzersicht gegen die Fachsystematik – meines
+   Erachtens die richtige, aber sie sollte benannt sein.
+2. *Infrarot ist zugleich eine Erzeuger-Lücke.* `HeatGeneratorType` hat keine
+   Direktstromheizung. Wer nur mit Infrarotplatten heizt, kann das im
+   Heiz-Schritt gar nicht angeben – und ohne Erzeuger fehlt die Grundlage für
+   Heizkosten und Einsparungen. Die Raum-Antwort allein schließt diese Lücke
+   nicht.
+
+**Umfang:** `HeatTransferType` erweitern (rein additiv, Bestandswerte bleiben
+gültig), zwei neue Fragensätze in `furnitureSpacing.ts` inkl. Gewichten und
+Befundtexten, `applicableFor` im Katalog um „unbeheizt" ergänzen, `sections.ts`
+(Pflicht bleibt Pflicht, aber „unbeheizt" zählt als Antwort), Step3-Kacheln
+(fünf Knöpfe statt zwei – die Kachel ist nur rund 127 px breit, das braucht ein
+anderes Layout als die heutigen gestapelten Knöpfe), de/en, Bericht.
+
+Für die beiden neuen Fragensätze gilt die Richtwert-Konvention: Jeder neue
+Schwellwert braucht ein `ThresholdOrigin`. Für Infrarot und Kachelofen habe ich
+noch keine belegte Quelle geprüft – bis dahin wären es `'own'`-Richtwerte mit
+Begründung, nicht `'reference'`.
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
@@ -978,3 +1142,16 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   (erst Raum, dann Entnahmestelle) oder eine kombinierte Liste je
   Rauminstanz? Bis zur Entscheidung bleibt der bestehende Datenverlust bei
   mehreren gleichartigen Entnahmestellen (z. B. zwei Waschbecken) bestehen.
+
+- Bei #28: Sollen einzelne Räume löschbar sein, oder bleibt es beim Hoch- und
+  Runterzählen? Löschbarkeit ist der Grund für die stabilen `id`s – ohne sie
+  reicht der heutige Index-Schlüssel weiter aus, und der Umbau wird deutlich
+  kleiner.
+- Bei #29: Kachelofen/Einzelofen in der **Raum**-Liste (Nutzersicht) oder nur
+  beim Wärmeerzeuger (Fachsystematik)? Und soll `HeatGeneratorType` eine
+  Direktstromheizung bekommen, damit Infrarot-Haushalte überhaupt eine
+  Heizkosten-Grundlage haben?
+- Bei #29: Für die Fragensätze „Infrarotheizplatte" und „Einzelofen" gibt es
+  noch keine geprüfte Quelle. Als `'own'`-Richtwerte mit Begründung bauen –
+  oder auf eine Session mit Netzzugang warten und so lange nur „unbeheizt"
+  und die zwei bestehenden Bauarten anbieten?
