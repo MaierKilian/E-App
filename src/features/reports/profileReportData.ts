@@ -138,7 +138,12 @@ export function buildProfileReportData(
         opt('onboarding.step1.occupancyOptions', data.occupancyStatus),
       ],
     ]),
-    [t('onboarding.step8.labels.postalCode'), coarsePostalCode(data.postalCode)],
+    // Die Postleitzahl wird seit dem 05.09.2026 nicht mehr gefragt (der
+    // Standort-Schritt ist entfallen). `coarsePostalCode` liefert für eine
+    // leere Angabe schon null – `retired` nimmt die Zeile dann heraus.
+    ...retired([
+      [t('onboarding.step8.labels.postalCode'), coarsePostalCode(data.postalCode)],
+    ]),
   ]
 
   // Wärmeerzeuger mit ihrem Baujahr, wo eines bekannt ist – das Alter der

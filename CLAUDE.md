@@ -71,9 +71,14 @@ deployten App dazu.
   „Ausstattung", statt unter der Messgeräte-Übersicht am Seitenende. Damit hat
   „Ausstattung" keine Frage mehr und ist – wie „Preise & Kosten" – eine reine
   Auskunft.
-- Frage nach Mieter oder Eigentümer entfernt (05.09.) – sie hätte genau einen
-  Tipp gefiltert (Alter des Kessels), und der ist für Mieter das Argument
-  gegenüber der Vermietung. Der Schritt heißt seither nur noch „Standort".
+- Schritt „Standort & Wohnsituation" ganz entfallen (05.09.). Erst fiel die
+  Frage nach Mieter oder Eigentümer – sie hätte genau einen Tipp gefiltert
+  (Alter des Kessels), und der ist für Mieter das Argument gegenüber der
+  Vermietung. Übrig blieb die freiwillige Postleitzahl, deren einzige Wirkung
+  zwei Ziffern im PDF-Steckbrief waren; ihr naheliegender Abnehmer, eine
+  Klimaregion, braucht geprüfte DWD-Daten. Der vollständige Fragebogen hat
+  seither **sieben statt acht Schritte**; der Code liegt unter
+  `archiv/onboarding-standort/`.
 - Die PV-Angabe trägt jetzt auch Empfehlungen: „Ja" rät, große Verbraucher in
   die Mittagsstunden zu legen (Eigenverbrauch statt Einspeisung), „geplant" rät,
   vor der Auslegung die eigene Grundlast zu messen. Den Erzeugungszähler im

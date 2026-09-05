@@ -227,12 +227,18 @@ export function Step8Review({ data }: Props) {
         })}
       </ReviewSection>
 
-      <ReviewSection title={t('onboarding.step8.sections.location')}>
-        <ReviewRow
-          label={t('onboarding.step8.labels.postalCode')}
-          value={data.postalCode || '—'}
-        />
-      </ReviewSection>
+      {/* Der Standort-Schritt ist am 05.09.2026 entfallen. Die Zeile bleibt für
+          Bestandsprofile, die eine Postleitzahl tragen – ein neues Profil
+          bekäme sonst eine Zusammenfassung zu einer Frage, die es nie
+          gestellt bekommen hat. */}
+      {data.postalCode.trim() && (
+        <ReviewSection title={t('onboarding.step8.sections.location')}>
+          <ReviewRow
+            label={t('onboarding.step8.labels.postalCode')}
+            value={data.postalCode}
+          />
+        </ReviewSection>
+      )}
     </div>
   )
 }

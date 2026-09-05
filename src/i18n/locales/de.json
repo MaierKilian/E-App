@@ -91,7 +91,6 @@
     "fireplace": "Ein zusätzlicher Kamin/Ofen trägt zur Raumwärme bei und sollte erfasst werden.",
     "instruments": "Diese Übersicht ist Auskunft, keine Frage – die App leitet sie daraus ab, was ihre Checks tatsächlich verlangen. Du musst hier nichts auswählen.",
     "renovation": "Renovierungen verbessern den Dämmstandard und senken den Energiebedarf.",
-    "location": "Mit der Postleitzahl können später regionale Klima- und Wetterdaten einfließen.",
     "appliances": "Der Kühlschrank- und der Gefriergerät-Check messen jeweils ein reales Gerät. Ohne diese Angabe schlägt die App Checks vor, die es bei dir nicht zu messen gibt – und der Fortschritt käme nie bei 100 % an. „Haben wir nicht\" nimmt den passenden Check heraus; du kannst das hier jederzeit zurücknehmen."
   },
   "report": {
@@ -1733,18 +1732,6 @@
         "toMeter": "Zählerstand eintragen"
       }
     },
-    "step7": {
-      "title": "Standort",
-      "subtitle": "Optional – für regionale Klima- und Wetterdaten.",
-      "postalCode": "Postleitzahl",
-      "postalCodePlaceholder": "z. B. 10829",
-      "optionalHint": "Freiwillig. Hilft später bei wetter- und klimabezogenen Auswertungen.",
-      "manual": "Manuell",
-      "automatic": "Automatisch",
-      "skip": "Auslassen",
-      "selected": "Ausgewählt",
-      "none": "keine"
-    },
     "step8": {
       "title": "Prüfen & Speichern",
       "subtitle": "Überprüfe deine Angaben und speichere das Profil.",
@@ -1820,7 +1807,6 @@
       "building": "Gebäudehülle & Modernisierung",
       "appliances": "Kühl- & Gefriergeräte",
       "equipment": "Ausstattung",
-      "location": "Standort",
       "review": "Prüfen & Speichern"
     },
     "plausibility": {

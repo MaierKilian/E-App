@@ -108,13 +108,12 @@ export const FIELD_USAGE = {
   locationMode: {
     consumers: [],
     reason:
-      'Wie der Standort angegeben wurde. Ohne Abnehmer, solange der Standort selbst keinen hat.',
+      'Wie der Standort angegeben wurde. Wird seit dem Wegfall des Standort-Schritts nicht mehr gesetzt und war auch vorher ohne Abnehmer – die Angabe beschrieb nur, wie eine andere zustande kam.',
   },
   postalCode: {
     consumers: ['report'],
     reason:
-      'Im Steckbrief des Berichts, bewusst auf zwei Stellen gekürzt. Für Klimadaten und regionale Preise wäre sie zusätzlich brauchbar, beides gibt es noch nicht.',
-    labelKey: 'onboarding.step8.labels.postalCode',
+      'Im Steckbrief des Berichts, bewusst auf zwei Stellen gekürzt. Wird nicht mehr gefragt – für Klimadaten und regionale Preise wäre sie brauchbar, beides gibt es nicht, und ein eigener Schritt für ein Feld ohne Wirkung trug sich nicht. Ein Bestandsprofil behält die Zeile.',
   },
   completed: {
     consumers: ['measurements'],

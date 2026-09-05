@@ -650,8 +650,10 @@ Wikipedia-Quellen im Wissens-Tracker.
 ### 25. Standort-Schritt: Mieter/Eigentümer streichen, Standort sichtbar machen
 **Kategorie:** Verbesserung · **Bereich:** `Step7Location`, `sections.ts`,
 `fieldUsage.ts`
-**Status:** ✅ Umgesetzt (05.09.) – Frage entfernt, Abschnitt heißt jetzt
-„Standort". Die grafische Visualisierung ist nicht gekommen; Begründung unten.
+**Status:** ✅ Umgesetzt (05.09.) – erst die Frage entfernt, dann auf Kilians
+Wunsch **der ganze Schritt**: Übrig blieb nur die freiwillige Postleitzahl, und
+die ist selbst ein totes Ende (siehe #24). Der Code liegt unter
+`archiv/onboarding-standort/`.
 
 Kilians Befund: „Die Frage ob Mieter oder Eigentümer würde ich streichen. Das
 hat keinen großen Mehrwert finde ich. Vielleicht kann man den Standort dann auch
@@ -695,8 +697,19 @@ der Runde vom 04.09.
 **Nicht umgesetzt (05.09.).** Beides – Silhouette wie abgeleitete Angaben –
 hängt an der Klimatabelle aus #24, und die ist ohne geprüfte Daten nicht zu
 haben. Eine Karte, die „deine Klimaregion" behauptet, ohne dass die Zuordnung
-belegt ist, wäre hübscher als heute und weniger ehrlich. Der Schritt zeigt
-deshalb vorerst nur die Postleitzahl.
+belegt ist, wäre hübscher als heute und weniger ehrlich.
+
+**Und damit fiel der Schritt ganz.** Kilians Folgerung, nachdem nur noch die
+Postleitzahl übrig war: „Bitte die Standort-Abfrage aus dem Onboarding
+entfernen, da sie ja scheinbar keine Verwendung hat und ein totes Ende ist."
+Richtig – ein eigener Schritt für ein freiwilliges Feld ohne Wirkung trägt sich
+nicht. Der vollständige Fragebogen hat seither **sieben statt acht Schritte**.
+
+`postalCode` und `locationMode` bleiben in `OnboardingData`: Bestandsprofile
+tragen echte Werte, und wenn die Klimaregion je kommt, ist die Angabe für diese
+Profile schon da. Steckbrief und Abschluss-Zusammenfassung zeigen sie nur noch,
+wo tatsächlich eine eingetragen ist. Der Schritt-Code liegt mit Begründung und
+Wiederherstellungs-Anleitung unter `archiv/onboarding-standort/`.
 
 **Nebenwirkung, die zur Entscheidung gehört:** Fällt Mieter/Eigentümer weg,
 bleibt im Schritt „Standort & Wohnsituation" nur noch die freiwillige
@@ -858,11 +871,12 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   `ventilationType` und `renovations` aus „Wofür wir das nutzen" verschwinden?
   Sie stehen dort als Angaben, die ein neues Profil nie macht.
 
-- Bei #24: Die Klimatabelle (PLZ → Region → Monatsmittel) braucht geprüfte
-  DWD-Daten, und diese Session kam nicht ins Netz. Soll sie in einer Session
-  mit Netzzugang nachgezogen werden – dann kommen auch die Standort-Grafik und
-  die abgeleiteten Angaben aus #25 –, oder bleibt die Postleitzahl als
-  freiwillige Angabe ohne Wirkung stehen?
+- Bei #24/#25: Der Standort-Schritt ist entfallen, die Postleitzahl wird also
+  gar nicht mehr erhoben. Soll die Klimaregion in einer Session **mit**
+  Netzzugang nachgezogen werden (geprüfte DWD-Monatsmittel je Region)? Dann
+  bekäme die Abfrage erstmals einen echten Abnehmer – das regionalisierte
+  Saisonprofil wirkt sofort in Jahres-Hochrechnung, Tank-Reichweite und
+  Bericht – und der Schritt käme aus dem Archiv zurück. Sonst bleibt es dabei.
 
 - Bei #23: „Ausstattung" heißt jetzt eine Seite, auf der nur noch die
   Übersicht „Was du zum Messen brauchst" steht. Soll der Schritt so heißen wie

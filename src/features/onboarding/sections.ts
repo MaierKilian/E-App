@@ -1,4 +1,4 @@
-import { Home, DoorOpen, Flame, Gauge, MapPin, Wallet, ClipboardCheck, Refrigerator } from 'lucide-react'
+import { Home, DoorOpen, Flame, Gauge, Wallet, ClipboardCheck, Refrigerator } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { OnboardingData } from '@/types'
 
@@ -32,7 +32,6 @@ export type SectionId =
   | 'prices'
   | 'appliances'
   | 'equipment'
-  | 'location'
   | 'review'
 
 /** Eine Einzelangabe eines Abschnitts. */
@@ -100,6 +99,18 @@ function optional(id: string, answered: (d: OnboardingData) => boolean): Section
  * tragen echte Werte, die nicht verschwinden sollen. Neu befüllen lassen sie
  * sich nicht mehr. Der Code der beiden Schritte liegt unter
  * `archiv/onboarding-gebaeudehuelle/`.
+ *
+ * **Entfallen am 05.09.2026: „Standort"** (ehemals Schritt 7 von 8). Nachdem
+ * die Frage nach Mieter oder Eigentümer gestrichen war, blieb dort nur die
+ * freiwillige Postleitzahl – und die hatte eine einzige Lesestelle: zwei
+ * Ziffern im PDF-Steckbrief. Für Klimadaten und regionale Preise wäre sie
+ * brauchbar; beides gibt es nicht, und ohne geprüfte Klimadaten ließ es sich
+ * auch nicht bauen (Punkt 24 in `docs/gefundene-probleme.md`). Ein eigener
+ * Schritt für ein Feld, das nichts bewirkt, trägt sich nicht.
+ *
+ * `postalCode` und `locationMode` bleiben in `OnboardingData` – Bestandsprofile
+ * tragen echte Werte, und wenn die Klimaregion je kommt, ist die Angabe schon
+ * da. Der Code des Schritts liegt unter `archiv/onboarding-standort/`.
  */
 export const ONBOARDING_SECTIONS: OnboardingSection[] = [
   {
@@ -191,19 +202,6 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
     // Auskunft hat keinen Ausfüllstand, `stateOf` zählt ihn als erledigt,
     // sobald er besucht wurde.
     fields: [],
-  },
-  {
-    id: 'location',
-    titleKey: 'onboarding.sectionTitles.location',
-    icon: MapPin,
-    quick: false,
-    // Seit dem 05.09.2026 ohne Pflichtangabe: Mieter/Eigentümer ist entfallen
-    // (Punkt 25), und die App beschriftet die Postleitzahl selbst als optional –
-    // dann darf sie den Fortschritt auch nicht bremsen. Wie „Preise & Kosten"
-    // und „Ausstattung" gilt der Schritt als erledigt, sobald er besucht wurde.
-    fields: [
-      optional('postalCode', (d) => (d.postalCode ?? '').trim().length > 0),
-    ],
   },
   {
     id: 'review',

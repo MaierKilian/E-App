@@ -85,7 +85,7 @@ describe('Registry ist widerspruchsfrei', () => {
     // hat; hier die Gegenrichtung – eine id ohne Registry-Eintrag.
     const ids: SectionId[] = [
       'home', 'rooms', 'heating', 'prices',
-      'appliances', 'equipment', 'location', 'review',
+      'appliances', 'equipment', 'review',
     ]
     expect(ONBOARDING_SECTIONS.map((s) => s.id).sort()).toEqual([...ids].sort())
   })
@@ -220,12 +220,17 @@ describe('Kein Feld ist verlorengegangen', () => {
   // genau einen Tipp gefiltert – das Alter des Kessels –, und der ist für
   // Mieter das Argument gegenüber der Vermietung, also nicht einmal sicher zu
   // unterdrücken. Auch sie ist nicht verlorengegangen, sondern abgeschafft.
+  //
+  // Ebenfalls seit dem 05.09.2026 fehlt `postalCode`: Nachdem Mieter/Eigentümer
+  // gestrichen war, blieb im Standort-Schritt nur diese eine freiwillige Angabe
+  // – mit einer einzigen Lesestelle, zwei Ziffern im PDF-Steckbrief. Ein
+  // eigener Schritt dafür trug sich nicht. Auch sie ist nicht verlorengegangen,
+  // sondern abgeschafft.
   const ERHOBEN = [
     'profileName', 'profileImage', 'personsCount', 'goals',
     'buildingYear', 'buildingType', 'livingArea', 'floors',
     'rooms', 'heatTransfer', 'roomAreas',
     'heatGenerators', 'hotWaterType',
-    'postalCode',
   ]
 
   it('führt jede vorher erhobene Angabe weiter', () => {

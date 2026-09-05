@@ -91,7 +91,6 @@
     "fireplace": "An additional fireplace/stove adds room heat and should be recorded.",
     "instruments": "This overview is information, not a question – the app derives it from what its checks actually require. There is nothing to select here.",
     "renovation": "Renovations improve the insulation standard and reduce the energy demand.",
-    "location": "Your postal code lets regional climate and weather data flow in later.",
     "appliances": "The fridge and freezer checks each measure a real appliance. Without this answer the app suggests checks you have nothing to measure for – and your progress would never reach 100 %. “We have none” takes the matching check out; you can undo that here at any time."
   },
   "report": {
@@ -1520,18 +1519,6 @@
         "toMeter": "Enter meter reading"
       }
     },
-    "step7": {
-      "title": "Location",
-      "subtitle": "Optional – for regional climate and weather data.",
-      "postalCode": "Postal code",
-      "postalCodePlaceholder": "e.g. 10829",
-      "optionalHint": "Optional. Helps later with weather- and climate-based analysis.",
-      "manual": "Manual",
-      "automatic": "Automatic",
-      "skip": "Skip",
-      "selected": "Selected",
-      "none": "none"
-    },
     "step8": {
       "title": "Review & Save",
       "subtitle": "Review your entries and save the profile.",
@@ -1607,7 +1594,6 @@
       "building": "Building envelope & retrofits",
       "appliances": "Fridges & freezers",
       "equipment": "Equipment",
-      "location": "Location",
       "review": "Review & save"
     },
     "plausibility": {
