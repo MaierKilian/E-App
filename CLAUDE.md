@@ -71,6 +71,13 @@ deployten App dazu.
   „Ausstattung", statt unter der Messgeräte-Übersicht am Seitenende. Damit hat
   „Ausstattung" keine Frage mehr und ist – wie „Preise & Kosten" – eine reine
   Auskunft.
+- **Neuer Schritt 2 „Dein Ziel" (05.09.)** – die Zielauswahl hat eine eigene
+  Seite mit vollen Karten statt fünf kleiner Chips, je Ziel mit einem Satz, was
+  die Wahl bewirkt. Neu dabei: „Zählerstände verfolgen". Das Ziel entscheidet
+  jetzt, wo der Fragebogen endet – Monitoring, Wissensbereich oder Messungen
+  (`onboarding/goals.ts`). Nebenbei behoben: Die Frage wurde nur im
+  vollständigen Fragebogen gestellt, aber in beiden als Pflichtangabe gezählt –
+  ein Schnellstart-Profil konnte 100 % nie erreichen.
 - Schritt „Dein Zuhause" entschlackt (05.09.): Gebäudeteil (Wohnung/Haus) und
   Etagenzahl entfernt – beides Pflichtangaben, deren gesamte Wirkung je eine
   Zeile im PDF-Steckbrief war. Die Zimmerzahl steht nur noch im Schnellstart;

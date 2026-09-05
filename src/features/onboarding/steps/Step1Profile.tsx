@@ -1,34 +1,18 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  Tag,
-  PiggyBank,
-  Leaf,
-  ThermometerSun,
-  Sparkles,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { Tag } from 'lucide-react'
 import { Stepper } from '@/components/ui/Stepper'
 import { Slider } from '@/components/ui/Slider'
-import { OptionChip } from '@/components/ui/OptionChip'
 import { Field } from '@/components/ui/Field'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { AvatarPicker } from '@/components/AvatarPicker'
 import { PlausibilityNote } from '../PlausibilityNote'
-import type { OnboardingData, UserGoal } from '@/types'
+import type { OnboardingData } from '@/types'
 
 interface Props {
   data: OnboardingData
   onChange: (partial: Partial<OnboardingData>) => void
   detailed?: boolean
-}
-
-const GOALS: UserGoal[] = ['save_costs', 'reduce_co2', 'improve_comfort', 'curiosity']
-const GOAL_ICONS: Record<UserGoal, LucideIcon> = {
-  save_costs: PiggyBank,
-  reduce_co2: Leaf,
-  improve_comfort: ThermometerSun,
-  curiosity: Sparkles,
 }
 
 /**
@@ -39,19 +23,14 @@ const GOAL_ICONS: Record<UserGoal, LucideIcon> = {
  * zwei getrennten Schritten, obwohl die Plausibilitätsprüfung beide braucht und
  * niemand sie getrennt denkt.
  *
- * Mieter/Eigentümer ist bewusst nicht mehr hier: Die Angabe entscheidet, welche
- * Maßnahmen überhaupt in Frage kommen, und steht deshalb beim Standort.
+ * Die Ziele sind seit dem 05.09.2026 nicht mehr hier, sondern auf einer
+ * eigenen Seite (`StepGoals`): Sie sind keine Gebäudeangabe, und als fünf
+ * kleine Chips unter dem Baujahr sahen sie aus wie eine Nebensache. Gebäudeteil
+ * und Etagenzahl sind ganz entfallen, Mieter/Eigentümer ebenso.
  */
 export function Step1Profile({ data, onChange, detailed = false }: Props) {
   const { t } = useTranslation()
   const [areaText, setAreaText] = useState(String(data.livingArea))
-
-  function toggleGoal(goal: UserGoal) {
-    const current = data.goals
-    onChange({
-      goals: current.includes(goal) ? current.filter((g) => g !== goal) : [...current, goal],
-    })
-  }
 
   function handleAreaBlur() {
     const parsed = Number.parseInt(areaText, 10)
@@ -180,27 +159,6 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
       {/* Der Abgleich steht unter den Werten, die er prüft. */}
       <PlausibilityNote data={data} />
 
-      {detailed && (
-        <>
-          <Field
-            title={t('onboarding.step1.goals')}
-            info={t('info.goals')}
-            hint={t('onboarding.step1.goalsHint')}
-          >
-            <div className="flex flex-wrap gap-2">
-              {GOALS.map((goal) => (
-                <OptionChip
-                  key={goal}
-                  icon={GOAL_ICONS[goal]}
-                  label={t(`onboarding.step1.goalOptions.${goal}`)}
-                  selected={data.goals.includes(goal)}
-                  onClick={() => toggleGoal(goal)}
-                />
-              ))}
-            </div>
-          </Field>
-        </>
-      )}
     </div>
   )
 }

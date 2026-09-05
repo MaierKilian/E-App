@@ -1446,6 +1446,7 @@
         "save_costs": "Kosten senken",
         "reduce_co2": "CO₂ reduzieren",
         "improve_comfort": "Komfort verbessern",
+        "track_readings": "Zählerstände verfolgen",
         "curiosity": "Neugier / Wissen aufbauen"
       },
       "occupancyOptions": {
@@ -1799,6 +1800,7 @@
     },
     "sectionTitles": {
       "home": "Dein Zuhause",
+      "goals": "Dein Ziel",
       "rooms": "Räume",
       "heating": "Heizung & Warmwasser",
       "prices": "Preise & Kosten",
@@ -1864,6 +1866,17 @@
         "renovations": "Sanierungen",
         "heatGeneratorYears": "Alter der Heizung",
         "appliances": "Kühl- und Gefriergeräte"
+      }
+    },
+    "goals": {
+      "subtitle": "Wonach die App Messungen und Empfehlungen sortiert – und wo du nach dem Fragebogen startest. Mehrfachauswahl möglich.",
+      "destination": "Danach startest du hier:",
+      "desc": {
+        "save_costs": "Empfehlungen stehen nach Ersparnis in Euro sortiert – die größten zuerst.",
+        "reduce_co2": "Wärme und Warmwasser rücken nach vorn: Dort liegt der größte CO₂-Hebel.",
+        "improve_comfort": "Raumklima und Zugluft rücken nach vorn, danach die Wartezeit auf warmes Wasser.",
+        "track_readings": "Strom, Gas, Wasser und Wärme regelmäßig ablesen und den Verlauf über Monate sehen.",
+        "curiosity": "Hintergründe zu jeder Messung, Glossar und FAQ im Wissensbereich."
       }
     }
   },

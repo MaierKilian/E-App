@@ -319,7 +319,8 @@ export function isQuickWin(tip: Tip): boolean {
  * `save_costs` und `curiosity` bleiben leer: Die vorhandene €-Sortierung
  * *ist* die Antwort auf „Kosten sparen", und für Neugier gibt es keine
  * sachliche Reihenfolge, die besser wäre als die bisherige. Ohne Ziel ändert
- * sich damit nichts.
+ * sich damit nichts. `track_readings` ebenso – seine Wirkung liegt in der
+ * Navigation, nicht in der Reihenfolge.
  */
 const GOAL_CATEGORY_BONUS: Record<UserGoal, Partial<Record<MeasurementCategory, number>>> = {
   save_costs: {},
@@ -328,6 +329,11 @@ const GOAL_CATEGORY_BONUS: Record<UserGoal, Partial<Record<MeasurementCategory, 
   reduce_co2: { heating: 2, hot_water: 2, electricity: 1 },
   // Raumklima und Zugluft zuerst, danach die Wartezeit auf warmes Wasser.
   improve_comfort: { heating: 2, hot_water: 1 },
+  // „Zählerstände verfolgen" wirkt nicht hier, sondern in der Navigation: Es
+  // führt nach dem Fragebogen ins Monitoring (`onboarding/goals.ts`). Eine
+  // Mess-Reihenfolge daraus abzuleiten, wäre geraten – das Ziel sagt nichts
+  // darüber, welches Gewerk den Nutzer interessiert.
+  track_readings: {},
   curiosity: {},
 }
 

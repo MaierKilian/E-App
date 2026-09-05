@@ -760,6 +760,55 @@ im Schnellstart nicht gefällt, ist es eine Zeile – dann fällt die
 Pflichtangaben – Profilname, Wohnfläche, Personen, Baujahr, Ziele – und passt
 im vollständigen Fragebogen ohne Scrollen auf einen Bildschirm.
 
+### 27. Ziel-Frage: eigene Seite, neues Ziel, und ein Ziel, das etwas bewirkt
+**Kategorie:** Verbesserung · **Bereich:** `StepGoals`, `goals.ts`,
+`sections.ts`, `OnboardingPage`
+**Status:** ✅ Umgesetzt (05.09.).
+
+Kilians Wunsch: „Die Frage nach deinen Zielen verdient eine eigene Seite im
+Fragebogen." Dazu ein neues Ziel „Zählerstände tracken", eine Ziel-abhängige
+Landung nach dem Fragebogen – und: „wie das gerade mit diesen kleinen Buttons
+umgesetzt wird, ist nicht sehr ansprechend."
+
+**Drei Dinge, die dabei zusammenkamen.**
+
+1. **Eigene Seite (Schritt 2).** Die Frage stand am Fuß von „Dein Zuhause",
+   unter Fläche, Personenzahl und Baujahr – sie ist keine Gebäudeangabe. Als
+   fünf kleine Chips nebeneinander sah sie außerdem aus wie eine Nebensache,
+   obwohl sie die einzige Angabe ist, die die Reihenfolge von Messungen und
+   Empfehlungen verschiebt. Sie hat jetzt volle Karten in der Bauart der
+   Modus-Auswahl (`Step0Mode`): Symbol, Titel und **ein Satz, was die Wahl
+   bewirkt** – je Ziel der tatsächliche Effekt aus `GOAL_CATEGORY_BONUS`, nicht
+   eine allgemeine Beschreibung.
+
+2. **Nebenbei behoben: der Schnellstart konnte nie 100 % erreichen.** Die Frage
+   wurde nur im vollständigen Fragebogen *gestellt* (`{detailed && …}` in
+   `Step1Profile`), aber in **beiden** als Pflichtangabe *gezählt* (`field('goals')`
+   im Abschnitt „home", der `quick: true` ist). Ein Schnellstart-Profil trug
+   damit dauerhaft eine offene Angabe, die es nie zu Gesicht bekam. Die neue
+   Seite ist `quick: true` – die Frage wird jetzt gestellt, wo sie gezählt wird.
+
+3. **Das Ziel entscheidet, wo man landet.** Bis dahin endete der Fragebogen für
+   jeden im Messbereich. Jetzt: „Zählerstände verfolgen" → Monitoring, „Neugier
+   / Wissen aufbauen" → Wissensbereich, alles andere → Messungen. Die Zuordnung
+   steht in `onboarding/goals.ts`, `OnboardingPage` kennt keinen Pfad mehr.
+
+**Die Rangfolge, weil die Auswahl mehrfach ist:** Wer „Kosten senken" *und*
+„Zählerstände verfolgen" ankreuzt, kann nicht an zwei Orten landen. Es gewinnt
+das speziellere Ziel – die drei Mess-Ziele führen alle in denselben Bereich, die
+beiden anderen an je genau einen. Es geht dabei nur um den **ersten
+Bildschirm**; jeder Bereich bleibt über die Navigation erreichbar.
+
+Damit die Regel nicht nur im Code steht, zeigt die Seite sie an: Unter den
+Karten läuft eine Zeile mit, die den Bereich nennt, in dem man landen wird, und
+sich beim Antippen sofort ändert. Dasselbe Muster wie bei der PV- und der
+Warmwasser-Frage – eine Angabe, der man ihre Wirkung ansieht.
+
+**Neues Ziel `track_readings`.** In `GOAL_CATEGORY_BONUS` bewusst leer: Das Ziel
+sagt nichts darüber, welches Gewerk den Nutzer interessiert, seine Wirkung liegt
+in der Navigation. Ein Test hält fest, dass jedes Ziel des Typs eine Karte hat
+und auf einen Bereich zeigt, den die Navigation wirklich führt.
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen

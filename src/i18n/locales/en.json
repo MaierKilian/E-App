@@ -1233,6 +1233,7 @@
         "save_costs": "Save costs",
         "reduce_co2": "Reduce CO₂",
         "improve_comfort": "Improve comfort",
+        "track_readings": "Track meter readings",
         "curiosity": "Curiosity / Build knowledge"
       },
       "occupancyOptions": {
@@ -1586,6 +1587,7 @@
     },
     "sectionTitles": {
       "home": "Your home",
+      "goals": "Your goal",
       "rooms": "Rooms",
       "heating": "Heating & hot water",
       "prices": "Prices & costs",
@@ -1651,6 +1653,17 @@
         "renovations": "Renovations",
         "heatGeneratorYears": "Age of the heating system",
         "appliances": "Fridges and freezers"
+      }
+    },
+    "goals": {
+      "subtitle": "What the app sorts measurements and recommendations by — and where you start after the questionnaire. Multiple choices possible.",
+      "destination": "You will start here:",
+      "desc": {
+        "save_costs": "Recommendations are sorted by savings in euros — the biggest first.",
+        "reduce_co2": "Heating and hot water move up: that is where the largest CO₂ lever sits.",
+        "improve_comfort": "Room climate and draughts move up, then the wait for hot water.",
+        "track_readings": "Read electricity, gas, water and heat regularly and watch the trend over months.",
+        "curiosity": "Background on every measurement, glossary and FAQ in the knowledge area."
       }
     }
   },

@@ -13,8 +13,10 @@ import {
   type OnboardingSection,
   type SectionId,
 } from './sections'
+import { destinationFor } from './goals'
 import { Step0Mode } from './steps/Step0Mode'
 import { Step1Profile } from './steps/Step1Profile'
+import { StepGoals } from './steps/StepGoals'
 import { Step3Rooms } from './steps/Step3Rooms'
 import { Step4Heating } from './steps/Step4Heating'
 import { Step6Instruments } from './steps/Step6Instruments'
@@ -47,6 +49,7 @@ const SECTION_BODIES: Record<SectionId, (p: StepContentProps) => ReactNode> = {
   home: ({ data, onChange, detailed }) => (
     <Step1Profile data={data} onChange={onChange} detailed={detailed} />
   ),
+  goals: ({ data, onChange }) => <StepGoals data={data} onChange={onChange} />,
   rooms: ({ data, onChange }) => <Step3Rooms data={data} onChange={onChange} />,
   heating: ({ data, onChange }) => <Step4Heating data={data} onChange={onChange} />,
   prices: ({ data }) => <StepPrices data={data} />,
@@ -203,9 +206,17 @@ export function OnboardingPage() {
     }
   }
 
+  /**
+   * Speichern und in den Bereich springen, den die Ziele nennen.
+   *
+   * Bis zum 05.09.2026 endete der Fragebogen für jeden im Messbereich – auch
+   * für den, der als einziges Ziel „Zählerstände verfolgen" angekreuzt hatte.
+   * Welcher Bereich es ist, entscheidet `destinationFor`; hier steht kein Pfad
+   * mehr.
+   */
   function handleSave() {
     complete()
-    navigate('/measurements')
+    navigate(destinationFor(data.goals))
   }
 
   // Mode-Auswahl: eigener Screen mit eigener Aktionsleiste.

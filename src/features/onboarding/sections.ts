@@ -1,4 +1,4 @@
-import { Home, DoorOpen, Flame, Gauge, Wallet, ClipboardCheck, Refrigerator } from 'lucide-react'
+import { Home, Target, DoorOpen, Flame, Gauge, Wallet, ClipboardCheck, Refrigerator } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import type { OnboardingData } from '@/types'
 
@@ -27,6 +27,7 @@ import type { OnboardingData } from '@/types'
  */
 export type SectionId =
   | 'home'
+  | 'goals'
   | 'rooms'
   | 'heating'
   | 'prices'
@@ -80,7 +81,7 @@ function optional(id: string, answered: (d: OnboardingData) => boolean): Section
  * abgefragt werden.
  *
  * Der Schnellstart ist eine Teilmenge (`quick`), kein eigener Flow: Zuhause,
- * Heizung, Preise, Übersicht.
+ * Ziel, Heizung, Preise, Übersicht.
  *
  * **Entfallen am 04.09.2026: „Gebäudehülle & Modernisierung"** (ehemals
  * Schritt 5 von 8). Der Schritt stellte vier Pflichtfragen – Fensteralter,
@@ -132,8 +133,21 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
       field('livingArea', (d) => d.livingArea > 0),
       field('personsCount', (d) => d.personsCount > 0),
       field('buildingYear', (d) => d.buildingYear > 0),
-      field('goals', (d) => d.goals.length > 0),
     ],
+  },
+  {
+    // Eigene Seite seit dem 05.09.2026, und zwar in **beiden** Wegen. Vorher
+    // stand die Frage am Fuß von „Dein Zuhause" und nur im vollständigen
+    // Fragebogen – als Pflichtangabe gezählt wurde sie trotzdem in beiden.
+    // Ein Schnellstart-Profil konnte 100 % deshalb nie erreichen.
+    //
+    // Seither entscheidet die Antwort außerdem sichtbar etwas: in welchem
+    // Bereich der Fragebogen einen ausspuckt (`goals.ts`).
+    id: 'goals',
+    titleKey: 'onboarding.sectionTitles.goals',
+    icon: Target,
+    quick: true,
+    fields: [field('goals', (d) => d.goals.length > 0)],
   },
   {
     id: 'rooms',

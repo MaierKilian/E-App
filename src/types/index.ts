@@ -6,6 +6,8 @@ export type UserGoal =
   | 'save_costs'
   | 'reduce_co2'
   | 'improve_comfort'
+  /** Zählerstände regelmäßig eintragen – führt nach dem Fragebogen ins Monitoring. */
+  | 'track_readings'
   | 'curiosity'
 
 export type OccupancyStatus = 'tenant' | 'owner'

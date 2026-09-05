@@ -84,7 +84,7 @@ describe('Registry ist widerspruchsfrei', () => {
     // Der Compiler erzwingt über `SectionId`, dass jeder Abschnitt einen Inhalt
     // hat; hier die Gegenrichtung – eine id ohne Registry-Eintrag.
     const ids: SectionId[] = [
-      'home', 'rooms', 'heating', 'prices',
+      'home', 'goals', 'rooms', 'heating', 'prices',
       'appliances', 'equipment', 'review',
     ]
     expect(ONBOARDING_SECTIONS.map((s) => s.id).sort()).toEqual([...ids].sort())
@@ -104,6 +104,20 @@ describe('Registry ist widerspruchsfrei', () => {
     // Sonst hinge der Fortschritt an einer Seite, auf der es nichts zu
     // beantworten gibt.
     expect(ONBOARDING_SECTIONS.find((s) => s.id === 'equipment')!.fields).toEqual([])
+  })
+
+  it('stellt die Ziel-Frage in beiden Wegen, auf eigener Seite', () => {
+    // Sie stand bis zum 05.09.2026 am Fuß von „Dein Zuhause" und nur im
+    // vollständigen Fragebogen – als Pflichtangabe zählte sie trotzdem in
+    // beiden. Ein Schnellstart-Profil konnte 100 % deshalb nie erreichen.
+    const goals = ONBOARDING_SECTIONS.find((s) => s.id === 'goals')!
+    expect(goals.quick).toBe(true)
+    expect(goals.fields.map((f) => f.id)).toEqual(['goals'])
+    expect(sectionsFor('quick').map((s) => s.id)).toContain('goals')
+
+    // „Dein Zuhause" trägt sie nicht mehr.
+    const home = ONBOARDING_SECTIONS.find((s) => s.id === 'home')!
+    expect(home.fields.map((f) => f.id)).not.toContain('goals')
   })
 
   it('hat genau einen Abschluss-Schritt, und zwar als letzten', () => {
