@@ -717,6 +717,49 @@ Postleitzahl. Der Abschnitt hätte dann keine Pflichtangabe mehr – wie „Prei
 Kosten" und seit #23 auch „Ausstattung". Ein Name wie „Standort" wäre dann
 passender als „Standort & Wohnsituation".
 
+### 26. „Dein Zuhause": Gebäudeteil, Zimmerzahl und Etagen
+**Kategorie:** Problem · **Bereich:** `Step1Profile`, `sections.ts`,
+`fieldUsage.ts`, `profileReportData.ts`
+**Status:** ✅ Umgesetzt (05.09.) – zwei Fragen entfernt, eine auf den
+Schnellstart beschränkt.
+
+Kilians Befund: „Ich denke Gebäudeteil kann man entfernen, da derzeit totes Ende
+und kein Mehrwert. Anzahl der Zimmer kann auch weg, da danach ja sowieso
+eingegeben wird welche Zimmer existieren. Anzahl der Etagen kann auch weg, da
+das auch ein totes Ende ist."
+
+**Gebäudeteil und Etagen: bestätigt.** Beide waren *Pflichtangaben* mit je einer
+Lesestelle – einer Zeile im PDF-Steckbrief. Nichts im Code verzweigt danach, ob
+jemand in einer Wohnung oder einem Haus lebt (`'apartment'`/`'house'` kommen
+außerhalb der Auswahl selbst nirgends vor); `floors` wäre für eine
+Hüllflächen-Abschätzung brauchbar gewesen, gelesen hat es dort nie jemand. Beide
+Fragen sind raus.
+
+Die Felder bleiben in `OnboardingData`. Für den Steckbrief gilt dabei dieselbe
+Unterscheidung wie beim Kamin (#19): Beide haben einen Standardwert, der von
+„nie gefragt" nicht zu unterscheiden ist – `'apartment'` und `1`. Deshalb steht
+im Bericht nur noch, was darüber hinausgeht: ein „Haus" und eine Etagenzahl
+größer eins. Beides kann nur ein Bestandsprofil gesagt haben.
+
+**Zimmerzahl: der Befund stimmt, aber nur für den vollständigen Fragebogen.**
+Kilians Begründung – die Räume werden ja gleich danach einzeln erfasst – trifft
+genau dort zu, und dort ist die Frage jetzt weg. Im **Schnellstart** gibt es
+diesen zweiten Schritt aber nicht (Abschnitt „rooms" ist `quick: false`). Dort
+ist die Zimmerzahl die einzige Größenangabe neben der Fläche und die Grundlage
+der Plausibilitätsprüfung „m² je Zimmer" (`effectiveRoomCount` in
+`plausibility.ts`). Sie auch dort zu streichen, hätte diese Prüfung für
+Schnellstart-Profile still abgeschaltet – ohne dass es jemandem aufgefallen
+wäre.
+
+Deshalb: im vollständigen Fragebogen entfernt, im Schnellstart geblieben. Das
+setzt Kilians Begründung um statt nur seinen Satz. Falls ihm die Zimmerzahl auch
+im Schnellstart nicht gefällt, ist es eine Zeile – dann fällt die
+„m² je Zimmer"-Prüfung dort mit weg.
+
+**Was der Schritt dadurch wird:** „Dein Zuhause" trägt jetzt fünf statt sieben
+Pflichtangaben – Profilname, Wohnfläche, Personen, Baujahr, Ziele – und passt
+im vollständigen Fragebogen ohne Scrollen auf einen Bildschirm.
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen

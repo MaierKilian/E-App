@@ -93,10 +93,25 @@ export function buildProfileReportData(
     key ? value(t(`${group}.${key}`)) : null
 
   const building: ProfileRow[] = [
-    [t('onboarding.step8.labels.buildingType'), opt('onboarding.step2', data.buildingType)],
+    // Gebäudeteil wird seit dem 05.09.2026 nicht mehr gefragt. Der
+    // Standardwert ist `'apartment'` – ein „Wohnung" ist also von „nie gefragt"
+    // nicht zu unterscheiden, dieselbe Lage wie beim Kamin. Deshalb bleibt nur
+    // „Haus" stehen: Das kann nur ein Bestandsprofil gesagt haben.
+    ...retired([
+      [
+        t('onboarding.step8.labels.buildingType'),
+        data.buildingType === 'house' ? opt('onboarding.step2', 'house') : null,
+      ],
+    ]),
     [t('onboarding.step8.labels.buildingYear'), year(data.buildingYear)],
     [t('onboarding.step8.labels.livingArea'), quantity(data.livingArea, 'm²', language)],
-    [t('onboarding.step8.labels.floors'), quantity(data.floors, '', language)],
+    // Etagenzahl ebenso – Standardwert 1, also bleibt nur, was darüber liegt.
+    ...retired([
+      [
+        t('onboarding.step8.labels.floors'),
+        data.floors > 1 ? quantity(data.floors, '', language) : null,
+      ],
+    ]),
     // Dämmzustand, Fensteralter und Lüftung werden seit dem Wegfall des
     // Schritts „Gebäudehülle & Modernisierung" nicht mehr erhoben. Sie stehen
     // weiter im Steckbrief, wenn ein Bestandsprofil sie trägt – aber nicht

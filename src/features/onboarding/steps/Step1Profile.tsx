@@ -6,8 +6,6 @@ import {
   Leaf,
   ThermometerSun,
   Sparkles,
-  Building2,
-  Home,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Stepper } from '@/components/ui/Stepper'
@@ -17,7 +15,7 @@ import { Field } from '@/components/ui/Field'
 import { InfoButton } from '@/components/ui/InfoButton'
 import { AvatarPicker } from '@/components/AvatarPicker'
 import { PlausibilityNote } from '../PlausibilityNote'
-import type { OnboardingData, UserGoal, BuildingType } from '@/types'
+import type { OnboardingData, UserGoal } from '@/types'
 
 interface Props {
   data: OnboardingData
@@ -31,12 +29,6 @@ const GOAL_ICONS: Record<UserGoal, LucideIcon> = {
   reduce_co2: Leaf,
   improve_comfort: ThermometerSun,
   curiosity: Sparkles,
-}
-
-const BUILDING_TYPES: BuildingType[] = ['apartment', 'house']
-const BUILDING_ICONS: Record<BuildingType, LucideIcon> = {
-  apartment: Building2,
-  house: Home,
 }
 
 /**
@@ -95,20 +87,6 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
         </Field>
       </div>
 
-      <Field title={t('onboarding.step2.buildingType')}>
-        <div className="flex gap-2">
-          {BUILDING_TYPES.map((type) => (
-            <OptionChip
-              key={type}
-              icon={BUILDING_ICONS[type]}
-              label={t(`onboarding.step2.${type}`)}
-              selected={data.buildingType === type}
-              onClick={() => onChange({ buildingType: type })}
-            />
-          ))}
-        </div>
-      </Field>
-
       <Field
         title={t('onboarding.step2.livingArea')}
         info={t('info.livingArea')}
@@ -151,11 +129,22 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
         <p className="text-xs text-muted">{t('onboarding.step1.personsHint')}</p>
       </div>
 
-      {/* Solange keine Räume angelegt sind, ist die Zimmerzahl die einzige
-          Größenangabe neben der Fläche – und die Grundlage der
-          Plausibilitätsprüfung. Sobald die Raumliste steht, ist sie die
-          genauere Wahrheit und die Zeile verschwindet. */}
-      {data.rooms.length === 0 ? (
+      {/* Die Zimmerzahl steht nur noch im Schnellstart. Der vollständige
+          Fragebogen fragt zwei Schritte später ab, welche Räume es gibt – dort
+          zweimal nach derselben Sache zu fragen, war die Redundanz, die Kilian
+          am 05.09.2026 aufgefallen ist.
+
+          Im Schnellstart gibt es diesen zweiten Schritt nicht (Abschnitt
+          „rooms" ist `quick: false`). Dann ist die Zimmerzahl die einzige
+          Größenangabe neben der Fläche und die Grundlage der
+          Plausibilitätsprüfung „m² je Zimmer" (`effectiveRoomCount` in
+          `plausibility.ts`). Sie hier ebenfalls zu streichen, hätte diese
+          Prüfung für Schnellstart-Profile still abgeschaltet.
+
+          Sobald doch Räume angelegt sind – etwa weil ein Schnellstart-Profil
+          später ergänzt wurde –, ist die Liste die genauere Wahrheit und die
+          Zeile verschwindet. */}
+      {!detailed && data.rooms.length === 0 ? (
         <div className="flex items-center justify-between gap-4">
           <label className="text-sm font-semibold text-foreground">
             {t('onboarding.step1.rooms')}
@@ -167,13 +156,13 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
             onChange={(v) => onChange({ roomsCount: v })}
           />
         </div>
-      ) : (
+      ) : !detailed ? (
         <p className="text-xs text-muted">
           {t('onboarding.step1.roomsFromList', {
             count: data.rooms.reduce((sum, r) => sum + Math.max(1, r.count ?? 1), 0),
           })}
         </p>
-      )}
+      ) : null}
 
       <Field
         title={t('onboarding.step2.buildingYear')}
@@ -193,13 +182,6 @@ export function Step1Profile({ data, onChange, detailed = false }: Props) {
 
       {detailed && (
         <>
-          <div className="flex items-center justify-between gap-4">
-            <label className="text-sm font-semibold text-foreground">
-              {t('onboarding.step2.floors')}
-            </label>
-            <Stepper value={data.floors} min={1} max={6} onChange={(v) => onChange({ floors: v })} />
-          </div>
-
           <Field
             title={t('onboarding.step1.goals')}
             info={t('info.goals')}

@@ -111,6 +111,14 @@ function optional(id: string, answered: (d: OnboardingData) => boolean): Section
  * `postalCode` und `locationMode` bleiben in `OnboardingData` – Bestandsprofile
  * tragen echte Werte, und wenn die Klimaregion je kommt, ist die Angabe schon
  * da. Der Code des Schritts liegt unter `archiv/onboarding-standort/`.
+ *
+ * **Entfallen am 05.09.2026 aus „Dein Zuhause": Gebäudeteil und Etagenzahl.**
+ * Beide waren Pflichtangaben mit je einer Lesestelle – einer Zeile im
+ * PDF-Steckbrief. Keine Messung, kein Tipp und keine Rechnung hat je
+ * unterschieden, ob jemand in einer Wohnung oder einem Haus lebt oder über wie
+ * viele Etagen. Die Zimmerzahl steht seither nur noch im Schnellstart; im
+ * vollständigen Fragebogen fragt der Räume-Schritt zwei Seiten später dasselbe
+ * genauer.
  */
 export const ONBOARDING_SECTIONS: OnboardingSection[] = [
   {
@@ -121,11 +129,9 @@ export const ONBOARDING_SECTIONS: OnboardingSection[] = [
     fields: [
       optional('profileImage', (d) => Boolean((d.profileImage ?? '').trim())),
       field('profileName', (d) => (d.profileName ?? '').trim().length > 0),
-      field('buildingType', (d) => Boolean(d.buildingType)),
       field('livingArea', (d) => d.livingArea > 0),
       field('personsCount', (d) => d.personsCount > 0),
       field('buildingYear', (d) => d.buildingYear > 0),
-      field('floors', (d) => d.floors > 0),
       field('goals', (d) => d.goals.length > 0),
     ],
   },

@@ -1461,11 +1461,9 @@
     "step2": {
       "title": "Basisdaten",
       "buildingYear": "Baujahr des Gebäudes",
-      "buildingType": "Gebäudeteil",
       "apartment": "Wohnung",
       "house": "Haus",
       "livingArea": "Wohnfläche",
-      "floors": "Anzahl der Etagen",
       "windowAge": "Ungefähres Alter der Fenster",
       "windowAgeOptions": {
         "before_1980": "Vor 1980",

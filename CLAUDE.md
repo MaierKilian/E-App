@@ -71,6 +71,12 @@ deployten App dazu.
   „Ausstattung", statt unter der Messgeräte-Übersicht am Seitenende. Damit hat
   „Ausstattung" keine Frage mehr und ist – wie „Preise & Kosten" – eine reine
   Auskunft.
+- Schritt „Dein Zuhause" entschlackt (05.09.): Gebäudeteil (Wohnung/Haus) und
+  Etagenzahl entfernt – beides Pflichtangaben, deren gesamte Wirkung je eine
+  Zeile im PDF-Steckbrief war. Die Zimmerzahl steht nur noch im Schnellstart;
+  im vollständigen Fragebogen erfasst der Räume-Schritt zwei Seiten später
+  dasselbe genauer. Im Schnellstart bleibt sie, weil es dort keinen
+  Räume-Schritt gibt und sie die Plausibilitätsprüfung „m² je Zimmer" trägt.
 - Schritt „Standort & Wohnsituation" ganz entfallen (05.09.). Erst fiel die
   Frage nach Mieter oder Eigentümer – sie hätte genau einen Tipp gefiltert
   (Alter des Kessels), und der ist für Mieter das Argument gegenüber der

@@ -226,9 +226,18 @@ describe('Kein Feld ist verlorengegangen', () => {
   // – mit einer einzigen Lesestelle, zwei Ziffern im PDF-Steckbrief. Ein
   // eigener Schritt dafür trug sich nicht. Auch sie ist nicht verlorengegangen,
   // sondern abgeschafft.
+  //
+  // Und seit dem 05.09.2026 fehlen `buildingType` und `floors`: Wohnung oder
+  // Haus und die Etagenzahl waren Pflichtangaben mit je einer Lesestelle, einer
+  // Zeile im PDF-Steckbrief. Keine Messung, kein Tipp und keine Rechnung hat je
+  // danach unterschieden. Auch sie sind nicht verlorengegangen, sondern
+  // abgeschafft.
+  //
+  // `roomsCount` stand hier nie: Sie ist die Schnellstart-Näherung für die
+  // Raumliste, kein eigener Abschnitts-Eintrag.
   const ERHOBEN = [
     'profileName', 'profileImage', 'personsCount', 'goals',
-    'buildingYear', 'buildingType', 'livingArea', 'floors',
+    'buildingYear', 'livingArea',
     'rooms', 'heatTransfer', 'roomAreas',
     'heatGenerators', 'hotWaterType',
   ]

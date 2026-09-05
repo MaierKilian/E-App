@@ -155,19 +155,15 @@ export function Step8Review({ data }: Props) {
         )}
       </ReviewSection>
 
+      {/* Gebäudeteil und Etagenzahl werden seit dem 05.09.2026 nicht mehr
+          gefragt (beide ohne Wirkung außerhalb des Steckbriefs) und stehen
+          deshalb auch nicht mehr in der Zusammenfassung. */}
       <ReviewSection title={t('onboarding.step8.sections.building')}>
         <ReviewRow label={t('onboarding.step8.labels.buildingYear')} value={data.buildingYear} />
-        <ReviewRow
-          label={t('onboarding.step8.labels.buildingType')}
-          value={t(`onboarding.step2.${data.buildingType}`)}
-        />
         <ReviewRow
           label={t('onboarding.step8.labels.livingArea')}
           value={`${data.livingArea} m²`}
         />
-        {isDetailed && (
-          <ReviewRow label={t('onboarding.step8.labels.floors')} value={data.floors} />
-        )}
       </ReviewSection>
 
       {data.rooms.length > 0 && (

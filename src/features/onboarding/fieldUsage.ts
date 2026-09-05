@@ -63,7 +63,7 @@ export const FIELD_USAGE = {
   roomsCount: {
     consumers: [],
     reason:
-      'Zimmerzahl als schnelle Angabe im Schnellstart. Gerechnet wird mit den einzeln angelegten Räumen (`rooms`), nicht mit dieser Zahl.',
+      'Zimmerzahl des Schnellstarts – dort die einzige Größenangabe neben der Fläche und damit die Grundlage der Plausibilitätsprüfung „m² je Zimmer". Das ist kein Abnehmer im Sinne dieser Liste: Der Hinweis bleibt im Fragebogen. Der vollständige Fragebogen fragt sie seit dem 05.09.2026 nicht mehr – dort ist die Raumliste die genauere Wahrheit.',
     labelKey: 'onboarding.step8.labels.roomsCount',
   },
   buildingYear: {
@@ -74,8 +74,7 @@ export const FIELD_USAGE = {
   buildingType: {
     consumers: ['report'],
     reason:
-      'Wohnung oder Haus. Der Steckbrief im Bericht nennt den Gebäudetyp – ohne ihn sind Verbrauchszahlen je m² nicht einzuordnen.',
-    labelKey: 'onboarding.step8.labels.buildingType',
+      'Wohnung oder Haus. Wird nicht mehr gefragt – keine Messung, kein Tipp und keine Rechnung hat je danach unterschieden, die gesamte Wirkung war eine Zeile im Steckbrief. Der Standardwert ist „Wohnung", deshalb bleibt dort nur das „Haus" eines Bestandsprofils stehen.',
   },
   livingArea: {
     consumers: ['measurements', 'monitoring'],
@@ -137,8 +136,7 @@ export const FIELD_USAGE = {
   floors: {
     consumers: ['report'],
     reason:
-      'Geschosszahl, im Steckbrief des Berichts. Für die Hüllflächen-Abschätzung wäre sie zusätzlich brauchbar, dort wird sie noch nicht gelesen.',
-    labelKey: 'onboarding.step8.labels.floors',
+      'Geschosszahl. Wird nicht mehr gefragt – für die Hüllflächen-Abschätzung wäre sie brauchbar gewesen, gelesen hat sie dort nie jemand. Der Standardwert ist 1, deshalb bleibt im Steckbrief nur eine höhere Angabe eines Bestandsprofils.',
   },
   windowAge: {
     consumers: ['report'],
