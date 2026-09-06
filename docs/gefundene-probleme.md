@@ -5,6 +5,11 @@
 > viel wie möglich umgesetzt (Branch `claude/beheben-gefundene-probleme`) –
 > Status je Punkt unten. Offen blieb nur Punkt 9, der eine eigene
 > UX-Entscheidung braucht.
+>
+> **Nachtrag 06.09.2026:** Die Punkte **#38–#50** haben eine andere Herkunft –
+> sie stammen nicht aus einem Live-Test, sondern aus einer Durchsicht des
+> gesamten Empfehlungs-Katalogs auf Kilians Frage hin. Eigener Abschnitt
+> „Durchsicht des Empfehlungs-Katalogs", nur gesammelt, nichts geändert.
 
 ## Hoch – rechtlich/funktional kritisch
 
@@ -1476,6 +1481,334 @@ Raumklima und Möbelabstand. Die Option, die sie behebt, ist jetzt da; sie dort
 zu setzen ist eine eigene Änderung an drei Checks, die niemand gemeldet hat –
 siehe „Offene Fragen".
 
+---
+
+## Durchsicht des Empfehlungs-Katalogs (06.09.2026)
+
+> Andere Herkunft als die Punkte davor: nicht aus einem Live-Test, sondern aus
+> Kilians Frage „Machen die Empfehlungen alle Sinn? Ist das schlüssig und
+> vertretbar?". Geprüft wurden alle 19 Tipp-Texte (`tips.items.*` in beiden
+> Sprachen), ihre Auslösebedingungen in `buildTips.ts` und die Rechenwege
+> dahinter. **Kein Tipp ist fachlich falsch** – die Euro-Disziplin
+> (`isMeasuredSaving` + `MIN_DISPLAY_EUR`), der Raum- und Gerätebezug und die
+> offen markierten `pending`-Schwellen sind strenger als üblich. Die folgenden
+> Punkte sind Widersprüche zur eigenen Messung, fehlende Vorbehalte und zwei
+> Textfehler. Alles nur gesammelt, nichts geändert.
+
+### 38. Feuchte-Tipps ignorieren das raumtypabhängige Band
+**Kategorie:** Bug · **Bereich:** `buildTips.ts:156-157`, `roomClimate.ts`
+**Status:** 🔍 Nur gesammelt.
+
+`HUMID_MAX = 60` und `HUMID_MIN = 40` stehen als feste Zahlen in `buildTips.ts`.
+Der Raumklima-Check kennt aber raumtypabhängige Bänder (`HUMIDITY_BANDS`: Keller
+und Waschküche 50–65 %) und **speichert das angewandte Band als `humMin`/`humMax`
+im Ergebnis** – `RoomTemperatureRun.tsx` begründet das ausdrücklich damit, dass
+eine nachgelagerte Ansicht „einen Keller sonst nicht als Keller bewerten" könne.
+`buildTips` liest die beiden Felder nicht.
+
+Folge, in beide Richtungen:
+
+- **Keller mit 62 % rF:** Der Check bewertet ihn als unauffällig, der Tipp sagt
+  „62 % Luftfeuchte – zu hoch". Ergebnis-Seite und Empfehlung widersprechen sich.
+- **Keller mit 45 % rF:** Der Check sagt „zu trocken" (Bandgrenze 50), der Tipp
+  schweigt (Grenze 40). Ein Befund ohne Empfehlung.
+
+Das ist derselbe Fehler, den derselbe Code drei Zeilen darüber bei der
+Temperatur ausdrücklich vermeidet: „Das Komfortband ist raumtypabhängig und
+steckt im Ergebnis (bandMin/bandMax) – feste Werte hier hätten z. B. ein
+Schlafzimmer bei 17 °C fälschlich als ‚zu kalt' gemeldet."
+
+**(b) Der Lüftungsrat ist für Keller sachlich verkehrt.** `humidity_high` sagt
+„Lüfte zwei- bis dreimal am Tag für 5 Minuten mit weit offenem Fenster". Für
+Wohnräume im Winter richtig. Im Keller im Sommer ist es der klassische Fehler:
+Warme Außenluft kondensiert an kalten Kellerwänden, Lüften **erhöht** die
+Feuchte. Der Text ist raumtyp-blind formuliert – obwohl die App für genau diesen
+Fall bereits eine Taupunktrechnung besitzt (`dewPoint.ts`, aus der
+Kellerklima-Bewertung).
+
+**Zu klären beim Beheben:** (a) ist mechanisch – `humMin`/`humMax` aus den
+Details lesen, mit Rückfall auf `DEFAULT_HUMIDITY_BAND` für Altergebnisse,
+analog zu `bandOf()`. (b) braucht eine Entscheidung: eigener Textbaustein für
+Keller/Waschküche (Lüften in den kühlen Stunden, im Sommer eher nicht) oder ein
+Verweis auf den Taupunkt statt eines Prozentwerts.
+
+### 39. Raumtemperatur-Tipp: Grad und Prozent können aus verschiedenen Räumen stammen
+**Kategorie:** Bug · **Bereich:** `buildTips.ts:640` vs. `645-647`
+**Status:** 🔍 Nur gesammelt.
+
+Der Tipp bildet zwei **unabhängige** Extrema über dieselbe Raummenge:
+`warmest` ist das Maximum der Temperatur, `warmPercent` das Maximum von
+`savingPercent`. Weil das Komfortband je Raumtyp verschieden ist, sind das nicht
+zwingend dieselben Räume:
+
+| Raum | gemessen | Band max | ΔT |
+|---|---|---|---|
+| Wohnzimmer | 24 °C | 22 °C | 2 K |
+| Schlafzimmer | 21 °C | 18 °C | 3 K |
+
+Der Tipp nennt dann „Wohnzimmer hat 24 °C" und trägt daneben die Prozentzahl des
+Schlafzimmers.
+
+Es ist exakt der Fehlertyp, der beim Warmwasser-Tipp bereits behoben und mit
+einem Test festgehalten wurde (`buildTips.test.ts:170`, „nimmt Wartezeit und
+Menge des Warmwasser-Tipps aus derselben Entnahmestelle"). Der Kommentar dort
+beschreibt die Wirkung wörtlich: „Zahlen, die zusammen nie gemessen wurden."
+
+**Zu klären beim Beheben:** Naheliegend ist, den Raum über `savingPercent` zu
+wählen statt über die absolute Temperatur – das ist der Raum mit dem größten
+Hebel, und der Tipp will zum Handeln bewegen. Dann stimmen Raumname, Temperatur
+und Prozentwert wieder aus einer Quelle.
+
+### 40. Kühlschrank-Tipp rät genau an die Grenze zum Gegentipp
+**Kategorie:** Bug · **Bereich:** `tips.items.fridge`, `buildTips.ts:160-161`
+**Status:** 🔍 Nur gesammelt.
+
+„Dreh den Regler eine Stufe zurück – **7 °C reichen**" rät auf exakt den Wert,
+ab dem der gegenteilige Tipp greift: `FRIDGE_WARM_C = 7`, und `fridge_warm` sagt
+dann „{{temp}} °C ist **zu warm für sichere Lagerung**". Wer dem ersten Tipp
+folgt und bei 7,3 °C landet, bekommt beim nächsten Messen die umgekehrte
+Empfehlung.
+
+Der zweite Tipp nennt selbst das richtige Ziel: „bis du bei 5–7 °C liegst". Der
+erste sollte dieselbe Spanne nennen (oder deren Mitte), statt der Obergrenze.
+Hinzu kommt, dass 7 °C auch lebensmittelhygienisch der obere Rand ist – aktiv
+dorthin zu raten ist die unglücklichste Wahl innerhalb des eigenen guten Bandes.
+
+Die Rechnung selbst ist konsistent: `REFERENCE_TEMP = 7` in `fridge.ts`, und der
+Tipp löst bei `< GOOD_MIN` aus. Es geht allein um den Zielwert im Text – und
+darum, dass `savingPct` bei einem Ziel von 6 °C entsprechend kleiner ausfiele.
+
+**Zu klären beim Beheben:** Ob nur der Text auf „5–7 °C" umgestellt wird oder
+auch `REFERENCE_TEMP` auf die Bandmitte rutscht. Das zweite ändert die
+ausgewiesene Ersparnis und damit gespeicherte Ergebnisse – die bleiben lesbar,
+zeigen aber weiter den alten Prozentwert.
+
+### 41. Englische Kühlschrank-Titel sagen das Gegenteil ihres eigenen Textes
+**Kategorie:** Bug · **Bereich:** `en.json`, `tips.items.fridge` / `fridge_warm`
+**Status:** 🔍 Nur gesammelt.
+
+| Schlüssel | Titel (EN) | Text (EN) |
+|---|---|---|
+| `fridge` | „Turn the fridge **up**" | „Turn the dial **down** one notch" |
+| `fridge_warm` | „Turn the fridge **down**" | „Turn the dial **up** one notch" |
+
+„Turn the fridge up" liest sich im Englischen als *kälter stellen* – der Titel
+sagt also das Gegenteil dessen, was zwei Zeilen darunter steht, und beide Tipps
+sind gleichermaßen betroffen. Die deutschen Titel („wärmer stellen" / „kälter
+stellen") sind eindeutig.
+
+Dazu ein sichtbarer Tippfehler im selben Eintrag: „7 °C is plenty,
+and**each** degree warmer" – das Leerzeichen fehlt.
+
+Der übrige Abgleich beider Sprachfassungen ist sauber: identische Schlüsselmenge
+(alle `reasonNoRoom`, alle Plural-Varianten), identische Zahlenwerte und
+Platzhalter, keine fehlenden Vorbehalte auf einer Seite.
+
+### 42. LED-Tipp nennt zwei verschiedene Preise auf derselben Karte
+**Kategorie:** Bug · **Bereich:** `buildTips.ts:461`, `tips.items.lighting`
+**Status:** 🔍 Nur gesammelt.
+
+Der Text sagt „eine Ersatz-LED kostet **rund 3 €**". Die Aufwandszeile derselben
+Karte entsteht aus `costEur: 25` und zeigt „**ab 25 €**". Beides steht
+gleichzeitig sichtbar.
+
+Beide Zahlen sind für sich vertretbar – 3 € je Lampe, 25 € für die Ausstattung
+mehrerer Räume –, aber unerklärt nebeneinander wirken sie wie ein Fehler. Die
+€-Angaben der App sind sonst durchgehend so gebaut, dass sie sich gegenseitig
+stützen.
+
+**Nebenbefund im selben Tipp:** „spart das im ersten Jahr wieder ein" gilt nur
+bei nennenswerter Brenndauer. Eine selten genutzte Kellerlampe amortisiert eine
+3-€-LED nicht in einem Jahr. Die Mehrraum-Variante (`reason_other`) mildert das
+mit „Fang dort an, wo täglich am längsten Licht brennt" – die Einzelraum-Variante
+(`reason_one`) hat diesen Halbsatz nicht und behauptet die Amortisation pauschal.
+
+### 43. Verbrauchstrend ohne Witterungsvorbehalt
+**Kategorie:** Problem · **Bereich:** `buildTips.ts:133, 746-788`,
+`tips.items.consumption_up`
+**Status:** 🔍 Nur gesammelt.
+
+Der Tipp sagt: „Das ist gemessen, nicht geschätzt. Geh der Ursache nach, bevor
+sie sich über ein weiteres Jahr summiert." Für **Strom** ist das uneingeschränkt
+richtig und der am besten belegte Befund der ganzen Liste.
+
+Für **Gas, Öl, Pellets und Wärmepumpe** fehlt der entscheidende Vorbehalt: Ein
+Jahr kann schlicht kälter gewesen sein. Der Satz „gemessen, nicht geschätzt"
+stimmt für die Mehrmenge, wird vom Nutzer aber auf die *Ursache* bezogen – und
+die ist bei Wärmeträgern ohne Gradtagbereinigung offen.
+
+Verschärfend: `CONSUMPTION_RISE_MIN = 0.1` liegt in derselben Größenordnung, in
+der Heizjahre allein witterungsbedingt auseinanderliegen. Der Tipp feuert bei
+Wärmeträgern also regelmäßig auf etwas, das keine Ursache im Haushalt hat. Die
+genaue Schwankungsbreite wäre an DWD-Gradtagzahlen zu belegen, nicht zu schätzen.
+
+Die App weiß um die Lücke – das Heizperioden-Band aus #24 ordnet genau das ein,
+und die Gradtagbereinigung steht dort als offener Punkt. Der Tipp erwähnt sie
+mit keinem Wort.
+
+**Zu klären beim Beheben:** Ohne DWD-Daten (siehe #24) geht kein rechnerischer
+Ausgleich. Möglich wäre aber sofort ein eigener Textbaustein für Wärmeträger:
+derselbe Befund, ergänzt um „ein kälteres Jahr erklärt einen Teil davon" – und
+gegebenenfalls eine höhere Auslöseschwelle als bei Strom.
+
+### 44. Standby trägt den einzigen Euro-Betrag – und ist am schwächsten abgesichert
+**Kategorie:** Problem · **Bereich:** `buildTips.ts:425-443`, `standby.ts`
+**Status:** 🔍 Nur gesammelt.
+
+Nach der Umstellung vom 05.09. ist Standby praktisch der einzige Tipp, der noch
+einen Euro-Betrag zeigt (der Gefrierschrank nur noch aus Altergebnissen). Drei
+Dinge sprechen dagegen, ausgerechnet ihn zu beziffern:
+
+1. **Die Rechnung unterstellt 24 h/Tag Standby.** Die Moduldoku von `standby.ts`
+   sagt das selbst: „durchgängig 24 h/Tag Standby angenommen … bewusste
+   Näherungen zur Veranschaulichung, keine exakte Abrechnung." Das ist eine
+   angenommene Nutzungshäufigkeit – genau die Größe, deren Vorkommen
+   `isMeasuredSaving` zum Ausschlusskriterium erklärt („Sobald eine
+   Nutzungshäufigkeit oder ein Verbrauch geschätzt wird, entfällt der Betrag").
+   Der Check setzt trotzdem kein `savingEstimated`.
+2. **`avoidableCost` unterstellt vollständige Abschaltung.** Bei medium/high
+   werden die kompletten Jahreskosten als vermeidbar ausgewiesen. Für Fernseher
+   und Konsole trifft das zu, für Router, Set-Top-Box oder ein Gerät mit Uhr
+   nicht – und der Tipptext („Häng die Geräte an eine Steckdosenleiste") nimmt
+   keinen davon aus.
+3. **Der Tipp prüft `isMeasuredSaving` nicht.** Der Gefrierschrank-Tipp
+   (`:532`) tut es, Standby nicht – er nimmt den Rohwert aus `savingForId`.
+   Heute ohne Wirkung, weil kein Standby-Ergebnis `savingEstimated` trägt; es
+   ist aber genau der Riegel, den `impact.ts` als „Riegel gegen Geister-Beträge"
+   beschreibt.
+
+Dazu kommt, was CLAUDE.md ohnehin vermerkt: Die Auslöseschwelle steht auf
+`pending` („Ohne Beleg"). Von den drei unbelegten Schwellen (Standby, Grundlast,
+Warmwasser-Wartezeit) trägt damit ausgerechnet die eine einen Euro-Betrag.
+
+**Nebenbefund:** Wegen `avoidable = rating === 'good' ? 0 : cost` springt der
+Betrag an der Schwelle unstetig – 5,0 W ergibt 0 €, 5,1 W die vollen
+Jahreskosten von rund 45 kWh.
+
+### 45. PV-Tipp rät zu Dingen, die die App nicht geprüft hat
+**Kategorie:** Problem · **Bereich:** `buildTips.ts:824-832`,
+`tips.items.pv_self_consumption`
+**Status:** 🔍 Nur gesammelt.
+
+Der Grundgedanke stimmt und ist gut belegt: Eigenverbrauch ist den Bezugspreis
+wert, Einspeisung nur die Vergütung. Drei der genannten Maßnahmen stehen aber
+ohne Prüfung da:
+
+- **„heize Warmwasser um die Mittagszeit auf"** gilt nur bei elektrischer
+  Warmwasserbereitung oder Wärmepumpe. Bei einem Gaskessel mit Speicher bringt
+  Mittagssonne dafür nichts. Die App **kennt** `hotWaterType` – ausgerechnet das
+  Feld, das laut offener Frage zu #36 gerade keinen funktionalen Abnehmer mehr
+  hat. Hier wäre einer, und ein sachlich zwingender.
+- **„lade E-Auto"** spricht etwas an, das der Fragebogen nie erhebt.
+- **Volleinspeisung** ist nicht ausgenommen. Wer nach § 21 EEG volleinspeist,
+  soll und darf den Strom nicht selbst verbrauchen – für ihn ist der ganze Tipp
+  verkehrt. `hasPV` kennt nur ja/nein/geplant, die Betriebsart nicht.
+
+**Zu klären beim Beheben:** Der Warmwasser-Satz ließe sich sofort an
+`hotWaterType` hängen (und gäbe der Frage damit ihre Aufgabe zurück). Für
+Volleinspeisung wäre entweder eine neue Fragebogen-Antwort nötig oder ein
+Halbsatz im Tipp („sofern du Überschuss einspeist") – das zweite ist billiger
+und ehrlich.
+
+### 46. Duschkopf-Tipp: Werbeaussage und fehlender Anlagenvorbehalt
+**Kategorie:** Problem · **Bereich:** `tips.items.showerhead`
+**Status:** 🔍 Nur gesammelt.
+
+„**gleiches Duschgefühl**" ist eine Produktbehauptung, die die App nicht
+einlösen kann – sie hängt am Modell und am Leitungsdruck. Sie steht zudem quer
+zu der Vorsicht, mit der #16 die Kaufempfehlung aus den Duschkopf-Ergebnistexten
+genommen und darauf hingewiesen hat, dass „Eco"/„sparsam" keine geschützten
+Begriffe sind.
+
+Fachlich fehlt ein Vorbehalt: An **drucklosen (offenen) Warmwasserspeichern**
+darf der Auslauf nicht durch einen Durchflussbegrenzer gedrosselt werden. Bei
+hydraulisch geregelten Durchlauferhitzern verschiebt weniger Durchfluss die
+Auslauftemperatur. Beides ist kein Ausschluss, aber ein Satz wert, bevor jemand
+20 € ausgibt.
+
+Der Auslöser selbst ist sauber: `showerFlow > GOOD_MAX` (9 L/min), Zielwert
+`EFFICIENT_FLOW_LPM = 8` – Text und Konstante stimmen überein.
+
+### 47. Zugluft-Tipp: kein Bezug zur Lüftung, und er nennt den falschen Raum
+**Kategorie:** Problem (+ kleiner Bug) · **Bereich:** `buildTips.ts:715-726`,
+`tips.items.draft`
+**Status:** 🔍 Nur gesammelt.
+
+**(a) Kein Querbezug zur Feuchte.** „Selbstklebendes Dichtungsband … abziehen,
+andrücken, fertig" steht ohne jeden Hinweis darauf, dass Abdichten den
+Luftwechsel senkt. Im selben Raum kann gleichzeitig „Gegen Feuchte lüften"
+(#38) stehen – die beiden Tipps kennen einander nicht. Bei einem Fenster mit
+intakter Rahmendichtung ist außerdem nicht Band die Lösung, sondern das
+Nachstellen der Beschläge.
+
+**(b) `drafty[0]` statt des schlimmsten Raums.** Zeile 724 nimmt das
+**zuerst gemessene** zugige Zimmer, nicht das zugigste. Alle anderen Raum-Tipps
+nehmen konsequent das Extremum (`warmest`, `coldest`, `wettest`, `driest`). Bei
+drei zugigen Räumen benennt der Tipp damit einen beliebigen.
+
+### 48. „Luft ist zu trocken" ab 40 % – auf einer Schwelle ohne Beleg
+**Kategorie:** Verbesserung · **Bereich:** `tips.items.humidity_low`
+**Status:** 🔍 Nur gesammelt.
+
+Der Tipp meldet ab unter 40 % rF „sehr trocken, **das reizt die Atemwege**" –
+eine Gesundheitsaussage auf einem Wert, der im Winter in geheizten Wohnungen der
+Normalfall ist. Bei kalter Außenluft lässt sich ohne Befeuchtung kaum mehr
+erreichen; der Rat „kürzer lüften und nicht überheizen" ist zwar physikalisch
+richtig, führt aber selten unter die Schwelle zurück.
+
+Die Empfehlung ist damit die einzige der Liste, die einen Zustand beanstandet,
+den der Nutzer im Winter kaum abstellen kann – und sie tut es in
+gesundheitlicher Sprache.
+
+**Zu klären beim Beheben:** Entweder die Untergrenze für Wohnräume in der
+Heizzeit absenken, oder den Text entschärfen (Hinweis statt Beanstandung: „im
+Winter normal, unangenehm wird es erst darunter"). Beides betrifft
+`DEFAULT_HUMIDITY_BAND` bzw. nur den Tipptext – zu entscheiden.
+
+### 49. Grundlast und Standby werden nie miteinander verrechnet
+**Kategorie:** Verbesserung · **Bereich:** `buildTips.ts:544`
+**Status:** 🔍 Nur gesammelt.
+
+Der Grundlast-Tipp verschwindet, sobald **irgendein** Standby-Ergebnis existiert
+(`!results['standby']`). Das ist bewusst so gebaut und getestet
+(`buildTips.test.ts:112`, „lässt den Grundlast-Tipp weg, sobald der
+Standby-Check erledigt ist") – der Tipp versteht sich als Wegweiser, und der ist
+nach dem Standby-Check erfüllt.
+
+Fachlich bleibt trotzdem eine Lücke: Der Standby-Check **erklärt** die Grundlast
+in aller Regel nicht. Die wird von Kühlgeräten, Heizungspumpe, Router und
+Lüftung getragen, nicht von Bereitschaftsschaltungen. Bei 250 W Grundlast und
+18 W gefundenem Standby bleiben 232 W unerklärt – und der Hinweis darauf ist
+weg, weil formal „gemessen" wurde.
+
+Die App hat beide Zahlen und vergleicht sie an keiner Stelle. Der eigentliche
+Erkenntnisgewinn läge genau dort: „Von deinen 250 W hast du 18 W gefunden – die
+übrigen 232 W ziehen woanders." Das ist zugleich der Weg zu den Verdächtigen,
+die die App ohnehin kennt (Kühlgeräte aus dem Fragebogen, PV-Wechselrichter,
+Heizungspumpe).
+
+### 50. Schwellen in `buildTips.ts` doppelt gepflegt
+**Kategorie:** Problem · **Bereich:** `buildTips.ts:155-161`
+**Status:** 🔍 Nur gesammelt.
+
+Vier Zahlen stehen dort ein zweites Mal, statt importiert zu werden:
+
+| in `buildTips.ts` | Original |
+|---|---|
+| `FRIDGE_COLD_C = 5` | `GOOD_MIN` in `fridge.ts` |
+| `FRIDGE_WARM_C = 7` | `GOOD_MAX` in `fridge.ts` |
+| `HUMID_MIN = 40` | `DEFAULT_HUMIDITY_BAND.min` |
+| `HUMID_MAX = 60` | `DEFAULT_HUMIDITY_BAND.max` |
+
+Der Duschkopf-Tipp macht es in derselben Datei richtig:
+`import { GOOD_MAX as SHOWER_GOOD_MAX }`. Auch die Wissens-Tabellen
+(`measurementThresholds.ts`) halten die Regel ein und enthalten keine einzige
+Grenze als Zahl.
+
+Es ist die Ursache hinter #38 und ein Risiko für #40: Wer `GOOD_MAX` im
+Kühlschrank ändert, ändert die Empfehlung nicht mit – der Check bewertete dann
+anders, als der Tipp rät.
+
 ## Cookie-Banner & Rechtsseiten
 
 ### 2. Wiedereinstieg in die Cookie-Einstellungen
@@ -1669,3 +2002,39 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   eigenen, alten Stand (z. B. 00:01,5, während im Feld 21 s steht). Der
   Wartezeit-Check verhält sich genauso – soll das Feld die Uhr zurücksetzen,
   oder bleibt die Uhr das Protokoll dessen, was wirklich lief?
+
+**Aus der Durchsicht des Empfehlungs-Katalogs (#38–#50):**
+
+Sechs der dreizehn Punkte sind Bugs, die ohne Entscheidung zu beheben wären
+(#38a, #39, #41, #42, #47b, #50). Die übrigen brauchen eine Festlegung:
+
+- **Bei #45 – und damit zugleich bei #36:** Der PV-Tipp rät „heize Warmwasser um
+  die Mittagszeit auf", was nur bei elektrischer Bereitung oder Wärmepumpe
+  stimmt. Damit gibt es einen **sachlich zwingenden Abnehmer für
+  `hotWaterType`** – die Frage, die oben als abnehmerlos zur Streichung steht.
+  Das ändert die Lage bei #36: Statt zu entscheiden, ob die Frage entfällt,
+  wäre sie hier anzuschließen. Anders als der vorgeschlagene „separates
+  System"-Tipp ist dafür nichts neu zu belegen – es geht nur darum, einen Satz
+  wegzulassen, wo er nicht zutrifft.
+- **Bei #40:** Nur den Text auf „5–7 °C" umstellen, oder auch `REFERENCE_TEMP`
+  auf die Bandmitte ziehen? Das zweite verkleinert die ausgewiesene Ersparnis
+  und lässt Altergebnisse mit dem alten Prozentwert stehen.
+- **Bei #43:** Eigener Textbaustein für Wärmeträger („ein kälteres Jahr erklärt
+  einen Teil davon") und eine höhere Auslöseschwelle als bei Strom? Die
+  rechnerische Bereinigung bleibt an #24 gebunden, der Vorbehalt im Text nicht.
+- **Bei #44:** Soll der Standby-Tipp seinen Euro-Betrag behalten? Er ist nach
+  dem 05.09. praktisch der letzte der App – und beruht auf einer angenommenen
+  24-h-Nutzung, also genau der Größe, die `isMeasuredSaving` sonst ausschließt.
+  Drei Wege: Betrag streichen (dann trägt der Tipp die gemessenen Watt),
+  `savingEstimated` setzen (dann fällt er über die bestehende Regel), oder die
+  Annahme im Text offenlegen.
+- **Bei #48:** Untergrenze der Luftfeuchte für Wohnräume in der Heizzeit senken,
+  oder den Text von einer Beanstandung zu einem Hinweis abschwächen?
+- **Bei #49:** Soll die App Grundlast und gefundenen Standby gegeneinander
+  stellen („von deinen 250 W hast du 18 W gefunden")? Beide Zahlen liegen vor,
+  verglichen werden sie nie – das wäre der eigentliche Erkenntnisgewinn beider
+  Checks, aber eine neue Aussage, kein Bugfix.
+- **Bei #38b und #46:** Beide betreffen Texte, die für einen Sonderfall verkehrt
+  sind (Kellerlüften im Sommer; Sparduschkopf am drucklosen Speicher). Je ein
+  Halbsatz genügt – oder es bleibt bewusst beim allgemeinen Rat, weil der
+  Sonderfall selten ist. Zu entscheiden.
