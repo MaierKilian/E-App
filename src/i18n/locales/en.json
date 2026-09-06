@@ -1074,7 +1074,7 @@
         "details": [
           "Even when nothing is actively running, your home draws power continuously – standby, refrigeration, router and so on.",
           "Important: only switch devices off, do not unplug them. Standby draw should be part of the measurement – it is exactly what you want to get rid of later. Always-on devices like the fridge and router stay on anyway.",
-          "If your meter shows power directly in watts, you can simply read it off. Otherwise you record the meter reading twice – the app works out the power from the gap.",
+          "If your meter shows power directly in watts, you can simply read it off. Otherwise you record the meter reading twice – the app works out the power from the gap. If your meter shows no decimal place, that is too coarse: instead you time the pulses of its LED (or the revolutions of the rotating disc) with the stopwatch – that takes two minutes and works on any meter.",
           "You do not have to wait between readings: record the value in the evening and read it again the next morning. Overnight also averages out the fridge's cycling.",
           "Measure again later – once you have got rid of always-on consumers. The app will then show you how much you actually saved."
         ],
@@ -1084,11 +1084,13 @@
         "meterTitle": "How are you measuring?",
         "modes": {
           "instant": "Meter shows watts",
-          "readings": "Two readings"
+          "readings": "Two readings",
+          "impulse": "Count pulses"
         },
         "modeHint": {
           "instant": "Modern meters show current power directly in watts – just read it off.",
-          "readings": "Works with any meter: record the reading, read it again later. No waiting at the meter."
+          "readings": "Works with any meter: record the reading, read it again later. No waiting at the meter.",
+          "impulse": "Works with any meter and takes two minutes: time the blinking LED or the spinning disc with the stopwatch. The only option if your display has no decimal place."
         },
         "instantLabel": "Current power",
         "instantNote": "A snapshot: if the fridge compressor happens to be running, the value comes out much higher. Two readings average that out.",
@@ -1112,7 +1114,9 @@
         "quality": {
           "good": "Solid measurement, accurate to ±{{pct}}.",
           "fair": "Usable, accurate to ±{{pct}}. A longer gap would make the number more reliable.",
-          "tooEarly": "Too early: your meter only resolves {{resolution}} kWh and has barely moved. Read it again later."
+          "tooLittleMovement": "Too early: your meter only resolves {{resolution}} kWh and has barely moved. Read it again later.",
+          "tooShort": "Too short: below {{duration}} you mostly measure whether the fridge compressor happened to be running. Read again later – or use the pulse measurement for a quick snapshot.",
+          "implausible": "That works out to a power no house connection can supply. Probably a typo in the meter reading – or the second reading came too soon after the first."
         },
         "capture": {
           "valueLabel": "Meter reading in kWh",
@@ -1125,7 +1129,20 @@
           "readAs": "Read as {{value}} kWh."
         },
         "restart": "Start over",
-        "resultLabel": "Base load measured"
+        "resultLabel": "Base load measured",
+        "resolutionTooCoarse": "A meter without a decimal place is too coarse for two readings: overnight it moves by one or two digits – that is ±50 % or more. It would only become accurate enough after about four days, and over four days you measure the household, not its base load.",
+        "resolutionToImpulse": "Count pulses instead",
+        "impulse": {
+          "constantLabel": "Pulses per kWh",
+          "constantUnit": "imp/kWh",
+          "constantHint": "Printed on the meter’s nameplate, usually “1000 imp/kWh”. Ferraris meters with a rotating disc state revolutions per kWh instead, e.g. “75 rev/kWh”.",
+          "countLabel": "Pulses to count",
+          "countHint": "Start the watch on one blink, start counting from the next and stop on the last one. More pulses make the number safer but take longer.",
+          "secondsManual": "Measured time",
+          "secondsUnit": "s",
+          "implausible": "That works out to a power no house connection can supply. Is the number on the nameplate right – and is it pulses per kWh, not per Wh?",
+          "snapshotNote": "Snapshot: if the fridge compressor happens to be running, the value comes out noticeably higher. Feel free to measure two or three times over the evening."
+        }
       },
       "result": {
         "change": {

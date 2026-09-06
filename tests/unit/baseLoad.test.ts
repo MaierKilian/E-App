@@ -3,9 +3,12 @@ import {
   baseLoadShare,
   calcBaseLoad,
   baseLoadChange,
+  plausibleWatts,
   rateBaseLoad,
+  readableOvernight,
   readingsQuality,
   recommendedWaitMs,
+  wattsFromImpulses,
   wattsFromTimed,
 } from '@/features/measurements/base_load/baseLoad'
 import { stats } from '@/features/monitoring/readings'
@@ -89,11 +92,37 @@ describe('readingsQuality', () => {
     expect(q.level).toBe('poor')
   })
 
-  it('stuft kurze Messungen trotz feiner Anzeige nur als brauchbar ein', () => {
-    // Feiner Zähler, aber 20 Minuten decken keinen Kühlschrank-Zyklus ab.
+  it('verwirft kurze Messungen auch bei feiner Anzeige', () => {
+    // Feiner Zähler, aber 20 Minuten decken keinen Kühlschrank-Zyklus ab: Die
+    // Anzeige ist genau, gemessen wird trotzdem nur, ob der Kompressor lief.
+    // Wer eine Momentaufnahme will, hat dafür 'instant' und 'impulse'.
     const q = readingsQuality(1000, 1000.05, 20 * 60_000, 0.001)
-    expect(q.usable).toBe(true)
+    expect(q.usable).toBe(false)
     expect(q.longEnough).toBe(false)
+    expect(q.problem).toBe('tooShort')
+    expect(q.level).toBe('poor')
+  })
+
+  it('verwirft eine zweite Ablesung Sekunden nach der ersten', () => {
+    // Der reale Fall aus dem Live-Test: 0,5 kWh Differenz, zwölf Sekunden
+    // Abstand. Ergibt 150 kW – die Auflösung allein (±20 %) hielt das früher
+    // für brauchbar, gespeichert wurde es auch.
+    const q = readingsQuality(5751, 5751.5, 12_000, 0.1)
+    expect(q.uncertainty).toBeCloseTo(0.2, 6)
+    expect(q.usable).toBe(false)
+    expect(q.problem).toBe('implausible')
+  })
+
+  it('bescheinigt dem Zähler ohne Nachkommastelle seine echte Genauigkeit', () => {
+    // Kilians Messung: 5751 → 5756 kWh über 14 Std. 4 Min. Mit der zuvor
+    // einzig wählbaren Auflösung 0,1 kWh stand dort „±2 % genau"; die Anzeige
+    // springt aber in ganzen kWh, also sind es ±20 %.
+    const elapsed = 14 * HOUR + 4 * 60_000
+    expect(readingsQuality(5751, 5756, elapsed, 0.1).uncertainty).toBeCloseTo(0.02, 6)
+
+    const q = readingsQuality(5751, 5756, elapsed, 1)
+    expect(q.uncertainty).toBeCloseTo(0.2, 6)
+    expect(q.usable).toBe(true)
     expect(q.level).toBe('fair')
   })
 
@@ -120,6 +149,47 @@ describe('recommendedWaitMs', () => {
     expect(recommendedWaitMs(0.01)).toBe(3 * HOUR)
     expect(recommendedWaitMs(0.001)).toBe(3 * HOUR)
     expect(recommendedWaitMs(0)).toBe(3 * HOUR)
+  })
+})
+
+describe('readableOvernight', () => {
+  it('erklärt den Zähler ohne Nachkommastelle für ungeeignet', () => {
+    // 1 kWh → zehn Schritte bei 100 W = 10 kWh = 100 Stunden. Über vier Tage
+    // misst man den Haushalt, nicht seine Grundlast.
+    expect(recommendedWaitMs(1)).toBe(100 * HOUR)
+    expect(readableOvernight(1)).toBe(false)
+  })
+
+  it('lässt jede Anzeige mit Nachkommastelle zu', () => {
+    for (const r of [0.1, 0.01, 0.001]) expect(readableOvernight(r)).toBe(true)
+  })
+})
+
+describe('wattsFromImpulses', () => {
+  it('rechnet gezählte Impulse in Leistung um', () => {
+    // 1000 imp/kWh: zehn Impulse sind 0,01 kWh. In 101 s ergibt das ~356 W.
+    expect(wattsFromImpulses(10, 101, 1000)).toBeCloseTo(356.4, 1)
+    // Ferraris-Scheibe mit 75 U/kWh: eine Umdrehung in 96 s sind 500 W.
+    expect(wattsFromImpulses(1, 96, 75)).toBeCloseTo(500, 0)
+  })
+
+  it('liefert 0 statt Unsinn bei fehlenden Angaben', () => {
+    expect(wattsFromImpulses(0, 101, 1000)).toBe(0)
+    expect(wattsFromImpulses(10, 0, 1000)).toBe(0)
+    expect(wattsFromImpulses(10, 101, 0)).toBe(0)
+  })
+})
+
+describe('plausibleWatts', () => {
+  it('lässt jede Haushaltsleistung zu und weist Unmögliches ab', () => {
+    expect(plausibleWatts(355)).toBe(true)
+    // Ein Hausanschluss mit 3 × 63 A gibt rund 43 kW her – die Grenze selbst
+    // gilt noch als möglich, alles darüber nicht.
+    expect(plausibleWatts(43_000)).toBe(true)
+    expect(plausibleWatts(43_001)).toBe(false)
+    expect(plausibleWatts(145_703)).toBe(false)
+    expect(plausibleWatts(0)).toBe(false)
+    expect(plausibleWatts(Number.NaN)).toBe(false)
   })
 })
 
@@ -194,5 +264,14 @@ describe('baseLoadChange', () => {
   it('liefert undefined ohne verwertbare Messungen', () => {
     expect(baseLoadChange({ watts: 0 }, { watts: 138 }, 35)).toBeUndefined()
     expect(baseLoadChange({ watts: 180 }, { watts: 0 }, 35)).toBeUndefined()
+  })
+
+  it('vergleicht nicht gegen einen unmöglichen Altbestand', () => {
+    // Ergebnisse werden nicht migriert: Vor der Schranke in readingsQuality
+    // entstandene Unsinnswerte liegen weiter im Store. Aus 145.703 W wurde so
+    // eine belegte Ersparnis von 381.209 € im Jahr.
+    expect(
+      baseLoadChange({ watts: 145_703, uncertainty: 0.2 }, { watts: 355, ...NIGHT }, 30),
+    ).toBeUndefined()
   })
 })

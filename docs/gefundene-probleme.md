@@ -1611,6 +1611,108 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
 
 ---
 
+### 38. Zähler ohne Nachkommastelle: ±20 % werden als ±2 % ausgewiesen
+**Kategorie:** Bug · **Bereich:** `baseLoad.ts`, `BaseLoadRun`
+**Status:** ✅ Umgesetzt (06.09.).
+
+Kilians Grundlast-Messung über Nacht: 5751 → 5756 kWh in 14 Std. 4 Min.,
+355 W. Darunter stand „Belastbare Messung, ±2 % genau" – sein Zähler zeigt
+aber keine einzige Nachkommastelle.
+
+**Ursache.** `METER_RESOLUTIONS` kannte nur 0,1 / 0,01 / 0,001 kWh. Wer einen
+Zähler mit ganzen kWh hat, musste zwangsläufig die nächstfeinere Stufe wählen –
+und bekam deren Genauigkeit bescheinigt. `readingsQuality()` rechnet
+`Auflösung / Differenz`: 0,1 / 5 = 2 %. Richtig sind 1 / 5 = **20 %**, also
+355 W ± 71 W oder irgendwo zwischen 284 und 426 W.
+
+**Behoben:** Die Stufe `1` steht jetzt in `METER_RESOLUTIONS`. Dieselbe Messung
+meldet damit „Brauchbar, ±20 % genau" – im Browser nachgestellt und geprüft.
+
+**Und die ehrliche Folgerung gleich dazu.** Für diesen Zähler taugt die
+Zwei-Ablesungen-Methode grundsätzlich nicht: `recommendedWaitMs(1)` verlangt
+zehn Anzeigeschritte, das sind bei 100 W **100 Stunden**. Über vier Tage misst
+man den Haushalt, nicht seine Grundlast. Statt diese Zahl als Empfehlung
+hinzuschreiben, sagt die App es jetzt: `readableOvernight()` vergleicht die
+nötige Dauer mit einer Nacht (12 h) und blendet bei 1 kWh einen Hinweis samt
+Knopf „Stattdessen Impulse zählen" ein (siehe #40). Abgeleitet, nicht
+hartkodiert – eine noch gröbere Stufe würde von selbst mitgelten.
+
+### 39. Grundlast von 145.703 W belegt eine Ersparnis von 381.209 € im Jahr
+**Kategorie:** Bug · **Bereich:** `baseLoad.ts`
+**Status:** ✅ Umgesetzt (06.09.).
+
+Auf Kilians Ergebnis-Schirm stand „Von 145.703 W auf 355 W – 145.347 W weniger
+(±29.141 W). Das sind rund 381.209 € im Jahr, **gemessen statt geschätzt**."
+145 kW sind das Mehrfache dessen, was ein Hausanschluss hergibt (3 × 63 A ≈
+43 kW). Aus der gespeicherten Unsicherheit von 20 % lässt sich der Ursprung
+rekonstruieren: 0,1 kWh Auflösung ÷ 0,5 kWh Differenz, bei 145.703 W also rund
+**zwölf Sekunden** zwischen den beiden Ablesungen – ein Probelauf.
+
+**Zwei Lücken, die zusammen dorthin führten:**
+
+1. `readingsQuality()` ließ die verstrichene Zeit **gar nicht** in `usable`
+   einfließen – sie unterschied nur `good` von `fair`. Bewertet wurde allein,
+   ob sich der Zähler weit genug bewegt hat.
+2. `wattsFromTimed()` hatte keine Obergrenze, und `baseLoadChange()` prüfte nur
+   `watts > 0`.
+
+**Behoben an drei Stellen:**
+
+- Neu `MAX_PLAUSIBLE_W` (43 kW, Hausanschluss 3 × 63 A) und `plausibleWatts()`.
+- `readingsQuality()` nennt jetzt den **Grund** (`ReadingsProblem`:
+  `tooLittleMovement` / `tooShort` / `implausible`) statt eines nackten `false`
+  – drei Fehler mit drei verschiedenen Abhilfen, „länger warten" hilft dem
+  Vertipper nicht. Und `usable` verlangt zusätzlich `longEnough`: Unter drei
+  Stunden misst man, ob der Kühlschrank-Kompressor gerade lief. Wer eine
+  Momentaufnahme will, hat dafür zwei eigene, ehrlichere Wege.
+- `baseLoadChange()` verweigert den Vergleich, sobald **eine der beiden**
+  Messungen unmöglich ist. Das gilt der Vergangenheit: Ergebnisse werden nicht
+  migriert, der Unsinnswert liegt weiter im Store. Im Browser nachgestellt –
+  die Karte verschwindet, der Rest des Ergebnisses bleibt.
+
+Der Preis dafür ist eine bewusste Verhaltensänderung: Eine Zwei-Ablesungen-
+Messung unter drei Stunden gilt nicht mehr als „brauchbar", sondern als zu
+kurz. Der bisherige Test dazu hält jetzt das Gegenteil fest.
+
+### 40. Neuer Mess-Weg „Impulse zählen"
+**Kategorie:** Verbesserung · **Bereich:** `baseLoad.ts`, `BaseLoadRun`
+**Status:** ✅ Umgesetzt (06.09.).
+
+Aus #38 folgt ein Problem, das die Korrektur allein nicht löst: Mit einem
+Zähler ohne Nachkommastelle **kann** Kilian seine Grundlast auf keinem der
+bisherigen Wege messen. Zwei Ablesungen sind zu grob, und eine Watt-Anzeige
+hat sein Zähler nicht.
+
+Fast jeder Zähler hat aber eine Impuls-LED (Typenschild, meist 1000 imp/kWh),
+Ferraris-Zähler ihre Drehscheibe (z. B. 75 U/kWh). `n` Impulse sind
+`n / Konstante` Kilowattstunden – gestoppt ergibt das die Leistung, ganz ohne
+das Display:
+
+    P[W] = Impulse × 3.600.000 / (Impulse_je_kWh × Sekunden)
+
+Neuer dritter Modus `impulse` mit der vorhandenen `Stopwatch`- und
+`Stepper`-Komponente: Zählerkonstante, Zahl der zu zählenden Impulse (Standard
+10), Stoppuhr, Korrekturfeld für die Zeit wie im Duschkopf-Check. Zehn Impulse
+bei 355 W dauern rund 100 Sekunden.
+
+**Was er ist und was nicht:** eine **Momentaufnahme**, wie „Zähler zeigt Watt" –
+nur genau statt geraten. Er speichert deshalb bewusst **keine** `uncertainty`,
+womit `baseLoadChange()` wie bei jeder Momentaufnahme auf
+`SNAPSHOT_UNCERTAINTY` (25 %) zurückfällt: Ob der Kühlschrank-Kompressor gerade
+läuft, ist hier der größere Fehler als die Stoppuhr. Der Hinweistext sagt genau
+das und rät, zwei-, dreimal über den Abend zu messen.
+
+Die Zählerkonstante bleibt im Entwurf stehen – sie steht auf dem Typenschild
+und ändert sich nie. Ein vertippter Wert (1 statt 1000 imp/kWh) läuft in
+`plausibleWatts()` und wird mit eigenem Text abgefangen, statt Megawatt
+auszuweisen.
+
+Kein neues Messgerät: `MeasurementMeta.instruments` des Checks bleibt
+unverändert (`power_meter`, der Zähler des Hauses), die Stoppuhr bringt die App
+mit. Die Geräte-Übersicht im Fragebogen ändert sich dadurch von selbst nicht.
+
+---
+
 ## Offene Fragen für Kilian
 
 - Bei #8 (b): Über den umgesetzten Bugfix hinaus – grundsätzlich auf
@@ -1669,3 +1771,11 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
   eigenen, alten Stand (z. B. 00:01,5, während im Feld 21 s steht). Der
   Wartezeit-Check verhält sich genauso – soll das Feld die Uhr zurücksetzen,
   oder bleibt die Uhr das Protokoll dessen, was wirklich lief?
+
+- Bei #38 (nicht reproduzierbar): Kilians dritter Screenshot zeigt dieselben
+  beiden Ablesungen wie der zweite, aber „Ermittelte Grundlast **–**" statt
+  „355 W". Im Browser durchgespielt – frisch geöffnet, nach Neuladen der Seite
+  und nach dem Wechsel Ergebnis → Messen steht dort jedes Mal 355 W. Aus dem
+  Code lässt sich der Zustand nicht herleiten: Sobald die Karte mit den
+  Ablesungen sichtbar ist, ist der Entwurf vollständig, und damit ist
+  `canEvaluate` wahr. Was war zwischen den beiden Screenshots?

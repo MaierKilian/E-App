@@ -19,14 +19,20 @@ import type { ProjectionBasis, ReadingStats } from '@/features/monitoring/readin
  * eine Momentaufnahme: Der Kühlschrank taktet, je nach Zeitpunkt misst man
  * seinen Kompressor mit oder nicht.
  *
- * `readings` – zwei Zählerstände mit zeitlichem Abstand. Der ehrliche Weg: Er
- * funktioniert mit jedem Zähler (auch der Ferraris-Drehscheibe, die ebenfalls
- * ein kWh-Zählwerk hat) und mittelt über mehrere Kühlschrank-Zyklen.
+ * `impulse` – die Impulse des Zählers werden über eine Stoppuhr gezählt (die
+ * blinkende LED elektronischer Zähler, die Umdrehung der Ferraris-Scheibe).
+ * Ebenfalls eine Momentaufnahme, aber eine genaue – und der einzige Weg, der
+ * auch auf einem Zähler ohne Nachkommastelle funktioniert.
+ *
+ * `readings` – zwei Zählerstände mit zeitlichem Abstand. Der einzige Weg, der
+ * über mehrere Kühlschrank-Zyklen mittelt – aber nur brauchbar, solange die
+ * Anzeige fein genug ist (siehe {@link readableOvernight}).
  */
-export type MeterMode = 'instant' | 'readings'
+export type MeterMode = 'instant' | 'impulse' | 'readings'
 
 const HOURS_PER_YEAR = 24 * 365
 const MS_PER_HOUR = 3_600_000
+const SECONDS_PER_HOUR = 3600
 
 // Rückfall-Schwellen für die Grundlast eines Haushalts (Watt). Bewusst grob –
 // und zwangsläufig unfair: Eine Familie im Haus mit Gefriertruhe liegt immer
@@ -76,11 +82,55 @@ export function wattsFromTimed(startKwh: number, endKwh: number, elapsedMs: numb
 }
 
 /**
+ * Leistung (W) aus gezählten Zähler-Impulsen.
+ *
+ * `n` Impulse entsprechen `n / impulsesPerKwh` Kilowattstunden; geteilt durch
+ * die dafür gestoppte Zeit ergibt das die Leistung. Der Weg ist unabhängig
+ * davon, was das Display anzeigt – und damit der einzige, der auch auf einem
+ * Zähler ohne Nachkommastelle in Minuten zu einer belastbaren Zahl kommt.
+ *
+ * @param impulses Gezählte Impulse (LED-Blinken bzw. Scheibenumdrehungen).
+ * @param seconds Gestoppte Zeit für diese Impulse.
+ * @param impulsesPerKwh Zählerkonstante vom Typenschild (z. B. 1000 imp/kWh).
+ */
+export function wattsFromImpulses(
+  impulses: number,
+  seconds: number,
+  impulsesPerKwh: number,
+): number {
+  if (!(impulses > 0) || !(seconds > 0) || !(impulsesPerKwh > 0)) return 0
+  return (impulses * 1000 * SECONDS_PER_HOUR) / (impulsesPerKwh * seconds)
+}
+
+/**
+ * Obergrenze dessen, was ein Haushalt überhaupt ziehen kann (W).
+ *
+ * Ein üblicher Hausanschluss ist mit 3 × 63 A abgesichert, das sind bei 230 V
+ * rund 43 kW; eine Wohnung liegt mit 3 × 35 A noch deutlich darunter. Alles
+ * darüber ist keine Messung, sondern ein Vertipper im Zählerstand oder eine
+ * zweite Ablesung Sekunden nach der ersten.
+ *
+ * Ohne diese Schranke wurde beides klaglos gespeichert – und eine Messung über
+ * zwölf Sekunden landete als „145.703 W" im Vorher/Nachher-Vergleich, der
+ * daraus eine Ersparnis von 381.209 € im Jahr ableitete.
+ */
+export const MAX_PLAUSIBLE_W = 43_000
+
+/** Ob eine Leistung als Haushaltsmessung überhaupt in Frage kommt. */
+export function plausibleWatts(watts: number): boolean {
+  return Number.isFinite(watts) && watts > 0 && watts <= MAX_PLAUSIBLE_W
+}
+
+/**
  * Auflösung des Zähler-Displays in kWh – die letzte Stelle, die er anzeigt.
  * Sie entscheidet allein darüber, wie lange gemessen werden muss: Ein Zähler
  * mit 0,1 kWh springt bei 100 W Grundlast nur einmal pro Stunde weiter.
+ *
+ * `1` gehört dazu, weil es solche Zähler gibt: Fehlte die Stufe, wählte ihr
+ * Besitzer zwangsläufig die nächstfeinere – und bekam eine zehnfach zu gute
+ * Genauigkeit bescheinigt (±2 % statt ±20 %).
  */
-export const METER_RESOLUTIONS = [0.1, 0.01, 0.001] as const
+export const METER_RESOLUTIONS = [1, 0.1, 0.01, 0.001] as const
 export type MeterResolution = (typeof METER_RESOLUTIONS)[number]
 
 /**
@@ -90,7 +140,7 @@ export type MeterResolution = (typeof METER_RESOLUTIONS)[number]
  * Messung erwischt entweder „an" oder „aus" – der Fehler daraus ist größer als
  * jede Zähler-Ungenauigkeit und lässt sich nur durch Zeit herausmitteln.
  */
-const CYCLE_SAFE_MS = 3 * MS_PER_HOUR
+export const CYCLE_SAFE_MS = 3 * MS_PER_HOUR
 
 /** Ab dieser Unsicherheit ist die Zahl nur noch Rauschen und wird verworfen. */
 const MAX_USABLE_UNCERTAINTY = 0.5
@@ -99,24 +149,42 @@ const GOOD_UNCERTAINTY = 0.1
 /** Typische Grundlast, mit der die empfohlene Wartezeit vorab geschätzt wird. */
 const ASSUMED_WATTS = 100
 
+/**
+ * Warum zwei Ablesungen nicht verwertbar sind.
+ *
+ * Drei verschiedene Fehler mit drei verschiedenen Abhilfen – deshalb benannt
+ * und nicht bloß ein `false`: „länger warten" hilft dem Vertipper nicht, und
+ * „nachrechnen" hilft dem nicht, dessen Zähler sich noch nicht bewegt hat.
+ */
+export type ReadingsProblem = 'tooLittleMovement' | 'tooShort' | 'implausible'
+
 /** Wie belastbar eine Zwei-Ablesungen-Messung ist. */
 export interface ReadingsQuality {
   /** Relative Unsicherheit aus der Zähler-Auflösung (0,06 = ±6 %). */
   uncertainty: number
   /** true, wenn der Zeitraum mehrere Kühlschrank-Zyklen abdeckt. */
   longEnough: boolean
-  /** false → der Zähler hat sich zu wenig bewegt, die Zahl sagt nichts aus. */
+  /** false → die Zahl sagt nichts aus; `problem` nennt den Grund. */
   usable: boolean
   level: 'good' | 'fair' | 'poor'
+  /** Gesetzt, solange `usable` false ist. */
+  problem?: ReadingsProblem
 }
 
 /**
  * Bewertet, wie belastbar zwei Zählerstände sind – aus der Auflösung des
- * Displays und der verstrichenen Zeit.
+ * Displays, der verstrichenen Zeit und der Leistung, die dabei herauskommt.
  *
  * Genau hier scheiterte die frühere Stoppuhr-Messung: Bei 0,1 kWh Auflösung und
  * fünf Minuten Wartezeit steht der Zähler noch auf demselben Wert. Statt eines
  * toten Buttons soll die App sagen können, dass es schlicht zu früh ist.
+ *
+ * Die Dauer ist seit dem 06.09. eine harte Bedingung, nicht mehr nur ein
+ * Abzug in der Note: Unter {@link CYCLE_SAFE_MS} misst man, ob der
+ * Kühlschrank-Kompressor gerade läuft, nicht die Grundlast – und wer eine
+ * Momentaufnahme will, hat dafür zwei eigene, ehrlichere Wege
+ * (`instant`, `impulse`). Vorher war eine Messung über zwölf Sekunden
+ * auswertbar und speicherbar.
  */
 export function readingsQuality(
   startKwh: number,
@@ -126,17 +194,32 @@ export function readingsQuality(
 ): ReadingsQuality {
   const delta = endKwh - startKwh
   if (!(delta > 0) || !(elapsedMs > 0) || !(resolutionKwh > 0)) {
-    return { uncertainty: 1, longEnough: false, usable: false, level: 'poor' }
+    return {
+      uncertainty: 1,
+      longEnough: false,
+      usable: false,
+      level: 'poor',
+      problem: 'tooLittleMovement',
+    }
   }
   const uncertainty = Math.min(1, resolutionKwh / delta)
   const longEnough = elapsedMs >= CYCLE_SAFE_MS
-  const usable = uncertainty <= MAX_USABLE_UNCERTAINTY
+  const problem: ReadingsProblem | undefined = !plausibleWatts(
+    wattsFromTimed(startKwh, endKwh, elapsedMs),
+  )
+    ? 'implausible'
+    : uncertainty > MAX_USABLE_UNCERTAINTY
+      ? 'tooLittleMovement'
+      : !longEnough
+        ? 'tooShort'
+        : undefined
+  const usable = problem === undefined
   const level: ReadingsQuality['level'] = !usable
     ? 'poor'
-    : uncertainty <= GOOD_UNCERTAINTY && longEnough
+    : uncertainty <= GOOD_UNCERTAINTY
       ? 'good'
       : 'fair'
-  return { uncertainty, longEnough, usable, level }
+  return { uncertainty, longEnough, usable, level, problem }
 }
 
 /**
@@ -152,6 +235,26 @@ export function recommendedWaitMs(resolutionKwh: number): number {
   const targetKwh = 10 * resolutionKwh
   const hours = targetKwh / (ASSUMED_WATTS / 1000)
   return Math.max(CYCLE_SAFE_MS, hours * MS_PER_HOUR)
+}
+
+/**
+ * Längste Messdauer, die zwei Ablesungen realistisch überbrücken: eine Nacht.
+ * Länger geht zwar technisch, misst aber keine Grundlast mehr – über Tage
+ * laufen zwangsläufig wieder aktiv genutzte Geräte mit.
+ */
+const OVERNIGHT_MS = 12 * MS_PER_HOUR
+
+/**
+ * Ob zwei Ablesungen auf diesem Zähler überhaupt genau werden können.
+ *
+ * Ein Zähler ohne Nachkommastelle bewegt sich über Nacht um ein bis zwei
+ * Stellen – das sind ±50 % und mehr. Die nötige Dauer stünde bei rund vier
+ * Tagen ({@link recommendedWaitMs}), und über vier Tage misst man den
+ * Haushalt, nicht seine Grundlast. Für solche Zähler ist `impulse` der
+ * einzige Weg, der in Minuten zu einer belastbaren Zahl führt.
+ */
+export function readableOvernight(resolutionKwh: number): boolean {
+  return recommendedWaitMs(resolutionKwh) <= OVERNIGHT_MS
 }
 
 export interface BaseLoadResult {
@@ -289,6 +392,13 @@ export interface BaseLoadChange {
  * eine Erfindung. Die Unsicherheiten werden quadratisch addiert (sie sind
  * unabhängig voneinander), mit {@link MIN_TOLERANCE_W} als Untergrenze.
  *
+ * Beide Messungen müssen als Haushaltsleistung überhaupt möglich sein
+ * ({@link plausibleWatts}). Das gilt der **Vergangenheit**: Ergebnisse werden
+ * nicht migriert, und vor der Schranke in {@link readingsQuality} konnten
+ * unmögliche Werte entstehen und wurden gespeichert. Ein solcher Altbestand
+ * darf keinen Vergleich tragen – sonst steht dort „von 145.703 W auf 355 W …
+ * rund 381.209 € im Jahr, gemessen statt geschätzt".
+ *
  * @param previous Frühere Messung.
  * @param current Aktuelle Messung.
  * @param workPriceCt Arbeitspreis in ct/kWh.
@@ -298,7 +408,7 @@ export function baseLoadChange(
   current: BaseLoadPoint,
   workPriceCt: number,
 ): BaseLoadChange | undefined {
-  if (!(previous.watts > 0) || !(current.watts > 0)) return undefined
+  if (!plausibleWatts(previous.watts) || !plausibleWatts(current.watts)) return undefined
 
   const err = (p: BaseLoadPoint) => p.watts * (p.uncertainty ?? SNAPSHOT_UNCERTAINTY)
   const toleranceWatts = Math.max(

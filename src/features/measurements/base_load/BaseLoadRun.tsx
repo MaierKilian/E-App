@@ -6,22 +6,31 @@ import { useMeasurementDraftStore, readDraft } from '@/store/measurementDraftSto
 import { useReadingsStore } from '@/store/readingsStore'
 import { stats } from '@/features/monitoring/readings'
 import { SelectChip } from '@/components/ui/SelectChip'
+import { Stepper } from '@/components/ui/Stepper'
+import { Stopwatch } from '@/components/ui/Stopwatch'
+import { DecimalField } from '@/components/ui/DecimalField'
 import { parseDecimalInput } from '@/lib/decimalInput'
 import { instanceKey } from '../rooms'
 import { RATING_COLOR } from '../rating'
 import { ReadingCapture } from './ReadingCapture'
 import {
   calcBaseLoad,
+  CYCLE_SAFE_MS,
+  plausibleWatts,
+  readableOvernight,
   readingsQuality,
   recommendedWaitMs,
+  wattsFromImpulses,
   wattsFromTimed,
   METER_RESOLUTIONS,
   type MeterMode,
 } from './baseLoad'
 import type { RunProps } from '../runnerTypes'
 
-const MODES: MeterMode[] = ['instant', 'readings']
+const MODES: MeterMode[] = ['instant', 'impulse', 'readings']
 const DEFAULT_RESOLUTION = 0.1
+/** Zehn Impulse sind ein guter Kompromiss aus Wartezeit und Reaktionsfehler. */
+const DEFAULT_IMPULSES = 10
 
 /** Welcher Zählerstand gerade erfasst wird. */
 type Capturing = 'start' | 'end'
@@ -54,6 +63,15 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
   const [mode, setMode] = useState<MeterMode>(d.startAt ? 'readings' : 'instant')
   const [instantText, setInstantText] = useState('')
 
+  // Impuls-Messung. Die Zählerkonstante steht auf dem Typenschild und ändert
+  // sich nie – sie im Entwurf zu halten erspart das Nachschauen beim nächsten
+  // Mal. Die gestoppte Zeit dagegen gehört zu genau einem Versuch.
+  const [impulsesPerKwh, setImpulsesPerKwh] = useState<number | undefined>(
+    d.impulsesPerKwh || undefined,
+  )
+  const [impulses, setImpulses] = useState(d.impulses || DEFAULT_IMPULSES)
+  const [seconds, setSeconds] = useState(0)
+
   // Zwei Ablesungen – über Stunden hinweg, daher persistiert.
   const [resolution, setResolution] = useState(d.resolution ?? DEFAULT_RESOLUTION)
   // Der Zeitstempel entscheidet, ob eine Ablesung vorliegt: Der Draft-Store
@@ -85,8 +103,10 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
       startAt: startAt ?? 0,
       endKwh: endKwh ?? 0,
       endAt: endAt ?? 0,
+      impulsesPerKwh: impulsesPerKwh ?? 0,
+      impulses,
     })
-  }, [key, setDraft, resolution, startKwh, startAt, endKwh, endAt])
+  }, [key, setDraft, resolution, startKwh, startAt, endKwh, endAt, impulsesPerKwh, impulses])
 
   function restart() {
     setStartKwh(undefined)
@@ -117,15 +137,22 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
   const recommendedMs = recommendedWaitMs(resolution)
 
   const instantW = parseDecimalInput(instantText, i18n.language) ?? 0
+  const impulseW = wattsFromImpulses(impulses, seconds, impulsesPerKwh ?? 0)
   const watts =
     mode === 'instant'
       ? instantW
-      : complete
-        ? wattsFromTimed(startKwh, endKwh, elapsedMs)
-        : 0
+      : mode === 'impulse'
+        ? impulseW
+        : complete
+          ? wattsFromTimed(startKwh, endKwh, elapsedMs)
+          : 0
 
+  // Die Zwei-Ablesungen-Messung bringt ihre eigene Prüfung mit; die beiden
+  // Momentaufnahmen brauchen wenigstens die physikalische Schranke – ein
+  // vertippter Zählerfaktor ergibt sonst genauso Megawatt wie früher eine
+  // zweite Ablesung Sekunden nach der ersten.
   const canEvaluate =
-    mode === 'instant' ? instantW > 0 : Boolean(quality?.usable) && watts > 0
+    mode === 'readings' ? Boolean(quality?.usable) : plausibleWatts(watts)
 
   const wattsFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
   const kwhFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 3 })
@@ -220,6 +247,78 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
         </div>
       )}
 
+      {mode === 'impulse' && (
+        <>
+          <div className="glass rounded-3xl p-5">
+            <label className="flex items-center justify-between gap-3">
+              <span className="text-sm font-medium text-foreground">
+                {t('measurements.base_load.run.impulse.constantLabel')}
+              </span>
+              <span className="flex items-center gap-2">
+                <DecimalField
+                  value={impulsesPerKwh}
+                  onChange={setImpulsesPerKwh}
+                  placeholder="1000"
+                  className="focus-ring w-28 rounded-xl border border-border bg-surface/70 px-3 py-2 text-right font-semibold tabular-nums text-foreground"
+                />
+                <span className="text-sm text-muted">
+                  {t('measurements.base_load.run.impulse.constantUnit')}
+                </span>
+              </span>
+            </label>
+            <p className="mt-3 text-xs text-muted">
+              {t('measurements.base_load.run.impulse.constantHint')}
+            </p>
+          </div>
+
+          <div className="glass rounded-3xl p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-medium text-foreground">
+                {t('measurements.base_load.run.impulse.countLabel')}
+              </p>
+              <Stepper value={impulses} min={1} max={200} onChange={setImpulses} />
+            </div>
+            <p className="mt-3 text-xs text-muted">
+              {t('measurements.base_load.run.impulse.countHint')}
+            </p>
+            <div className="mt-4">
+              <Stopwatch onChange={setSeconds} />
+            </div>
+            {seconds > 0 && (
+              <label className="mt-4 flex items-center justify-between gap-3 text-sm">
+                <span className="text-muted">
+                  {t('measurements.base_load.run.impulse.secondsManual')}
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <DecimalField
+                    value={seconds}
+                    onChange={(v) => setSeconds(v ?? 0)}
+                    className="focus-ring w-20 rounded-xl bg-surface-2 px-3 py-1.5 text-right font-semibold tabular-nums text-foreground"
+                  />
+                  <span className="text-muted">
+                    {t('measurements.base_load.run.impulse.secondsUnit')}
+                  </span>
+                </span>
+              </label>
+            )}
+            {seconds > 0 && impulsesPerKwh !== undefined && !plausibleWatts(impulseW) && (
+              <p className="mt-3 flex gap-2 text-xs text-muted">
+                <AlertTriangle
+                  className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                  style={{ color: RATING_COLOR.elevated }}
+                  aria-hidden="true"
+                />
+                <span>{t('measurements.base_load.run.impulse.implausible')}</span>
+              </p>
+            )}
+          </div>
+
+          <p className="px-1 text-xs text-muted">
+            {t('measurements.base_load.run.impulse.snapshotNote')}
+          </p>
+        </>
+      )}
+
       {mode === 'readings' && startAt === undefined && (
         <>
           <div className="glass rounded-3xl p-5">
@@ -236,11 +335,31 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
                 />
               ))}
             </div>
-            <p className="mt-3 text-xs text-muted">
-              {t('measurements.base_load.run.resolutionHint', {
-                duration: fmtDuration(recommendedMs),
-              })}
-            </p>
+            {readableOvernight(resolution) ? (
+              <p className="mt-3 text-xs text-muted">
+                {t('measurements.base_load.run.resolutionHint', {
+                  duration: fmtDuration(recommendedMs),
+                })}
+              </p>
+            ) : (
+              <div className="mt-3">
+                <p className="flex gap-2 text-xs text-muted">
+                  <AlertTriangle
+                    className="mt-0.5 h-3.5 w-3.5 shrink-0"
+                    style={{ color: RATING_COLOR.elevated }}
+                    aria-hidden="true"
+                  />
+                  <span>{t('measurements.base_load.run.resolutionTooCoarse')}</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setMode('impulse')}
+                  className="focus-ring mt-3 inline-flex items-center gap-1.5 rounded-2xl bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-transform active:scale-95"
+                >
+                  {t('measurements.base_load.run.resolutionToImpulse')}
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="glass rounded-3xl p-5">
@@ -329,8 +448,9 @@ export function BaseLoadRun({ onEvaluate }: RunProps) {
                       ? t(`measurements.base_load.run.quality.${quality.level}`, {
                           pct: pctFmt.format(quality.uncertainty),
                         })
-                      : t('measurements.base_load.run.quality.tooEarly', {
+                      : t(`measurements.base_load.run.quality.${quality.problem}`, {
                           resolution: kwhFmt.format(resolution),
+                          duration: fmtDuration(CYCLE_SAFE_MS),
                         })}
                   </span>
                 </p>

@@ -1074,7 +1074,7 @@
         "details": [
           "Auch wenn nichts aktiv läuft, zieht dein Haushalt dauerhaft Strom – Standby, Kühlgeräte, Router & Co.",
           "Wichtig: Geräte nur ausschalten, nicht ausstecken. Der Standby-Verbrauch soll mitgemessen werden – er ist ja das, was du später loswerden willst. Dauerläufer wie Kühlschrank und Router bleiben ohnehin an.",
-          "Zeigt dein Zähler die Leistung direkt in Watt an, kannst du sie einfach ablesen. Sonst erfasst du zweimal den Zählerstand – die App rechnet die Leistung aus dem Abstand aus.",
+          "Zeigt dein Zähler die Leistung direkt in Watt an, kannst du sie einfach ablesen. Sonst erfasst du zweimal den Zählerstand – die App rechnet die Leistung aus dem Abstand aus. Zeigt dein Zähler keine Nachkommastelle, ist das zu grob: Dann zählst du stattdessen die Impulse seiner LED (oder die Umdrehungen der Drehscheibe) mit der Stoppuhr – das dauert zwei Minuten und funktioniert an jedem Zähler.",
           "Zwischen den Ablesungen musst du nicht warten: Erfasse den Stand abends, lies am nächsten Morgen erneut ab. Über Nacht wird auch die Taktung des Kühlschranks herausgemittelt.",
           "Miss später noch einmal – nachdem du Dauerverbraucher abgeschafft hast. Die App zeigt dir dann, wie viel du wirklich eingespart hast."
         ],
@@ -1084,11 +1084,13 @@
         "meterTitle": "Wie misst du?",
         "modes": {
           "instant": "Zähler zeigt Watt",
-          "readings": "Zwei Ablesungen"
+          "readings": "Zwei Ablesungen",
+          "impulse": "Impulse zählen"
         },
         "modeHint": {
           "instant": "Moderne Zähler zeigen die aktuelle Leistung direkt in Watt an – einfach ablesen.",
-          "readings": "Funktioniert mit jedem Zähler: Zählerstand erfassen, später erneut ablesen. Kein Warten vor dem Zähler."
+          "readings": "Funktioniert mit jedem Zähler: Zählerstand erfassen, später erneut ablesen. Kein Warten vor dem Zähler.",
+          "impulse": "Funktioniert mit jedem Zähler und dauert zwei Minuten: Blinken der LED bzw. Umdrehungen der Scheibe mit der Stoppuhr zählen. Der einzige Weg ohne Nachkommastelle am Display."
         },
         "instantLabel": "Aktuelle Leistung",
         "instantNote": "Momentaufnahme: Läuft gerade der Kühlschrank-Kompressor, fällt der Wert deutlich höher aus. Über zwei Ablesungen wird das herausgemittelt.",
@@ -1112,7 +1114,9 @@
         "quality": {
           "good": "Belastbare Messung, ±{{pct}} genau.",
           "fair": "Brauchbar, ±{{pct}} genau. Ein längerer Abstand macht die Zahl sicherer.",
-          "tooEarly": "Zu früh: Dein Zähler zeigt nur {{resolution}} kWh genau und hat sich kaum bewegt. Lies später noch einmal ab."
+          "tooLittleMovement": "Zu früh: Dein Zähler zeigt nur {{resolution}} kWh genau und hat sich kaum bewegt. Lies später noch einmal ab.",
+          "tooShort": "Zu kurz: Unter {{duration}} misst du vor allem, ob der Kühlschrank-Kompressor gerade lief. Lies später noch einmal ab – oder nimm die Impuls-Messung für eine schnelle Momentaufnahme.",
+          "implausible": "Das ergibt eine Leistung, die kein Hausanschluss hergibt. Vermutlich ein Vertipper im Zählerstand – oder die zweite Ablesung kam zu kurz nach der ersten."
         },
         "capture": {
           "valueLabel": "Zählerstand in kWh",
@@ -1125,7 +1129,20 @@
           "readAs": "Wird gelesen als {{value}} kWh."
         },
         "restart": "Neu beginnen",
-        "resultLabel": "Ermittelte Grundlast"
+        "resultLabel": "Ermittelte Grundlast",
+        "resolutionTooCoarse": "Ein Zähler ohne Nachkommastelle ist für zwei Ablesungen zu grob: Über Nacht bewegt er sich um ein bis zwei Stellen – das sind ±50 % und mehr. Genau genug wäre er erst nach rund vier Tagen, und über vier Tage misst man den Haushalt, nicht seine Grundlast.",
+        "resolutionToImpulse": "Stattdessen Impulse zählen",
+        "impulse": {
+          "constantLabel": "Impulse je kWh",
+          "constantUnit": "imp/kWh",
+          "constantHint": "Steht auf dem Typenschild des Zählers, meist „1000 imp/kWh“. Ferraris-Zähler mit Drehscheibe nennen stattdessen die Umdrehungen je kWh, z. B. „75 U/kWh“.",
+          "countLabel": "Zu zählende Impulse",
+          "countHint": "Starte die Uhr bei einem Blinken, zähle ab dem nächsten und stoppe beim letzten. Mehr Impulse machen die Zahl sicherer, dauern aber länger.",
+          "secondsManual": "Gestoppte Zeit",
+          "secondsUnit": "s",
+          "implausible": "Das ergibt eine Leistung, die kein Hausanschluss hergibt. Stimmt die Zahl auf dem Typenschild – und sind es Impulse je kWh, nicht je Wh?",
+          "snapshotNote": "Momentaufnahme: Läuft gerade der Kühlschrank-Kompressor, fällt der Wert deutlich höher aus. Miss ruhig zwei-, dreimal über den Abend verteilt."
+        }
       },
       "result": {
         "change": {
