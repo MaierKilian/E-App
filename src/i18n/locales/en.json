@@ -2610,6 +2610,10 @@
         "reason": "Your base load is {{watts}} W – even with nothing running on purpose. The standby check shows you device by device where it comes from.",
         "action": "Go to the standby check"
       },
+      "base_load_unexplained": {
+        "title": "Track down the rest of the base load",
+        "reason": "Of {{watts}} W base load, the standby check accounts for {{found}} W – {{rest}} W are drawn elsewhere. Typical always-on devices that standby does not reveal: fridges and freezers, the heating circulation pump, routers and repeaters, ventilation, an aquarium. Measure them one by one with the same meter and you will know where the power goes."
+      },
       "consumption_up": {
         "title": "More $t(monitoring.energyTypes.{{carrier}}) than last year",
         "reason": "Your meter readings show {{percent}} % more consumption than the same period last year – about {{amount}} {{unit}} extra. That is measured, not estimated. Find the cause before it adds up over another year.",

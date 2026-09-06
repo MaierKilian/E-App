@@ -1791,7 +1791,7 @@ Winter normal, unangenehm wird es erst darunter"). Beides betrifft
 
 ### 49. Grundlast und Standby werden nie miteinander verrechnet
 **Kategorie:** Verbesserung · **Bereich:** `buildTips.ts:544`
-**Status:** 🔍 Nur gesammelt.
+**Status:** ✅ Umgesetzt (06.09.) – auf Kilians Wunsch.
 
 Der Grundlast-Tipp verschwindet, sobald **irgendein** Standby-Ergebnis existiert
 (`!results['standby']`). Das ist bewusst so gebaut und getestet
@@ -1810,6 +1810,49 @@ Erkenntnisgewinn läge genau dort: „Von deinen 250 W hast du 18 W gefunden –
 übrigen 232 W ziehen woanders." Das ist zugleich der Weg zu den Verdächtigen,
 die die App ohnehin kennt (Kühlgeräte aus dem Fragebogen, PV-Wechselrichter,
 Heizungspumpe).
+
+**Was gebaut wurde.** Der Grundlast-Befund verschwindet nicht mehr, sobald
+*irgendein* Standby-Ergebnis vorliegt. Stattdessen entscheidet die
+**Restleistung**, ob noch etwas zu sagen ist:
+
+```
+Rest = Grundlast − im Standby-Check gefundene Watt
+```
+
+Bleibt ein Rest, tritt `base_load_unexplained` an die Stelle des alten
+Hinweises: „Von 250 W Grundlast erklärt der Standby-Check 18 W – 232 W ziehen
+woanders", dazu die Dauerläufer, die im Standby nicht auffallen (Kühl- und
+Gefriergeräte, Umwälzpumpe, Router, Lüftung, Aquarium) und der Rat, sie mit
+demselben Messgerät einzeln nachzumessen.
+
+**Die entscheidende Frage war, wann ein Rest „nennenswert" ist** – und dafür
+ist bewusst *keine* neue Zahl entstanden. Der Rest wird an denselben Schwellen
+gemessen wie die Grundlast selbst (`rateBaseLoad`): Wäre er allein noch
+auffällig, ist er einen Befund wert; liegt er unter `GOOD_MAX` (70 W, der
+Bereich, in dem Kühlschrank und Router ohnehin liegen), hat der Standby-Check
+die Grundlast hinreichend erklärt und die App schweigt. Dieselbe Regel wie beim
+Tank-Umbau: es ändern sich Daten, nicht der Rechenweg.
+
+Bewusst **ohne** den Anteil am Jahresverbrauch, mit dem `rateBaseLoad` sonst
+bevorzugt rechnet – der `share` steckt nicht in den Details des Ergebnisses,
+und ihn hier neu zu bilden hieße, eine zweite Bewertungsgrundlage einzuführen.
+
+**Kein Link.** Weitere Dauerläufer gehören nicht in den Standby-Check: Dessen
+`avoidableCost` weist den gemessenen Verbrauch als vollständig abschaltbar aus,
+was für einen Kühlschrank falsch wäre. Der Befund informiert, er schickt nicht
+weiter.
+
+**Grenzfälle, die Tests festhalten:** 0 W gefundener Standby heißt „die ganze
+Grundlast ist unerklärt" (und ist von „nicht gemessen" zu unterscheiden);
+Altergebnisse ohne `totalWatts` werden aus ihrer Geräteliste summiert, in beiden
+Kodierungen (`dev{i}` und `dev{i}_{type}`); mehr Standby als Grundlast – meist
+zu verschiedenen Zeiten gemessen – ergibt keinen Befund, statt eine negative
+Restleistung zu behaupten.
+
+**Offen geblieben:** Beide Messungen können weit auseinanderliegen; die
+Differenz ist dann nur bedingt aussagekräftig. Der Befund nennt darum den
+Zeitpunkt der Grundlast-Messung („gemessen vor X Tagen"), rechnet aber keine
+Altersgrenze ein – die wäre eine erfundene Schwelle.
 
 ### 50. Schwellen in `buildTips.ts` doppelt gepflegt
 **Kategorie:** Problem · **Bereich:** `buildTips.ts:155-161`
@@ -2087,7 +2130,7 @@ Komponente existiert oder nur inline in `SettingsPage.tsx` steckt.
 **Aus der Durchsicht des Empfehlungs-Katalogs (#38–#51):**
 
 Die Bugs ohne Entscheidungsbedarf sind am 06.09. umgesetzt (#38a, #39, #40
-textlich, #41, #42, #43 textlich, #47b, #50, #51). Offen sind noch die Punkte,
+textlich, #41, #42, #43 textlich, #47b, #49, #50, #51). Offen sind noch die Punkte,
 die eine Festlegung brauchen:
 
 - **Bei #45 – und damit zugleich bei #36:** Der PV-Tipp rät „heize Warmwasser um
@@ -2114,10 +2157,6 @@ die eine Festlegung brauchen:
   Annahme im Text offenlegen.
 - **Bei #48:** Untergrenze der Luftfeuchte für Wohnräume in der Heizzeit senken,
   oder den Text von einer Beanstandung zu einem Hinweis abschwächen?
-- **Bei #49:** Soll die App Grundlast und gefundenen Standby gegeneinander
-  stellen („von deinen 250 W hast du 18 W gefunden")? Beide Zahlen liegen vor,
-  verglichen werden sie nie – das wäre der eigentliche Erkenntnisgewinn beider
-  Checks, aber eine neue Aussage, kein Bugfix.
 - **Bei #38b und #46:** Beide betreffen Texte, die für einen Sonderfall verkehrt
   sind (Kellerlüften im Sommer; Sparduschkopf am drucklosen Speicher). Je ein
   Halbsatz genügt – oder es bleibt bewusst beim allgemeinen Rat, weil der

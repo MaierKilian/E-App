@@ -29,6 +29,7 @@ import {
   GOOD_MIN as FRIDGE_GOOD_MIN,
   GOOD_MAX as FRIDGE_GOOD_MAX,
 } from '@/features/measurements/fridge/fridge'
+import { rateBaseLoad } from '@/features/measurements/base_load/baseLoad'
 import { findRoomInstance, parseRoomKey, roomInstances } from '@/features/measurements/rooms'
 import {
   isCurrentLightingResult,
@@ -344,6 +345,34 @@ function biggestStandbyDevice(
 }
 
 /**
+ * Gesamte im Standby-Check gefundene Dauerleistung in Watt – oder `undefined`,
+ * wenn gar nicht gemessen wurde.
+ *
+ * Die Zahl wird gegen die Grundlast gehalten, um zu sagen, wie viel von ihr
+ * erklärt ist. Sie muss deshalb auch aus Altergebnissen zu holen sein:
+ * `totalWatts` steht erst seit der Umstellung auf Gerätenamen in den Details,
+ * die Geräteliste dagegen von Anfang an. Fehlt die Summe, wird sie aus den
+ * Einzelgeräten gebildet – beide Kodierungen (`dev{i}` heute, `dev{i}_{type}`
+ * in Altergebnissen, siehe {@link biggestStandbyDevice}) zählen mit.
+ *
+ * `undefined` heißt „nicht gemessen" und ist von einer gemessenen 0 zu
+ * unterscheiden: Bei 0 W gefundenem Standby ist die ganze Grundlast unerklärt,
+ * und genau das soll der Befund dann sagen.
+ */
+function standbyFoundWatts(r: MeasurementResult | undefined): number | undefined {
+  if (!r) return undefined
+  const total = r.details?.totalWatts
+  if (total !== undefined && Number.isFinite(total)) return Math.max(0, total)
+
+  let sum = 0
+  for (const [key, watts] of Object.entries(r.details ?? {})) {
+    if (!Number.isFinite(watts) || watts <= 0) continue
+    if (/^dev\d+$/.test(key) || /^dev\d+_.+$/.test(key)) sum += watts
+  }
+  return sum
+}
+
+/**
  * Raumbezug eines Ergebnisses, samt Gesamtzahl gleichartiger Räume (für
  * „Schlafzimmer 2"). Ohne den Bezug wäre bei mehreren Räumen nicht erkennbar,
  * welcher gemeint ist.
@@ -602,23 +631,70 @@ export function buildTips(
   // etwas dauerhaft zieht, aber nicht was. Der Tipp führt deshalb in den
   // Standby-Check der App, statt zum Kauf eines Messgeräts zu raten.
   const bl = worstRating(results, 'base_load')
-  if (bl && bl !== 'good' && !results['standby']) {
-    const r = resultsForId(results, 'base_load')[0]
-    tips.push({
-      id: 'base_load',
-      source: sourceFor(results, 'base_load'),
-      icon: Gauge,
-      category: 'electricity',
-      // Wie der Verbrauchstrend ein Befund, keine Aufgabe: Er sagt, dass etwas
-      // zieht, nicht was zu tun ist. Er verschwindet ohnehin von selbst, sobald
-      // der Standby-Check vorliegt – ein Haken würde ihn nur früher und
-      // dauerhaft verschlucken.
-      kind: 'finding',
-      effortMinutes: 20,
-      costEur: 15,
-      params: { watts: Math.round(r?.primaryValue ?? 0) },
-      linkTo: '/measurements/standby',
-    })
+  const baseResult = resultsForId(results, 'base_load')[0]
+  if (bl && bl !== 'good' && baseResult) {
+    const baseWatts = baseResult.details?.watts ?? baseResult.primaryValue
+    const foundWatts = standbyFoundWatts(results['standby'])
+
+    if (foundWatts === undefined) {
+      // Noch nichts gemessen: erst den Standby-Check anbieten.
+      tips.push({
+        id: 'base_load',
+        source: sourceFor(results, 'base_load'),
+        icon: Gauge,
+        category: 'electricity',
+        // Wie der Verbrauchstrend ein Befund, keine Aufgabe: Er sagt, dass etwas
+        // zieht, nicht was zu tun ist. Er verschwindet ohnehin von selbst, sobald
+        // der Standby-Check vorliegt – ein Haken würde ihn nur früher und
+        // dauerhaft verschlucken.
+        kind: 'finding',
+        effortMinutes: 20,
+        costEur: 15,
+        params: { watts: Math.round(baseWatts) },
+        linkTo: '/measurements/standby',
+      })
+    } else {
+      // Der Standby-Check ist durch – aber er erklärt die Grundlast selten
+      // ganz. Sie wird von Dauerläufern getragen (Kühlgeräte, Umwälzpumpe,
+      // Router, Lüftung), nicht von Bereitschaftsschaltungen. Bisher
+      // verschwand der Hinweis trotzdem, sobald *irgendein* Standby-Ergebnis
+      // vorlag: Bei 250 W Grundlast und 18 W gefundenem Standby blieben 232 W
+      // unerklärt, und die App sagte dazu nichts mehr, obwohl sie beide Zahlen
+      // hatte.
+      //
+      // **Die Restleistung wird an denselben Schwellen gemessen wie die
+      // Grundlast selbst** (`rateBaseLoad`) – keine zweite Skala und keine neu
+      // erfundene Grenze für „nennenswerter Rest". Wäre der Rest allein noch
+      // auffällig, ist er einen Befund wert; wäre er es nicht (unter
+      // `GOOD_MAX`, also der Bereich, in dem Kühlschrank und Router ohnehin
+      // liegen), hat der Standby-Check die Grundlast hinreichend erklärt und
+      // die App schweigt.
+      //
+      // Bewusst ohne den Anteil am Jahresverbrauch, mit dem `rateBaseLoad`
+      // sonst bevorzugt rechnet: Der `share` steckt nicht in den Details des
+      // Ergebnisses, und ihn hier neu zu bilden hieße, eine zweite
+      // Bewertungsgrundlage einzuführen.
+      const restWatts = baseWatts - foundWatts
+      if (restWatts > 0 && rateBaseLoad(restWatts) !== 'good') {
+        tips.push({
+          id: 'base_load_unexplained',
+          source: sourceFor(results, 'base_load'),
+          icon: Gauge,
+          category: 'electricity',
+          kind: 'finding',
+          // Kein Link: Weitere Dauerläufer gehören nicht in den Standby-Check.
+          // Dessen `avoidableCost` behauptet, der gemessene Verbrauch ließe
+          // sich abschalten – für einen Kühlschrank wäre das falsch.
+          effortMinutes: 20,
+          costEur: 0,
+          params: {
+            watts: Math.round(baseWatts),
+            found: Math.round(foundWatts),
+            rest: Math.round(restWatts),
+          },
+        })
+      }
+    }
   }
 
   // --- Warmwasser / Wasser --------------------------------------------------

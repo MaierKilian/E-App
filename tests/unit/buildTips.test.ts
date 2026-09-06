@@ -124,10 +124,85 @@ describe('buildTips – Herkunft', () => {
   it('lässt den Grundlast-Tipp weg, sobald der Standby-Check erledigt ist', () => {
     const tips = buildTips(PROFILE, {
       base_load: result({ id: 'base_load', rating: 'high', primaryValue: 210, unit: 'W' }),
-      standby: result({ id: 'standby', details: { avoidableCost: 30 } }),
+      standby: result({ id: 'standby', details: { avoidableCost: 30, totalWatts: 190 } }),
     })
     expect(tips.map((t) => t.id)).not.toContain('base_load')
     expect(tips.map((t) => t.id)).toContain('standby')
+  })
+})
+
+describe('Grundlast und Standby werden gegeneinander gehalten', () => {
+  // Der Standby-Check erklaert die Grundlast selten ganz: Sie wird von
+  // Dauerlaeufern getragen (Kuehlgeraete, Umwaelzpumpe, Router), nicht von
+  // Bereitschaftsschaltungen. Frueher verschwand der Hinweis trotzdem, sobald
+  // irgendein Standby-Ergebnis vorlag – die App hatte beide Zahlen und
+  // verglich sie nie.
+  const withBase = (watts: number, standby?: Record<string, number>) => ({
+    base_load: result({ id: 'base_load', rating: 'high', primaryValue: watts, unit: 'W',
+      details: { watts } }),
+    ...(standby ? { standby: result({ id: 'standby', details: standby }) } : {}),
+  })
+
+  it('benennt die unerklaerte Restleistung', () => {
+    const tips = buildTips(PROFILE, withBase(250, { totalWatts: 18, dev0: 18 }))
+    const rest = tips.find((t) => t.id === 'base_load_unexplained')
+    expect(rest?.params).toMatchObject({ watts: 250, found: 18, rest: 232 })
+    // Ein Befund, keine Aufgabe – und ohne Link: Weitere Dauerlaeufer gehoeren
+    // nicht in den Standby-Check, dessen avoidableCost sie als abschaltbar
+    // ausweisen wuerde.
+    expect(isFinding(rest!)).toBe(true)
+    expect(rest?.linkTo).toBeUndefined()
+  })
+
+  it('schweigt, wenn der Standby-Check die Grundlast hinreichend erklaert', () => {
+    // Rest 40 W liegt unter GOOD_MAX (70 W) – der Bereich, in dem Kuehlschrank
+    // und Router ohnehin liegen. Gemessen an denselben Schwellen wie die
+    // Grundlast selbst ist da nichts mehr aufzuspueren.
+    const tips = buildTips(PROFILE, withBase(210, { totalWatts: 170, dev0: 170 })).map((t) => t.id)
+    expect(tips).not.toContain('base_load_unexplained')
+    expect(tips).not.toContain('base_load')
+  })
+
+  it('zeigt weiter den Weg in den Standby-Check, solange nicht gemessen wurde', () => {
+    const tips = buildTips(PROFILE, withBase(250))
+    expect(tips.find((t) => t.id === 'base_load')?.linkTo).toBe('/measurements/standby')
+    expect(tips.map((t) => t.id)).not.toContain('base_load_unexplained')
+  })
+
+  it('nennt bei 0 W gefundenem Standby die ganze Grundlast als unerklaert', () => {
+    // Gemessen und nichts gefunden ist etwas anderes als nicht gemessen.
+    const tips = buildTips(PROFILE, withBase(250, { totalWatts: 0 }))
+    expect(tips.find((t) => t.id === 'base_load_unexplained')?.params).toMatchObject({ rest: 250 })
+  })
+
+  it('summiert die Geraete eines Altergebnisses ohne totalWatts', () => {
+    // `totalWatts` steht erst seit der Umstellung auf Geraetenamen in den
+    // Details; die Geraeteliste gab es von Anfang an – in zwei Kodierungen.
+    const neu = buildTips(PROFILE, withBase(250, { dev0: 12, dev1: 6 }))
+    expect(neu.find((t) => t.id === 'base_load_unexplained')?.params).toMatchObject({
+      found: 18, rest: 232,
+    })
+    const alt = buildTips(PROFILE, withBase(250, { dev0_tv: 12, dev1_router: 6 }))
+    expect(alt.find((t) => t.id === 'base_load_unexplained')?.params).toMatchObject({
+      found: 18, rest: 232,
+    })
+  })
+
+  it('schweigt, wenn mehr Standby als Grundlast gemessen wurde', () => {
+    // Widerspruechlich (Standby ist eine Teilmenge der Grundlast) – meist zu
+    // verschiedenen Zeiten gemessen. Eine negative Restleistung zu behaupten
+    // waere schlechter als nichts zu sagen.
+    const tips = buildTips(PROFILE, withBase(80, { totalWatts: 120 })).map((t) => t.id)
+    expect(tips).not.toContain('base_load_unexplained')
+  })
+
+  it('schweigt bei unauffaelliger Grundlast, auch ohne Standby-Messung', () => {
+    const tips = buildTips(PROFILE, {
+      base_load: result({ id: 'base_load', rating: 'good', primaryValue: 45, unit: 'W',
+        details: { watts: 45 } }),
+    }).map((t) => t.id)
+    expect(tips).not.toContain('base_load')
+    expect(tips).not.toContain('base_load_unexplained')
   })
 })
 
@@ -750,6 +825,17 @@ describe('Jeder Tipp ist beschriftet', () => {
     [
       RICH,
       { base_load: result({ id: 'base_load', rating: 'high', primaryValue: 210, unit: 'W' }) },
+    ],
+    // Grundlast **mit** erledigtem Standby-Check: erzeugt den Rest-Befund
+    // (`base_load_unexplained`), den der Fall darueber nicht erreicht.
+    [
+      RICH,
+      {
+        base_load: result({
+          id: 'base_load', rating: 'high', primaryValue: 250, unit: 'W', details: { watts: 250 },
+        }),
+        standby: result({ id: 'standby', details: { totalWatts: 18, dev0: 18 } }),
+      },
     ],
     // Steigender Verbrauch, je einmal fuer einen witterungsabhaengigen und
     // einen unabhaengigen Traeger: Die beiden tragen verschiedene Texte

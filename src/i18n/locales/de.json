@@ -2610,6 +2610,10 @@
         "reason": "Deine Grundlast liegt bei {{watts}} W – auch wenn nichts bewusst läuft. Der Standby-Check zeigt dir Gerät für Gerät, wo das herkommt.",
         "action": "Zum Standby-Check"
       },
+      "base_load_unexplained": {
+        "title": "Rest der Grundlast aufspüren",
+        "reason": "Von {{watts}} W Grundlast erklärt der Standby-Check {{found}} W – {{rest}} W ziehen woanders. Typische Dauerläufer, die im Standby nicht auffallen: Kühl- und Gefriergeräte, die Umwälzpumpe der Heizung, Router und Repeater, Lüftung, ein Aquarium. Miss sie mit demselben Messgerät einzeln nach, dann weißt du, wo die Leistung bleibt."
+      },
       "consumption_up": {
         "title": "Mehr $t(monitoring.energyTypes.{{carrier}}) als im Vorjahr",
         "reason": "Deine Zählerstände zeigen {{percent}} % mehr Verbrauch als im Vorjahreszeitraum – rund {{amount}} {{unit}} zusätzlich. Das ist gemessen, nicht geschätzt. Geh der Ursache nach, bevor sie sich über ein weiteres Jahr summiert.",
