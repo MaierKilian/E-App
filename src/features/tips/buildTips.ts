@@ -21,7 +21,14 @@ import { resultSavingsEur } from '@/features/measurements/impact'
 import { isMeasuredSaving } from '@/features/measurements/savingsDisplay'
 import { applianceInstances } from '@/features/onboarding/appliances'
 import type { MeasurementCategory } from '@/features/measurements/catalog'
-import { DEFAULT_COMFORT_BAND } from '@/features/measurements/room_temperature/roomClimate'
+import {
+  DEFAULT_COMFORT_BAND,
+  DEFAULT_HUMIDITY_BAND,
+} from '@/features/measurements/room_temperature/roomClimate'
+import {
+  GOOD_MIN as FRIDGE_GOOD_MIN,
+  GOOD_MAX as FRIDGE_GOOD_MAX,
+} from '@/features/measurements/fridge/fridge'
 import { findRoomInstance, parseRoomKey, roomInstances } from '@/features/measurements/rooms'
 import {
   isCurrentLightingResult,
@@ -110,6 +117,30 @@ export interface Tip {
   appliance?: { entry: ApplianceEntry; all: readonly ApplianceEntry[] }
   /** Zielseite einer weiterführenden Aktion (z. B. eine Messung in der App). */
   linkTo?: string
+  /**
+   * Maßnahme oder Befund – entscheidet, ob sich der Eintrag **abhaken** lässt.
+   *
+   * `action` (Standard) ist etwas, das der Nutzer tut und danach hinter sich
+   * hat: Sofa wegrücken, Sparduschkopf aufschrauben, Gefrierfach abtauen.
+   * „Erledigt" ist dort die richtige Geste, und der Haken darf dauerhaft
+   * bleiben.
+   *
+   * `finding` ist eine Beobachtung, die die App gemacht hat: ein Verbrauch,
+   * der gegenüber dem Vorjahr steigt; eine Grundlast, die noch niemand
+   * erklärt hat. So etwas *erledigt* man nicht – man sieht es sich an. Ein
+   * Haken wäre dort nicht nur sinnlos, sondern schädlich: Der Status liegt
+   * dauerhaft in `tipsStore.doneIds` (localStorage), ein einmal abgehakter
+   * Verbrauchsanstieg käme also **nie wieder**, auch wenn er im nächsten Jahr
+   * weiter steigt. Befunde verschwinden stattdessen von selbst, sobald sie
+   * nicht mehr zutreffen – der Grundlast-Hinweis tut das bereits, sobald der
+   * Standby-Check vorliegt.
+   */
+  kind?: 'action' | 'finding'
+}
+
+/** Befunde sind Beobachtungen, keine Aufgaben – siehe {@link Tip.kind}. */
+export function isFinding(tip: Tip): boolean {
+  return tip.kind === 'finding'
 }
 
 type Results = Partial<Record<string, MeasurementResult>>
@@ -132,6 +163,24 @@ export interface TipContext {
 /** Ab dieser Steigerung gegenüber dem Vorjahr lohnt der Hinweis (darunter: Rauschen). */
 const CONSUMPTION_RISE_MIN = 0.1
 
+/**
+ * Energieträger, deren Jahresverbrauch am Wetter hängt.
+ *
+ * Für sie gilt der Befund „mehr als im Vorjahr" mit einem Vorbehalt, den
+ * Strom und Wasser nicht brauchen: Ein kälteres Jahr erklärt einen Teil der
+ * Mehrmenge, ohne dass im Haushalt irgendetwas anders liefe. Die Mehrmenge
+ * selbst ist gemessen – die *Ursache* ist es nicht.
+ *
+ * Die Wärmepumpe steht bewusst mit in der Liste, obwohl sie unter
+ * `CARRIER_CATEGORY` als Strom läuft: Sie heizt, also schwankt sie mit dem
+ * Wetter wie ein Kessel.
+ *
+ * Sauber herausrechnen ließe sich das erst mit Gradtagzahlen (geprüfte
+ * DWD-Daten, siehe „Offene Fragen" in `docs/gefundene-probleme.md`). Bis
+ * dahin nennt der Text den Vorbehalt, statt ihn zu verschweigen.
+ */
+const WEATHER_DEPENDENT: readonly EnergyType[] = ['gas', 'oil', 'pellets', 'heat_pump']
+
 /** Gewerk je Energieträger – steuert Farbe und Einsortierung des Trend-Tipps. */
 const CARRIER_CATEGORY: Partial<Record<EnergyType, TipCategory>> = {
   electricity: 'electricity',
@@ -149,16 +198,11 @@ const RATING_ORDER: Record<MeasurementRating, number> = {
   high: 3,
 }
 
-// Schwellen für Raumklima-Befunde. Das Komfortband ist raumtypabhängig und
-// steckt im Ergebnis (bandMin/bandMax) – feste Werte hier hätten z. B. ein
-// Schlafzimmer bei 17 °C fälschlich als „zu kalt" gemeldet.
+// Schwellen für Raumklima-Befunde. Komfort- **und** Feuchteband sind
+// raumtypabhängig und stecken im Ergebnis (bandMin/bandMax, humMin/humMax) –
+// feste Werte hier hätten z. B. ein Schlafzimmer bei 17 °C fälschlich als „zu
+// kalt" und jeden normalen Keller bei 62 % als „zu feucht" gemeldet.
 const ROOM_COLD_MARGIN_C = 2 // so weit unter dem Band → Auskühl-/Schimmel-Hinweis
-const HUMID_MAX = 60 // % – darüber zu feucht
-const HUMID_MIN = 40 // % – darunter zu trocken
-
-// Kühlschrank: unter 5 °C unnötig kalt, über 7 °C zu warm für sichere Lagerung.
-const FRIDGE_COLD_C = 5
-const FRIDGE_WARM_C = 7
 
 /** Alle (Raum-)Ergebnisse einer Messung. */
 function resultsForId(results: Results, id: string): MeasurementResult[] {
@@ -252,6 +296,23 @@ function bandOf(r: MeasurementResult): { min: number; max: number } {
   return {
     min: r.details?.bandMin ?? DEFAULT_COMFORT_BAND.min,
     max: r.details?.bandMax ?? DEFAULT_COMFORT_BAND.max,
+  }
+}
+
+/**
+ * Beim Messen gespeichertes **Feuchte**band; ältere Ergebnisse nutzen den
+ * Wohnraum-Default.
+ *
+ * Dasselbe Muster wie {@link bandOf}, und aus demselben Grund: Der gesunde
+ * Bereich hängt am Raumtyp (Keller und Waschküche 50–65 %, siehe
+ * `HUMIDITY_BANDS`), das Ergebnis kennt aber nur sich selbst. Ohne diese
+ * Zahlen meldete der Tipp jeden normalen Keller bei 62 % als „zu feucht" –
+ * während die Ergebnis-Seite desselben Checks ihn als unauffällig bewertet.
+ */
+function humidityBandOf(r: MeasurementResult): { min: number; max: number } {
+  return {
+    min: r.details?.humMin ?? DEFAULT_HUMIDITY_BAND.min,
+    max: r.details?.humMax ?? DEFAULT_HUMIDITY_BAND.max,
   }
 }
 
@@ -472,7 +533,7 @@ export function buildTips(
     results,
     'fridge',
     fridges,
-    (r) => tempOf(r) < FRIDGE_COLD_C,
+    (r) => tempOf(r) < FRIDGE_GOOD_MIN,
   )) {
     tips.push({
       id: key,
@@ -496,7 +557,7 @@ export function buildTips(
     results,
     'fridge',
     fridges,
-    (r) => tempOf(r) > FRIDGE_WARM_C,
+    (r) => tempOf(r) > FRIDGE_GOOD_MAX,
   )) {
     tips.push({
       id: `fridge_warm@${key}`,
@@ -548,6 +609,11 @@ export function buildTips(
       source: sourceFor(results, 'base_load'),
       icon: Gauge,
       category: 'electricity',
+      // Wie der Verbrauchstrend ein Befund, keine Aufgabe: Er sagt, dass etwas
+      // zieht, nicht was zu tun ist. Er verschwindet ohnehin von selbst, sobald
+      // der Standby-Check vorliegt – ein Haken würde ihn nur früher und
+      // dauerhaft verschlucken.
+      kind: 'finding',
       effortMinutes: 20,
       costEur: 15,
       params: { watts: Math.round(r?.primaryValue ?? 0) },
@@ -634,17 +700,26 @@ export function buildTips(
   // --- Heizen / Raumklima ---------------------------------------------------
   const roomTemp = resultsForId(results, 'room_temperature')
   if (roomTemp.length) {
-    // Zu warm → senken. Der wärmste Raum steht stellvertretend im Text.
+    // Zu warm → senken. **Ein** Raum trägt den Tipp: der mit dem größten
+    // Hebel, nicht der absolut wärmste.
+    //
+    // Die beiden fallen auseinander, weil das Komfortband am Raumtyp hängt:
+    // Ein Wohnzimmer mit 24 °C (Band bis 22) liegt 2 K darüber, ein
+    // Schlafzimmer mit 21 °C (Band bis 18) aber 3 K. Zwei getrennte Extrema –
+    // Temperatur hier, `savingPercent` dort – ergaben deshalb einen Satz,
+    // dessen Raumname und Grad vom einen und dessen Prozentwert vom anderen
+    // Raum kamen: Zahlen, die zusammen nie gemessen wurden. Derselbe Fehler
+    // war beim Warmwasser-Tipp schon aufgefallen (siehe dort).
     const warmRooms = roomTemp.filter((r) => tempOf(r) > bandOf(r).max)
     if (warmRooms.length) {
-      const warmest = warmRooms.reduce((a, b) => (tempOf(b) > tempOf(a) ? b : a))
+      const worstWarm = warmRooms.reduce((a, b) =>
+        (b.details?.savingPercent ?? 0) > (a.details?.savingPercent ?? 0) ? b : a,
+      )
       // Kein Euro-Betrag: Die 6 %/°C sind eine Faustregel fuer die gesamte
       // beheizte Flaeche, und der Raumanteil wird nach Grundflaeche verteilt,
       // waehrend die Heizlast an der Huellflaeche haengt. Was das Modell
       // wirklich behauptet, ist die relative Einsparung – die steht hier.
-      const warmPercent = Math.round(
-        Math.max(0, ...warmRooms.map((r) => r.details?.savingPercent ?? 0)),
-      )
+      const warmPercent = Math.round(Math.max(0, worstWarm.details?.savingPercent ?? 0))
       tips.push({
         id: 'room_temperature',
         source: sourceFor(results, 'room_temperature'),
@@ -656,8 +731,8 @@ export function buildTips(
             : undefined,
         effortMinutes: 2,
         costEur: 0,
-        params: { temp: Math.round(tempOf(warmest) * 10) / 10 },
-        room: roomOf(warmest, data),
+        params: { temp: Math.round(tempOf(worstWarm) * 10) / 10 },
+        room: roomOf(worstWarm, data),
       })
     }
 
@@ -677,9 +752,9 @@ export function buildTips(
       })
     }
 
-    // Luftfeuchte (nur wo erfasst).
+    // Luftfeuchte (nur wo erfasst) – je Raum gegen sein eigenes Band.
     const humid = roomTemp.filter(
-      (r) => r.details?.humidity !== undefined && r.details.humidity > HUMID_MAX,
+      (r) => r.details?.humidity !== undefined && r.details.humidity > humidityBandOf(r).max,
     )
     if (humid.length) {
       const wettest = humid.reduce((a, b) => ((b.details?.humidity ?? 0) > (a.details?.humidity ?? 0) ? b : a))
@@ -695,7 +770,7 @@ export function buildTips(
       })
     }
     const dry = roomTemp.filter(
-      (r) => r.details?.humidity !== undefined && r.details.humidity < HUMID_MIN,
+      (r) => r.details?.humidity !== undefined && r.details.humidity < humidityBandOf(r).min,
     )
     if (dry.length) {
       const driest = dry.reduce((a, b) => ((b.details?.humidity ?? 100) < (a.details?.humidity ?? 100) ? b : a))
@@ -711,9 +786,14 @@ export function buildTips(
       })
     }
 
-    // Zugluft (Index >= 1 = spürbar/stark).
+    // Zugluft (Index >= 1 = spürbar/stark). Wie bei allen Raum-Befunden trägt
+    // der **stärkste** Fall den Tipp – vorher stand hier der zuerst gemessene
+    // Raum, was bei drei zugigen Zimmern einen beliebigen benannte.
     const drafty = roomTemp.filter((r) => (r.details?.draft ?? 0) >= 1)
     if (drafty.length) {
+      const draftiest = drafty.reduce((a, b) =>
+        (b.details?.draft ?? 0) > (a.details?.draft ?? 0) ? b : a,
+      )
       tips.push({
         id: 'draft',
         source: sourceFor(results, 'room_temperature'),
@@ -721,7 +801,7 @@ export function buildTips(
         category: 'heating',
         effortMinutes: 20,
         costEur: 8,
-        room: roomOf(drafty[0], data),
+        room: roomOf(draftiest, data),
       })
     }
   }
@@ -760,9 +840,13 @@ export function buildTips(
 
     tips.push({
       id: `consumption_up_${type}`,
-      textId: 'consumption_up',
+      // Wärmeträger bekommen denselben Befund mit Witterungsvorbehalt.
+      textId: WEATHER_DEPENDENT.includes(type) ? 'consumption_up_heating' : 'consumption_up',
       icon: TrendingUp,
       category,
+      // Ein steigender Verbrauch ist nichts, was man abhakt – er ist der
+      // Grund, genauer hinzusehen.
+      kind: 'finding',
       quantity: {
         key: extraCost !== undefined ? 'tips.quantity.moreWithCost' : 'tips.quantity.more',
         params: {

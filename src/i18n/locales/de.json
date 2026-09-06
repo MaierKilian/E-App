@@ -2553,8 +2553,8 @@
       },
       "lighting": {
         "title": "Auf LED umstellen",
-        "reason_one": "In einem Raum hängen noch alte Lampen. Eine Ersatz-LED kostet rund 3 € und spart das im ersten Jahr wieder ein.",
-        "reason_other": "In {{count}} Räumen hängen noch alte Lampen. Fang dort an, wo täglich am längsten Licht brennt – eine Ersatz-LED kostet rund 3 € und spart das im ersten Jahr wieder ein."
+        "reason_one": "In einem Raum hängen noch alte Lampen. Fang dort an, wo täglich am längsten Licht brennt – dort ist eine Ersatz-LED für rund 3 € am schnellsten wieder drin.",
+        "reason_other": "In {{count}} Räumen hängen noch alte Lampen. Fang dort an, wo täglich am längsten Licht brennt – dort ist eine Ersatz-LED für rund 3 € am schnellsten wieder drin."
       },
       "hot_water_wait": {
         "title": "Vorlaufwasser auffangen",
@@ -2566,7 +2566,7 @@
       },
       "fridge": {
         "title": "Kühlschrank wärmer stellen",
-        "reason": "{{temp}} °C ist kälter als nötig. Dreh den Regler eine Stufe zurück – 7 °C reichen, und jedes Grad wärmer spart rund 6 % Strom."
+        "reason": "{{temp}} °C ist kälter als nötig. Dreh den Regler eine Stufe zurück – 5 bis 7 °C reichen, und jedes Grad wärmer spart rund 6 % Strom."
       },
       "fridge_warm": {
         "title": "Kühlschrank kälter stellen",
@@ -2615,6 +2615,11 @@
         "reason": "Deine Zählerstände zeigen {{percent}} % mehr Verbrauch als im Vorjahreszeitraum – rund {{amount}} {{unit}} zusätzlich. Das ist gemessen, nicht geschätzt. Geh der Ursache nach, bevor sie sich über ein weiteres Jahr summiert.",
         "action": "Verlauf ansehen"
       },
+      "consumption_up_heating": {
+        "title": "Mehr $t(monitoring.energyTypes.{{carrier}}) als im Vorjahr",
+        "reason": "Deine Zählerstände zeigen {{percent}} % mehr Verbrauch als im Vorjahreszeitraum – rund {{amount}} {{unit}} zusätzlich. Die Menge ist gemessen; die Ursache noch nicht. Ein kälteres Jahr erklärt beim Heizen einen Teil davon. Sieh dir den Verlauf an: Steigt der Verbrauch auch außerhalb der Heizperiode, liegt es nicht am Wetter.",
+        "action": "Verlauf ansehen"
+      },
       "old_boiler": {
         "title": "Heizungstausch prüfen",
         "reason": "Deine Heizung ist rund {{years}} Jahre alt. Beim Austausch liegt der größte Einzelhebel deines Hauses – für solche Maßnahmen gibt es in der Regel staatliche Förderung, das ist prüfenswert."
@@ -2657,7 +2662,8 @@
     "sortedByGoal": "Sortiert nach deinem Ziel: {{goals}}",
     "changeGoal": "ändern",
     "groupQuick": "Sofort machbar",
-    "groupPrepared": "Braucht etwas Vorbereitung"
+    "groupPrepared": "Braucht etwas Vorbereitung",
+    "groupFindings": "Was auffällt"
   },
   "scan": {
     "button": "Scannen",

@@ -22,7 +22,14 @@ import { useTipContext } from './useTipContext'
 import { roomLabel } from '@/features/measurements/rooms'
 import { applianceLabel } from '@/features/measurements/applianceLabel'
 import { displaySavingEur, savingRange } from '@/features/measurements/savingsDisplay'
-import { buildTips, isQuickWin, sortingGoals, type Tip, type TipCategory } from './buildTips'
+import {
+  buildTips,
+  isFinding,
+  isQuickWin,
+  sortingGoals,
+  type Tip,
+  type TipCategory,
+} from './buildTips'
 
 /** Farbcodierung der Icon-Kachel je Gewerk (Structured-Stil, ruhige Akzente). */
 const ACCENT: Record<TipCategory, string> = {
@@ -124,6 +131,10 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
   // senken" und „Raum nicht auskühlen lassen" nebeneinander wie ein
   // Widerspruch, statt zwei verschiedene Räume zu meinen.
   const room = tip.room ? roomLabel(t, tip.room) : undefined
+  // Befunde sind Beobachtungen, keine Aufgaben (siehe `Tip.kind`): kein
+  // Erledigt-Haken, und auch kein Aufwand-Chip – „10 Min · kostenlos" ist für
+  // „sieh dir den Verlauf an" eine erfundene Angabe.
+  const finding = isFinding(tip)
   // Der Gerätename erscheint nur, wenn es mehrere gleichartige Geräte gibt.
   // Bei einem einzigen Kühlschrank wäre „Kühlschrank · Küche" unter „Dein
   // Kühlschrank ist zu kalt" eine Wiederholung.
@@ -199,11 +210,15 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
           {applianceName && (
             <p className="mt-0.5 text-xs font-medium text-muted">{applianceName}</p>
           )}
-          {/* Aufwand + Kosten auf jedem Tipp – die Frage, die vor dem Anfangen
-              zählt. Die €-Schätzung steht unten am Wirkungsbalken. */}
-          <span className="mt-1.5 inline-flex items-center rounded-full bg-surface-2/70 px-2.5 py-1 text-[11px] font-medium text-foreground/70 ring-1 ring-inset ring-black/5 dark:ring-white/10">
-            {effortLabel}
-          </span>
+          {/* Aufwand + Kosten auf jeder Maßnahme – die Frage, die vor dem
+              Anfangen zählt. Die €-Schätzung steht unten am Wirkungsbalken.
+              Befunde tragen ihn nicht: Sie verlangen keine Arbeit, sondern
+              einen Blick. */}
+          {!finding && (
+            <span className="mt-1.5 inline-flex items-center rounded-full bg-surface-2/70 px-2.5 py-1 text-[11px] font-medium text-foreground/70 ring-1 ring-inset ring-black/5 dark:ring-white/10">
+              {effortLabel}
+            </span>
+          )}
           <p className="mt-1 text-sm leading-snug text-muted">{reason}</p>
 
           {/* Weiterführende Aktion, wo der Tipp in der App weitergeht. */}
@@ -224,12 +239,19 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
               Schätzung erkennbar (kein centgenauer €-Klotz mehr). */}
           {!done && impactText && (
             <div className="mt-3 flex items-center gap-3">
-              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2/70">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-success/60 to-success"
-                  style={{ width: `${barPct}%` }}
-                />
-              </div>
+              {/* Der Balken vergleicht €-Beträge untereinander. Wo keiner steht
+                  – bei jeder gemessenen Menge und bei jedem Befund – blieb er
+                  als leere graue Spur zurück und behauptete eine Skala, auf der
+                  dieser Eintrag gar nicht liegt. Dann trägt die Zeile nur die
+                  Zahl. */}
+              {barPct > 0 && (
+                <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2/70">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-success/60 to-success"
+                    style={{ width: `${barPct}%` }}
+                  />
+                </div>
+              )}
               <span className="shrink-0 text-xs font-semibold tabular-nums text-success">
                 {impactText}
               </span>
@@ -254,26 +276,33 @@ function TipCard({ tip, done = false, maxSaving = 0, top = false, onToggleDone, 
             </button>
           )}
 
-          {/* Einzelner, ruhiger Erledigt-Toggle (kein zweiter lauter Button mehr). */}
-          <button
-            type="button"
-            onClick={() => onToggleDone(tip.id)}
-            aria-pressed={done}
-            className="focus-ring group mt-3 -ml-1 inline-flex items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm font-medium transition-colors"
-          >
-            <span
-              className={`grid h-6 w-6 place-items-center rounded-full border-2 transition-colors ${
-                done
-                  ? 'border-success bg-success text-white'
-                  : 'border-muted/40 text-transparent group-hover:border-success/60'
-              }`}
+          {/* Einzelner, ruhiger Erledigt-Toggle (kein zweiter lauter Button mehr).
+              Nur auf Maßnahmen: Einen Verbrauchsanstieg hakt man nicht ab, und
+              der Haken läge dauerhaft im `tipsStore` – der Befund käme nie
+              wieder, auch wenn der Verbrauch weiter steigt. Befunde treten
+              stattdessen von selbst ab, sobald sie nicht mehr zutreffen; wer
+              sie trotzdem loswerden will, nimmt das „×" oben rechts. */}
+          {!finding && (
+            <button
+              type="button"
+              onClick={() => onToggleDone(tip.id)}
+              aria-pressed={done}
+              className="focus-ring group mt-3 -ml-1 inline-flex items-center gap-2 rounded-full py-1 pl-1 pr-3 text-sm font-medium transition-colors"
             >
-              <Check className="h-3.5 w-3.5" />
-            </span>
-            <span className={done ? 'text-muted' : 'text-foreground/70'}>
-              {done ? t('tips.reopen') : t('tips.markDone')}
-            </span>
-          </button>
+              <span
+                className={`grid h-6 w-6 place-items-center rounded-full border-2 transition-colors ${
+                  done
+                    ? 'border-success bg-success text-white'
+                    : 'border-muted/40 text-transparent group-hover:border-success/60'
+                }`}
+              >
+                <Check className="h-3.5 w-3.5" />
+              </span>
+              <span className={done ? 'text-muted' : 'text-foreground/70'}>
+                {done ? t('tips.reopen') : t('tips.markDone')}
+              </span>
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -358,10 +387,15 @@ export function TipsPage() {
 
   const allTips = buildTips(data, results, useTipContext())
   const active = allTips.filter((tip) => !doneIds.includes(tip.id) && !dismissedIds.includes(tip.id))
+  // Befunde zuerst, und getrennt von den Maßnahmen: Sie sind der Grund, warum
+  // man überhaupt etwas tut, aber selbst keine Aufgabe – „Sofort machbar"
+  // stimmte für „dein Verbrauch steigt" nie.
+  const findings = active.filter(isFinding)
+  const actions = active.filter((tip) => !isFinding(tip))
   // Dieselbe Grenze, nach der auch sortiert wird (siehe `compareTips`) – die
   // Gruppen bilden die bestehende Reihenfolge ab, sie ordnen nicht um.
-  const quickWins = active.filter(isQuickWin)
-  const prepared = active.filter((tip) => !isQuickWin(tip))
+  const quickWins = actions.filter(isQuickWin)
+  const prepared = actions.filter((tip) => !isQuickWin(tip))
   const done = allTips.filter((tip) => doneIds.includes(tip.id))
   const dismissed = allTips.filter((tip) => dismissedIds.includes(tip.id))
 
@@ -384,8 +418,9 @@ export function TipsPage() {
   )
   // „Fang hier an": der erste der sortierten Liste. Früher war es der Tipp mit
   // dem höchsten €-Wert – der kann jetzt weiter unten stehen, weil Sofort- und
-  // Gratis-Maßnahmen vorgehen.
-  const topId = active[0]?.id
+  // Gratis-Maßnahmen vorgehen. Ein Befund kommt dafür nicht in Frage: Bei ihm
+  // gibt es nichts anzufangen.
+  const topId = actions[0]?.id
   const eurFmt = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 0 })
 
   // Nur Ziele nennen, die die Reihenfolge wirklich verändert haben. „Sortiert
@@ -394,7 +429,11 @@ export function TipsPage() {
   const goalNames = sortingGoals(data.goals).map((g) => t(`onboarding.step1.goalOptions.${g}`))
 
   // Fortschritt: Anteil erledigter Maßnahmen an allen (offen + erledigt).
-  const totalTracked = active.length + done.length
+  //
+  // **Ohne Befunde**, denn die lassen sich nicht abhaken: Zählte man sie mit,
+  // könnte der Balken bei einem dauerhaft steigenden Verbrauch nie 100 %
+  // erreichen – derselbe Fehler, den die Ziel-Frage im Fragebogen hatte.
+  const totalTracked = actions.length + done.length
   const progressPct = totalTracked > 0 ? Math.round((done.length / totalTracked) * 100) : 0
 
   return (
@@ -492,7 +531,21 @@ export function TipsPage() {
               hinter „Sofa wegrücken" steht. Gibt es nur eine Sorte, bliebe eine
               einzelne Gruppenüberschrift ohne Gegenstück – dann die schlichte
               Liste wie bisher. */}
-          {active.length > 0 ? (
+          {/* Was die App beobachtet hat – vor den Maßnahmen, weil es der Grund
+              für sie ist. Eigene Gruppe statt Einreihung: Diese Karten tragen
+              keinen Aufwand und keinen Haken, unter „Sofort machbar" hätten
+              sie beides behauptet. */}
+          {findings.length > 0 && (
+            <TipGroup
+              title={t('tips.groupFindings')}
+              tips={findings}
+              maxSaving={maxSaving}
+              onToggleDone={toggleDone}
+              onDismiss={dismiss}
+            />
+          )}
+
+          {actions.length > 0 ? (
             <div className="space-y-3">
               {quickWins.length > 0 && prepared.length > 0 ? (
                 <>
@@ -516,9 +569,9 @@ export function TipsPage() {
               ) : (
                 <>
                   <p className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
-                    {t('tips.openSection')} · {active.length}
+                    {t('tips.openSection')} · {actions.length}
                   </p>
-                  {active.map((tip) => (
+                  {actions.map((tip) => (
                     <TipCard
                       key={tip.id}
                       tip={tip}
@@ -561,8 +614,14 @@ export function TipsPage() {
                     >
                       <Icon className="h-4.5 w-4.5" />
                     </span>
+                    {/* `textId ?? id`, nicht `id`: Wo mehrere Tipps einen Text
+                        teilen, ist die id nicht der i18n-Schlüssel. Ein
+                        ausgeblendeter Verbrauchstrend
+                        (`consumption_up_electricity`) oder ein Kühlschrank
+                        (`fridge@fridge-abc`) zeigte hier sonst den rohen
+                        Schlüssel statt seines Titels. */}
                     <p className="min-w-0 flex-1 truncate text-sm font-medium text-muted">
-                      {t(`tips.items.${tip.id}.title`, tip.params)}
+                      {t(`tips.items.${tip.textId ?? tip.id}.title`, tip.params)}
                     </p>
                     <button
                       type="button"

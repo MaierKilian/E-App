@@ -6,7 +6,7 @@
 // Thermostate für 120 €".
 
 import { describe, expect, it } from 'vitest'
-import { buildTips, sortingGoals } from '@/features/tips/buildTips'
+import { buildTips, isFinding, sortingGoals, type TipContext } from '@/features/tips/buildTips'
 import type { MeasurementResult } from '@/features/measurements/types'
 import type { OnboardingData } from '@/types'
 import de from '@/i18n/locales/de.json'
@@ -30,6 +30,18 @@ const PROFILE = {
 function result(partial: Partial<MeasurementResult> & { id: string }): MeasurementResult {
   return { rating: 'elevated', primaryValue: 0, unit: '', completedAt: NOW, ...partial }
 }
+
+/**
+ * Zwei vollstaendige Jahre mit deutlich steigendem Verbrauch.
+ *
+ * `yearOverYearTrend` verlangt, dass beide Vergleichsjahre von Ablesungen
+ * gedeckt sind – drei Staende im Jahresabstand sind das Minimum.
+ */
+const RISING = [
+  { id: 'a', date: '2024-08-01', value: 1000 },
+  { id: 'b', date: '2025-08-01', value: 3000 },
+  { id: 'c', date: '2026-08-01', value: 5600 },
+]
 
 describe('Alter des Wärmeerzeugers', () => {
   const withBoiler = (year: number) =>
@@ -425,13 +437,7 @@ describe('buildTips – Herkunft der Empfehlung', () => {
       PROFILE,
       {},
       {
-        readings: {
-          electricity: [
-            { id: 'a', date: '2024-08-01', value: 1000 },
-            { id: 'b', date: '2025-08-01', value: 3000 },
-            { id: 'c', date: '2026-08-01', value: 5600 },
-          ],
-        },
+        readings: { electricity: RISING },
       },
     )
     const trend = tips.find((t) => t.id === 'consumption_up_electricity')
@@ -577,6 +583,141 @@ describe('Kamin/Ofen', () => {
   })
 })
 
+describe('Befund oder Maßnahme', () => {
+  // Kilians Einwand aus dem Live-Test: „Was soll man da abhaken? Das sind ja
+  // eher Infos als Tipps." Richtig – und der Haken war nicht bloß sinnlos,
+  // sondern schädlich: Er liegt dauerhaft in `tipsStore.doneIds`, ein einmal
+  // abgehakter Verbrauchsanstieg wäre also nie wieder erschienen, auch wenn er
+  // im Jahr darauf weiter steigt.
+  const trendContext: TipContext = {
+    readings: { electricity: RISING },
+    eurPerUnit: { electricity: 0.3 },
+  }
+
+  it('markiert den Verbrauchstrend als Befund, nicht als Maßnahme', () => {
+    const tips = buildTips(PROFILE, {}, trendContext)
+    const trend = tips.find((t) => t.id === 'consumption_up_electricity')
+    expect(trend).toBeDefined()
+    expect(isFinding(trend!)).toBe(true)
+  })
+
+  it('markiert die Grundlast als Befund – sie sagt, dass etwas zieht, nicht was zu tun ist', () => {
+    const tips = buildTips(PROFILE, {
+      base_load: result({ id: 'base_load', rating: 'high', primaryValue: 210, unit: 'W' }),
+    })
+    expect(isFinding(tips.find((t) => t.id === 'base_load')!)).toBe(true)
+  })
+
+  it('lässt jede echte Maßnahme abhakbar', () => {
+    // Die Umkehrung gehört dazu: Wäre `kind` versehentlich überall gesetzt,
+    // verschwände der Haken aus der ganzen Liste.
+    const tips = buildTips(PROFILE, {
+      'room_temperature@living_room#0': result({
+        id: 'room_temperature',
+        roomKey: 'living_room#0',
+        details: { temperature: 24, bandMin: 20, bandMax: 22, savingPercent: 12 },
+      }),
+      furniture_spacing: result({ id: 'furniture_spacing', rating: 'elevated' }),
+    })
+    const actions = tips.filter((t) => !isFinding(t))
+    expect(actions.map((t) => t.id).sort()).toEqual(['furniture_spacing', 'room_temperature'])
+  })
+
+  it('gibt Wärmeträgern den Befund mit Witterungsvorbehalt', () => {
+    // Bei Gas, Öl, Pellets und Wärmepumpe erklärt ein kälteres Jahr einen Teil
+    // der Mehrmenge. Der Text sagt das; bei Strom wäre der Vorbehalt falsch.
+    const gas = buildTips(PROFILE, {}, { readings: { gas: RISING } })
+    expect(gas.find((t) => t.id === 'consumption_up_gas')?.textId).toBe('consumption_up_heating')
+
+    const strom = buildTips(PROFILE, {}, { readings: { electricity: RISING } })
+    expect(strom.find((t) => t.id === 'consumption_up_electricity')?.textId).toBe('consumption_up')
+
+    // Die Wärmepumpe heizt, auch wenn sie unter „Strom" läuft.
+    const wp = buildTips(PROFILE, {}, { readings: { heat_pump: RISING } })
+    expect(wp.find((t) => t.id === 'consumption_up_heat_pump')?.textId).toBe(
+      'consumption_up_heating',
+    )
+  })
+})
+
+describe('Raumklima-Befunde messen an dem Band, das der Raum wirklich hat', () => {
+  // Das Feuchteband hängt am Raumtyp (Keller und Waschküche 50–65 %) und wird
+  // beim Messen als humMin/humMax mitgespeichert. Vorher las der Tipp feste
+  // 40/60 % – und widersprach damit der Ergebnis-Seite derselben Messung.
+  const keller = (humidity: number) => ({
+    'room_temperature@basement#0': result({
+      id: 'room_temperature',
+      roomKey: 'basement#0',
+      details: { temperature: 14, bandMin: 16, bandMax: 18, humidity, humMin: 50, humMax: 65 },
+    }),
+  })
+
+  it('meldet einen Keller mit 62 % nicht als zu feucht', () => {
+    const tips = buildTips(PROFILE, keller(62))
+    expect(tips.find((t) => t.id === 'humidity_high')).toBeUndefined()
+  })
+
+  it('meldet ihn ab 66 % doch', () => {
+    const tips = buildTips(PROFILE, keller(66))
+    expect(tips.find((t) => t.id === 'humidity_high')).toBeDefined()
+  })
+
+  it('meldet einen Keller mit 45 % als zu trocken – dem Wohnraum-Band nach wäre er es nicht', () => {
+    const tips = buildTips(PROFILE, keller(45))
+    expect(tips.find((t) => t.id === 'humidity_low')).toBeDefined()
+  })
+
+  it('nutzt für Altergebnisse ohne gespeichertes Band den Wohnraum-Wert', () => {
+    const tips = buildTips(PROFILE, {
+      'room_temperature@living_room#0': result({
+        id: 'room_temperature',
+        roomKey: 'living_room#0',
+        details: { temperature: 21, bandMin: 20, bandMax: 22, humidity: 70 },
+      }),
+    })
+    expect(tips.find((t) => t.id === 'humidity_high')).toBeDefined()
+  })
+
+  it('nennt Raum, Grad und Prozent aus demselben Raum', () => {
+    // Zwei getrennte Extrema – wärmster Raum hier, größtes savingPercent dort –
+    // ergaben einen Satz, dessen Grad und Prozent nie zusammen gemessen wurden.
+    // Das Wohnzimmer ist absolut wärmer, das Schlafzimmer liegt weiter über
+    // seinem Band und trägt darum den Tipp.
+    const tips = buildTips(PROFILE, {
+      'room_temperature@living_room#0': result({
+        id: 'room_temperature',
+        roomKey: 'living_room#0',
+        details: { temperature: 24, bandMin: 20, bandMax: 22, savingPercent: 12 },
+      }),
+      'room_temperature@bedroom#0': result({
+        id: 'room_temperature',
+        roomKey: 'bedroom#0',
+        details: { temperature: 21, bandMin: 16, bandMax: 18, savingPercent: 18 },
+      }),
+    })
+    const warm = tips.find((t) => t.id === 'room_temperature')
+    expect(warm?.room?.type).toBe('bedroom')
+    expect(warm?.params?.temp).toBe(21)
+    expect(warm?.quantity?.params.percent).toBe(18)
+  })
+
+  it('nennt bei Zugluft den zugigsten Raum, nicht den zuerst gemessenen', () => {
+    const tips = buildTips(PROFILE, {
+      'room_temperature@living_room#0': result({
+        id: 'room_temperature',
+        roomKey: 'living_room#0',
+        details: { temperature: 21, bandMin: 20, bandMax: 22, draft: 1 },
+      }),
+      'room_temperature@bedroom#0': result({
+        id: 'room_temperature',
+        roomKey: 'bedroom#0',
+        details: { temperature: 17, bandMin: 16, bandMax: 18, draft: 2 },
+      }),
+    })
+    expect(tips.find((t) => t.id === 'draft')?.room?.type).toBe('bedroom')
+  })
+})
+
 describe('Jeder Tipp ist beschriftet', () => {
   // Der Anlass: Ein neuer Tipp mit `linkTo` ging ohne `action`-Text live und
   // zeigte dem Nutzer den rohen i18n-Schlüssel als Knopfbeschriftung. Titel und
@@ -602,7 +743,7 @@ describe('Jeder Tipp ist beschriftet', () => {
    * die verlinkten Tipps an Messungen haengen, nicht am Fragebogen – ohne sie
    * liefe der Link-Test ins Leere.
    */
-  const CASES: Array<[OnboardingData, Record<string, MeasurementResult>]> = [
+  const CASES: Array<[OnboardingData, Record<string, MeasurementResult>, TipContext?]> = [
     [RICH, {}],
     [{ ...RICH, hasPV: 'planned' } as unknown as OnboardingData, {}],
     [{ ...RICH, hotWaterType: 'separate_system' } as unknown as OnboardingData, {}],
@@ -610,12 +751,18 @@ describe('Jeder Tipp ist beschriftet', () => {
       RICH,
       { base_load: result({ id: 'base_load', rating: 'high', primaryValue: 210, unit: 'W' }) },
     ],
+    // Steigender Verbrauch, je einmal fuer einen witterungsabhaengigen und
+    // einen unabhaengigen Traeger: Die beiden tragen verschiedene Texte
+    // (`consumption_up_heating` / `consumption_up`), und ohne diesen Fall
+    // pruefte der Test den Waermetraeger-Text gar nicht.
+    [RICH, {}, { readings: { gas: RISING }, eurPerUnit: { gas: 0.12 } }],
+    [RICH, {}, { readings: { electricity: RISING }, eurPerUnit: { electricity: 0.3 } }],
   ]
 
   it('hat zu jedem Tipp Titel und Begründung in beiden Sprachen', () => {
     const fehlend: string[] = []
-    for (const [profile, results] of CASES) {
-      for (const tip of buildTips(profile, results)) {
+    for (const [profile, results, context] of CASES) {
+      for (const tip of buildTips(profile, results, context)) {
         const textId = tip.textId ?? tip.id
         for (const [name, locale] of Object.entries(LOCALES)) {
           for (const part of ['title', 'reason']) {
@@ -632,8 +779,8 @@ describe('Jeder Tipp ist beschriftet', () => {
   it('beschriftet jeden Tipp, der irgendwohin führt', () => {
     const fehlend: string[] = []
     let geprueft = 0
-    for (const [profile, results] of CASES) {
-      for (const tip of buildTips(profile, results)) {
+    for (const [profile, results, context] of CASES) {
+      for (const tip of buildTips(profile, results, context)) {
         if (!tip.linkTo) continue
         geprueft++
         const textId = tip.textId ?? tip.id

@@ -2553,8 +2553,8 @@
       },
       "lighting": {
         "title": "Switch to LED",
-        "reason_one": "One room still has old bulbs. A replacement LED costs about 3 € and earns that back in the first year.",
-        "reason_other": "{{count}} rooms still have old bulbs. Start where the light is on longest – a replacement LED costs about 3 € and earns that back in the first year."
+        "reason_one": "One room still has old bulbs. Start where the light is on longest each day – that is where a replacement LED for around 3 € pays for itself fastest.",
+        "reason_other": "{{count}} rooms still have old bulbs. Start where the light is on longest each day – that is where a replacement LED for around 3 € pays for itself fastest."
       },
       "hot_water_wait": {
         "title": "Catch the run-off water",
@@ -2565,11 +2565,11 @@
         "reason": "It takes {{seconds}} s for hot water to arrive – cold water runs off unused during that time. The exact amount hasn't been measured for this tap yet. Put a watering can or bucket underneath: for plants, cleaning or the toilet."
       },
       "fridge": {
-        "title": "Turn the fridge up",
-        "reason": "{{temp}} °C is colder than needed. Turn the dial down one notch – 7 °C is plenty, andeach degree warmer saves around 6 % electricity."
+        "title": "Set the fridge warmer",
+        "reason": "{{temp}} °C is colder than needed. Turn the dial down one notch – 5 to 7 °C is plenty, and each degree warmer saves around 6 % electricity."
       },
       "fridge_warm": {
-        "title": "Turn the fridge down",
+        "title": "Set the fridge colder",
         "reason": "{{temp}} °C is too warm for safe storage. Turn the dial up one notch until you reach 5–7 °C."
       },
       "freezer": {
@@ -2615,6 +2615,11 @@
         "reason": "Your meter readings show {{percent}} % more consumption than the same period last year – about {{amount}} {{unit}} extra. That is measured, not estimated. Find the cause before it adds up over another year.",
         "action": "View history"
       },
+      "consumption_up_heating": {
+        "title": "More $t(monitoring.energyTypes.{{carrier}}) than last year",
+        "reason": "Your meter readings show {{percent}} % more consumption than the same period last year – around {{amount}} {{unit}} extra. The amount is measured; the cause is not. A colder year explains part of it when heating. Look at the history: if consumption also rises outside the heating season, the weather is not the reason.",
+        "action": "View history"
+      },
       "old_boiler": {
         "title": "Consider replacing the boiler",
         "reason": "Your boiler is about {{years}} years old. Replacing it is the single biggest lever in your home – such measures usually qualify for public funding, which is worth checking."
@@ -2657,7 +2662,8 @@
     "sortedByGoal": "Sorted by your goal: {{goals}}",
     "changeGoal": "change",
     "groupQuick": "Do it today",
-    "groupPrepared": "Needs a bit of prep"
+    "groupPrepared": "Needs a bit of prep",
+    "groupFindings": "What stands out"
   },
   "scan": {
     "button": "Scan",
