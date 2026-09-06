@@ -1778,6 +1778,47 @@ Beim Prüfen im Browser fiel auf derselben Karte noch auf, dass „Vermeidbar
 ≈ ≈ 38 €/Jahr" zwei Näherungszeichen trug – beide Textbausteine brachten eines
 mit. Der äußere hat seines abgegeben.
 
+### 44. Kein Link führte in einen einzelnen Bereich der App
+**Kategorie:** Bug · **Bereich:** `DemoLoader.tsx`, `App.tsx` (`FirstVisitGate`)
+**Status:** ✅ Umgesetzt (06.09.).
+
+Aufgefallen bei der Vorbereitung der schriftlichen Ausarbeitung: Sie soll aus
+der PDF heraus auf einzelne Bereiche der App verweisen – ein Knopf am Ende des
+LED-Kapitels, der den LED-Check zeigt. Der Parameter `?demo` funktioniert dafür
+an jeder Route, das Ziel aber erreichte keiner dieser Links.
+
+**Zwei Weichen, die nacheinander zuschlugen:**
+
+1. `FirstVisitGate` leitete einen Erst-Besucher von **jeder** Adresse außer den
+   öffentlichen auf die Landing Page um – der angefragte Pfad war weg, bevor
+   der Demo-Dialog überhaupt beantwortet war.
+2. `DemoLoader` navigierte nach dem Laden fest auf `/onboarding`, unabhängig
+   davon, was der Besucher angefragt hatte.
+
+Für sich genommen sah jede der beiden vernünftig aus; erst zusammen ergaben
+sie: Jeder Link auf einen einzelnen Bereich endete im Zuhause-Dashboard.
+
+**Behoben an beiden Stellen:** Die Weiche lässt einen `?demo`-Aufruf durch
+(lehnt der Besucher ab, nimmt `DemoLoader` den Parameter aus der Adresse und
+sie greift wie zuvor), und der Dialog navigiert gar nicht mehr – wer
+`…/measurements/lighting?demo` öffnet, steht danach im LED-Check. Vom
+Startpfad `/` führt die Wiederkehrer-Weiche in `LandingRoute` von selbst
+weiter aufs Zuhause; wo ein Wiederkehrer landet, entscheidet weiterhin sie.
+
+Dazu eine Kleinigkeit, die erst beim Durchklicken auffiel: Der Dialog fragte
+auch dann, wenn die Beispiel-Wohnung längst lief. Wer in der PDF den zweiten
+Knopf drückt, bestätigte also ein zweites Mal – und verwarf dabei den Stand,
+den er sich gerade angesehen hatte. Läuft die Demo schon, erscheint der Dialog
+jetzt nicht mehr.
+
+Die Prüfung `?demo` steht als `wantsDemo()` in `enterDemo.ts`, weil beide
+Weichen dieselbe Antwort brauchen; ein Test hält fest, dass sie auf den ganzen
+Schlüssel geht (`?demonstration=1` fragt die Demo nicht an). Im Browser
+durchgeklickt: 21 Prüfungen über alle neun Checks, alle Bereiche, beide
+Landing-Adressen, den zweiten Link, das Ablehnen und den Aufruf ohne `?demo` –
+alle bestanden. Die Adressen selbst stehen in
+`docs/hausarbeit-verlinkung.md`.
+
 ---
 
 ## Offene Fragen für Kilian

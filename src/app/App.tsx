@@ -20,6 +20,7 @@ import { LoginPage } from '@/features/auth/LoginPage'
 import { JoinProfilePage } from '@/features/profiles/JoinProfilePage'
 import { SplashScreen } from '@/components/SplashScreen'
 import { DemoLoader } from '@/features/demo/DemoLoader'
+import { wantsDemo } from '@/features/demo/enterDemo'
 import { LoginGate } from '@/components/LoginGate'
 import { LandingPage } from '@/features/landing/LandingPage'
 import { ImprintPage } from '@/features/legal/ImprintPage'
@@ -119,6 +120,15 @@ function FirstVisitGate() {
   const returning = useIsReturningVisitor()
 
   if (returning || isPublicPath(location.pathname)) return null
+  // Ein `?demo`-Aufruf trägt sein Ziel in der Adresse und beantwortet die
+  // Frage, der diese Weiche dient, selbst: Er zeigt die App an einer
+  // bestimmten Stelle, befüllt statt leer. Würde er hier auf die Landing Page
+  // umgeleitet, wäre der angefragte Bereich verloren, bevor der Besucher den
+  // Demo-Dialog überhaupt beantwortet hat – genau das machte die Links aus der
+  // schriftlichen Ausarbeitung auf einzelne Checks bis 06.09.2026 wirkungslos.
+  // Lehnt er ab, nimmt `DemoLoader` den Parameter aus der Adresse und diese
+  // Weiche greift wie zuvor.
+  if (wantsDemo(location.search)) return null
   return <Navigate to="/" replace />
 }
 

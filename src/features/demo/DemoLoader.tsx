@@ -1,13 +1,25 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Sparkles } from 'lucide-react'
-import { enterDemo } from './enterDemo'
+import { useSettingsStore } from '@/store/settingsStore'
+import { enterDemo, wantsDemo } from './enterDemo'
 
 /**
  * Lädt über den Link-Parameter `?demo` eine fertig befüllte Beispiel-Wohnung
  * in die lokalen Stores – ohne Konto, rein clientseitig. Vor dem Ersetzen der
  * aktuellen Ansicht wird kurz nachgefragt.
+ *
+ * **Der Dialog schickt niemanden woanders hin.** Er legt sich über die
+ * angefragte Seite; nach dem Laden steht der Besucher genau dort. Wer
+ * `…/measurements/lighting?demo` öffnet, landet im LED-Check. Bis zum
+ * 06.09.2026 navigierte diese Komponente danach fest auf `/onboarding` –
+ * damit war jeder Link auf einen einzelnen Bereich wirkungslos, obwohl
+ * `?demo` an jeder Route funktioniert. Die schriftliche Ausarbeitung verweist
+ * genau so auf einzelne Checks (`docs/hausarbeit-verlinkung.md`). Die zweite
+ * Hälfte dieser Kette steht in `FirstVisitGate` (`app/App.tsx`): Sie lässt
+ * einen `?demo`-Aufruf durch, statt einen Erst-Besucher vorher auf die
+ * Landing Page umzuleiten.
  *
  * Auch für angemeldete Nutzer sicher: Solange der Demo-Modus aktiv ist, pausiert
  * die Cloud-Synchronisation (siehe cloudSync), sodass das echte Profil weder
@@ -15,15 +27,19 @@ import { enterDemo } from './enterDemo'
  */
 export function DemoLoader() {
   const { t } = useTranslation()
-  const navigate = useNavigate()
   const [, setParams] = useSearchParams()
+  const demoMode = useSettingsStore((s) => s.demoMode)
   // Den ?demo-Wunsch beim allerersten Render festhalten: die Index-Weiterleitung
   // (/ → /onboarding) verwirft den Query-Parameter, bevor wir sonst reagieren
   // könnten. Deshalb einmalig einlesen und merken.
-  const [wantsDemo] = useState(() => new URLSearchParams(window.location.search).has('demo'))
+  const [requested] = useState(() => wantsDemo(window.location.search))
   const [dismissed, setDismissed] = useState(false)
 
-  if (!wantsDemo || dismissed) return null
+  // Läuft die Beispiel-Wohnung schon, gibt es nichts zu fragen: Der zweite
+  // Link aus derselben PDF soll direkt seine Ansicht zeigen, statt dieselbe
+  // Bestätigung noch einmal zu verlangen. Ein erneutes Laden würde zudem den
+  // Stand verwerfen, den der Besucher sich gerade angesehen hat.
+  if (!requested || dismissed || demoMode) return null
 
   function finish() {
     setDismissed(true)
@@ -45,7 +61,10 @@ export function DemoLoader() {
   function loadDemo() {
     enterDemo()
     finish()
-    navigate('/onboarding', { replace: true })
+    // Bewusst ohne `navigate`: Der Besucher bleibt auf der Adresse, die er
+    // angefragt hat. Vom Startpfad „/" führt die Wiederkehrer-Weiche in
+    // `LandingRoute` von selbst weiter aufs Zuhause – wo ein Wiederkehrer
+    // landet, entscheidet sie, nicht dieser Dialog.
   }
 
   return (
