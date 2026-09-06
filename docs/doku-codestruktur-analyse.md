@@ -9,6 +9,17 @@ Erklärvorschlägen, (C) strukturelle Befunde und (D) Absatz-für-Absatz-Vorschl
 geprüft am 06.09.2026. Alle Zahlen unten wurden am Dateibestand nachgezählt,
 nicht geschätzt.
 
+**Nachtrag (06.09.2026):** Auf Kilians Wunsch wurde zusätzlich eine deutlich
+reduzierte Neufassung von Abbildung 2 konzipiert – die bisherige Fassung wirkte
+mit dem vollständigen Verzeichnisbaum und der achtzeiligen Dateitypen-Tabelle zu
+unruhig. Das Konzept dafür steht in **Teil H**, der ausformulierte Prompt für
+Claude Design in der separaten Datei
+[`docs/prompt-claude-design-abbildung2.md`](./prompt-claude-design-abbildung2.md).
+Teil A.3 unten bezieht sich weiterhin auf die **alte** Fassung der Abbildung;
+beide dort benannten Widersprüche lösen sich mit der reduzierten Neufassung von
+selbst, weil die betroffenen Elemente (Gesamt-Dateizahl im Untertitel,
+Legenden-Ausnahme bei `features/`) darin nicht mehr vorkommen.
+
 ---
 
 ## 0. Auftrag an die überarbeitende KI
@@ -587,6 +598,59 @@ wurde:
 
 **Empfehlung:** Ein einziger, sauber geprüfter Beleg genügt. Drei ungeprüfte
 Verweise schaden mehr, als sie nützen.
+
+---
+
+## Teil H — Vorschlag: reduzierte Abbildung 2 (Nachtrag 06.09.2026)
+
+**Auftrag:** Die Abbildung wirkt unruhig und soll auf das für das Verständnis
+der Ordnerstruktur Wesentliche reduziert werden. Der vollständige, an Claude
+Design übergebbare Prompt steht in
+[`docs/prompt-claude-design-abbildung2.md`](./prompt-claude-design-abbildung2.md).
+Hier nur die Begründung der Auswahl, damit sie nachvollziehbar bleibt und die
+Textstellen entsprechend mitgezogen werden können.
+
+### H.1 Was bleibt
+
+| Baustein | Warum er bleibt |
+|---|---|
+| Zwei-Teilung `src/` vs. „Unterstützende Bereiche" | Steckt den Rahmen ab: Wie viel vom Repository ist überhaupt die App. |
+| 17 Fachbereiche, davon 8 benannt + „9 weitere" | Trägt den Kerngedanken des Kapitels (feature-basiert). Die 8 benannten sind exakt die im Fließtext bereits genannten (Fragebogen, Messungen, Monitoring, Berichte, Wissensbereich, Empfehlungen, Profile, Rechtliches) – Abbildung und Text zeigen damit dieselbe Auswahl. |
+| „Gemeinsam genutzte Bausteine" (components, store, i18n, lib, types) | Zweiter Kerngedanke: Wenige, bewusst schmale Schichten stehen den 17 Fachbereichen gegenüber. |
+| Modulmuster-Callout (Kühlschrank-Beispiel) | Einziger Teil der alten Abbildung, der eine Regel *zeigt*, nicht nur *aufzählt*. Wird in der Neufassung gleich korrigiert: Die in Teil A.2.4 belegten Ausnahmen (Lichtcheck ohne Intro, Raumklima-Check mit vier statt einer Rechendatei) stehen jetzt ehrlich mit im Bild, statt „jeder Ordner" zu behaupten. |
+
+### H.2 Was entfällt
+
+| Baustein | Warum er entfällt |
+|---|---|
+| Vollständiger Verzeichnisbaum mit jeder Unterordner-Datei-Zahl (analytics/1, billing/1, demo/4 usw.) | Für das Verständnis „nach Themen geordnet, nicht nach Technik" liefert keine dieser Einzelzahlen einen zusätzlichen Erkenntniswert – nur Dichte. |
+| Achtzeilige Dateitypen-Tabelle mit Prozentbalken | Beschreibt die Zusammensetzung des Codes, nicht die Ordnerstruktur – ein anderes Thema als das der Abbildung (vgl. Teil C.5). Die einzige tragende Aussage („Logik und Oberfläche sind technisch getrennt") wandert als **ein Satz** in den Fließtext, siehe H.3. |
+| Gesamt-Dateizahl im Untertitel | Löst zugleich den in A.3.1 belegten Widerspruch (423 vs. 453) auf, indem die Zahl in der Abbildung schlicht nicht mehr auftaucht. |
+| Fünfteilige Farblegende | Wird durch drei Kategorien ersetzt (Fachbereich · gemeinsamer Baustein · Beispiel-Datei-Ebene). Löst zugleich A.3.2 (die eine Ausnahme bei `features/`), weil diese Legenden-Bedeutung in der neuen Fassung nicht mehr gebraucht wird. |
+
+### H.3 Textfolgen der Reduktion
+
+Weil die Dateitypen-Tabelle aus der Abbildung verschwindet, braucht der
+Abschnitt „Dateitypen und technische Trennung" im Fließtext eine kurze
+Ersatzformulierung, die den Kernsatz allein trägt (deckt sich mit dem
+Kürzungsvorschlag aus Teil C.5):
+
+> „Rechenlogik und Bildschirmanzeige liegen durchgehend in getrennten Dateien:
+> 221 reine Rechendateien (`.ts`) stehen 153 Oberflächendateien (`.tsx`)
+> gegenüber – zusammen 98 % des gesamten Programmcodes. Klassische HTML- und
+> CSS-Dateien treten dagegen nur als Rahmen auf: React erzeugt die sichtbare
+> Struktur zur Laufzeit, Tailwind CSS beschreibt die Gestaltung überwiegend
+> durch Klassen direkt an den Komponenten."
+
+Die Lesehilfe vor der Abbildung (Vorschlag in Teil C.1) darf mit der
+reduzierten Fassung ebenfalls kürzer ausfallen, da kein vollständiger
+Verzeichnisbaum mehr zu erklären ist:
+
+> „Abbildung 2 zeigt, wie der Quellcode organisiert ist: oben die Zwei-Teilung
+> in Anwendungscode und unterstützende Bereiche, darunter die 17 Fachbereiche
+> und die wenigen gemeinsam genutzten Bausteine, die sie alle mitbenutzen. Der
+> Kasten rechts zeigt an einem Beispiel, welchem Muster jeder Fachbereich im
+> Mess-Teil der App intern folgt."
 
 ---
 
