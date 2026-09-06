@@ -2,6 +2,8 @@ import type { OnboardingData } from '@/types'
 import type { MeasurementResult } from '@/features/measurements/types'
 import type { MeterReading } from '@/store/readingsStore'
 import { instanceKey } from '@/features/measurements/rooms'
+import { calcStandby, encodeDevices } from '@/features/measurements/standby/standby'
+import type { StandbyDevice } from '@/features/measurements/standby/standby'
 
 /**
  * Fertig befüllte Beispiel-Wohnung für den Demo-Modus (`?demo`).
@@ -15,6 +17,9 @@ import { instanceKey } from '@/features/measurements/rooms'
  */
 
 const READING_MONTHS = 18
+
+/** Arbeitspreis Strom der Beispiel-Wohnung (ct/kWh) – trägt auch den Tarif unten. */
+const WORK_PRICE_CT = 36
 
 /** Datum vor `monthsAgo` Monaten (fester Ablese-Tag), lokale Zeit. */
 function monthDate(monthsAgo: number, day = 3): Date {
@@ -61,7 +66,11 @@ function result(
   primaryValue: number,
   unit: string,
   daysAgo: number,
-  extra?: { roomKey?: string; details?: Record<string, number> },
+  extra?: {
+    roomKey?: string
+    details?: Record<string, number>
+    labels?: Record<string, string>
+  },
 ): MeasurementResult {
   const d = new Date()
   d.setDate(d.getDate() - daysAgo)
@@ -73,7 +82,43 @@ function result(
     completedAt: d.toISOString(),
     ...(extra?.roomKey ? { roomKey: extra.roomKey } : {}),
     ...(extra?.details ? { details: extra.details } : {}),
+    ...(extra?.labels ? { labels: extra.labels } : {}),
   }
+}
+
+/**
+ * Standby-Ergebnis der Beispiel-Wohnung.
+ *
+ * Bewusst durch `calcStandby` erzeugt statt von Hand hingeschrieben: Der
+ * frühere Eintrag stand noch im Format von vor August 2026 (Hauptwert in Watt,
+ * `details.watts`) und wurde vom Ergebnis-Schirm als Jahreskosten gelesen –
+ * „31 €/Jahr", ohne Leistung, Verbrauch und Geräteliste. Aus der echten
+ * Rechnung kann das Demo-Ergebnis nicht wieder hinter das Format zurückfallen.
+ */
+const STANDBY_DEVICES: StandbyDevice[] = [
+  { name: 'Fernseher Wohnzimmer', watts: 12.5 },
+  { name: 'Spielkonsole', watts: 8 },
+  { name: 'Router', watts: 6.5 },
+  { name: 'Soundbar', watts: 2.5 },
+  { name: 'Ladegeräte Flur', watts: 1.5 },
+]
+
+function standbyResult(daysAgo: number): MeasurementResult {
+  const calc = calcStandby({ devices: STANDBY_DEVICES, workPriceCt: WORK_PRICE_CT })
+  const encoded = encodeDevices(calc.devices)
+  return result('standby', calc.rating, calc.annualCost, '€/Jahr', daysAgo, {
+    details: {
+      totalWatts: calc.totalWatts,
+      annualKwh: calc.annualKwh,
+      annualCost: calc.annualCost,
+      avoidableCost: calc.avoidableCost,
+      // Die Beispiel-Wohnung bringt einen eigenen Tarif mit – die Kosten sind
+      // dort keine Schätzung.
+      tariffCustom: 1,
+      ...encoded.details,
+    },
+    labels: encoded.labels,
+  })
 }
 
 // Viele abgeschlossene Checks – ganzhaus- und raumbezogen.
@@ -81,7 +126,7 @@ const RESULTS: MeasurementResult[] = [
   result('showerhead', 'medium', 11.4, 'L/min', 34, { details: { liters: 1.9, seconds: 10 } }),
   result('hot_water_wait', 'medium', 24, 's', 33, { details: { seconds: 24 } }),
   result('base_load', 'elevated', 132, 'W', 20, { details: { watts: 132 } }),
-  result('standby', 'high', 31, 'W', 19, { details: { watts: 31 } }),
+  standbyResult(19),
   result('fridge', 'good', 0.82, 'kWh/Tag', 27, { details: { kwhPerDay: 0.82, watts: 34 } }),
   // Gefrier-Check: flächig dünn vereist. Hauptwert ist der Anteil am
   // Verbrauch – der frühere kWh/Tag-Wert stammte noch aus einer Zeit, in der
@@ -181,7 +226,7 @@ export function buildDemoSnapshot(): Record<string, unknown> {
       reminderFrequency: 'monthly',
     },
     tariff: {
-      electricityWorkPrice: 36,
+      electricityWorkPrice: WORK_PRICE_CT,
       electricityBasePrice: 13,
       isCustom: true,
       promptSeen: true,
@@ -191,6 +236,6 @@ export function buildDemoSnapshot(): Record<string, unknown> {
       },
     },
     progress: { quizResults: {} },
-    drafts: { drafts: {} },
+    drafts: { drafts: {}, draftLabels: {} },
   }
 }

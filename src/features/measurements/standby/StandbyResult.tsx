@@ -61,6 +61,10 @@ export function StandbyResult({ result }: ResultProps) {
         rating={result.rating}
         value={fmt(annualCost)}
         unit={t('measurements.standby.result.costPerYear')}
+        // Eigene Beschriftung statt der neutralen Skala: Dort heißt `medium`
+        // „Gut" – ein Widerspruch zum Satz darunter, der dieselbe Stufe als
+        // „mittlerer Standby-Verbrauch mit Sparpotenzial" benennt.
+        badgeLabel={t(`measurements.standby.result.ratings.${result.rating}`)}
         summary={t(`measurements.standby.result.summary.${result.rating}`)}
       >
         <p className="text-sm text-muted">

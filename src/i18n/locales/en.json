@@ -527,7 +527,13 @@
         "costLabel": "Electricity cost",
         "perYear": "≈ {{value}} €/year",
         "breakdownTitle": "Breakdown",
-        "avoidable": "Avoidable ≈ {{value}}",
+        "avoidable": "Avoidable {{value}}",
+        "ratings": {
+          "good": "Efficient",
+          "medium": "Savings potential",
+          "elevated": "Clearly elevated",
+          "high": "Power drain"
+        },
         "summary": {
           "good": "Very efficient – barely any standby use.",
           "medium": "Moderate standby use – savings potential here.",

@@ -7,6 +7,8 @@ import {
   normalizeDeviceName,
   previouslyMeasured,
 } from '@/features/measurements/standby/deviceHistory'
+import { encodeDevices } from '@/features/measurements/standby/standby'
+import { buildDemoSnapshot } from '@/features/demo/demoProfile'
 import type { MeasurementResult } from '@/features/measurements/types'
 
 /** Ergebnis im aktuellen Format: `dev{i}` in details, Name in labels. */
@@ -68,5 +70,34 @@ describe('duplicateIndices', () => {
   it('behandelt leere Namen nicht als Dubletten', () => {
     // Namenlose Geräte sind erlaubt und werden durchnummeriert.
     expect([...duplicateIndices(['', '', 'TV'])]).toEqual([])
+  })
+})
+
+describe('encodeDevices', () => {
+  it('trennt Watt und Bezeichnung, wie MeasurementResult es verlangt', () => {
+    expect(encodeDevices([{ name: '  Router  ', watts: 6.5 }, { name: '', watts: 0 }])).toEqual({
+      details: { dev0: 6.5, dev1: 0 },
+      labels: { dev0: 'Router' },
+    })
+  })
+})
+
+describe('Standby im Demo-Profil', () => {
+  // Der Eintrag stand bis September 2026 im Format von vor August 2026: ein
+  // Wattwert als Hauptwert, den die Ergebnis-Ansicht als Jahreskosten las.
+  const result = (
+    buildDemoSnapshot().measurements as { results: Record<string, MeasurementResult> }
+  ).results.standby
+
+  it('nennt Jahreskosten als Hauptwert', () => {
+    expect(result.unit).toBe('€/Jahr')
+    expect(result.primaryValue).toBe(result.details?.annualCost)
+  })
+
+  it('bringt Gesamtleistung, Jahresverbrauch und Geräteliste mit', () => {
+    expect(result.details?.totalWatts).toBeGreaterThan(0)
+    expect(result.details?.annualKwh).toBeGreaterThan(0)
+    expect(result.labels?.dev0).toBeTruthy()
+    expect(result.details?.dev0).toBeGreaterThan(0)
   })
 })

@@ -1711,6 +1711,73 @@ Kein neues Messgerät: `MeasurementMeta.instruments` des Checks bleibt
 unverändert (`power_meter`, der Zähler des Hauses), die Stoppuhr bringt die App
 mit. Die Geräte-Übersicht im Fragebogen ändert sich dadurch von selbst nicht.
 
+### 41. Standby-Geräteliste ging beim Verlassen verloren
+**Kategorie:** Bug · **Bereich:** `StandbyRun.tsx`, `measurementDraftStore.ts`
+**Status:** ✅ Umgesetzt (06.09.).
+
+Der Standby-Check ist mit 12 Minuten der längste der App: Man läuft mit dem
+Messgerät durch die Wohnung und trägt Gerät für Gerät ein. Die Liste lebte aber
+nur im Komponenten-Zustand – ein Blick ins Monitoring, ein versehentliches
+Zurück oder ein Neuladen, und alles Erfasste war weg, ohne Warnung.
+
+Grundlast, Kühlschrank und Gefriertruhe halten ihren Zwischenstand längst im
+`measurementDraftStore`. Der nimmt allerdings nur Zahlen auf, und ein
+Standby-Gerät trägt eine frei gewählte Bezeichnung. Der Store bekommt deshalb
+`draftLabels` – dieselbe Trennung, die `MeasurementResult` zwischen `details`
+(Zahlen) und `labels` (Freitext) schon macht.
+
+Zwei Dinge, die dabei nötig waren:
+
+- **`replaceDraft` statt `setDraft`.** `setDraft` ergänzt nur und entfernt
+  nichts – ein gelöschtes Gerät bliebe unter seinem alten `dev{index}` stehen.
+  Listen, die auch schrumpfen, brauchen das vollständige Ersetzen.
+- **`count` trägt die Länge.** Ein Gerät darf 0 W haben (noch nicht gemessen)
+  und namenlos sein; aus keinem der beiden Felder lässt sich die Zahl der
+  Zeilen ablesen.
+
+Eine unberührte Liste wird bewusst **nicht** gespeichert: Läge sie im Entwurf,
+hielte der Runner sie für einen Zwischenstand und überspränge die Erklärseite.
+Nach „Speichern & Fertig" verwirft der Runner den Entwurf wie bei jedem anderen
+Check – der nächste Durchlauf beginnt wieder leer und bei „Info".
+
+### 42. Demo-Profil: Standby im Format von vor August 2026
+**Kategorie:** Bug · **Bereich:** `demoProfile.ts`
+**Status:** ✅ Umgesetzt (06.09.).
+
+Der Eintrag lautete `result('standby', 'high', 31, 'W', 19, { details: { watts: 31 } })` –
+ein Wattwert als Hauptwert. Seit August 2026 ist der Hauptwert des Checks der
+**Jahresbetrag in Euro**; die Ergebnis-Ansicht las die 31 also als „31 €/Jahr".
+Gesamtleistung, Jahresverbrauch und Geräteaufschlüsselung fehlten ganz, und
+`avoidableCost` ebenso – der Standby-Tipp der Beispiel-Wohnung nannte deshalb
+weder ein Gerät noch einen Betrag.
+
+Das Demo-Ergebnis entsteht jetzt durch `calcStandby()` aus fünf benannten
+Geräten (12,5 + 8 + 6,5 + 2,5 + 1,5 = 31 W, unverändert) mit dem Arbeitspreis
+der Beispiel-Wohnung. Aus der echten Rechnung kann es nicht wieder hinter das
+Format zurückfallen; ein Test hält Hauptwert, Einheit und Geräteliste fest.
+Nebenbei nennt der Tipp jetzt „Fernseher Wohnzimmer mit 13 W" statt eines
+namenlosen Gerätetyps.
+
+### 43. Standby-Ergebnis: Chip „Gut" über dem Satz „mittlerer Verbrauch"
+**Kategorie:** Bug · **Bereich:** `StandbyResult.tsx`, `de.json`/`en.json`
+**Status:** ✅ Umgesetzt (06.09.).
+
+12 W Gesamtleistung liegen laut `rateStandby` zwischen `GOOD_MAX` (5 W) und
+`MEDIUM_MAX` (20 W), also auf der Stufe `medium`. Der Satz darunter benannte sie
+richtig („Mittlerer Standby-Verbrauch – hier steckt Sparpotenzial"), der Chip
+darüber zeigte gleichzeitig **„Gut"** – die Beschriftung der neutralen Skala
+(`measurements.ratings.medium`). Dieselbe Stufe, zwei gegenläufige Aussagen.
+
+Es ist genau die Stelle, an der schon #6 hing: `medium` heißt in der neutralen
+Skala „Gut", was für einen Befund mit Handlungsbedarf falsch klingt. Der Check
+bekommt deshalb – wie Grundlast und Möbelabstand vor ihm – eigene Beschriftungen
+über `badgeLabel`, und die benennen den Befund statt die Stufe: **Sparsam ·
+Sparpotenzial · Deutlich erhöht · Stromfresser.**
+
+Beim Prüfen im Browser fiel auf derselben Karte noch auf, dass „Vermeidbar
+≈ ≈ 38 €/Jahr" zwei Näherungszeichen trug – beide Textbausteine brachten eines
+mit. Der äußere hat seines abgegeben.
+
 ---
 
 ## Offene Fragen für Kilian

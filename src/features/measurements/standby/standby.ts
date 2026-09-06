@@ -89,6 +89,29 @@ export interface StandbyResult {
   devices: StandbyDevice[]
 }
 
+/**
+ * Kodiert eine Geräteliste für die Persistenz: `dev{index}` → Watt in `details`,
+ * die Bezeichnung unter demselben Schlüssel in `labels` (siehe
+ * `MeasurementResult`, das nur Zahlen aufnimmt). Namenlose Geräte bekommen
+ * keinen Eintrag in `labels` – die Ergebnis-Ansicht nummeriert sie dann durch.
+ *
+ * Dieselbe Kodierung trägt den Entwurf des laufenden Checks; sie steht deshalb
+ * hier und nicht im Erfassungs-Schirm.
+ */
+export function encodeDevices(devices: StandbyDevice[]): {
+  details: Record<string, number>
+  labels: Record<string, string>
+} {
+  const details: Record<string, number> = {}
+  const labels: Record<string, string> = {}
+  devices.forEach((d, i) => {
+    details[`dev${i}`] = d.watts
+    const name = d.name.trim()
+    if (name) labels[`dev${i}`] = name
+  })
+  return { details, labels }
+}
+
 export interface StandbyInput {
   devices: StandbyDevice[]
   /** Arbeitspreis Strom in ct/kWh (aus dem Tarif-Store). */

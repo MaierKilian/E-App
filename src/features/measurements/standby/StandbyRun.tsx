@@ -1,12 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Plus, X, Info } from 'lucide-react'
 import { useTariffStore } from '@/store/tariffStore'
 import { useMeasurementsStore } from '@/store/measurementsStore'
-import { calcStandby, totalWatts } from './standby'
+import {
+  useMeasurementDraftStore,
+  readDraft,
+  readDraftLabels,
+} from '@/store/measurementDraftStore'
+import { calcStandby, encodeDevices, totalWatts } from './standby'
 import type { StandbyDevice } from './standby'
 import type { RunProps } from '../runnerTypes'
 import { DecimalField } from '@/components/ui/DecimalField'
+import { instanceKey } from '../rooms'
 import { previouslyMeasured, duplicateIndices } from './deviceHistory'
 
 const WATTS_STEP = 0.5
@@ -28,29 +34,36 @@ function makeEntry(): DeviceEntry {
 }
 
 /**
- * Kodiert die Geräteliste für die Persistenz: `dev{index}` → Watt in `details`,
- * die Bezeichnung unter demselben Schlüssel in `labels` (siehe
- * MeasurementResult). Namenlose Geräte bekommen keinen Eintrag in `labels` –
- * die Ergebnis-Ansicht nummeriert sie dann durch.
+ * Stellt die Geräteliste aus dem Entwurf wieder her.
+ *
+ * `count` trägt die Länge: Ein Gerät darf 0 W haben (noch nicht gemessen), und
+ * ein namenloses hat keinen Eintrag in `labels` – die Zahl der Zeilen lässt
+ * sich also aus keinem der beiden Felder ablesen.
  */
-function encodeDevices(devices: StandbyDevice[]): {
-  details: Record<string, number>
-  labels: Record<string, string>
-} {
-  const details: Record<string, number> = {}
-  const labels: Record<string, string> = {}
-  devices.forEach((d, i) => {
-    details[`dev${i}`] = d.watts
-    const name = d.name.trim()
-    if (name) labels[`dev${i}`] = name
-  })
-  return { details, labels }
+function restoreEntries(key: string): DeviceEntry[] {
+  const values = readDraft(key)
+  const labels = readDraftLabels(key)
+  const count = Number.isFinite(values.count) ? Math.max(0, Math.trunc(values.count)) : 0
+  const list: DeviceEntry[] = []
+  for (let i = 0; i < count; i++) {
+    list.push({
+      id: nextId++,
+      watts: clampWatts(values[`dev${i}`] ?? 0),
+      name: labels[`dev${i}`] ?? '',
+    })
+  }
+  return list.length > 0 ? list : [makeEntry()]
 }
 
 /**
  * Durchführungs-Phase des Standby-Checks: eine wachsende Liste von Geräten
  * (Typ-Auswahl + Watt-Eingabe), laufende Gesamtsumme und „Auswerten", sobald
  * mindestens ein Gerät mit Leistung > 0 erfasst ist.
+ *
+ * Die Liste wächst über mehrere Räume und Steckdosen hinweg; bis September 2026
+ * lebte sie nur im Komponenten-Zustand und war beim Verlassen des Checks weg.
+ * Jetzt liegt sie – wie Grundlast, Kühlschrank und Gefriertruhe – im
+ * Entwurfs-Speicher.
  */
 export function StandbyRun({ onEvaluate }: RunProps) {
   const { t, i18n } = useTranslation()
@@ -59,8 +72,23 @@ export function StandbyRun({ onEvaluate }: RunProps) {
   // Das letzte Standby-Ergebnis dient als Gedächtnis: Wer ein Gerät erneut
   // misst, sieht den früheren Wert direkt beim Eintippen des Namens.
   const lastResult = useMeasurementsStore((s) => s.results.standby)
+  const replaceDraft = useMeasurementDraftStore((s) => s.replaceDraft)
+  const clearDraft = useMeasurementDraftStore((s) => s.clearDraft)
+  const key = instanceKey('standby')
 
-  const [entries, setEntries] = useState<DeviceEntry[]>(() => [makeEntry()])
+  const [entries, setEntries] = useState<DeviceEntry[]>(() => restoreEntries(key))
+
+  useEffect(() => {
+    // Eine unberührte Liste ist kein Entwurf: Läge sie im Speicher, hielte der
+    // Runner sie für einen Zwischenstand und übersprünge die Erklärseite.
+    const touched = entries.some((e) => e.watts > 0 || e.name.trim() !== '')
+    if (!touched) {
+      clearDraft(key)
+      return
+    }
+    const encoded = encodeDevices(entries)
+    replaceDraft(key, { ...encoded.details, count: entries.length }, encoded.labels)
+  }, [key, entries, replaceDraft, clearDraft])
 
   const sum = totalWatts(entries)
   const canEvaluate = entries.some((e) => e.watts > 0)

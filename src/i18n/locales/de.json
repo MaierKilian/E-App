@@ -527,7 +527,13 @@
         "costLabel": "Stromkosten",
         "perYear": "≈ {{value}} €/Jahr",
         "breakdownTitle": "Aufschlüsselung",
-        "avoidable": "Vermeidbar ≈ {{value}}",
+        "avoidable": "Vermeidbar {{value}}",
+        "ratings": {
+          "good": "Sparsam",
+          "medium": "Sparpotenzial",
+          "elevated": "Deutlich erhöht",
+          "high": "Stromfresser"
+        },
         "summary": {
           "good": "Sehr sparsam – kaum Standby-Verbrauch.",
           "medium": "Mittlerer Standby-Verbrauch – hier steckt Sparpotenzial.",
