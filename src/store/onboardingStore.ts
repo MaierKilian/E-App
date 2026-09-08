@@ -98,7 +98,6 @@ const defaultData: OnboardingData = {
   profileName: '',
   profileImage: '',
   personsCount: 2,
-  roomsCount: 3,
   buildingYear: 1990,
   buildingType: 'apartment',
   livingArea: 70,

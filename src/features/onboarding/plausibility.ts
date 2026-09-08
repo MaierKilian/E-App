@@ -33,14 +33,16 @@ const AREA_PER_ROOM_LOW = 6
 const AREA_PER_ROOM_HIGH = 80
 
 /**
- * Zimmerzahl, mit der gerechnet wird.
+ * Zimmerzahl, mit der gerechnet wird: die angelegten Räume.
  *
- * Sind Räume angelegt, sind sie die Wahrheit – die Schnellstart-Angabe
- * `roomsCount` ist dann nur noch der grobe Vorläufer.
+ * Bis zum 08.09.2026 gab es daneben die Schnellstart-Angabe `roomsCount` als
+ * groben Vorläufer. Sie ist entfallen – der Schnellstart legt keine Räume an,
+ * dort greift seither nur noch der Abgleich „m² je Person". Ohne angelegte
+ * Räume schweigt die Zimmer-Prüfung, statt mit einem Vorgabewert zu rechnen,
+ * den niemand eingetragen hat.
  */
 export function effectiveRoomCount(data: OnboardingData): number {
-  const listed = data.rooms.reduce((sum, r) => sum + r.instances.length, 0)
-  return listed > 0 ? listed : Math.max(0, Math.floor(data.roomsCount ?? 0))
+  return data.rooms.reduce((sum, r) => sum + r.instances.length, 0)
 }
 
 export function checkPlausibility(data: OnboardingData): PlausibilityHint[] {

@@ -235,7 +235,6 @@ export interface OnboardingData {
   /** Optionales Profilbild als heruntergerechnetes Data-URL (localStorage + Firestore-Sync). */
   profileImage?: string
   personsCount: number
-  roomsCount: number
   buildingYear: number
   buildingType: BuildingType
   livingArea: number

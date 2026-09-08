@@ -60,12 +60,6 @@ export const FIELD_USAGE = {
       'Warmwasser- und Stromverbrauch hängen an der Personenzahl; das Monitoring rechnet Kennwerte je Person.',
     labelKey: 'onboarding.step8.labels.persons',
   },
-  roomsCount: {
-    consumers: [],
-    reason:
-      'Zimmerzahl des Schnellstarts – dort die einzige Größenangabe neben der Fläche und damit die Grundlage der Plausibilitätsprüfung „m² je Zimmer". Das ist kein Abnehmer im Sinne dieser Liste: Der Hinweis bleibt im Fragebogen. Der vollständige Fragebogen fragt sie seit dem 05.09.2026 nicht mehr – dort ist die Raumliste die genauere Wahrheit.',
-    labelKey: 'onboarding.step8.labels.roomsCount',
-  },
   buildingYear: {
     consumers: ['monitoring'],
     reason: 'Bestimmt den Heizwärme-Vergleichswert, an dem der eigene Verbrauch gemessen wird.',

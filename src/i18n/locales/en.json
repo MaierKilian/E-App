@@ -1302,7 +1302,6 @@
       "profileImageAdd": "Add profile picture",
       "profileImageRemove": "Remove picture",
       "persons": "Number of people in household",
-      "rooms": "Number of rooms",
       "goals": "Your goal / motivation",
       "occupancyStatus": "Status",
       "goalOptions": {
@@ -1319,8 +1318,7 @@
       "profileNameHint": "Free to choose – handy when comparing several homes.",
       "personsHint": "Affects hot water and electricity use.",
       "goalsHint": "We prioritise the right measurements and tips. Multiple choice.",
-      "statusHint": "Affects which measures are realistic for you.",
-      "roomsFromList": "Rooms from your room list: {{count}}"
+      "statusHint": "Affects which measures are realistic for you."
     },
     "step2": {
       "title": "Basic Data",
@@ -1615,7 +1613,6 @@
       "labels": {
         "profileName": "Profile name",
         "persons": "Persons",
-        "roomsCount": "Room count",
         "buildingYear": "Year built",
         "buildingType": "Building type",
         "livingArea": "Living area",

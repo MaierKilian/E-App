@@ -110,10 +110,11 @@ Nicht die Genauigkeit einzelner Zahlen leidet, sondern der **Funktionsumfang**:
 | Geräte | `appliancesAnswered` bleibt `false` ⇒ Kühl- und Gefrier-Check bleiben sichtbar, auch wenn es kein Gerät gibt, und werden weder ausgeblendet noch mehrfach instanziiert. |
 | Ausstattung | Reine Informationsseite („Was du zum Messen brauchst"); es entfällt keine Angabe, nur eine Erklärung. |
 
-Die Zimmerzahl (`roomsCount`) ist der einzige Fall, in dem der Schnellstart
-etwas **erhebt, was der vollständige Weg nicht erhebt**: Dort ersetzt die
-Raumliste sie durch die genauere Wahrheit. Im Schnellstart trägt sie die
-Plausibilitätsprüfung „m² je Zimmer" innerhalb des Fragebogens.
+Ohne Räume greift außerdem die Plausibilitätsprüfung „m² je Zimmer" nicht;
+der Abgleich „m² je Person" bleibt. Die Zimmerzahl (`roomsCount`) war bis zum
+08.09.2026 die Schnellstart-Näherung dafür und ist ersatzlos entfallen – sie
+war zuletzt die einzige Angabe, die der Schnellstart erhob, der vollständige
+Weg aber nicht, und ihr einziger Zweck war diese App-interne Prüfung.
 
 ### 2.2 Der Modus ist keine Einbahnstraße
 
@@ -142,7 +143,6 @@ nicht.
 | `livingArea` | Pflicht | Wohnfläche in m² |
 | `personsCount` | Pflicht | Personen im Haushalt |
 | `buildingYear` | Pflicht | Baujahr |
-| `roomsCount` | (nur Schnellstart) | Zimmerzahl |
 | `profileImage` | optional | Bild zur Wiedererkennung |
 
 ### Schritt 2 – Dein Ziel (`goals`, beide Wege)
@@ -231,7 +231,6 @@ Vollständig aus `fieldUsage.ts` übernommen. **Aktiv erhoben:**
 | `mode` | monitoring | Bestimmt, wie viel das Monitoring voraussetzen darf |
 | `completed` | measurements | Steuert, ob die App den Fragebogen oder den Messbereich zeigt |
 | `profileImage` | – | Bild zur Wiedererkennung; braucht keinen Verwerter |
-| `roomsCount` | – | Trägt nur die Plausibilitätsprüfung innerhalb des Fragebogens |
 
 **Nicht mehr erhoben, aber im Datenmodell erhalten** (Bestandsprofile tragen
 echte Werte; siehe Abschnitt 9): `buildingType`, `floors`, `postalCode`,
@@ -426,6 +425,7 @@ Kriterium „hat diese Angabe einen Abnehmer?".
 | Kamin/Ofen, Smart-Home-Geräte | in „Ausstattung" | keine funktionale Lesestelle |
 | Messgeräte-Abfrage | Schritt „Ausstattung" | 24 wählbare Bauarten, deren einzige Wirkung ein vorangehakter Schalter war; ersetzt durch eine Informationsseite |
 | PV-Antwort „geplant" | in „Heizung" | ein einziger Abnehmer; Bestandsprofile werden auf `'no'` migriert |
+| Zimmerzahl | in „Dein Zuhause", zuletzt nur im Schnellstart | einziger Zweck war die App-interne Plausibilitätsprüfung „m² je Zimmer"; `roomsCount` ist als einziges Feld ganz aus `OnboardingData` entfallen |
 
 **Umgekehrt hinzugekommen** ist die Zielauswahl als eigener Schritt 2 – die
 einzige Erweiterung, und sie kam mit einer neuen Wirkung (der Landung nach dem
@@ -436,6 +436,8 @@ aber in **beiden** als Pflichtangabe gezählt – ein Schnellstart-Profil konnte
 
 Die entfernten Schritte liegen als Code unter `archiv/onboarding-*/`, die
 Felder bleiben in `OnboardingData`, damit Bestandsprofile ihre Werte behalten.
+Ausnahme ist `roomsCount`: Der Wert war eine Näherung für die Raumliste und
+außerhalb des Fragebogens nie gelesen – aufzuheben gäbe es dort nichts.
 
 ---
 

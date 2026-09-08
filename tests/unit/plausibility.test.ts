@@ -13,8 +13,16 @@ import {
 import type { OnboardingData } from '@/types'
 import { room } from '../roomFixture'
 
+// Die Zimmer-Prüfung rechnet seit dem 08.09.2026 allein mit den angelegten
+// Räumen – die Schnellstart-Angabe `roomsCount` ist entfallen. Das Basisprofil
+// bringt deshalb drei Räume mit, wo früher `roomsCount: 3` stand.
 function profile(over: Partial<OnboardingData>): OnboardingData {
-  return { livingArea: 70, personsCount: 2, roomsCount: 3, rooms: [], ...over } as OnboardingData
+  return {
+    livingArea: 70,
+    personsCount: 2,
+    rooms: [room('bedroom', 2), room('living_room')],
+    ...over,
+  } as OnboardingData
 }
 
 const ids = (d: OnboardingData) => checkPlausibility(d).map((h) => h.id)
@@ -25,11 +33,13 @@ describe('Üblicher Wohnraum bleibt unkommentiert', () => {
   })
 
   it('140 m² Haus für 4 Personen in 5 Zimmern', () => {
-    expect(ids(profile({ livingArea: 140, personsCount: 4, roomsCount: 5 }))).toEqual([])
+    expect(
+      ids(profile({ livingArea: 140, personsCount: 4, rooms: [room('bedroom', 3), room('living_room', 2)] })),
+    ).toEqual([])
   })
 
   it('30 m² Single-Wohnung, ein Zimmer', () => {
-    expect(ids(profile({ livingArea: 30, personsCount: 1, roomsCount: 1 }))).toEqual([])
+    expect(ids(profile({ livingArea: 30, personsCount: 1, rooms: [room('living_room')] }))).toEqual([])
   })
 })
 
@@ -54,7 +64,7 @@ describe('Randfälle bleiben in Ruhe', () => {
   it('WG mit 9 m² je Person meldet sich, lässt sich aber bestätigen', () => {
     // 108 m² auf 12 Personen: knapp unter der Schwelle, also ein Hinweis –
     // genau dafür gibt es „Passt so".
-    const wg = profile({ livingArea: 108, personsCount: 12, roomsCount: 12 })
+    const wg = profile({ livingArea: 108, personsCount: 12, rooms: [room('bedroom', 12)] })
     expect(ids(wg)).toContain('area_per_person_low')
     // Der Bestätigungs-Schlüssel hängt an genau diesen Werten.
     expect(plausibilityKey(wg)).toBe('108|12|12')
@@ -64,12 +74,12 @@ describe('Randfälle bleiben in Ruhe', () => {
   it('Erbhaus mit 200 m² für eine Person meldet sich, blockiert aber nicht', () => {
     // Über der Schwelle von 150 m² je Person – ein Vertipper sieht genauso aus.
     // Der Hinweis ist deshalb richtig; entschieden wird per „Passt so".
-    const haus = profile({ livingArea: 200, personsCount: 1, roomsCount: 6 })
+    const haus = profile({ livingArea: 200, personsCount: 1, rooms: [room('bedroom', 5), room('living_room')] })
     expect(ids(haus)).toEqual(['area_per_person_high'])
   })
 
   it('120 m² für eine Person bleiben unkommentiert', () => {
-    expect(ids(profile({ livingArea: 120, personsCount: 1, roomsCount: 4 }))).toEqual([])
+    expect(ids(profile({ livingArea: 120, personsCount: 1 }))).toEqual([])
   })
 
   it('schweigt ohne Wohnfläche', () => {
@@ -77,23 +87,24 @@ describe('Randfälle bleiben in Ruhe', () => {
   })
 
   it('schweigt ohne Personen und ohne Zimmer', () => {
-    expect(ids(profile({ personsCount: 0, roomsCount: 0 }))).toEqual([])
+    expect(ids(profile({ personsCount: 0, rooms: [] }))).toEqual([])
   })
 })
 
 describe('Zimmerzahl', () => {
-  it('nimmt die angelegten Räume, sobald es welche gibt', () => {
-    const d = profile({
-      roomsCount: 3,
-      rooms: [
-        room('bedroom', 2),
-        room('living_room'),
-      ],
-    } as Partial<OnboardingData>)
+  it('zählt die Instanzen aller angelegten Raumarten', () => {
+    const d = profile({ rooms: [room('bedroom', 2), room('living_room')] })
     expect(effectiveRoomCount(d)).toBe(3)
   })
 
-  it('fällt ohne Räume auf die Schnellstart-Angabe zurück', () => {
-    expect(effectiveRoomCount(profile({ roomsCount: 4 }))).toBe(4)
+  // Der Schnellstart legt keine Räume an. Dort schweigt die Zimmer-Prüfung
+  // seither, statt mit einem Vorgabewert zu rechnen, den niemand eingetragen
+  // hat – der Abgleich „m² je Person" bleibt.
+  it('ist ohne angelegte Räume null und lässt die Prüfung schweigen', () => {
+    const schnellstart = profile({ rooms: [] })
+    expect(effectiveRoomCount(schnellstart)).toBe(0)
+    expect(ids({ ...schnellstart, livingArea: 700 } as OnboardingData)).toEqual([
+      'area_per_person_high',
+    ])
   })
 })

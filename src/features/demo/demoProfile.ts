@@ -162,7 +162,6 @@ const onboardingData: OnboardingData = {
   profileName: 'Familie Berger',
   profileImage: '',
   personsCount: 3,
-  roomsCount: 4,
   buildingYear: 1962,
   buildingType: 'apartment',
   livingArea: 85,

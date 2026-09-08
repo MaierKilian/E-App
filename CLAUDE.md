@@ -82,8 +82,11 @@ deployten App dazu.
   Etagenzahl entfernt – beides Pflichtangaben, deren gesamte Wirkung je eine
   Zeile im PDF-Steckbrief war. Die Zimmerzahl steht nur noch im Schnellstart;
   im vollständigen Fragebogen erfasst der Räume-Schritt zwei Seiten später
-  dasselbe genauer. Im Schnellstart bleibt sie, weil es dort keinen
-  Räume-Schritt gibt und sie die Plausibilitätsprüfung „m² je Zimmer" trägt.
+  dasselbe genauer. **Am 08.09. ist sie auch im Schnellstart entfallen** – ihre
+  einzige verbliebene Wirkung war die App-interne Plausibilitätsprüfung „m² je
+  Zimmer", und die ist kein Abnehmer. `roomsCount` ist damit als bisher
+  einziges Feld ganz aus `OnboardingData` verschwunden; ohne angelegte Räume
+  schweigt die Zimmer-Prüfung, der Abgleich „m² je Person" bleibt.
 - Schritt „Standort & Wohnsituation" ganz entfallen (05.09.). Erst fiel die
   Frage nach Mieter oder Eigentümer – sie hätte genau einen Tipp gefiltert
   (Alter des Kessels), und der ist für Mieter das Argument gegenüber der

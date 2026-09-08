@@ -1515,7 +1515,6 @@
       "profileImageAdd": "Profilbild hinzufügen",
       "profileImageRemove": "Bild entfernen",
       "persons": "Personen im Haushalt",
-      "rooms": "Anzahl der Zimmer",
       "goals": "Dein Ziel / Motivation",
       "occupancyStatus": "Status",
       "goalOptions": {
@@ -1532,8 +1531,7 @@
       "profileNameHint": "Frei wählbar – praktisch, wenn du mehrere Wohnungen vergleichst.",
       "personsHint": "Beeinflusst Warmwasser- und Stromverbrauch.",
       "goalsHint": "Wir priorisieren passende Messungen und Tipps. Mehrfachauswahl möglich.",
-      "statusHint": "Beeinflusst, welche Maßnahmen für dich realistisch sind.",
-      "roomsFromList": "Zimmer laut deiner Raumliste: {{count}}"
+      "statusHint": "Beeinflusst, welche Maßnahmen für dich realistisch sind."
     },
     "step2": {
       "title": "Basisdaten",
@@ -1828,7 +1826,6 @@
       "labels": {
         "profileName": "Profilname",
         "persons": "Personen",
-        "roomsCount": "Zimmeranzahl",
         "buildingYear": "Baujahr",
         "buildingType": "Gebäudeteil",
         "livingArea": "Wohnfläche",

@@ -1821,6 +1821,42 @@ alle bestanden. Die Adressen selbst stehen in
 
 ---
 
+### 45. Zimmerzahl im Schnellstart – die letzte Frage ohne Abnehmer
+**Kategorie:** Verbesserung · **Bereich:** `Step1Profile.tsx`, `plausibility.ts`,
+`fieldUsage.ts`, `types/index.ts`
+**Status:** ✅ Umgesetzt (08.09.) – auf Kilians Meldung „Im schnellen Onboarding
+ist hier immer noch diese Frage mit der Zimmeranzahl. Entferne das bitte".
+
+Am 05.09. war die Zimmerzahl aus dem **vollständigen** Fragebogen gefallen: Der
+Räume-Schritt zwei Seiten später erfasst dasselbe genauer. Im Schnellstart blieb
+sie stehen, weil sie dort die Plausibilitätsprüfung „m² je Zimmer" trug – der
+Schnellstart legt keine Räume an.
+
+**Das war die schwächere Begründung.** Die Prüfung ist ein App-interner
+Abgleich, kein Abnehmer im Sinne der Feld-Landkarte; `fieldUsage.ts` sagte das
+über `roomsCount` selbst („kein Abnehmer im Sinne dieser Liste"). Eine
+Pflichtangabe im kürzesten Weg der App, deren einzige Wirkung ein Hinweis
+innerhalb desselben Fragebogens ist, trägt sich nicht – bei Kamin/Ofen,
+Smart-Home, Gebäudeteil und Postleitzahl war weniger der Grund zu streichen.
+
+**Umgesetzt:**
+- Die Frage ist im Schnellstart weg; „Dein Zuhause" fragt jetzt in beiden Wegen
+  dasselbe (Profilname, Wohnfläche, Personen, Baujahr).
+- `roomsCount` ist ganz aus `OnboardingData` entfallen – als bisher einziges
+  Feld. Bei den anderen gestrichenen Fragen tragen Bestandsprofile echte Werte,
+  die aufzuheben sind; hier war der Wert eine Näherung für die Raumliste und
+  außerhalb des Fragebogens nie gelesen.
+- `effectiveRoomCount()` zählt nur noch die angelegten Räume. Ohne Räume
+  schweigt die Zimmer-Prüfung, statt mit einem Vorgabewert (3) zu rechnen, den
+  niemand eingetragen hat – das wäre die schlechtere Variante gewesen: Sie hätte
+  bei einer 15-m²-Wohnung einen Hinweis auf eine Zahl gestützt, die der Nutzer
+  nie gesehen hat.
+- Was der Schnellstart dadurch verliert, ist der Abgleich „m² je Zimmer". Der
+  Abgleich **„m² je Person"** bleibt – und der fängt den Vertipper, um den es
+  geht (700 statt 70 m²), genauso.
+- Die Zeile in der Zusammenfassung (Schritt „Fertig") und die Textbausteine sind
+  mit entfallen.
+
 ## Offene Fragen für Kilian
 
 - Bei #8 (b): Über den umgesetzten Bugfix hinaus – grundsätzlich auf

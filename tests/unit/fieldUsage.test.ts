@@ -26,7 +26,6 @@ import { migrateOnboardingData } from '@/store/onboardingStore'
  */
 const OHNE_ABNEHMER = [
   'profileImage',
-  'roomsCount',
   'locationMode',
   'lastRenovationYear',
   'renovationItems',
