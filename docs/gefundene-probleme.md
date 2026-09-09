@@ -1819,6 +1819,144 @@ Landing-Adressen, den zweiten Link, das Ablehnen und den Aufruf ohne `?demo` –
 alle bestanden. Die Adressen selbst stehen in
 `docs/hausarbeit-verlinkung.md`.
 
+### 45. „Separates System" endet im Nichts – Vorschlag: Geräte erfassen und messen
+**Kategorie:** Verbesserung · **Bereich:** `Step4Heating.tsx`, `types/index.ts`,
+`measurements/*`, `monitoring/energyConfig.ts`
+**Status:** 💡 Nur gesammelt (09.09.) – Konzept, kein Code. Kilians Idee.
+
+Wer „Separates System" angibt, hat damit die interessanteste Antwort der
+Warmwasserfrage gegeben – und die App tut nichts damit. Sie weiß jetzt, dass
+ein eigenes Gerät das Wasser erwärmt, fragt aber nicht, **welches** und **wo**,
+und rechnet nichts daraus. Kilians Vorschlag: an dieser Stelle die Geräte
+erfassen (Durchlauferhitzer, Boiler) samt Raum – und darüber den Stromverbrauch
+verfolgen.
+
+Das ist zugleich die Antwort auf die offene Frage aus #36. Dort stand
+`hotWaterType` als Angabe ohne funktionalen Abnehmer zur Streichung an, mit der
+dritten Möglichkeit „sie bekommt eine Aufgabe". Genau das ist dies.
+
+**Warum die Angabe dafür taugt.** Ein elektrischer Durchlauferhitzer ist kein
+Nebenposten: 18–27 kW Anschlussleistung, und jede Kilowattstunde läuft über den
+Haushaltsstrompreis (35 ct Standard) statt über Gas (1,20 €/m³ ≈ 12 ct/kWh
+nutzbar). Dieselbe Dusche kostet damit rund das Dreifache. Kein anderes Gerät im
+Haushalt hat diesen Hebel, und keines ist heute so unsichtbar.
+
+**Drei Ebenen, von klein nach groß. Jede steht für sich.**
+
+**(1) Erfassen – der Fragebogen.** „Separates System" klappt eine Geräteliste
+auf: Art (elektronischer / hydraulischer Durchlauferhitzer, Kleindurchlauf-
+erhitzer, Speicher/Boiler, Gas-Durchlauferhitzer, Warmwasser-Wärmepumpe), Raum,
+optionaler Name, optional die Leistung vom Typenschild.
+
+Das Datenmodell steht schon. `ApplianceEntry` (`id`, `kind`, `room`, `name`) ist
+exakt diese Form; es genügt, `ApplianceKind` um die Warmwasser-Arten zu
+erweitern und dieselbe `appliances`-Liste zu nutzen. Damit erben die Geräte ohne
+Zutun: unveränderliche Kennungen, `ApplianceChooser`, `applianceLabel`, die
+Ergebnis-Schlüssel je Gerät (`…@bathroom#a1b2c3d4`) und die Mehrfach-Erfassung
+aus #23. Zu trennen ist nur die *Frage*: `appliancesAnswered` gehört zur
+Kühl-/Gefrier-Frage und bleibt dort; die Warmwassergeräte brauchen ein eigenes
+Flag. Die Checks filtern ohnehin schon nach `kind` (siehe `ApplianceGate`).
+
+**(2) Messen – ein neuer Check.** Ein Durchlauferhitzer lässt sich **nicht** mit
+einem Steckdosen-Messgerät messen: Er hängt festverdrahtet am Drehstrom. Der Weg
+führt über den Zähler – und die Maschinerie dafür ist seit #40 da. Der
+Grundlast-Check kennt drei Modi, zwei davon passen unverändert:
+
+- **Zählerstand vor und nach dem Duschen** → Kilowattstunden je Duschgang, ohne
+  eine einzige Annahme. Bei 21 kW und fünf Minuten sind das rund 1,7 kWh; das
+  liest sich auf jedem Zähler mit einer Nachkommastelle sauber ab. Die
+  Auflösungsfalle aus #38 greift hier gerade **nicht** – anders als bei der
+  Grundlast, wo es um Zehntel geht.
+- **Impulse zählen**, wo der Zähler nichts Feineres hergibt.
+
+Aus kWh je Duschgang × Duschgänge im Jahr (Personen aus dem Fragebogen) folgen
+kWh/Jahr und €/Jahr. Als Gegenprobe steht der Anteil am Jahres-Stromverbrauch
+aus dem Monitoring zur Verfügung – dieselbe `share`-Konstruktion, mit der der
+Grundlast-Check seine absoluten Wattschwellen relativiert.
+
+Der rechnerische Weg (E = V × ΔT × 1,163 Wh/(l·K)) bleibt als Rückfall, wenn
+niemand zum Zähler laufen will: Der Durchfluss ist im Duschkopf-Test **schon
+gemessen**, den Temperaturhub trägt das Thermometer, das die App als Instrument
+kennt. Er ist die zweite Wahl, weil er die Wirkungsgrade schätzt – die Zahlen
+dafür stehen einsatzbereit in `archiv/duschkopf-warmwasserquelle/hotWaterEnergy.ts`.
+
+**(3) Verfolgen – das Monitoring.** Hier liegt die eigentliche Frage, und sie
+hat eine unbequeme Hälfte.
+
+Der saubere Fall ist gelöst, bevor er gebaut ist: Ein eigener Zähler wird ein
+eigener `EnergyType`. Genau das **ist** `heat_pump` schon heute – ein
+Strom-Unterzähler in kWh mit eigenem Tarif (30 ct Wärmestrom statt 35 ct
+Haushalt). Ein `water_heater` daneben kostet vier Einträge (`ENERGY_META`,
+`PRICE_META`, `ORDER`, Freischaltung in `suggestedEnergyTypes` – wie PV über
+`hasPV`); Ablesungen, Sparkline, Trend, Jahres-Hochrechnung, OCR-Scan und
+Erinnerungen laufen generisch über `EnergyType` und sind damit ohne Zutun dabei.
+Nicht in `SEASONAL_TYPES`: Warmwasser schwankt übers Jahr (kälteres Zulaufwasser
+im Winter), aber nicht wie eine Heizung.
+
+**Die unbequeme Hälfte:** Ein eigener Zähler ist die Ausnahme. In der
+Mietwohnung hängt der Durchlauferhitzer am Haushaltszähler – dort gibt es nichts
+getrennt abzulesen, und ein zweiter Zähler wäre eine Doppelzählung mit
+`electricity`. Die App muss deshalb beim Anlegen fragen („Hat das Gerät einen
+eigenen Zähler?") und ohne eigenen Zähler auf (2) zurückfallen: hochrechnen
+statt zählen, ein Ergebnis im Check und eine Zeile im Bericht, kein Widget.
+
+**Was daraus an Empfehlungen folgt** – der Teil, der die Erfassung erst
+rechtfertigt:
+
+- **Hydraulisch statt elektronisch** ist ein realer, belegbarer Posten:
+  Hydraulische Geräte schalten in Stufen, heizen über den Bedarf und werden
+  kalt heruntergemischt. Die Bauart steht in der Erfassung, der Umstieg ist ein
+  Tipp mit Zahl.
+- **Der Duschkopf-Test wird an einem Durchlauferhitzer wertvoller als
+  irgendwo sonst.** Seine Prozent-Ersparnis (#36) wirkt hier auf Strom zum
+  Höchstpreis. Das ist kein neuer Check, nur ein Satz im Ergebnis, der weiß,
+  woran er hängt.
+- **Ein Speicher/Boiler steckt in der Grundlast.** Ein 80-Liter-Boiler hält rund
+  um die Uhr warm; der Grundlast-Check misst das mit, ohne es benennen zu
+  können. Mit der Geräteliste kann er es.
+- **Der Kleindurchlauferhitzer am Waschbecken** verbindet sich mit #8/#9: Er
+  spart das Vorlaufwasser, das der Wartezeit-Check beziffert – und kostet dafür
+  Strom. Beides zusammen ist erst mit der Geräteliste rechenbar.
+
+**Reihenfolge, wenn gebaut wird:** (1) allein ist schon eine Verbesserung – die
+Frage hätte wieder einen Abnehmer und der Steckbrief etwas zu sagen. (2) trägt
+die Zahlen. (3) nur für den Fall mit eigenem Zähler, hinter einer ausdrücklichen
+Frage.
+
+**Offen:** siehe „Offene Fragen".
+
+---
+
+### 46. Warmwasser-Antwort „Teilweise kombiniert" entfernen
+**Kategorie:** Verbesserung · **Bereich:** `types/index.ts`, `Step4Heating.tsx`,
+`onboardingStore.ts` (`migrateOnboardingData`), `de.json`/`en.json`
+**Status:** 💡 Nur gesammelt (09.09.) – Kilians Entscheidung, noch nicht gebaut.
+
+Kilian: „Das mit dem teilweise kombiniert würde ich weglassen bzw. entfernen."
+
+Der Befund stützt das. Die vier Antworten der Warmwasserfrage waren nie
+gleichwertig: `partially_combined` hatte in der gesamten App **keine eigene
+Wirkung**. Der einzige Code, der die Antwort je gelesen hat, ist inzwischen
+archiviert – und behandelte sie ausdrücklich wie „Wie Heizung"
+(`defaultHotWaterSource` in `archiv/duschkopf-warmwasserquelle/hotWaterEnergy.ts`
+prüft nur auf `!== 'separate_system'`). Sie war eine vierte Kachel, die sich für
+den Nutzer nach einer Unterscheidung anfühlte und für die App keine war.
+
+Mit #45 wird sie zusätzlich überflüssig: Wer Heizungswarmwasser hat und im
+Gäste-WC trotzdem einen Kleindurchlauferhitzer, gibt künftig „Wie Heizung" an
+**und** das Gerät. Das ist die genauere Auskunft – die Geräteliste ersetzt die
+Kachel, statt sie nur zu streichen.
+
+**Vorgehen wie bei `hasPV: 'planned'` (#32):** Wert aus dem Typ und aus
+`HOT_WATER_TYPES` nehmen, Übersetzungen in beiden Sprachen entfernen, und
+Bestandsprofile in `migrateOnboardingData` auf `'same_as_heating'` ziehen – nicht
+auf `'unknown'`. Grund: So hat der Code die Antwort immer schon gelesen, und
+„Nicht bekannt" würde eine beantwortete Frage nachträglich in eine unbeantwortete
+verwandeln (der Abschnitt „Heizung" zählt `hotWaterType !== 'unknown'` als
+Pflichtangabe – der Fortschritt eines Altprofils fiele ohne Zutun des Nutzers).
+Ein Wert ohne Knopf ginge auch hier nicht: Die Kachel wäre weg, die Auswahl sähe
+unbeantwortet aus.
+
 ---
 
 ## Offene Fragen für Kilian
@@ -1870,6 +2008,9 @@ alle bestanden. Die Adressen selbst stehen in
   eine Aufgabe – etwa einen Tipp für „separates System" (Warmwasser aus einem
   eigenen Gerät im Sommer ist oft der teuerste Weg). Der wäre aber neu zu
   belegen, nicht bloß anzuschließen.
+  **Nachtrag (09.09.):** Die dritte Möglichkeit ist als #45 ausgearbeitet –
+  Geräteliste hinter „Separates System", darauf ein Mess-Check. Damit hätte die
+  Frage wieder einen funktionalen Abnehmer und die Streichung erübrigte sich.
 - Bei #37 (neu, aus der Umsetzung): Der gemeinsame `Stepper` kann seinen Wert
   jetzt verbergen (`showValue={false}`). Soll das in Kühlschrank, Raumklima und
   Möbelabstand gesetzt werden? Dort steht der Wert heute zweimal – einmal roh
@@ -1887,3 +2028,22 @@ alle bestanden. Die Adressen selbst stehen in
   Code lässt sich der Zustand nicht herleiten: Sobald die Karte mit den
   Ablesungen sichtbar ist, ist der Entwurf vollständig, und damit ist
   `canEvaluate` wahr. Was war zwischen den beiden Screenshots?
+
+- Bei #45 (neu): Welche Ebene soll gebaut werden – nur die Erfassung (1), die
+  Erfassung plus Mess-Check (2), oder auch der eigene Zähler im Monitoring (3)?
+  (1) allein löst schon die offene Frage aus #36; (3) trägt nur, wo wirklich ein
+  zweiter Zähler hängt.
+- Bei #45: Sollen die Warmwassergeräte in dieselbe `appliances`-Liste wie Kühl-
+  und Gefriergeräte (ein Modell, ein Satz Mechanik – aber eine Liste, die zwei
+  Fragen beantwortet), oder in eine eigene Liste (sauber getrennt, dafür
+  `ApplianceChooser`, `applianceLabel` und die Ergebnis-Schlüssel doppelt)?
+- Bei #45: Wo steht die Geräteliste – direkt unter der Warmwasserfrage in
+  „Heizung & Warmwasser", oder auf der Geräte-Seite bei Kühl- und
+  Gefriergeräten? Das erste hält die Frage bei ihrer Antwort, das zweite alle
+  Geräte an einem Ort.
+- Bei #45: Nur elektrische Warmwassergeräte erfassen (der Verbrauch ist das
+  Ziel) oder auch Gas-Durchlauferhitzer und Warmwasser-Wärmepumpe? Letztere
+  gehören sachlich dazu, tragen aber keinen Strom-Zähler.
+- Bei #46: Bestandsprofile mit „Teilweise kombiniert" auf „Wie Heizung" ziehen
+  (so hat der Code die Antwort immer gelesen) – oder ist eine andere Zuordnung
+  gewollt?
