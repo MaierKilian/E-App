@@ -689,6 +689,63 @@ ausgelieferte App (nur `npm install`/CI-Laufzeit), wird hier nur festgehalten,
 damit die 759-MB-`node_modules`-Zahl aus Paket 0 nicht als App-Gewicht
 missverstanden wird.
 
+## Paket 7 – Performance (Speicher, Reaktionszeit, Bandbreite)
+
+Fasst die in Paket 0/1/4 real gemessenen Zahlen zusammen und ordnet sie den
+drei im Auftrag genannten Zielgrößen zu. Alle Vorschläge sind – wie im
+gesamten Dokument – verhaltensneutral gedacht; wo das nicht ginge (z. B.
+Offline-Fähigkeit), ist es ausdrücklich als eigene Idee markiert statt als
+Verschlankung verkauft.
+
+### Bandbreite
+
+| Befund | Größe | Einordnung |
+|---|---|---|
+| **Haupt-Bundle ohne Routen-Splitting** | 1,86 MB / 547 KB gzip, bei **jedem** Seitenaufruf | Größter Hebel. `App.tsx` importiert alle 19 Seiten statisch (Paket 1). `React.lazy()` je Route (Onboarding, Measurements, Monitoring, Education, Reports, Settings, Legal je eigener Chunk) lädt nur, was der aktuelle Pfad braucht – ein Bestandsnutzer, der nur den Zählerstand einträgt, lädt dann nicht mehr automatisch Wissen/Karteikarten/PDF-Berichts-Code mit. |
+| **Beide Sprachdateien immer geladen** | zusammen 268 KB unkomprimiert (`de.json` + `en.json`) | `i18n/index.ts` importiert beide statisch, obwohl nur eine Sprache aktiv ist (Paket 1). i18next unterstützt Nachladen einzelner Sprachen (`i18next-http-backend` oder ein simples `import()` pro Sprache) – zur Laufzeit ließe sich das ohne Bedeutungsverlust umbauen. |
+| **`demo/demoProfile.ts` statisch verkettet** | 241 LOC Fixture | Lädt für jeden Besuch mit, auch ohne `?demo` (Paket 4). Dynamischer Import in `enterDemo.ts` behebt das mit minimalem Diff. |
+| **Cloud-Sync schreibt/liest immer den ganzen Profil-Snapshot** | heute klein (Konfiguration + Ergebnisse), wächst mit `readingsStore` | Jede Änderung an **irgendeinem** der sieben synchronisierten Stores löst nach 1.500 ms einen Schreibvorgang des **gesamten** Snapshots aus (Paket 1). Bei einer Ablesehistorie von z. B. 5 Zählern × 200 Einträgen à ~120 Byte JSON sind das ~120 KB, die bei jeder Änderung – auch einer, die nur `onboarding` betrifft – erneut hoch- und über den Live-Listener bei jedem angemeldeten Gerät wieder heruntergeladen werden. Heute unauffällig, aber eine Wachstumskurve, die mit den Jahren der Nutzung steiler wird. Eine Lösung (z. B. Firestore-Teil-Updates je Store-Schlüssel statt eines einzigen `state`-Felds) ist ein echter Architektur-Eingriff, kein Ein-Zeiler – siehe Paket 8. |
+| **Tesseract.js-Fallback** | mehrere MB WASM + Sprachdaten, zur Laufzeit nachgeladen | Nur betroffen, wenn der Gemini-Zähler-Scan fehlschlägt/nicht erreichbar ist (Paket 6). Bereits korrekt hinter `await import('tesseract.js')` versteckt – kein Fund, nur zur Einordnung, damit diese Zahl nicht mit dem Haupt-Bundle verwechselt wird. |
+| **Kein Service Worker/Manifest** | – | Kein Offline-Cache über die normalen HTTP-Cache-Header hinaus. Das ist eine **funktionale** Ergänzung (Installierbarkeit, Offline-Nutzung), keine reine Verschlankung – wird deshalb nur als Idee für Paket 8 vorgemerkt, nicht als Befund gewertet. |
+
+### Reaktionszeit
+
+- **Parse/Execute-Kosten des Haupt-Bundles**: 1,86 MB JS müssen auf jedem
+  Gerät geparst und ausgeführt werden, bevor die erste Seite interaktiv ist
+  – auf einem Mittelklasse-Mobilgerät ein spürbarer, nicht nur ein
+  Netzwerk-Effekt. Derselbe Fund wie unter Bandbreite, hier unter dem
+  Blickwinkel „Zeit bis interaktiv" statt „übertragene Bytes".
+- **`Intl.NumberFormat` pro Render neu gebaut** (Paket 5, 36 Fundstellen):
+  Jeder Formatter wird bei jedem Render einer Result-/Run-Komponente neu
+  konstruiert, statt einen gecachten Formatter wiederzuverwenden. Einzeln
+  vernachlässigbar, in Summe (Stepper-Eingaben mit vielen Re-Renders pro
+  Sekunde bei Grundlast-/Standby-Checks) ein echter, wenn auch kleiner
+  Reaktionszeit-Betrag.
+- **Handgeschriebene SVG-Diagramme statt Chart-Bibliothek** (Paket 4):
+  wirkt sich **positiv** aus – kein Layout-Rechnen einer generischen
+  Bibliothek, direkte DOM-Kontrolle. Als Stärke vermerkt, nicht als
+  Handlungsbedarf.
+- **Firestore mit `persistentLocalCache`** (Paket 1): Lesezugriffe nach dem
+  ersten Laden kommen aus IndexedDB, nicht aus dem Netz – bereits die
+  reaktionsschnellere Wahl gegenüber einem reinen Server-Cache.
+
+### Speicher (Gerät)
+
+- **`localStorage`**: 14 Stores unter `eapp-*`-Schlüsseln (Paket 1). Umfang
+  folgt der Nutzung (Fragebogen-Antworten, Mess-Ergebnisse, Ablesungen) –
+  bei den heutigen Datenmengen (Kilobytes bis niedrige Zehntausender) keine
+  Grenze in Sicht (Browser erlauben je Ursprung mehrere MB).
+- **IndexedDB (Firestore-Offline-Cache)**: wächst mit der Cloud-Sync-
+  Nutzung, vom Browser selbst verwaltet (Eviction bei Speicherdruck) – kein
+  App-seitiger Hebel nötig.
+- **Statische Assets** (`public/`, 2,4 MB gesamt, Paket 0): größte Posten
+  sind die zwei Duschkopf-Videos (464 KB MP4 + 424 KB WebM – der Browser
+  lädt nur **eines** davon, nie beide, siehe Format-Fallback in
+  `IntroHeroVideo.tsx`) und die hell/dunkel-Illustrationen der Mess-Checks
+  (36–88 KB je Datei). Alle liegen unter der jeweiligen Intro-Seite, werden
+  also nur geladen, wenn ein Nutzer diesen Check tatsächlich öffnet – kein
+  Fund, korrekt pro Bedarf geschnitten.
+
 ## Fortschritt
 
 | Paket | Inhalt | Status |
@@ -700,5 +757,5 @@ missverstanden wird.
 | 4 | Modul-Katalog Rest-Features | ✅ fertig (16.09.) |
 | 5 | UI-Bausteine & Generalisierungspotenzial | ✅ fertig (16.09.) |
 | 6 | Bloat & Vereinfachung | ✅ fertig (16.09.) |
-| 7 | Performance (Speicher/Reaktionszeit/Bandbreite) | ⏳ offen |
+| 7 | Performance (Speicher/Reaktionszeit/Bandbreite) | ✅ fertig (16.09.) |
 | 8 | Priorisierte Empfehlungsliste & Abschluss | ⏳ offen |
