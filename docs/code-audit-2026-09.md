@@ -285,13 +285,102 @@ Die in CLAUDE.md dokumentierten Register (`fieldUsage.ts`,
 instruments`) sind der eigentliche „Klebstoff" zwischen den Modulen – sie
 werden in Paket 2/3 im Detail bewertet.
 
+## Paket 2 – Modul-Katalog `measurements/` + `tips/`
+
+Größter Einzelbereich (10.357 LOC, 77 Dateien). Neun Mess-Checks nach
+identischem Muster plus eine gemeinsame Infrastruktur, die dieses Muster
+trägt.
+
+### Kern-Infrastruktur (wird bereits geteilt – kein Wiederholungsbefund)
+
+| Datei | Rolle |
+|---|---|
+| `catalog.ts` | Deklarative Registry (`MEASUREMENT_CATALOG`): je Check Icon, Kategorie, Dauer, `perRoom`/`perAppliance`/`wholeHome`, `skipWhenUnheated`, `yieldsSaving`, `instruments`. Steuert Sichtbarkeit, Reihenfolge, Raum-/Geräte-Zuordnung – **ohne** dass eine Ansicht das selbst entscheidet. |
+| `registry.ts` + `runnerTypes.ts` | `MEASUREMENT_MODULES`: id → `{ Intro?, Run, Result }`. Ein Interface, neun Implementierungen. |
+| `MeasurementRunner.tsx` (538 LOC) | **Ein** generischer Ablauf (Intro → Run → Result) für alle neun Checks: liest Katalog + Registry, klärt Raum-/Geräte-Auswahl, Zwischenstände (`measurementDraftStore`), Speichern, Erfolgs-Zwischenschritt, „nächste Messung"-Vorschlag. Kein Check baut seinen eigenen Ablauf. |
+| `progress.ts`, `tasks.ts`, `order.ts`, `rooms.ts`, `useSkipped.ts` | Leiten aus Katalog + Ergebnissen ab, was erledigt/offen/übersprungen ist – für alle Checks gleich, nicht je Ansicht neu gerechnet. |
+| `instrumentNeeds.ts` | Dreht `catalog.ts` um (Messung→Gerät wird Gerät→Messung) für die Fragebogen-Übersicht „Was du zum Messen brauchst" – abgeleitet, nicht gepflegt (siehe CLAUDE.md-Konvention). |
+| `impact.ts`, `savingsDisplay.ts`, `resultValue.ts`, `rating.ts`, `ambientTemperature.ts`, `followUps.ts`, `applianceLabel.ts` | Reine Formatierungs-/Ableitungsfunktionen, von mehreren Checks und Views genutzt (z. B. `ambientFor()` für Kühlschrank **und** Gefrierschrank, `resultValueText()` in allen Grid-Ansichten). |
+| `views/GroupTileGrid.tsx` | **Eine** Kachel-Grid-Komponente, die `ByRoomView`, `TradesView` **und** die Fortschrittsanzeige teilen (Gruppen/Items als Props, keine eigene Fachlogik). |
+
+Das ist bereits die Art Generalisierung, nach der gefragt wurde – hier gibt es
+strukturell nichts zu verschlanken, nur ein UI-Detail (siehe unten).
+
+### Die neun Checks
+
+| Check | Ordner-LOC | Besonderheit |
+|---|---|---|
+| `base_load` | 1.440 | zwei Zählerstände, `power_meter` Pflicht; größter Check (Zeitdifferenz-Logik, `remeasure.ts`) |
+| `room_temperature` | 1.002 | optionaler Feuchte-Zusatzschritt → Taupunkt (`dewPoint.ts`, `roomClimate.ts`, `heatingCost.ts`, `roomAreas.ts` als vier Rechendateien statt einer) |
+| `furniture_spacing` | 950 | `skipWhenUnheated`, optionales Messgerät, eigener `context.ts` |
+| `standby` | 751 | mehrere Geräte gleicher Art einzeln erfassbar, eigene `deviceHistory.ts` |
+| `hot_water_wait` | 537 | nutzt gemessenen Duschkopf-Durchfluss statt Pauschalwert |
+| `showerhead` (Duschkopf) | 508 | rechnet Prozentsatz statt €-Betrag (siehe CLAUDE.md, Umbau 05.09.) |
+| `freezer` | 496 | `perAppliance`, läuft über `ApplianceGate`/`GatedFreezerRun` |
+| `fridge` | 408 | `perAppliance`, läuft über `ApplianceGate`/`GatedFridgeRun` |
+| `lighting` | 378 | einziger Check ohne `Intro`-Screen, `wholeHome`, kleinster Check |
+
+Summe der neun Ordner: 6.470 LOC; die restlichen ~3.887 LOC von
+`measurements/` liegen in der oben beschriebenen gemeinsamen Infrastruktur
+(Katalog, Runner, Views, Helfer) – ein plausibles Verhältnis für neun
+Implementierungen eines gemeinsamen Musters, kein Ausreißer.
+
+Jeder Check folgt demselben Datei-Trio: `<Check>Intro.tsx` (Erklärung,
+optional), `<Check>Run.tsx` (Erfassung), `<Check>Result.tsx` (Auswertungs-
+Anzeige) + eine reine `<check>.ts`-Rechendatei ohne React-Import (z. B.
+`freezer.ts`, `hotWaterWait.ts`). Diese Trennung Rechnung/Darstellung ist
+konsequent durchgehalten – **jede** der neun Rechendateien ist ohne
+UI-Abhängigkeit testbar (siehe `tests/unit/*` – ein Test pro Rechendatei).
+
+### Gefundene Duplikation (konkret, risikolos behebbar)
+
+Eine lokale `Chip`-Komponente ist **wortgleich** in fünf `Result.tsx`
+dupliziert:
+
+```
+standby/StandbyResult.tsx, hot_water_wait/HotWaterWaitResult.tsx,
+showerhead/ShowerheadResult.tsx, fridge/FridgeResult.tsx,
+freezer/FreezerResult.tsx
+```
+
+jeweils:
+```tsx
+function Chip({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+      {label}
+    </span>
+  )
+}
+```
+
+Kandidat für `src/components/ui/Chip.tsx` (Paket 5 vertieft
+UI-Baustein-Kandidaten wie diesen).
+
+### `tips/` (1.545 LOC, 4 Dateien)
+
+- `buildTips.ts` (838 LOC): **eine** große Funktion `buildTips()` liest quer
+  über alle Mess-Ergebnisse, das Onboarding-Profil und die Ziele
+  (`goalCategoryBonus`) und leitet daraus die Liste offener Empfehlungen ab –
+  je Tip-Quelle (`standby`, `lighting`, `base_load`, `showerhead`,
+  `hot_water_wait`, `room_temperature` + vier Unterbefunde, `furniture_
+  spacing`, `old_boiler`, `pv_self_consumption`) ein eigener Codeblock.
+  Umfang folgt direkt aus der Zahl der Quellen (ca. 60–70 Zeilen je Tip inkl.
+  i18n-Texten und Bedingungen) – strukturell **kein** Bloat, aber die Datei
+  ist der natürliche Ort, an dem ein zehnter/elfter Tip sie weiter wachsen
+  lässt. Beobachtung für Paket 6: keine Umsetzung, nur Vormerkung, falls die
+  Datei über ~1.000 Zeilen wächst, in `tips/sources/<id>.ts` je Quelle zu
+  trennen.
+- `TipsPage.tsx` (584 LOC): reine Darstellung (Sortierung, Filter, Gruppen),
+  liest ausschließlich über `buildTips()` – keine eigene Ableitung.
+
 ## Fortschritt
 
 | Paket | Inhalt | Status |
 |---|---|---|
 | 0 | Baseline & Repo-Übersicht | ✅ fertig (16.09.) |
 | 1 | Architektur-Überblick | ✅ fertig (16.09.) |
-| 2 | Modul-Katalog `measurements/` + `tips/` | ⏳ offen |
+| 2 | Modul-Katalog `measurements/` + `tips/` | ✅ fertig (16.09.) |
 | 3 | Modul-Katalog `education/` + `onboarding/` | ⏳ offen |
 | 4 | Modul-Katalog Rest-Features | ⏳ offen |
 | 5 | UI-Bausteine & Generalisierungspotenzial | ⏳ offen |
