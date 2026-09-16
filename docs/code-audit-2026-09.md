@@ -746,6 +746,74 @@ Verschlankung verkauft.
   also nur geladen, wenn ein Nutzer diesen Check tatsächlich öffnet – kein
   Fund, korrekt pro Bedarf geschnitten.
 
+## Paket 8 – Priorisierte Empfehlungsliste & Abschluss
+
+Alle Kandidaten aus Paket 2–7 an einem Ort, sortiert nach Wirkung je
+Aufwand. **Keiner davon wurde umgesetzt** – das war nicht der Auftrag
+dieses Dokuments. Die Spalte „Fundstelle" verweist auf das Paket mit der
+ausführlichen Begründung.
+
+| # | Empfehlung | Wirkt auf | Aufwand | Risiko | Fundstelle |
+|---|---|---|---|---|---|
+| 1 | Routen per `React.lazy()` statt statischem Import in `App.tsx` laden | Bandbreite **und** Reaktionszeit (größter Einzel-Hebel: 547 KB gzip Haupt-Bundle) | mittel (19 Importe umstellen, `<Suspense>`-Fallback ergänzen) | niedrig (Routing-Verhalten bleibt gleich, nur Ladezeitpunkt ändert sich) | Paket 7 |
+| 2 | Automatisierten Dead-Export-Scan (`knip`/`ts-prune`) einmalig laufen lassen | Wartbarkeit, Absicherung gegen Blatt 6 | sehr niedrig (nur lesen, kein Diff) | keins | Paket 6 |
+| 3 | `SelectChip` durch `OptionChip` ersetzen | Wartbarkeit (−28 LOC, ein Baustein weniger) | niedrig (6 Aufrufstellen) | niedrig | Paket 5 |
+| 4 | `demo/demoProfile.ts` dynamisch importieren | Bandbreite (klein, aber risikofrei) | niedrig (1 Datei) | niedrig | Paket 4/7 |
+| 5 | `Chip`-Duplikat aus fünf `Result.tsx` in `components/ui/Chip.tsx` ziehen | Wartbarkeit | niedrig (5 Aufrufstellen + 1 neue Datei) | niedrig | Paket 2 |
+| 6 | Onboarding-Step-Dateien umbenennen (Nummern raus) | Wartbarkeit/Lesbarkeit | niedrig (6 Dateien + Imports) | niedrig | Paket 3/6 |
+| 7 | Geteilte Zahlen-/Währungs-Formatierung (`lib/format.ts` oder Hook) statt 36× `Intl.NumberFormat` inline | Reaktionszeit (weniger Objekt-Konstruktion) + Wartbarkeit | mittel-hoch (36 Fundstellen, aber mechanisch) | niedrig (reine Ersetzung bei gleichen Optionen) | Paket 5/7 |
+| 8 | 19 hand-gerollte `"glass rounded-3xl p-4"`-Divs durch `<Card className="p-4">` ersetzen | Wartbarkeit | mittel (19 Fundstellen, Markup je Stelle prüfen) | niedrig-mittel (Card hat weitere Standard-Klassen, die im Einzelfall stimmen müssen) | Paket 5 |
+| 9 | `ProgressRing`-Duplikat vereinheitlichen (gemeinsame API für done/total **und** value%) | Wartbarkeit | mittel (API-Design + 3 Aufrufstellen) | niedrig-mittel (Verhalten an allen 3 Stellen muss exakt erhalten bleiben) | Paket 4/5 |
+| 10 | Sprachdateien pro Sprache nachladen statt beide statisch | Bandbreite (~130 KB pro Sitzung) | mittel (i18next-Backend oder eigener Lademechanismus) | mittel (Sprachwechsel-Verhalten sorgfältig nachbilden) | Paket 7 |
+| 11 | `pdfKit.ts` nach Zuständigkeit aufteilen | Wartbarkeit (0 Performance-Wirkung) | mittel (1.556 Zeilen sortieren) | niedrig | Paket 4/6 |
+| 12 | Cloud-Sync auf Teil-Updates je Store statt Gesamt-Snapshot umstellen | Bandbreite (wächst mit `readingsStore`), nur bei Bedarf | hoch (Firestore-Schema/Regeln betroffen, Migration alter Profil-Dokumente) | mittel-hoch | Paket 1/7 |
+
+**Nicht in die Liste aufgenommen**, weil sie die Funktionalität *erweitern*
+statt nur den bestehenden Code zu verschlanken (passt nicht zum Auftrag
+„gleichbleibende Funktionalität", aber als Idee festgehalten): ein Service
+Worker/Manifest für Offline-Nutzung und Installierbarkeit (Paket 7).
+
+### Empfohlene Reihenfolge, falls umgesetzt wird
+
+1. **Sofort, ohne Abwägung**: #2 (Scan), #4, #5, #6 – jeweils unter 30
+   Minuten Diff, kein erkennbares Risiko.
+2. **Der eine große Hebel**: #1 (Routen-Splitting) – lohnt sich unabhängig
+   von allem anderen und sollte vor #10 (Sprachdateien) kommen, weil beide
+   dieselbe Stelle (Ladezeitpunkt des Haupt-Bundles) betreffen und sich
+   sonst der Erfolg schlecht einzeln messen lässt.
+3. **Mechanische Aufräumarbeit, wenn Zeit ist**: #3, #7, #8, #9 – kein
+   Zeitdruck, da rein strukturell.
+4. **Nur bei erkennbarem Bedarf**: #11 (Kosmetik) und #12 (erst wenn
+   `readingsStore` durch mehrjährige Nutzung spürbar wächst – heute nicht
+   dringend, aber der Punkt, an dem es dringend wird, kommt nicht plötzlich,
+   siehe Paket 7).
+
+### Gesamtbild
+
+Der Code ist – gemessen an 45.836 LOC über 291 Dateien – ungewöhnlich
+konsistent gehalten: Ein Blick in `measurements/` zeigt eine bereits
+durchgezogene Registry-plus-generischer-Runner-Architektur für neun
+Checks, `education/` teilt seine Such-Infrastruktur über drei
+Content-Typen, `onboarding/` und `measurements/` lösen dasselbe
+„Abnehmer"-Problem mit demselben deklarativen Muster, und die in CLAUDE.md
+dokumentierten Konventionen (Feld-Migration an einer Stelle, unveränderliche
+Raum-/Geräte-Kennungen, Herkunftskennzeichnung von Richtwerten) halten in
+der Stichprobe. Die gefundenen Duplikate sind klein und lokal (ein Chip,
+ein Progress-Ring, ein paar Zahlenformatierer) – kein Bereich musste als
+Ganzes neu gedacht werden.
+
+Der mit Abstand größte Hebel für die drei genannten Ziele (Speicher,
+Reaktionszeit, Bandbreite) liegt nicht in Wiederholungen, sondern in
+**einer** strukturellen Entscheidung: dem Fehlen von Routen-basiertem
+Code-Splitting. Das ist zugleich die gute Nachricht – ein einzelner,
+klar umrissener, risikoarmer Umbau (#1) trägt mehr zu allen drei Zielen
+bei als die Summe aller Aufräum-Kandidaten zusammen.
+
+Dieses Dokument ändert – wie zu Beginn festgehalten – an keiner Stelle den
+Code selbst. Alle acht Pakete sind abgeschlossen und auf
+`claude/sync-ebb6lz` gesichert; eine Umsetzung einzelner Empfehlungen ist
+ein neues, separates Vorhaben, das Kilian auslöst.
+
 ## Fortschritt
 
 | Paket | Inhalt | Status |
@@ -758,4 +826,4 @@ Verschlankung verkauft.
 | 5 | UI-Bausteine & Generalisierungspotenzial | ✅ fertig (16.09.) |
 | 6 | Bloat & Vereinfachung | ✅ fertig (16.09.) |
 | 7 | Performance (Speicher/Reaktionszeit/Bandbreite) | ✅ fertig (16.09.) |
-| 8 | Priorisierte Empfehlungsliste & Abschluss | ⏳ offen |
+| 8 | Priorisierte Empfehlungsliste & Abschluss | ✅ fertig (16.09.) |
