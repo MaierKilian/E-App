@@ -528,6 +528,103 @@ konkrete, kleine Befunde:
 `analytics/` (76 LOC) und die Cloud-Sync-Seite von `sync/`/`auth/` (State-
 Ebene) sind bereits in Paket 1 im Detail beschrieben.
 
+## Paket 5 – UI-Bausteine & Generalisierungspotenzial
+
+### Bestand
+
+`src/components/ui/` (15 Bausteine, 872 LOC) + `src/components/*.tsx`
+(9 App-Chrome-Komponenten, 787 LOC, z. B. `Header`, `BottomNav`,
+`ProfileMenu`, `LoginGate`). Nutzungsbreite der `ui/`-Bausteine (Anzahl
+Dateien, die sie importieren):
+
+| Baustein | Genutzt in | Baustein | Genutzt in |
+|---|---|---|---|
+| `Modal` | 16 | `Stepper` | 6 |
+| `Card` | 12 | `SelectChip` | 6 |
+| `PageHeader` | 10 | `Avatar` | 4 |
+| `Stopwatch` | 3 | `DecimalField` | 4 |
+| `ProgressRing` | 3 | `Field` | 4 |
+| `Slider` | 2 | `InfoButton` | 4 |
+| `Toggle` | 2 | `OptionChip` | 4 |
+| `Logo` | 1 | | |
+
+Die Bausteine mit geringer Nutzungsbreite (`Logo`, `Slider`, `Toggle`) sind
+nicht automatisch Kandidaten zum Entfernen – sie decken je einen echten,
+wiederkehrenden Bedarf (Marke, Zahlenregler, Ein/Aus-Schalter). Interessanter
+sind die Fälle, in denen **kein** gemeinsamer Baustein existiert, obwohl das
+Muster mehrfach vorkommt – drei konkrete, nach Aufwand aufsteigend:
+
+### 1. `SelectChip` ist eine Teilmenge von `OptionChip`
+
+```
+SelectChip: label, selected, onClick, className        → 28 Zeilen
+OptionChip: label, selected, onClick, icon?, className  → 32 Zeilen
+```
+
+Bis auf einen minimalen Unterschied im Active-Scale (`0.94` vs. `0.95`) und
+das optionale Icon ist die Auswahl-Optik **identisch** (dieselben
+Tailwind-Klassen für aktiv/inaktiv, denselben Farbverlauf). `OptionChip`
+deckt den Fall „ohne Icon" bereits ab (`icon` ist optional). `SelectChip`
+ließe sich ersatzlos durch `OptionChip` ersetzen (6 Aufrufstellen anpassen,
+0 Verhaltensänderung außer dem Rundungsdetail beim Klick-Feedback, das sich
+angleichen ließe oder als Prop bestehen bliebe). Niedrigstes Risiko der drei
+Kandidaten hier, weil beide Komponenten bereits exportierte, stabile Props
+haben.
+
+### 2. Zwei `ProgressRing`-Implementierungen (bereits in Paket 4 notiert)
+
+`components/ui/ProgressRing.tsx` (done/total, feste Beschriftung) und
+`features/home/ProgressRing.tsx` (value-Prozent, `children`-Slot für
+Avatar) rechnen dieselbe Kreis-Geometrie zweimal. Ein gemeinsamer Baustein
+bräuchte eine Vereinigung beider APIs (z. B. `value`-Prozentsatz als
+gemeinsamer Nenner, `done`/`total` in den zwei bestehenden Aufrufstellen zu
+einem Prozentsatz vorgerechnet) – etwas mehr Abstimmungsaufwand als bei
+Punkt 1, weil drei Aufrufstellen mit unterschiedlichen Erwartungen
+zusammenkämen.
+
+### 3. Hand-gerollte „Card"-Optik statt `<Card>`
+
+**19 Dateien** (fast ausschließlich in `measurements/`, siehe Liste in
+Paket 4/Fundstelle unten) schreiben `className="glass rounded-3xl p-4"`
+direkt auf ein `<div>`, obwohl `components/ui/Card.tsx` exakt diesen
+Glass-Stil kapselt – nur mit `p-5` statt `p-4` als Standard-Padding. Das ist
+kein Kopierfehler, sondern zwei leicht unterschiedliche Innenabstände für
+denselben visuellen Baustein, die vermutlich unabhängig voneinander
+entstanden sind (Intro-/Result-Screens vs. Card-Erstnutzung an anderer
+Stelle). Zusammenführen hieße: `Card` um eine engere Padding-Variante
+ergänzen (`className="p-4"` überschreibt das bereits – ein Blick in die 19
+Stellen zeigt, ob sonst identisches Markup vorliegt) und die 19 `<div>`
+durch `<Card className="p-4">` ersetzen. Reine Optik, keine Logik – aber die
+größte Zahl an Fundstellen der drei Kandidaten, deshalb auch der Kandidat
+mit dem meisten Diff.
+
+### 4. Zahlenformatierung: 36 Dateien bauen ihr eigenes `Intl.NumberFormat`
+
+Kein UI-Baustein, aber dieselbe Kategorie „an einer Stelle statt an 36":
+Fast jeder Run/Result-Screen aus `measurements/`, dazu Teile von `reports/`,
+`monitoring/` und `onboarding/`, erzeugt lokal ein
+`new Intl.NumberFormat(i18n.language, { … })` – wiederkehrend für Euro
+(`style: 'currency'`), Prozent (`style: 'percent'`) und Zahlen mit fester
+Nachkommastellenzahl (0–3). Einige Dateien kapseln das zusätzlich in einer
+eigenen kleinen `useNumberFormat()`/`nf()`-Hilfsfunktion – das Muster „einen
+Formatter pro Fall" wird also wiederholt **erfunden**, nicht nur der
+Formatter selbst. Ein gemeinsames `src/lib/format.ts` (oder ein Hook
+`useFormatters()`, der die vier/fünf wiederkehrenden Formate liefert) würde
+nicht nur Code sparen, sondern auch vermeiden, dass bei jedem Render ein
+neues `Intl.NumberFormat`-Objekt entsteht (dessen Konstruktion nicht
+kostenlos ist) – ein kleiner, aber echter Beitrag zur „Reaktionszeit"-Frage
+aus dem Auftrag, zusätzlich zum Bandbreiten-/Speicher-Fokus der anderen
+Befunde.
+
+### Einordnung
+
+Alle vier Kandidaten sind **verhaltensneutral** umsetzbar (gleiche Optik,
+gleiche Zahlenwerte) und unabhängig voneinander – keiner setzt einen
+anderen voraus. Sie unterscheiden sich vor allem im Diff-Umfang: Kandidat 1
+(6 Stellen) und 2 (3 Stellen, aber API-Abstimmung nötig) sind klein,
+Kandidat 3 (19 Stellen) und 4 (36 Stellen) sind größere, aber mechanische
+Änderungen. Priorisierung folgt in Paket 8.
+
 ## Fortschritt
 
 | Paket | Inhalt | Status |
@@ -537,7 +634,7 @@ Ebene) sind bereits in Paket 1 im Detail beschrieben.
 | 2 | Modul-Katalog `measurements/` + `tips/` | ✅ fertig (16.09.) |
 | 3 | Modul-Katalog `education/` + `onboarding/` | ✅ fertig (16.09.) |
 | 4 | Modul-Katalog Rest-Features | ✅ fertig (16.09.) |
-| 5 | UI-Bausteine & Generalisierungspotenzial | ⏳ offen |
+| 5 | UI-Bausteine & Generalisierungspotenzial | ✅ fertig (16.09.) |
 | 6 | Bloat & Vereinfachung | ⏳ offen |
 | 7 | Performance (Speicher/Reaktionszeit/Bandbreite) | ⏳ offen |
 | 8 | Priorisierte Empfehlungsliste & Abschluss | ⏳ offen |
