@@ -625,6 +625,70 @@ anderen voraus. Sie unterscheiden sich vor allem im Diff-Umfang: Kandidat 1
 Kandidat 3 (19 Stellen) und 4 (36 Stellen) sind größere, aber mechanische
 Änderungen. Priorisierung folgt in Paket 8.
 
+## Paket 6 – Bloat & Vereinfachung
+
+### `archiv/` – bestätigt folgenlos
+
+Stillgelegter Code aus früheren Umbauten (`onboarding-gebaeudehuelle`,
+`onboarding-standort`, `duschkopf-warmwasserquelle`, 64 KB, 8 Dateien).
+Geprüft: **keine** einzige `import`-Anweisung aus `src/` oder `tests/`
+verweist dorthin – nur drei erklärende Kommentare/Textstellen nennen den
+Pfad. `tsconfig.app.json` inkludiert ohnehin nur `src`. Der Ordner kostet
+weder Bundle-Größe noch Build-Zeit; er bleibt laut CLAUDE.md bewusst als
+Nachschlagewerk erhalten. Kein Handlungsbedarf – hier nur bestätigt, damit
+es nicht unbestätigt im Raum steht.
+
+### Große Einzeldateien – eingeordnet, nicht pauschal verurteilt
+
+Drei Dateien wurden in den vorigen Paketen als größte Ausreißer genannt.
+Alle drei sind Größe **durch Breite der Aufgabe**, nicht durch Wiederholung:
+
+| Datei | LOC | Warum die Größe folgerichtig ist | Verschlankungs-Idee |
+|---|---|---|---|
+| `reports/pdf/pdfKit.ts` | 1.556 | eine Klasse, die sechs PDF-Generatoren mit derselben Typografie/Layout/Tabellen-Logik versorgt (Paket 4) | rein kosmetisch nach Zuständigkeit in mehrere Dateien teilen (Typografie / Pagination / Tabellen); ändert an Bundle/Verhalten nichts, da `jsPDF` ohnehin als ein Lazy-Chunk gebündelt wird |
+| `education/educationContent.ts` | 1.304 | vier Content-Arrays (FAQ/Glossar/Mess-Hintergründe/Labor), Umfang = Zahl der Einträge (Paket 3) | keine – Content wächst mit dem Wissensbereich, eine Aufteilung nach Array in vier Dateien wäre möglich, aber ohne Wirkung außer Navigierbarkeit im Editor |
+| `tips/buildTips.ts` | 838 | eine Funktion, ein Codeblock je Tipp-Quelle (11 Quellen, Paket 2) | bei weiterem Wachstum (&gt;~1.000 Zeilen) Aufteilung in `tips/sources/<id>.ts` – heute noch nicht nötig |
+
+Kein pauschaler „Datei ist zu groß"-Befund: Alle drei sind an der Stelle
+groß, wo die fachliche Breite selbst groß ist. Aufteilen wäre Kosmetik ohne
+Verhaltens- oder Performance-Wirkung – deshalb niedrige Priorität in
+Paket 8.
+
+### Kosmetischer Befund aus Paket 3: veraltete Schritt-Nummerierung
+
+`onboarding/steps/Step0Mode.tsx`, `Step1Profile.tsx`, `Step3Rooms.tsx`,
+`Step4Heating.tsx`, `Step6Instruments.tsx`, `Step8Review.tsx` tragen Nummern
+aus einer Reihenfolge, die es nicht mehr gibt (die echte Reihenfolge steht
+in der Schlüssel-Map `OnboardingPage.tsx`: `profile → goals → rooms →
+heating → prices → appliances → equipment → review`). Ein Umbenennen auf
+sprechende Namen ohne Zahl (wie bereits bei `StepGoals`/`StepAppliances`/
+`StepPrices` gehandhabt) wäre verhaltensneutral und würde zukünftige
+Verwirrung vermeiden. Niedriger Aufwand (6 Dateien umbenennen + Imports
+anpassen), niedriges Risiko.
+
+### Was dieses Audit **nicht** abschließend leisten konnte
+
+Eine manuelle Durchsicht von 240 Dateien kann echte, aber seltene tote
+Exporte (eine Funktion, die niemand mehr aufruft, weil der letzte Aufrufer
+entfernt wurde) nicht mit Sicherheit ausschließen – Stichproben in `src/lib/`
+und den Basis-Modulen von `measurements/` zeigten keine, aber das ist keine
+vollständige Prüfung. Empfehlung statt eines unvollständigen manuellen
+Befunds: ein automatisiertes Werkzeug wie `knip` oder `ts-prune` einmalig
+gegen den Codestand laufen lassen (reine Lese-Analyse, kein Risiko) – das
+liefert eine vollständige statt eine stichprobenartige Liste unbenutzter
+Exporte/Dateien. Nicht Teil dieses Dokuments, weil es ein Werkzeug-Lauf und
+keine Code-Lektüre ist.
+
+### Dev-Tooling-Fußabdruck (informativ, nicht im Repo wirksam)
+
+`firebase-tools` (Deploy-CLI, `devDependencies`) zieht selbst schwere
+transitive Abhängigkeiten (`re2`, `pglite-2`, `@electric-sql`,
+`@opentelemetry`, `google-gax`, `@google-cloud/*` – zusammen ~135 MB in
+`node_modules`, siehe Paket 0). Das hat **keine** Auswirkung auf die
+ausgelieferte App (nur `npm install`/CI-Laufzeit), wird hier nur festgehalten,
+damit die 759-MB-`node_modules`-Zahl aus Paket 0 nicht als App-Gewicht
+missverstanden wird.
+
 ## Fortschritt
 
 | Paket | Inhalt | Status |
@@ -635,6 +699,6 @@ Kandidat 3 (19 Stellen) und 4 (36 Stellen) sind größere, aber mechanische
 | 3 | Modul-Katalog `education/` + `onboarding/` | ✅ fertig (16.09.) |
 | 4 | Modul-Katalog Rest-Features | ✅ fertig (16.09.) |
 | 5 | UI-Bausteine & Generalisierungspotenzial | ✅ fertig (16.09.) |
-| 6 | Bloat & Vereinfachung | ⏳ offen |
+| 6 | Bloat & Vereinfachung | ✅ fertig (16.09.) |
 | 7 | Performance (Speicher/Reaktionszeit/Bandbreite) | ⏳ offen |
 | 8 | Priorisierte Empfehlungsliste & Abschluss | ⏳ offen |
