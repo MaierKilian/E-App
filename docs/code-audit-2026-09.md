@@ -141,12 +141,156 @@ Größte Einzeldateien: `measurements/showerhead.mp4` (464 KB),
 (je 244 KB), Rest sind `.webp`-Illustrationen der Mess-Checks (36–88 KB
 je Datei, hell/dunkel getrennt).
 
+## Paket 1 – Architektur-Überblick
+
+### Schichten
+
+```
+src/app/          Routing, Layout, Theme-Anwendung (6 Dateien, 281 LOC)
+src/features/*/   Fachliche Module, je eigener Ordner (240 Dateien, 41k LOC)
+src/store/        Zustand/Persist – je Fachbereich ein Store (15 Dateien)
+src/components/   Reine UI-Bausteine ohne Fachlogik (24 Dateien)
+src/lib/          Technische Helfer ohne Fachbezug (Firebase-Client, Zahlen-
+                  Eingabe, Bild-Helfer, Zeitachse, Test-Log)
+src/i18n/         i18next-Setup + die zwei Sprachdateien
+src/types/        Geteilte TS-Typen
+```
+
+Kein Layer-Verstoß gefunden: Features importieren aus `store`/`lib`/
+`components`, nie umgekehrt. `src/features/sync/` ist der einzige Ort, der
+mehrere Fach-Stores kennt (siehe unten) – bewusst, weil er ihre Klammer ist.
+
+### Routing & Rendering
+
+`src/app/App.tsx` definiert **eine** flache `<Routes>`-Liste (React Router 7,
+`BrowserRouter`). Alle 19 Seiten werden am Modulkopf **statisch** importiert
+(`import { OnboardingPage } from '@/features/onboarding/OnboardingPage'` usw.)
+– keine einzige nutzt `React.lazy()`. Zwei Weichen davor:
+
+- `LandingRoute`/`useIsReturningVisitor()` entscheidet Landing Page vs.
+  direkter Sprung ins Onboarding (Erstbesucher-Erkennung über
+  `settingsStore.introSeen` + `onboardingStore.data.completed` +
+  `demoMode`).
+- `FirstVisitGate` fängt Deep-Links eines frischen Browsers ab (leerer
+  Speicher, neues Gerät) und leitet auf `/`, außer bei öffentlichen Pfaden
+  oder einem `?demo`-Parameter.
+
+`LoginGate` umschließt einzeln die Routen, die eine Anmeldung voraussetzen
+(`/measurements`, `/monitoring`, `/reports` u. a.) – Onboarding, Wissen,
+Tipps und die Rechtstexte sind ohne Anmeldung erreichbar. Diese
+Static-Import-Struktur ist die Ursache des 1,86-MB-Haupt-Bundles aus Paket 0;
+Auswirkung und Lösungsvorschlag stehen in Paket 7, nicht hier – Paket 1
+beschreibt nur den Ist-Zustand.
+
+`Layout.tsx` ist bewusst dünn: Header, `DemoBanner`, `<Outlet/>`,
+`LegalFooter`, `BottomNav`, ein einzelnes globales `FeedbackModal`. Die
+Landing Page (`/`, `/willkommen`) läuft außerhalb dieses Layouts (eigene
+Topbar, siehe Kommentar im Code).
+
+### State-Management
+
+Durchgängig **Zustand** (`zustand` v5), 15 Stores nach Fachbereich getrennt
+(kein God-Store). 14 von 15 nutzen die `persist`-Middleware mit
+konsistentem Namensschema `eapp-<bereich>` im `localStorage` (`eapp-
+onboarding`, `eapp-measurements`, `eapp-readings`, `eapp-tariff`, `eapp-
+progress`, `eapp-settings`, `eapp-tips`, `eapp-feedback`, `eapp-flashcards`,
+`eapp-widget-order`, `eapp-report-settings`, `eapp-measurement-drafts`,
+`eapp-account-avatar`, `eapp-active-profile`). Nur `authStore` persistiert
+nicht (folgt dem Firebase-SDK-eigenen Sitzungszustand). Migrationen laufen
+projektweit über die eine dokumentierte Konvention
+(`migrateOnboardingData`, siehe CLAUDE.md) statt verstreut im
+`persist`-Merge – das wurde eingehalten, keine Abweichung gefunden.
+
+### Cloud-Sync (`src/features/sync/`)
+
+Sauber geschnittene, kleine Architektur (660 LOC über 3 Dateien):
+
+- `stores.ts` definiert **explizit**, welche sieben Stores zu einem
+  „Wohnprofil" gehören (`onboarding`, `measurements`, `readings`, `tariff`,
+  `progress`, `drafts`, `widgetOrder`) und bietet `snapshot()`/`hydrate()`/
+  `resetAllStores()` als einzige Schnittstelle darauf. `settingsStore`
+  (Theme/Sprache) ist bewusst ausgenommen – Geräte-, keine Wohnungssache.
+- `cloudSync.ts` synchronisiert ein Profil als **ein** Firestore-Dokument
+  (`profiles/{pid}`) mit dem kompletten Snapshot als Feld `state`: Schreiben
+  debounced (1.500 ms, sammelt schnelle Änderungen), Lesen über
+  `onSnapshot` mit Filter auf `hasPendingWrites` (verhindert, dass ein
+  eigener Schreibvorgang sich selbst als Fremdänderung erneut einspielt).
+  Login/Logout, Profilwechsel, Beitritt/Verlassen einer geteilten Wohnung
+  und Zugriffsverlust (`permission-denied`) sind eigene, klar benannte
+  Funktionen. Netzausfall beim ersten Laden hat eine gestaffelte
+  Wiederholung (2 s/5 s/15 s) plus Trigger auf `online` und
+  `visibilitychange`.
+- `profiles.ts` (in `features/profiles/`) kapselt die Firestore-Zugriffe
+  selbst (Anlegen, Einladen, Rollen, Legacy-Migration einzelner Alt-Nutzer).
+
+Bewertung an dieser Stelle rein strukturell (funktionale Fragen dazu – z. B.
+Feingranularität – gehören in Paket 7): Der **ganze** Profil-Zustand wird bei
+jeder Änderung neu geschrieben und gelesen, es gibt keine Teil-Updates
+einzelner Felder. Bei den heutigen Datengrößen (Stores sind Konfiguration +
+Messergebnisse, keine Rohmessreihen) unauffällig; wird in Paket 7 im Hinblick
+auf Bandbreite/Firestore-Kosten eingeordnet, sobald `readingsStore` über
+Jahre Zählerstände ansammelt.
+
+### Firebase-Schicht (`src/lib/firebase.ts`)
+
+Vorbildlich lazy: `initializeApp`/`getAuth` laufen beim Modul-Import (nötig,
+da praktisch immer gebraucht), aber **Firestore** (`getDb()`) und
+**Analytics** (`loadAnalytics()`) sind hinter Funktionen versteckt, die erst
+bei echtem Bedarf bzw. nach Consent aufgerufen werden – exakt die
+Rechtsgrundlage, die CLAUDE.md unter „Rechtliches" vorschreibt, ist im Code
+technisch erzwungen (`applyAnalyticsConsent()` läuft bei jeder
+Consent-Änderung, setzt zusätzlich Googles eigenen Opt-out-Schalter
+`ga-disable-<ID>` und räumt bei Widerruf die `_ga`-Cookies weg). Einzige
+kleine Inkonsistenz: `getFunctions(app, 'europe-west1')` steht auf
+Modulebene (eager), obwohl nur der Zähler-Scan es braucht – bei aktuell einer
+Callable Function vernachlässigbar, aber nicht demselben Lazy-Muster wie
+Firestore/Analytics folgend (Notiz für Paket 6, kein eigener Befund, da
+Wirkung minimal).
+
+### Internationalisierung
+
+`react-i18next` mit **beiden** Sprachdateien (`de.json`, `en.json`, je
+~2.800 Zeilen) statisch importiert und beim Start vollständig ins
+i18next-Resource-Objekt geladen (siehe Paket 0). Sprachwahl über
+`i18next-browser-languagedetector` (`localStorage` → `navigator`),
+Speicherung unter dem eigenen Schlüssel `eapp-language`. Architektonisch
+einfach und wartbar (ein Key pro Text, eine Datei pro Sprache) – der
+Bandbreiten-Aspekt (immer beide Sprachen laden) ist ein Paket-7-Thema, keine
+strukturelle Schwäche.
+
+### Consent/Legal als Querschnittsthema
+
+`features/legal/consent.ts` hält die Einwilligung als eigenen, versionierten
+Store-Wert (`CONSENT_VERSION`, siehe CLAUDE.md-Konvention); `ConsentBanner`
+und `ConsentSettings` liegen – weil beide auf Impressum/Datenschutz
+verlinken – direkt im Router in `App.tsx`, nicht im `Layout`. Analytics-
+Tracking (`features/analytics/analytics.ts`) prüft `hasAnalyticsConsent()`
+**vor** jedem `loadAnalytics()`-Aufruf, nie danach – die Reihenfolge ist im
+Code selbst dokumentiert als der Punkt, der die Rechtskonformität trägt.
+
+### Grober Datenfluss
+
+```
+Onboarding (onboardingStore)
+   → schaltet Mess-Checks/Monitoring-Kacheln/Wissens-Bereiche frei
+     (fieldUsage.ts / instrumentNeeds.ts als deklarierte Abnehmer-Register)
+   → Measurements (measurementsStore, measurementDraftStore) liefern Ergebnisse
+   → Monitoring (readingsStore) sammelt Zählerstände über die Zeit
+   → Tips (tipsStore, buildTips.ts) leitet aus alledem Handlungsempfehlungen ab
+   → Reports (reports/pdf) fasst Steckbrief + Handlungsplan + Messwerte zum PDF
+```
+
+Die in CLAUDE.md dokumentierten Register (`fieldUsage.ts`,
+`measurementThresholds.ts`-Herkunftskennzeichnung, `MeasurementMeta.
+instruments`) sind der eigentliche „Klebstoff" zwischen den Modulen – sie
+werden in Paket 2/3 im Detail bewertet.
+
 ## Fortschritt
 
 | Paket | Inhalt | Status |
 |---|---|---|
 | 0 | Baseline & Repo-Übersicht | ✅ fertig (16.09.) |
-| 1 | Architektur-Überblick | ⏳ offen |
+| 1 | Architektur-Überblick | ✅ fertig (16.09.) |
 | 2 | Modul-Katalog `measurements/` + `tips/` | ⏳ offen |
 | 3 | Modul-Katalog `education/` + `onboarding/` | ⏳ offen |
 | 4 | Modul-Katalog Rest-Features | ⏳ offen |
