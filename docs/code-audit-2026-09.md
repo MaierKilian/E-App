@@ -374,6 +374,89 @@ UI-Baustein-Kandidaten wie diesen).
 - `TipsPage.tsx` (584 LOC): reine Darstellung (Sortierung, Filter, Gruppen),
   liest ausschließlich über `buildTips()` – keine eigene Ableitung.
 
+## Paket 3 – Modul-Katalog `education/` (Wissen) + `onboarding/`
+
+### `education/` (8.424 LOC, 42 Dateien)
+
+Drei Bereiche mit einer gemeinsamen Infrastruktur:
+
+- **Inhalt** (`educationContent.ts`, 1.304 LOC): vier Content-Arrays – `FAQ`
+  (35), `GLOSSARY` (58), `MEASUREMENT_INFOS` (9), `LAB_EXPERIMENTS` – alle
+  auf derselben Basis `LookupFields`. Reine Daten, keine Logik; Umfang folgt
+  direkt aus der Zahl der Einträge (siehe CLAUDE.md „Wissen-Ausbau"). Bewusst
+  deutschsprachiger Fach-Content **außerhalb** von i18n (nur UI-Beschriftung
+  ist zweisprachig) – dieselbe, konsistente Entscheidung wie bei
+  `flashcardsContent.ts`.
+- **Suche/Navigation** (`lookup/`, 8 Dateien): **eine** generische
+  Nachschlage-Infrastruktur (`search.ts`, `glossary.ts` [A–Z-Gliederung],
+  `topics.ts` [gemeinsamer Themen-Vorrat], `useLookup.ts`,
+  `AlphabetRail`/`FilterChips`/`Highlight`/`SearchField`/`LookupList`/
+  `NoResults` als reine Anzeige-Bausteine), die **von FAQ, Glossar und
+  Mess-Hintergründen gemeinsam genutzt wird** (siehe `docs/wissen-concept.md`:
+  „dieselbe Konstruktion: ein Suchfeld über zugeklappten Accordions"). Genau
+  die Art Wiederverwendung, nach der gefragt wurde – hier bereits umgesetzt,
+  kein Befund.
+- **Karteikarten-Trainer** (`flashcards/`, 20 Dateien, davon `engine/` mit 14
+  Dateien/2.331 LOC): eigenständiges Teilsystem mit eigenem Content
+  (`flashcardsContent.ts`, Hochschul-Prüfungsstoff, 744 LOC) und einer
+  sauber gekapselten Lern-Engine. Bemerkenswert als **positives** Muster:
+  `engine/scheduler.ts` definiert eine `MemoryModel`-Schnittstelle, gegen die
+  drei echte, nutzerseitig wählbare Wiederholungs-Algorithmen implementiert
+  sind (`fsrs.ts` 145 LOC, `sm2.ts` 80 LOC, `leitner.ts` 65 LOC) – „alles
+  außerhalb der Engine … kennt weder FSRS noch SM-2 noch Leitner" (Kommentar
+  im Code). Auswahl läuft über `PaceView.tsx`, ist also erreichbar, kein
+  totes Angebot. Kein Befund – als Beleg dafür aufgeführt, dass das Projekt
+  Strategie-Muster bereits kennt und einsetzt, wo mehrere echte Varianten
+  existieren.
+- **Richtwerte-Brücke** (`measurementThresholds.ts`, 261 LOC): hält die
+  CLAUDE.md-Konvention „Zahlen stehen an einer Stelle" ein – 9 Fundstellen
+  von `ThresholdOrigin`/`'reference'`/`'own'`/`'pending'`, keine Zahl wird
+  hier neu erfunden, alle importiert aus den Mess-Modulen. Stichprobe
+  bestätigt: eingehalten.
+
+Größte Einzeldatei bleibt `EducationPage.tsx` (722 LOC) – Layout- und
+Tab-Logik für die drei Bereiche; bei genauerem Hinsehen (Paket 6) ein
+Kandidat, um Tab-spezifisches Markup in je eine Unterkomponente zu ziehen,
+aber ohne Redundanz zu anderen Dateien – kein Wiederholungsbefund, nur eine
+Größenbeobachtung.
+
+### `onboarding/` (3.576 LOC, 25 Dateien)
+
+- **Schritte** (`steps/`, 9 Dateien, 2.440 LOC): Die tatsächliche
+  Reihenfolge legt eine Schlüssel-Map in `OnboardingPage.tsx` fest
+  (`profile → goals → rooms → heating → prices → appliances → equipment →
+  review`), **nicht** die Dateinamen. Die Dateinamen (`Step0Mode`,
+  `Step1Profile`, `Step3Rooms`, `Step4Heating`, `Step6Instruments`,
+  `Step8Review`) stammen aus einer früheren, inzwischen mehrfach veränderten
+  Nummerierung (Schritte 2/5/7 wurden im Zuge der in CLAUDE.md dokumentierten
+  Umbauten entfernt oder umsortiert; neuere Schritte wie `StepGoals`,
+  `StepAppliances`, `StepPrices` tragen konsequenterweise gar keine Nummer
+  mehr). Rein kosmetischer Befund ohne Funktionsänderung: Die Nummern in den
+  verbliebenen Dateinamen sind irreführend, weil sie weder die heutige
+  Reihenfolge noch eine Lücke korrekt wiedergeben. Ein Umbenennen (z. B. auf
+  die Namen aus der Schlüssel-Map) würde nichts am Verhalten ändern – siehe
+  Paket 6.
+- **Register** (`fieldUsage.ts` 231 LOC, `sections.ts` 337 LOC): dieselbe
+  „deklarativ statt gepflegt"-Idee wie `measurements/catalog.ts` –
+  `fieldUsage.ts` ist laut CLAUDE.md die Pflicht-Abnehmer-Liste jedes
+  `OnboardingData`-Felds (testgestützt, siehe `tests/unit/fieldUsage.test.ts`).
+  Gute bereichsübergreifende Konsistenz: Beide großen Fragebogen- und
+  Mess-Bereiche lösen dasselbe Problem („woher weiß ich, was noch benutzt
+  wird") mit demselben Muster.
+- Restliche Dateien (`appliances.ts`, `goals.ts`, `plausibility.ts`,
+  `renovationProjection.ts`, `instrumentOptions.ts`, `roomIcons.ts` u. a.)
+  sind kleine, einzeln verständliche Ableitungsfunktionen ohne
+  Überschneidung untereinander.
+
+### Bandbreiten-Relevanz (Vorgriff auf Paket 7)
+
+`educationContent.ts` (1.304 LOC Content), `flashcardsContent.ts` (744 LOC)
+und die vollständige Lern-Engine landen – wie in Paket 0/1 beschrieben – im
+selben ungeteilten Haupt-Bundle wie Onboarding und alle Mess-Checks, weil
+`EducationPage`/`LearnPage` nicht per `React.lazy()` geladen werden. Kein
+neuer Befund, nur eine weitere Bestätigung des Paket-1-Fundes anhand
+konkreter Dateigrößen.
+
 ## Fortschritt
 
 | Paket | Inhalt | Status |
@@ -381,7 +464,7 @@ UI-Baustein-Kandidaten wie diesen).
 | 0 | Baseline & Repo-Übersicht | ✅ fertig (16.09.) |
 | 1 | Architektur-Überblick | ✅ fertig (16.09.) |
 | 2 | Modul-Katalog `measurements/` + `tips/` | ✅ fertig (16.09.) |
-| 3 | Modul-Katalog `education/` + `onboarding/` | ⏳ offen |
+| 3 | Modul-Katalog `education/` + `onboarding/` | ✅ fertig (16.09.) |
 | 4 | Modul-Katalog Rest-Features | ⏳ offen |
 | 5 | UI-Bausteine & Generalisierungspotenzial | ⏳ offen |
 | 6 | Bloat & Vereinfachung | ⏳ offen |
