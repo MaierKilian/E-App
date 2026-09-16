@@ -457,6 +457,77 @@ selben ungeteilten Haupt-Bundle wie Onboarding und alle Mess-Checks, weil
 neuer Befund, nur eine weitere Bestätigung des Paket-1-Fundes anhand
 konkreter Dateigrößen.
 
+## Paket 4 – Modul-Katalog Rest-Features
+
+### `monitoring/` (5.232 LOC, 30 Dateien)
+
+Zählerstände/Füllstände über die Zeit: Erfassung (`AddReadingScreen`,
+`AddRefillScreen`, `OdometerInput`, `FillLevelInput`), Auswertung
+(`counterSeries.ts`, `range.ts`, `rangeFilter.ts`, `seasonality.ts`,
+`heatingPeriod.ts`, `specificValues.ts`), Darstellung (`AbsoluteLineChart.tsx`
+405 LOC, `Sparkline.tsx` + `sparklineGeometry.ts`), Zähler-Scan
+(`MeterScanner.tsx`, `ocr.ts`, `scanRemote.ts` – Cloud-Function-Aufruf +
+Tesseract-Fallback). Größte Dateien `MeterDetailPage.tsx` (644) und
+`WidgetBoard.tsx` (558) sind Seiten-Kompositionen, keine Wiederholung.
+
+Bemerkenswert: **kein** Chart-Framework als Abhängigkeit – beide
+Diagrammtypen (großes interaktives Verlaufsdiagramm mit Pointer-/Tastatur-
+Scrubbing, kleine Sparkline) sind handgeschriebenes SVG. Das ist eine
+bewusste (oder zumindest wirksame) Entscheidung gegen zusätzliches
+Bundle-Gewicht – siehe Paket 0/7, keine der üblichen Chart-Bibliotheken
+taucht in `package.json` auf. Kein Befund, sondern eine Stärke, die bei
+künftigen Diagramm-Wünschen erhalten bleiben sollte.
+
+### `reports/` (4.875 LOC, 16 Dateien)
+
+Sechs PDF-Typen (`generateReportPdf`, `generateMeasurementsPdf`,
+`generateMonitoringPdf`, `generateProfilePdf`, `generateActionPlanPdf`,
+`generateSourcesPdf`) plus eigene `*ReportData.ts`-Dateien, die Store-Daten
+in PDF-taugliche Strukturen übersetzen. Alle sechs Generatoren teilen sich
+**eine** Zeichen-Grundlage: `pdf/pdfKit.ts` (1.556 LOC, größte Einzeldatei
+im Projekt) – eine `PdfKit`-Klasse über `jsPDF` mit Farbpalette,
+Typografie- und Layout-Helfern. Das ist die richtige Stelle für diese
+Größe: **eine** geteilte Klasse statt sechsmal dieselbe Kopf-/Fußzeilen-
+und Tabellen-Logik. Einzige Beobachtung (Wartbarkeit, nicht Performance:
+`jsPDF` wird ohnehin als ein Lazy-Chunk gebündelt, egal wie viele
+Quelldateien ihn zusammensetzen): Die 1.556 Zeilen liegen in einer
+einzigen Klasse – eine spätere Aufteilung nach Zuständigkeit (Typografie /
+Seiten- und Paginierung / Tabellen / eingebettete Mini-Diagramme) wäre rein
+kosmetisch, siehe Paket 6.
+
+### `legal/` (1.191 LOC, 9 Dateien)
+
+`LegalPage.tsx` ist bereits die geteilte Hülle (Kopfzeile + Warnhinweis auf
+fehlende Pflichtangaben) für `ImprintPage` und `PrivacyPage` – keine
+Redundanz. `consent.ts`/`cookies.ts`/`operator.ts` sind fokussierte,
+einzeln verständliche Module genau im Zuschnitt, den `docs/legal.md`
+vorschreibt.
+
+### `profiles/`, `auth/`, `settings/`, `home/`, `landing/`, `feedback/`, `demo/`, `billing/`
+
+Alle klein (67–1.092 LOC) und ohne gegenseitige Überschneidung. Zwei
+konkrete, kleine Befunde:
+
+- **`components/ui/ProgressRing.tsx` vs. `features/home/ProgressRing.tsx`**:
+  zwei eigenständige SVG-Fortschrittsringe mit **unterschiedlicher** API
+  (die eine nimmt `done`/`total` als Zählpaar plus feste Größe/Strichstärke,
+  die andere einen fertigen `value`-Prozentsatz plus optionalen
+  `children`-Slot für einen Avatar in der Mitte) aber **identischer**
+  Kreis-Geometrie (Umfang, `stroke-dashoffset`-Animation). Kein reiner
+  Kopier-Fund wie der `Chip` aus Paket 2, sondern ein echter
+  Vereinheitlichungs-Kandidat: eine gemeinsame Komponente, die sowohl
+  Zählpaare als auch Prozentsätze annimmt und optional eigenen Inhalt in der
+  Mitte zeigt, würde beide Anwendungsfälle abdecken. Vertieft in Paket 5.
+- **`demo/demoProfile.ts`** (241 LOC Fixture-Daten für den `?demo`-Modus)
+  hängt statisch an `App.tsx` (`App → DemoLoader → enterDemo →
+  demoProfile`) und lädt damit für **jeden** Besuch mit, auch ohne
+  `?demo`-Parameter. Kleiner, aber sauberer Kandidat für einen dynamischen
+  Import in `enterDemo.ts` (`await import('./demoProfile')`, nur wenn
+  `wantsDemo()` zutrifft) – siehe Paket 7.
+
+`analytics/` (76 LOC) und die Cloud-Sync-Seite von `sync/`/`auth/` (State-
+Ebene) sind bereits in Paket 1 im Detail beschrieben.
+
 ## Fortschritt
 
 | Paket | Inhalt | Status |
@@ -465,7 +536,7 @@ konkreter Dateigrößen.
 | 1 | Architektur-Überblick | ✅ fertig (16.09.) |
 | 2 | Modul-Katalog `measurements/` + `tips/` | ✅ fertig (16.09.) |
 | 3 | Modul-Katalog `education/` + `onboarding/` | ✅ fertig (16.09.) |
-| 4 | Modul-Katalog Rest-Features | ⏳ offen |
+| 4 | Modul-Katalog Rest-Features | ✅ fertig (16.09.) |
 | 5 | UI-Bausteine & Generalisierungspotenzial | ⏳ offen |
 | 6 | Bloat & Vereinfachung | ⏳ offen |
 | 7 | Performance (Speicher/Reaktionszeit/Bandbreite) | ⏳ offen |
